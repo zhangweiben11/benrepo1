@@ -1,0 +1,223 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:259356cc-24e5-4780-b6ee-1e1bad6d18d1 -->
+<metadata name="procBenefit" path="/shared/BestPractice_Layered_Approach/DELTA_DV/Business/BusinessSemantic/Benefit/Procedures/procBenefit" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inEnrolleeID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="10000000"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege user="anonymous" domain="composite" privileges="READ"/>
+    <privilege group="all" domain="composite" privileges="READ WRITE"/>
+    <privilege group="all" domain="dynamic" privileges="READ"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/RPTETL_TBLS/dbo/SP_Proc_BenefitPkgXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="@RETURN_VALUE" direction="RETURN" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="@0" direction="IN">
+        <datatype type="STRING" maxLength="8"/>
+      </element>
+      <element name="@1" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="@XML_DOC" direction="INOUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/RPTETL_TBLS/dbo/SP_Proc_EnrolleeElig" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="@RETURN_VALUE" direction="RETURN" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="@0" direction="IN">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="@1" direction="IN">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="@2" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="@GrpID" direction="INOUT">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="@DivID" direction="INOUT">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="@ContractID" direction="INOUT">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="@MemID" direction="INOUT">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="@BenefitPkgID" direction="INOUT">
+        <datatype type="STRING" maxLength="8"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE procBenefit(
+    IN inGroupID VARCHAR(12), 
+    IN inDivisionID VARCHAR(12),
+    IN inEnrolleeID VARCHAR(30),
+    IN inAsOfDate DATE, 
+&#x9;OUT result VARCHAR(10000000)
+    )
+    BEGIN
+        DECLARE no_benefit_found EXCEPTION;
+
+        --DECLARE varBenefitPkgID VARCHAR(8);
+&#x9;&#x9;DECLARE varBenXML VARCHAR(80000000);
+        
+        DECLARE curBenefitPkgID CURSOR (
+&#x9;&#x9;GroupID VARCHAR(12),
+&#x9;&#x9;DivisionID VARCHAR(12),
+&#x9;&#x9;ContractID VARCHAR(25),
+&#x9;&#x9;MemberID VARCHAR(2),
+&#x9;&#x9;BenefitPKGID VARCHAR(8)
+        );
+
+        DECLARE rowBenefitPkgID ROW (
+&#x9;&#x9;GroupID VARCHAR(12),
+&#x9;&#x9;DivisionID VARCHAR(12),
+&#x9;&#x9;ContractID VARCHAR(25),
+&#x9;&#x9;MemberID VARCHAR(2),
+&#x9;&#x9;BenefitPKGID VARCHAR(8)
+        );
+
+        DECLARE curBenefitXML CURSOR (
+&#x9;&#x9;XMLDoc VARCHAR(1200000000)
+        );
+
+        DECLARE rowBenefitXML ROW (
+&#x9;&#x9;XMLDoc VARCHAR(1200000000)
+        );
+
+&#x9;&#x9;--  Added below this for stored proc
+
+&#x9;&#x9;DECLARE varReturnCode INTEGER;
+&#x9;&#x9;DECLARE varGrpID VARCHAR(12);
+&#x9;&#x9;DECLARE varDivID VARCHAR(12);
+&#x9;&#x9;DECLARE varContractID VARCHAR(25);
+&#x9;&#x9;DECLARE varMemID VARCHAR(2);
+&#x9;&#x9;DECLARE varBenefitPkgID VARCHAR(8);
+&#x9;&#x9;DECLARE varXMLDoc VARCHAR(10000000);
+&#x9;&#x9;DECLARE varStrLen INTEGER;
+
+&#x9;&#x9;/*
+        CALL /shared/Delta_DV/Business/Logical/Benefits/pGetBenefitPkgID_noCTS(inGroupID, inDivisionID, inEnrolleeID, inAsOfDate, curBenefitPkgID);
+        FETCH NEXT FROM curBenefitPkgID INTO rowBenefitPkgID;
+        SET varBenefitPkgID = rowBenefitPkgID.BenefitPkgID;
+        CLOSE curBenefitPkgID;
+&#x9;&#x9;*/
+
+&#x9;&#x9;SET varStrLen = LENGTH(inEnrolleeID);
+&#x9;&#x9;SET varMemID = SUBSTR(inEnrolleeID,varStrLen-1,varStrLen);
+&#x9;&#x9;SET varContractID = SUBSTR(inEnrolleeID,0,varStrLen-1);
+&#x9;&#x9;
+
+&#x9;&#x9;CALL /shared/Delta_DV/Physical/Metadata/DataSources/IDS/RPTETL_TBLS/dbo/SP_Proc_EnrolleeElig(varReturnCode,varContractID,varMemID,inAsOfDate,varGrpID,varDivID,varContractID,varMemID,varBenefitPkgID); 
+&#x9;&#x9;
+&#x9;&#x9;call print(varBenefitPkgID);
+
+/*
+&#x9;&#x9;CALL /shared/Delta_DV/Physical/Formatting/PackagedQueries/pkgBenefitPkg_xml(varBenefitPkgID, inAsOfDate, curBenefitXML);
+        FETCH NEXT FROM curBenefitXML INTO rowBenefitXML;
+        IF NOT curBenefitXML.FOUND THEN
+           CLOSE curBenefitXML;
+           IF inEnrolleeID IS NOT NULL THEN   
+              RAISE no_benefit_found VALUE &apos;BenefitPackage not found for EnrolleeID [&apos; || inEnrolleeID || &apos;] as of [&apos; || inAsOfDate || &apos;]&apos;;
+           ELSE
+              RAISE no_benefit_found VALUE &apos;BenefitPackage not found for GroupID/DivisionID [&apos; || inGroupID || &apos;/&apos; || inDivisionID || &apos;] as of [&apos; || inAsOfDate || &apos;]&apos; ;
+           END IF;
+        END IF;
+        SET varBenXML = rowBenefitXML.XMLDoc;
+        CLOSE curBenefitXML;
+        
+        SET result = varBenXML;
+*/
+
+--set varBenefitPkgID = &apos;DOK14A00&apos;;
+&#x9; CALL /shared/Delta_DV/Physical/Metadata/DataSources/IDS/RPTETL_TBLS/dbo/SP_Proc_BenefitPkgXML(varReturnCode,varBenefitPkgID,inAsOfDate,varXMLDoc); 
+&#x9; IF varXMLDoc IS NULL THEN
+           IF inEnrolleeID IS NOT NULL THEN   
+              RAISE no_benefit_found VALUE &apos;BenefitPackage not found for EnrolleeID [&apos; || inEnrolleeID || &apos;] as of [&apos; || inAsOfDate || &apos;]&apos;;
+           ELSE
+              RAISE no_benefit_found VALUE &apos;BenefitPackage not found for GroupID/DivisionID [&apos; || inGroupID || &apos;/&apos; || inDivisionID || &apos;] as of [&apos; || inAsOfDate || &apos;]&apos; ;
+           END IF;
+      END IF;
+
+&#x9;/*
+&#x9; CALL /shared/Delta_DV/Physical/Formatting/PackagedQueries/pkgBenefitPkg_xml(varBenefitPkgID, inAsOfDate, curBenefitXML);
+        FETCH NEXT FROM curBenefitXML INTO rowBenefitXML;
+        IF NOT curBenefitXML.FOUND THEN
+           CLOSE curBenefitXML;
+           IF inEnrolleeID IS NOT NULL THEN   
+              RAISE no_benefit_found VALUE &apos;BenefitPackage not found for EnrolleeID [&apos; || inEnrolleeID || &apos;] as of [&apos; || inAsOfDate || &apos;]&apos;;
+           ELSE
+              RAISE no_benefit_found VALUE &apos;BenefitPackage not found for GroupID/DivisionID [&apos; || inGroupID || &apos;/&apos; || inDivisionID || &apos;] as of [&apos; || inAsOfDate || &apos;]&apos; ;
+           END IF;
+        END IF;
+        SET varBenXML = rowBenefitXML.XMLDoc;
+        CLOSE curBenefitXML;
+        
+&#x9;&#x9;*/&#x9;
+call print(varXMLDoc);
+        SET result = varXMLDoc;
+
+
+
+    END</attribute>
+  <attribute name="creationDate" type="LONG">1600973283543</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">6/107</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/63</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1600973283543</attribute>
+</metadata>
