@@ -1,0 +1,212 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="p_FixedStringToCursor" path="/shared/Delta_DV/_scripts/Utilities/string/p_FixedStringToCursor" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[p_FixedStringToCursor:
+&#x9;Converts a VARCHAR into a cursor of fixed length VARCHARs.
+&#x9;If any input parameter is NULL, the result is NULL.
+ 
+&#x9;Input:
+&#x9;&#x9;inStr - the input varchar to be tokenized
+&#x9;&#x9;&#x9;Values: e.g. &apos;string1string2string3string4&apos;
+&#x9;&#x9;inLength - the length of each token
+&#x9;&#x9;&#x9;Values: e.g. 7
+&#x9;&#x9;nNormalizeFinalToken - 1 means right pad final token with spaces to fixed length, if necessary.
+&#x9;&#x9;&#x9;&#x9;     - 0 means emit final token without padding.
+&#x9;&#x9;&#x9;Values: e.g. 0
+&#x9;Output:
+&#x9;&#x9;outTokens - output cursor containing one row for each token.
+&#x9;&#x9;&#x9;Values: e.g. {string1,string2,string3,string4}
+&#x9;Exceptions:  InvalidParameterException - raised when any in parameter has an invalid value.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;03/16/2005&#x9;&#x9;Kevin O&apos;Brien&#x9;&#x9;3.0.2&#x9;&#x9;&#x9;Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inStr" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inLength" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inNormalizeFinalToken" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="outTokens" direction="OUT" nullable="true">
+      <datatype name="outTokens" type="TABLE" refId="256">
+        <element name="strToken">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/ExceptionDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* p_FixedStringToCursor:
+&#x9;Converts a VARCHAR into a cursor of fixed length VARCHARs.
+&#x9;If any input parameter is NULL, the result is NULL.
+ 
+&#x9;Input:
+&#x9;&#x9;inStr - the input varchar to be tokenized
+&#x9;&#x9;&#x9;Values: e.g. &apos;string1string2string3string4&apos;
+&#x9;&#x9;inLength - the length of each token
+&#x9;&#x9;&#x9;Values: e.g. 7
+&#x9;&#x9;nNormalizeFinalToken - 1 means right pad final token with spaces to fixed length, if necessary.
+&#x9;&#x9;&#x9;&#x9;     - 0 means emit final token without padding.
+&#x9;&#x9;&#x9;Values: e.g. 0
+&#x9;Output:
+&#x9;&#x9;outTokens - output cursor containing one row for each token.
+&#x9;&#x9;&#x9;Values: e.g. {string1,string2,string3,string4}
+&#x9;Exceptions:  InvalidParameterException - raised when any in parameter has an invalid value.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;03/16/2005&#x9;&#x9;Kevin O&apos;Brien&#x9;&#x9;3.0.2&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE p_FixedStringToCursor
+(
+    IN inStr VARCHAR,
+    IN inLength INTEGER,
+    IN inNormalizeFinalToken BIT,
+    OUT outTokens PIPE
+    (
+        strToken VARCHAR
+    )
+)
+L_MAIN:
+BEGIN
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities;
+
+    DECLARE currentPosition INTEGER;
+    DECLARE currentToken VARCHAR;
+    DECLARE normalizeFinalToken BOOLEAN;
+    DECLARE lengthInStr INTEGER;
+
+    SET currentPosition = 0;
+    SET currentToken = &apos;&apos;;
+
+
+------------------------------------------------------------------------------------
+-- Check all input parameters are non NULL
+------------------------------------------------------------------------------------
+    IF inStr IS NULL
+    THEN
+        INSERT INTO outTokens(strToken) VALUES (NULL);
+        LEAVE L_MAIN;
+    END IF;
+
+    IF inLength IS NULL
+    THEN
+        INSERT INTO outTokens(strToken) VALUES (NULL);
+        LEAVE L_MAIN;
+    END IF;
+
+    IF inNormalizeFinalToken IS NULL
+    THEN
+        INSERT INTO outTokens(strToken) VALUES (NULL);
+        LEAVE L_MAIN;
+    END IF;
+
+------------------------------------------------------------------------------------
+-- Check inStr parameter is valid.
+--
+-- The space character can be a problem if there are trailing spaces in the inStr
+-- parameter, or if the parameter consists entirely of spaces.  This is because the
+-- Query Engine&apos;s &quot;Ignore Trailing Spaces&quot; setting can cause unexpected
+-- consequences with the LENGTH() function.
+--
+-- To work around this, we always append a character to the parameter used in
+-- LENGTH().
+------------------------------------------------------------------------------------
+    IF LENGTH(inStr || &apos;*&apos;) = 1
+    THEN
+        RAISE /shared/Delta_DV/&quot;_scripts&quot;/Utilities/ExceptionDefinitions.InvalidParameterException VALUE &apos;p_FixedStringToCursor: inStr parameter is zero length&apos;;
+    END IF;
+
+------------------------------------------------------------------------------------
+-- Check inLength parameter is valid
+------------------------------------------------------------------------------------
+    IF inLength &lt;= 0
+    THEN
+        RAISE /shared/Delta_DV/&quot;_scripts&quot;/Utilities/ExceptionDefinitions.InvalidParameterException VALUE &apos;p_FixedStringToCursor: inLength parameter must be greater than zero&apos;;
+    END IF;
+
+------------------------------------------------------------------------------------
+-- Check inNormalizeFinalToken parameter is valid
+------------------------------------------------------------------------------------
+    CASE inNormalizeFinalToken
+    WHEN 0 THEN
+        SET normalizeFinalToken = FALSE;
+    WHEN 1 THEN
+        SET normalizeFinalToken = TRUE;
+    ELSE
+        RAISE /shared/Delta_DV/&quot;_scripts&quot;/Utilities/ExceptionDefinitions.InvalidParameterException VALUE &apos;p_FixedStringToCursor: inNormalizeFinalToken parameter must be 0 or 1&apos;;
+    END CASE;
+
+
+    SET currentPosition = 1;
+    SET lengthInStr = (LENGTH(inStr || &apos;*&apos;) - 1);
+    REPEAT
+        SET currentToken = SUBSTRING(inStr, currentPosition, inLength);
+        INSERT INTO outTokens(strToken) VALUES (currentToken);
+        SET currentPosition = currentPosition + inLength;
+    UNTIL (currentPosition + inLength) &gt; lengthInStr
+    END REPEAT;
+
+    SET currentToken = SUBSTRING(inStr, currentPosition, inLength);
+    IF normalizeFinalToken
+    THEN
+       set currentToken = RPAD(currentToken, inLength, &apos; &apos;);
+    END IF;
+    INSERT INTO outTokens(strToken) VALUES (currentToken);
+
+END
+</attribute>
+  <attribute name="creationDate" type="LONG">1382624151125</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

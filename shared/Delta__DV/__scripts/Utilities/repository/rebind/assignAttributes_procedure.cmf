@@ -1,0 +1,346 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="assignAttributes" path="/shared/Delta_DV/_scripts/Utilities/repository/rebind/assignAttributes" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[assignAttributes:
+
+&#x9;This procedure takes in an a complete attribute vector and produces an XML attribute output which is used to create a request for
+&#x9;a Composite web service API that requires an attribute.
+
+&#x9;Input:
+&#x9;&#x9;attributeVector - the attributes to wrap in XML.  
+&#x9;&#x9;&#x9;Values: A vector of attributes and values
+
+
+&#x9;Output:
+&#x9;&#x9;attributeInput - the resulting XML
+&#x9;&#x9;&#x9;Values: XML value
+
+
+&#x9;Exceptions:  none
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;04/27/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;created new for assigning attributes to XML attribute node.
+&#x9;2015.2&#x9;&#x9;04/02/2015&#x9;&#x9;Calvin Goodrich&#x9;&#x9;7.0.1&#x9;&#x9;&#x9;updated to COALESCE input values to prevent NULL request envelopes.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="attributeVector" direction="IN" nullable="true">
+      <datatype name="AttributeCompleteVectorType" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions" referenceType="AttributeCompleteVectorType" type="ARRAY">
+        <itemDatatype>
+          <datatype name="AttributeCompleteType" type="TREE" refId="257">
+            <element name="attrName">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="attrType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="attrValue">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="valueList">
+              <datatype name="valueList" type="ARRAY">
+                <itemDatatype>
+                  <datatype name="itemType" type="TREE" refId="513">
+                    <element name="type">
+                      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                    </element>
+                    <element name="value">
+                      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </itemDatatype>
+              </datatype>
+            </element>
+            <element name="valueMap">
+              <datatype name="valueMap" type="ARRAY">
+                <itemDatatype>
+                  <datatype name="entryType" type="TREE" refId="769">
+                    <element name="key">
+                      <datatype name="key" type="ARRAY">
+                        <itemDatatype>
+                          <reference refId="513"/>
+                        </itemDatatype>
+                      </datatype>
+                    </element>
+                    <element name="value">
+                      <datatype name="value" type="ARRAY">
+                        <itemDatatype>
+                          <reference refId="513"/>
+                        </itemDatatype>
+                      </datatype>
+                    </element>
+                  </datatype>
+                </itemDatatype>
+              </datatype>
+            </element>
+            <element name="valueArray">
+              <datatype name="valueArray" type="ARRAY">
+                <itemDatatype>
+                  <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                </itemDatatype>
+              </datatype>
+            </element>
+            <element name="unset">
+              <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="attributeInput" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    assignAttributes:
+
+&#x9;This procedure takes in an a complete attribute vector and produces an XML attribute output which is used to create a request for
+&#x9;a Composite web service API that requires an attribute.
+
+&#x9;Input:
+&#x9;&#x9;attributeVector - the attributes to wrap in XML.  
+&#x9;&#x9;&#x9;Values: A vector of attributes and values
+
+&#x9;Output:
+&#x9;&#x9;attributeInput - the resulting XML
+&#x9;&#x9;&#x9;Values: XML value
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;04/27/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;created new for assigning attributes to XML attribute node.
+&#x9;2015.2&#x9;&#x9;04/02/2015&#x9;&#x9;Calvin Goodrich&#x9;&#x9;7.0.1&#x9;&#x9;&#x9;updated to COALESCE input values to prevent NULL request envelopes.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE assignAttributes(
+&#x9;IN attributeVector&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteVectorType,
+&#x9;OUT attributeInput&#x9;&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;VARCHAR DEFAULT &apos;assignAttributes&apos;;
+&#x9;DECLARE i,j&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE valueFound&#x9;&#x9;BOOLEAN DEFAULT FALSE;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;set attributeInput = &apos;&apos;;
+&#x9;if (attributeVector is not null) then
+&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;      &lt;resource:attributes&gt;&apos;;
+&#x9;&#x9;set i = 1;
+&#x9;&#x9;while (i &lt;= CARDINALITY(attributeVector)) do
+&#x9;&#x9;&#x9;if (attributeVector[i].attrName IS NULL OR LENGTH(&apos;|&apos;||attributeVector[i].attrName||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;&#x9;raise ex value moduleName||&apos;::  Attribute &apos;||i||&apos;  &quot;name&quot; may not be null or blank.&apos;;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;if (attributeVector[i].attrType IS NULL OR LENGTH(&apos;|&apos;||attributeVector[i].attrType||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;&#x9;raise ex value moduleName||&apos;::  Attribute &apos;||i||&apos;  &quot;type&quot; may not be null or blank.&apos;;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;-- &quot;name&quot; - attribute name
+&#x9;&#x9;&#x9;-- &quot;type&quot; - attribute type
+&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;        &lt;common:attribute&gt;&apos;||CHR(10)||
+    &apos;          &lt;common:name&gt;&apos;||CAST(XMLTEXT(attributeVector[i].attrName) AS LONGVARCHAR)||&apos;&lt;/common:name&gt;&apos;||CHR(10)||
+    &apos;          &lt;common:type&gt;&apos;||CAST(XMLTEXT(attributeVector[i].attrType) AS LONGVARCHAR)||&apos;&lt;/common:type&gt;&apos;;
+
+&#x9;&#x9;&#x9;-- &quot;value&quot; - choice of 1 of value, valueList, valueMap or ValueArray
+&#x9;&#x9;&#x9;if (NOT valueFound AND attributeVector[i].attrValue IS NOT NULL) then
+&#x9;&#x9;&#x9;&#x9;set valueFound = true;&#x9;-- only 1 of the optional value structures are allowed.  Don&apos;t allow any more to be set.
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;          &lt;common:value&gt;&apos;||COALESCE(CAST(XMLTEXT(attributeVector[i].attrValue) AS LONGVARCHAR), &apos;&apos;)||&apos;&lt;/common:value&gt;&apos;;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- &quot;valueList&quot; - choice of 1 of value, valueList, valueMap or ValueArray
+&#x9;&#x9;&#x9;if (NOT valueFound AND attributeVector[i].valueList IS NOT NULL) then
+&#x9;&#x9;&#x9;&#x9;set valueFound = true;&#x9;-- only 1 of the optional value structures are allowed.  Don&apos;t allow any more to be set.
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                  &lt;common:valueList&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;set j = 1;
+&#x9;&#x9;&#x9;&#x9;while (j &lt;= CARDINALITY(attributeVector[i].valueList)) do
+&#x9;&#x9;&#x9;&#x9;&#x9;if (attributeVector[i].valueList[j].&quot;type&quot; IS NULL OR LENGTH(&apos;|&apos;||attributeVector[i].valueList[j].&quot;type&quot;||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;raise ex value moduleName||&apos;::  Attribute &apos;||i||&apos;  valueList &apos;||j||&apos; &quot;type&quot; may not be null or blank.&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                    &lt;common:item&gt;&apos;||CHR(10)||
+    &apos;                      &lt;common:type&gt;&apos;||CAST(XMLTEXT(attributeVector[i].valueList[j].&quot;type&quot;) AS LONGVARCHAR)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+    &apos;                      &lt;common:value&gt;&apos;||COALESCE(CAST(XMLTEXT(attributeVector[i].valueList[j].&quot;value&quot;) AS LONGVARCHAR), &apos;&apos;)||&apos;&lt;/common:value&gt;&apos;;
+/* NOT IMPLEMENTED:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:valueList/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:valueMap&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:entry&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;?&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;?&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueList/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;?&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;/common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;?&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;?&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueList/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;?&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:entry&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;/common:valueMap&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:item&gt;?&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;/common:valueArray&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                    &lt;/common:item&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;set j = j + 1;
+&#x9;&#x9;&#x9;&#x9;end while;
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                  &lt;/common:valueList&gt;&apos;;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- &quot;valueMap&quot; - choice of 1 of value, valueList, valueMap or ValueArray
+&#x9;&#x9;&#x9;if (NOT valueFound AND attributeVector[i].valueMap IS NOT NULL) then
+&#x9;&#x9;&#x9;&#x9;set valueFound = true;&#x9;-- only 1 of the optional value structures are allowed.  Don&apos;t allow any more to be set.
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                  &lt;common:valueMap&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;set j = 1;
+&#x9;&#x9;&#x9;&#x9;while (j &lt;= CARDINALITY(attributeVector[i].valueMap)) do
+&#x9;&#x9;&#x9;&#x9;&#x9;if (attributeVector[i].valueList[j].&quot;type&quot; IS NULL OR LENGTH(&apos;|&apos;||attributeVector[i].valueList[j].&quot;type&quot;||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;raise ex value moduleName||&apos;::  Attribute &apos;||i||&apos;  valueMap &apos;||j||&apos;  key 1 &quot;type&quot; may not be null or blank.&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                    &lt;common:entry&gt;&apos;||CHR(10)||
+    &apos;                      &lt;common:key&gt;&apos;||CHR(10)||
+    &apos;                        &lt;common:type&gt;&apos;||CAST(XMLTEXT(attributeVector[i].valueMap[j].&quot;key&quot;[1].&quot;type&quot;) AS LONGVARCHAR)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+    &apos;                        &lt;common:value&gt;&apos;||COALESCE(CAST(XMLTEXT(attributeVector[i].valueMap[j].&quot;key&quot;[1].&quot;value&quot;) AS LONGVARCHAR), &apos;&apos;)||&apos;&lt;/common:value&gt;&apos;;
+/* NOT IMPLEMENTED:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueList&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;?&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;?&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueMap/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;?&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueList&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueMap/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;?&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueArray&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;&#x9;if (attributeVector[i].valueList[j].&quot;type&quot; IS NULL OR LENGTH(&apos;|&apos;||attributeVector[i].valueList[j].&quot;type&quot;||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;raise ex value moduleName||&apos;::  Attribute &apos;||i||&apos;  valueMap &apos;||j||&apos;  value 1 &quot;type&quot; may not be null or blank.&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                      &lt;/common:key&gt;&apos;||CHR(10)||
+    &apos;                      &lt;common:value&gt;&apos;||CHR(10)||
+    &apos;                        &lt;common:type&gt;&apos;||CAST(XMLTEXT(attributeVector[i].valueMap[j].&quot;value&quot;[1].&quot;type&quot;) AS LONGVARCHAR)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+    &apos;                        &lt;common:value&gt;&apos;||COALESCE(CAST(XMLTEXT(attributeVector[i].valueMap[j].&quot;value&quot;[1].&quot;value&quot;) AS LONGVARCHAR), &apos;&apos;)||&apos;&lt;/common:value&gt;&apos;;
+/* NOT IMPLEMENTED:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueList&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;?&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;?&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueMap/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;?&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueList&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueMap/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:valueArray&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &lt;common:item&gt;?&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:valueArray&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                      &lt;/common:value&gt;&apos;||CHR(10)||
+    &apos;                    &lt;/common:entry&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;set j = j + 1;
+&#x9;&#x9;&#x9;&#x9;end while;
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+&#x9;&apos;&#x9;&#x9;&#x9;&#x9;  &lt;/common:valueMap&gt;&apos;;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;  
+&#x9;&#x9;&#x9;-- &quot;valueArray&quot; - choice of 1 of value, valueList, valueMap or ValueArray
+&#x9;&#x9;&#x9;if (NOT valueFound AND attributeVector[i].valueArray IS NOT NULL) then
+&#x9;&#x9;&#x9;&#x9;set valueFound = true;&#x9;-- only 1 of the optional value structures are allowed.  Don&apos;t allow any more to be set.
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                  &lt;common:valueArray&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;set j = 1;
+&#x9;&#x9;&#x9;&#x9;while (j &lt;= CARDINALITY(attributeVector[i].valueArray)) do
+&#x9;&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                    &lt;common:item&gt;&apos;||COALESCE(CAST(XMLTEXT(attributeVector[i].valueArray[j]) AS LONGVARCHAR), &apos;&apos;)||&apos;&lt;/common:item&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;set j = j + 1;
+&#x9;&#x9;&#x9;&#x9;end while;
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;                  &lt;/common:valueArray&gt;&apos;;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- &quot;unset&quot; - 
+&#x9;&#x9;&#x9;if (attributeVector[i].unset IS NOT NULL) then
+&#x9;&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;          &lt;common:unset&gt;&apos;||attributeVector[i].unset||&apos;&lt;/common:unset&gt;&apos;;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;        &lt;/common:attribute&gt;&apos;;
+
+&#x9;&#x9;&#x9;set i = i + 1;
+&#x9;&#x9;end while;
+
+&#x9;&#x9;set attributeInput = attributeInput || CHR(10)||
+    &apos;      &lt;/resource:attributes&gt;&apos; || CHR(10);
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:0:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

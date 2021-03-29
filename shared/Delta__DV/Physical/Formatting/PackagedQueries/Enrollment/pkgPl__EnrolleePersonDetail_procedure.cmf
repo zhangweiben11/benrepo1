@@ -1,0 +1,113 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_EnrolleePersonDetail" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Enrollment/pkgPl_EnrolleePersonDetail" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inContractID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inMemberID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="ContractID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="MemberID">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="Information">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="OrginalEffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="ContractHolderIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="EOBIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="WaitPeriodEndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="PersonID">
+          <datatype name="VARCHAR" type="STRING" maxLength="16"/>
+        </element>
+        <element name="PersonName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="FirstName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="LastName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="MiddleName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="Title">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="Suffix">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="BirthDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="SSN">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT M.CONTRACT_ID,
+       M.MEMBER_ID, 
+       M.INFORMATION, 
+       M.ORIGINAL_EFF_DT, 
+       CASE
+          WHEN M.CVG_CONT_HLDR_FLAG = &apos;Y&apos; THEN &apos;true&apos;
+          ELSE &apos;false&apos;
+       END CONTRACT_HOLDER_IND, 
+       CASE
+          WHEN M.MBR_HDCPY_EOB_FLAG = &apos;Y&apos; THEN &apos;true&apos;
+          ELSE &apos;false&apos;
+       END EOB_IND,
+       CASE
+          WHEN M.WAIT_PERIOD_END_DT = TO_DATE(&apos;0001-01-01&apos;, &apos;YYYY-MM-DD&apos;) THEN NULL
+          ELSE M.WAIT_PERIOD_END_DT
+       END WAIT_PERIOD_END_DT,
+       M.PERSON_ID, 
+       TRIM(P.COMPLETE_FIRST_NAME) || &apos; &apos; || TRIM(P.COMPLETE_LAST_NAME) PERSON_NAME,
+       P.COMPLETE_FIRST_NAME FIRST_NAME, 
+       P.COMPLETE_LAST_NAME LAST_NAME, 
+       P.COMPLETE_MIDDLE_NAME MIDDLE_NAME, 
+       P.COMPLETE_PERSON_TITLE TITLE,
+       P.COMPLETE_NAME_SUFFIX NAME_SUFFIX,
+       P.BIRTH_DATE, 
+       P.SSN
+FROM   MVPPPRD.MEMBER M
+INNER JOIN MVPPPRD.PERSON P
+ON     M.PERSON_ID = P.IDENTIFIER
+WHERE  M.CONTRACT_ID = &apos;{0}&apos;
+AND    M.MEMBER_ID = &apos;{1}&apos;
+AND    M.AUDIT_FLAG = &apos;N&apos;
+AND    P.AUDIT_FLAG = &apos;N&apos; AND P.VOID_FLAG = &apos;N&apos;</attribute>
+  <attribute name="creationDate" type="LONG">1608745773993</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609983577209</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/MTV</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608745773993</attribute>
+</metadata>

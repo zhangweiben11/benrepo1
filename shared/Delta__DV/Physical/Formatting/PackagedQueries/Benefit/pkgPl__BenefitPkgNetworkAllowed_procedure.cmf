@@ -1,0 +1,53 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_BenefitPkgNetworkAllowed" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_BenefitPkgNetworkAllowed" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inBenefitPkgID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="BenefitPkgID">
+          <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+        </element>
+        <element name="NetworkCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="20"/>
+        </element>
+        <element name="NetworkDESC">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT Network.BENEFITPACKAGEID BenefitPKGID, 
+       Network.NETWORKCODE NetworkCD, 
+       Network.NETWORKDESCRIPTION NetworkDESC 
+  FROM [BENEFITS_VIEWS].[dbo].[PBC_PKGDTL_JSON_NETWORKS_VW] Network
+ WHERE Network.BENEFITPACKAGEID = &apos;{0}&apos;
+   AND Network.EFFDT &lt;= {1}
+   AND Network.ENDDT &gt;= {1}
+ORDER BY Network.NETWORKCODE
+--OPTION (MAXDOP 16)
+--OPTION(USE HINT(&apos;ENABLE_PARALLEL_PLAN_PREFERENCE&apos;))
+;</attribute>
+  <attribute name="creationDate" type="LONG">1594321588890</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1594321588890</attribute>
+</metadata>

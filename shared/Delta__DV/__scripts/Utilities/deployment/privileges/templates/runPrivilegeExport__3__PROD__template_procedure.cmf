@@ -1,0 +1,212 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="runPrivilegeExport_3_PROD_template" path="/shared/Delta_DV/_scripts/Utilities/deployment/privileges/templates/runPrivilegeExport_3_PROD_template" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[runPrivilegeExport_3_PROD_template:
+
+&#x9;This procedure is a template for determining what folders should have privileges exported and subsequently imported and applied.
+&#x9;This template should be used for higher environments such as PROD  becuase it has admin:composite ownership:domain settings.
+
+&#x9;The concept behind this is simple.  
+&#x9;&#x9;1. This procedure is used to take the &quot;AS-IS&quot; snapshot of privileges for the given folder paths listed below at the time of execution.
+&#x9;&#x9;2. It is very important that the folder privileges for each folder listed be set exactly as they should be set before exporting the privilege snapshot to the privileges.xml file.
+&#x9;&#x9;3. Subsequently, the privilege can be re-applied from the snapshot [privileges.xml] using importResourcePrivileges.
+&#x9;&#x9;4. For deployment, it is recommended to invoke the published importResourcePrivileges after importing the car file.
+&#x9;&#x9;&#x9;&#x9;DataSource=ASAssets&#x9;&#x9;Procedure: Utilities.deployment.importResourcePrivileges
+
+&#x9;Instructions:
+&#x9;&#x9;1. Modify /shared/ASAssets/Utilities/environment/getEnvName() and provide an environment name such as DEV, TEST, PROD etc based on the TDV server environment.
+&#x9;&#x9;2. Copy this template to a different location outside of the /shared/ASAssets/Utilities folder so that it does not get overwritten if the Utilities are updated.
+&#x9;&#x9;3. Modify the variable &quot;scriptEnv&quot; below to match environment name that comes from getEnvName().
+&#x9;&#x9;4. Modify the paths and ownership.  For DEV environments the ownership:domain should always be null:null because you don&apos;t want to change ownership of your DEV resources.
+&#x9;&#x9;5. Execute the procedure to export the privilege.xml file and the resource_ownership.txt file to the TDV server path that you provide.
+
+&#x9;Input:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;  - Y=debug on, N=debug off
+&#x9;&#x9;privilegeFileName&#x9;&#x9;&#x9;&#x9;VARCHAR(4096) - The full TDV server path location to privileges.xml file.&#x9;&#x9;
+&#x9;&#x9;&#x9;e.g. /home/filedatasources/privileges/privileges.xml
+&#x9;&#x9;resourceOwnershipFileName&#x9;&#x9;VARCHAR(4096) - The full TDV server path location to the resource_ownership.txt file.
+&#x9;&#x9;&#x9;e.g. /home/filedatasources/privileges/resource_ownership.txt
+&#x9;Output:
+&#x9;&#x9;invalidPathList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR   - A comm-separated list of paths from this procedure that are not valid [do not exist].
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/16/2014      Jeremy Akers        6.2.6           Created new
+&#x9;2019.200&#x9;05/30/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified to include resource ownership.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="privilegeFileName" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="resourceOwnershipFileName" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="invalidPathList" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/deployment/privileges/helpers/exportResourcesPrivileges" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="ownerPathList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="privilegeFilter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="includeColumns" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="privilegeFileName" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceOwnershipFileName" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="invalidPathList" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/environment/getEnvName" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="envName" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;runPrivilegeExport_3_PROD_template:
+
+&#x9;This procedure is a template for determining what folders should have privileges exported and subsequently imported and applied.
+&#x9;This template should be used for higher environments such as PROD because it has admin:composite ownership:domain settings.
+&#x9;This procedure should be copied to a different location so that it does not get overwritten when the Utilities are upgraded.
+
+&#x9;The concept behind this is simple.  
+&#x9;&#x9;1. This procedure is used to take the &quot;AS-IS&quot; snapshot of privileges for the given folder paths listed below at the time of execution.
+&#x9;&#x9;2. It is very important that the folder privileges for each folder listed be set exactly as they should be set before exporting the privilege snapshot to the privileges.xml file.
+&#x9;&#x9;3. Subsequently, the privilege can be re-applied from the snapshot [privileges.xml] using importResourcePrivileges.
+&#x9;&#x9;4. For deployment, it is recommended to invoke the published importResourcePrivileges after importing the car file.
+&#x9;&#x9;&#x9;&#x9;DataSource=ASAssets&#x9;&#x9;Procedure: Utilities.deployment.importResourcePrivileges
+
+&#x9;Instructions:
+&#x9;&#x9;1. Modify /shared/ASAssets/Utilities/environment/getEnvName() and provide an environment name such as DEV, TEST, PROD etc based on the TDV server environment.
+&#x9;&#x9;2. Copy this template to a different location outside of the /shared/ASAssets/Utilities folder so that it does not get overwritten if the Utilities are updated.
+&#x9;&#x9;3. Modify the variable &quot;scriptEnv&quot; below to match environment name that comes from getEnvName().
+&#x9;&#x9;4. Modify the paths and ownership.  For DEV environments the ownership:domain should always be null:null because you don&apos;t want to change ownership of your DEV resources.
+&#x9;&#x9;5. Execute the procedure to export the privilege.xml file and the resource_ownership.txt file to the TDV server path that you provide.
+
+&#x9;Input:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;- Y=debug on, N=debug off
+&#x9;&#x9;privilegeFileName&#x9;&#x9;&#x9;&#x9;LONGVARCHAR - The full TDV server path location to privileges.xml file.&#x9;&#x9;
+&#x9;&#x9;&#x9;e.g. /home/files/deployment/privileges/privileges.xml
+&#x9;&#x9;resourceOwnershipFileName&#x9;&#x9;LONGVARCHAR - The full TDV server path location to the resource_ownership.txt file.
+&#x9;&#x9;&#x9;e.g. /home/files/deployment/privileges/resource_ownership.txt
+&#x9;Output:
+&#x9;&#x9;invalidPathList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR - A comma-separated list of paths from this procedure that are not valid [do not exist].
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/16/2014      Jeremy Akers        6.2.6           Created new
+&#x9;2019.200&#x9;05/30/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified to include resource ownership.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE runPrivilegeExport_3_PROD_template(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off
+&#x9;IN privilegeFileName &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full TDV server path location to privileges.xml file.
+&#x9;IN resourceOwnershipFileName &#x9;&#x9;LONGVARCHAR,&#x9;-- The full TDV server path location to the resource_ownership.txt file.
+&#x9;OUT invalidPathList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- If not null, then a comma-separated list of paths [path:type] that are invalid as they do not exist.
+)
+BEGIN
+&#x9;-- Modify this value to match the actual environment as set in /shared/ASAssets/Utilities/environment/getEnvName().
+&#x9;DECLARE scriptEnv &#x9;VARCHAR DEFAULT &apos;PROD&apos;;
+&#x9;DECLARE env&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE ex &#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Modify the value in getEnvName to represent the environment.
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/environment/getEnvName(env);
+&#x9;IF (env is null or env &lt;&gt; scriptEnv) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;You cannot generate &apos;||scriptEnv||&apos; privileges and ownership for the current environment of &apos;||NVL(env,&apos;null&apos;)||&apos;.&apos;;
+&#x9;END IF;
+/*
+&#x9;&#x9;exportResourcesPrivileges Row Definition:
+&#x9;&#x9;&#x9;owner: &#x9;&#x9;&#x9;What the resource ownership should be set to.  If null then no resource owner is set and the path is bypassed.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Ownership is explicitly declared here.  It is not determined by how the resourcePath is currently set.
+&#x9;&#x9;&#x9;domain: &#x9;&#x9;The domain of the owner.  Ignored if owner is null.  Required if owner is not null.
+&#x9;&#x9;&#x9;resourcePath:&#x9;The path from which to read (derive) the privileges for the given DV environment.
+&#x9;&#x9;&#x9;resourceType:&#x9;The resource type for the given resourcePath.  i.e. CONTAINER, DATA_SOURCE, TABLE, PROCEDURE, TRIGGER, DEFINITION_SET, etc.
+&#x9;&#x9;Row Format:&#x9;&#x9;&#x9;&apos;owner:domain:resourcePath:resourceType,&apos;
+*/
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/deployment/&quot;privileges&quot;/helpers/exportResourcesPrivileges(debug,&apos;&apos;
+------------------ Shared -------------------
+&#x9;&#x9;||&apos;admin:composite:/shared/ASAssets/BestPractices_v81:CONTAINER,&apos;
+&#x9;&#x9;||&apos;metrics_app_id:composite:/shared/ASAssets/KPImetrics:CONTAINER,&apos;
+&#x9;&#x9;||&apos;admin:composite:/shared/ASAssets/Utilities:CONTAINER,&apos;
+&#x9;&#x9;||&apos;admin:composite:/shared/Tools:CONTAINER,&apos;
+------------------ Data Bases -------------------
+&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets:DATA_SOURCE,&apos;
+&#x9;&#x9;||&apos;admin:composite:/services/databases/ADMIN:DATA_SOURCE,&apos;
+&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets/BestPractices_v81:CONTAINER,&apos;
+&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets/KPImetrics:CONTAINER,&apos;
+&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets_Test:DATA_SOURCE,&apos;
+------------------ Web Services -------------------&#x9;
+
+&#x9;&#x9;, &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Separator between path list above and other arguments below
+&#x9;&#x9;&apos;&apos;, &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- No filter needed.
+&#x9;&#x9;0, &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Don&apos;t want to include columns
+&#x9;&#x9;privilegeFileName, &#x9;&#x9;&#x9;&#x9;-- The full TDV server file path to put the privileges into.
+&#x9;&#x9;resourceOwnershipFileName, &#x9;&#x9;-- The full TDV server file path to put the resource ownership into.
+&#x9;&#x9;invalidPathList &#x9;&#x9;&#x9;&#x9;-- Output the list of paths that are invalid from the above list.
+&#x9;);
+END</attribute>
+  <attribute name="creationDate" type="LONG">1559248915123</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1559248915123</attribute>
+</metadata>

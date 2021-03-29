@@ -1,0 +1,90 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="CODE_VALUE" path="/shared/Delta_DV/Physical/Metadata/DataSources/MTV/MVPPPRD/CODE_VALUE" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="CODE_VALUE_ID" nullable="false">
+      <datatype name="CHAR" extendedName="CHAR(17)" subType="DATASOURCE_TYPE" type="STRING" minLength="17" maxLength="17"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="OPERATOR_ID" nullable="false">
+      <datatype name="CHAR" extendedName="CHAR(8)" subType="DATASOURCE_TYPE" type="STRING" minLength="8" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="LAST_MAINT_TS" nullable="false">
+      <datatype name="TIMESTAMP(6)" extendedName="TIMESTAMP(6)" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CREATION_TS" nullable="false">
+      <datatype name="TIMESTAMP(6)" extendedName="TIMESTAMP(6)" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="REPORT_DESC" nullable="false">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(80)" subType="DATASOURCE_TYPE" type="STRING" maxLength="80"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="FK_CODE_CATG_ID" nullable="false">
+      <datatype name="CHAR" extendedName="CHAR(3)" subType="DATASOURCE_TYPE" type="STRING" minLength="3" maxLength="3"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="LONG_DESCRIPTION" nullable="true">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(400)" subType="DATASOURCE_TYPE" type="STRING" maxLength="400"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="XRC00800" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="FK_CODE_CATG_ID" sortOrder="ASCENDING"/>
+      <indexColumn name="CODE_VALUE_ID" sortOrder="ASCENDING"/>
+      <attribute name="indexSchema" type="STRING">MVPPPRD</attribute>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="CRC00800" primaryKeyName="XRC00700" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/MTV/MVPPPRD/CODE_CATEGORY">
+      <foreignKeyColumn primaryColumnName="CODE_CATG_ID" foreignColumnName="FK_CODE_CATG_ID"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV/MVPPPRD/CODE_CATEGORY" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:3:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:4:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:5:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:6:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1608654547789</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2430314</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31689</attribute>
+  <attribute name="i:0:indexSchema" type="STRING">MVPPPRD</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2430314</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608654547789</attribute>
+</metadata>

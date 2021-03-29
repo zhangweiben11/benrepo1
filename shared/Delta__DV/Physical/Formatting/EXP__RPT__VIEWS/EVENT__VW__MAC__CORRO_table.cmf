@@ -1,0 +1,365 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="EVENT_VW_MAC_CORRO" path="/shared/Delta_DV/Physical/Formatting/EXP_RPT_VIEWS/EVENT_VW_MAC_CORRO" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Event_SKEY" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Start_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="End_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Duration_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="5" maxLength="5" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Sub_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="5" maxLength="5" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Source_key" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Call_Center_CD" nullable="true">
+      <datatype type="STRING" minLength="2" maxLength="2" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Contact_Center_Business_Unit_CD" nullable="true">
+      <datatype type="STRING" minLength="3" maxLength="10" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Channel_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="14" maxLength="14" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/actors_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="actor_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="account_name" nullable="false">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="actor_type" nullable="false">
+        <datatype type="STRING" maxLength="4"/>
+      </element>
+      <element name="password">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="active" nullable="false">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="creation_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="ldap_id">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="license_uid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ldap_domain_uid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/document_events_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="document_event_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="event_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="document_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="document_event_definition_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="actor_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="creation_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/documents_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="document_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="document_id">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="description">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="document_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="document_type_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="document_format_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="document_status_definition_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="creation_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="valid" nullable="false">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="locked" nullable="false">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="retain_forever" nullable="false">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sf_pages_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="sf_page_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="document_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="sftv_grid_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="page_number" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="creation_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sf_system_prompts_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="sf_system_prompt_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="property_name" nullable="false">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="prompt" nullable="false">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="active" nullable="false">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="sf_system_prompt_type_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="sf_system_lookup_table_uid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="order_method">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="folder_type_uid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="creation_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sf_text_values_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="sf_text_value_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="sftv_prompt_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="sf_page_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="entered_value" nullable="false">
+        <datatype type="STRING" maxLength="300"/>
+      </element>
+      <element name="creation_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sftv_prompts_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="sftv_prompt_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="sftv_grid_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="display_order" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="depth" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="sf_system_prompt_uid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="required_to_save" nullable="false">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="required_to_complete" nullable="false">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="creation_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_date" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="sftv_prompt_id" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT      {OPTION CASE_SENSITIVE=&quot;false&quot;}
+                  DV.document_id Event_SKEY,
+               --  document_status_definition_uid,
+                 Min(SDEV.event_date) AS Start_DTM,
+&#x9;&#x9;&#x9;&#x9; MAX(EDEV.event_date) AS End_DTM,
+&#x9;&#x9;&#x9;&#x9; DATEDIFF(&apos;Second&apos;,Min(SDEV.event_date) ,MAX(EDEV.event_date)) Event_Duration_Seconds_QTY,
+&#x9;&#x9;&#x9;&#x9;&apos;CSEVT&apos;  Event_Type_CD,
+&#x9;&#x9;&#x9;&#x9;&apos;CORRO&apos; Event_Sub_Type_CD,
+&#x9;&#x9;&#x9;&#x9;DV.document_id Event_Source_key,
+&#x9;&#x9;&#x9;&#x9;Case 
+&#x9;&#x9;&#x9;&#x9; WHEN av.account_name Like &apos;ca%&apos; THEN &apos;CA&apos;  
+&#x9;&#x9;&#x9;&#x9; WHEN av.account_name Like &apos;pa%&apos; THEN &apos;PA&apos;  
+&#x9;&#x9;&#x9;&#x9; WHEN av.account_name Like &apos;ga%&apos; THEN &apos;GA&apos;  
+&#x9;&#x9;&#x9;&#x9; WHEN av.account_name LIKE &apos;pr%&apos; THEN &apos;PR&apos;  Else &apos;UN&apos;  End Customer_Call_Center_CD ,
+&#x9;&#x9;&#x9;&#x9;Case 
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;AARP_%&apos; THEN &apos;AARP&apos;  
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;CPP_%&apos; THEN &apos;CPP&apos;  
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;DCal_%&apos; THEN &apos;DENTICAL&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;DC_%&apos; THEN &apos;DELATACARE&apos; 
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;DDC_%&apos; THEN &apos;DDC&apos; 
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;DDIC_%&apos; THEN &apos;DDIC&apos; 
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;DDPR_%&apos; THEN &apos;DDPR&apos;  
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;DDP_%&apos; THEN &apos;DDP&apos;  
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;DENT_%&apos; THEN &apos;DENTEGRA&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;PROV_SRV_%&apos; THEN &apos;CONCIERGE&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;GnA_%&apos; THEN &apos;GNA&apos;  
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;D2C_DirectPay%&apos; THEN &apos;DDP&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9; WHEN bunit.client_name Like &apos;D2C_%&apos; THEN &apos;D2C&apos;
+&#x9;&#x9;&#x9;&#x9;Else &apos;Default&apos;  End  Contact_Center_Business_Unit_CD,
+&#x9;&#x9;&#x9;&#x9; &apos;CORRESPONDENCE&apos; Customer_Service_Channel_Type_CD
+         FROM
+                  /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/documents_vw DV 
+&#x9;&#x9;&#x9;&#x9;  left JOIN  /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/document_events_vw SDEV ON SDEV.document_uid= DV.DOCUMENT_UID AND SDEV.document_event_definition_uid=1
+&#x9;&#x9;&#x9;&#x9;  left JOIN   /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/document_events_vw EDEV ON EDEV.document_uid= DV.DOCUMENT_UID AND EDEV.document_event_definition_uid=4
+&#x9;&#x9;&#x9;&#x9;  left join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/document_events_vw ADEV ON ADEV.document_uid= DV.DOCUMENT_UID 
+&#x9;&#x9;&#x9;&#x9;  left join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/actors_vw av on adev.actor_uid=av.actor_uid and actor_type=&apos;User&apos;
+                    INNER JOIN (select                                                            
+                                                          
+    document_uid,  client_name                                                         
+                                               
+from                                                        
+    (                                                              
+                  select                                           
+                  sfp.document_uid,                                              
+                  sfsp.prompt,                                     
+                  tv.entered_value                                               
+           from                                                    
+                 /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sf_text_values_vw tv                                              
+                  inner join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sf_pages_vw sfp  on sfp.sf_page_uid = tv.sf_page_uid                                        
+                  inner join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sftv_prompts_vw sftvp   on sftvp.sftv_prompt_uid = tv.sftv_prompt_uid                                          
+                  inner join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/sf_system_prompts_vw sfsp   on sfsp.sf_system_prompt_uid = sftvp.sf_system_prompt_uid
+               
+           where                                                   
+                  sfp.page_number = 1                                            
+                     and sfp.document_uid in ( select document_uid from /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EXP_RPT_VIEWS/dbo/documents_vw where document_type_uid IN (1102
+                                        , 1197
+                                        , 1452 )  )
+ ) p                                                        
+pivot                                                              
+(                                                           
+    max(entered_value)                                                          
+    for prompt in    (  &apos;Client Name&apos; AS client_name )                                  
+) as pvt ) BUnit  ON Bunit.document_uid= DV.DOCUMENT_UID
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  WHERE   sdev.event_date &gt; &apos;2019-04-10 12:00:00&apos; and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  --sdev.event_date between &apos;2020-04-10 12:00:00 am&apos; and &apos;2020-07-11 11:59:59 pm&apos; and 
+                  dV.document_type_uid IN ( 1102
+                                        , 1197
+                                        , 1452 ) 
+group by 
+                  dV.document_uid
+                , dV.document_id,
+&#x9;&#x9;&#x9;&#x9;av.account_name, bunit.client_name</attribute>
+  <attribute name="creationDate" type="LONG">1602201066598</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5240211</attribute>
+  <attribute name="creatorUserName" type="STRING">dca90042</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5240211</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1602201066598</attribute>
+</metadata>

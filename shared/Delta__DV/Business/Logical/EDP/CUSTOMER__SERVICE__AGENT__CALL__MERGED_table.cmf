@@ -1,0 +1,562 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="CUSTOMER_SERVICE_AGENT_CALL_MERGED" path="/shared/Delta_DV/Business/Logical/EDP/CUSTOMER_SERVICE_AGENT_CALL_MERGED" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <annotation><![CDATA[Comments saved during Model Generation 2020/11/25 09:29:59
+--{ OPTION CASE_SENSITIVE=&quot;false&quot; } 
+]]></annotation>
+  <columns>
+    <column name="Customer_Service_Call_Event_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Call_Leg_SKEY" nullable="true">
+      <datatype type="STRING" maxLength="36"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Call_Answered_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Call_Hangup_DateTme" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Contact_Center_Call_Routing_Unit_CD" nullable="true">
+      <datatype type="STRING" maxLength="9"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Call_Orgination_Type_CD" nullable="true">
+      <datatype type="STRING" maxLength="32"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Call_Disposition_Type_CD" nullable="true">
+      <datatype type="STRING" maxLength="4"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Caller_Type_CD" nullable="true">
+      <datatype type="STRING" maxLength="8"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="NBR_Of_Legs_CNT" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="callback_Offered_ind" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="callback_attempt_cnt" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Callback_Declined_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Callback_Requested_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Payment_Call_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Payment_IVR_Successful_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Payment_IVR_Unsuccessful_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Payment_Agent_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Payment_Agent_Questions_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Leg_Sequence_NBR" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="IVR_TM_To_Answer_Seconds_Quanity" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="IVR_Call_Time_Seconds" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Answer_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Hangup_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_TM_To_Answer_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Talk_Time_Seconds" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_On_Hold_TM_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_after_call_work_TM_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Duration_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_NM" nullable="true">
+      <datatype type="STRING" maxLength="388"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Transfer_IND" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Transfer_Same_Call_Center_IND" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Transfer_Different_Call_Center_IND" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Score_NBR" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" minFractionalDigits="4" maxFractionalDigits="4"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Score_PCT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" minFractionalDigits="4" maxFractionalDigits="4"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Evaluator_NM" nullable="true">
+      <datatype type="STRING" maxLength="101"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Classified_Correct_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Evaluation_Title_TXT" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Evaluation_DT" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Incorrect_Classification_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Incorrect_Classification_Form_ID" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Incorrect_Classification_Form_NM" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Queue_NM" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Abandened_IND" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Escalation_IND" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Plan_Sponsor_NM" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Plan_Sponsor_ID" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Callback_Successful_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Callback_Unsuccessful_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="AGENT_USER_ID" nullable="true">
+      <datatype type="STRING" maxLength="129"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Supervisor_Name" nullable="true">
+      <datatype type="STRING" maxLength="529"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Medicare_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Agent_Supervisor_NM" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/EDP_CURATED/CUSTOMER_SERVICE_AGENT_CALL_MERGED" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Call_Event_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Customer_Service_Call_Leg_SKEY">
+        <datatype type="STRING" maxLength="36"/>
+      </element>
+      <element name="Call_Answered_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Call_Hangup_DateTme">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Contact_Center_Call_Routing_Unit_CD">
+        <datatype type="STRING" maxLength="9"/>
+      </element>
+      <element name="Customer_Service_Call_Orgination_Type_CD">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="Customer_Service_Call_Disposition_Type_CD">
+        <datatype type="STRING" maxLength="4"/>
+      </element>
+      <element name="Customer_Service_Caller_Type_CD">
+        <datatype type="STRING" maxLength="8"/>
+      </element>
+      <element name="NBR_Of_Legs_CNT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="callback_Offered_ind">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="callback_attempt_cnt">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Callback_Declined_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Callback_Requested_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_Call_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_IVR_Successful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_IVR_Unsuccessful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_Agent_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_Agent_Questions_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Leg_Sequence_NBR">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IVR_TM_To_Answer_Seconds_Quanity">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IVR_Call_Time_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Answer_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Agent_Call_Hangup_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Agent_TM_To_Answer_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Talk_Time_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_On_Hold_TM_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_after_call_work_TM_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Duration_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_NM">
+        <datatype type="STRING" maxLength="388"/>
+      </element>
+      <element name="Agent_Call_Transfer_IND">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Transfer_Same_Call_Center_IND">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Agent_Call_Transfer_Different_Call_Center_IND">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Quality_Monitored_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Score_NBR">
+        <datatype type="DECIMAL" maxDigits="12" minFractionalDigits="4" maxFractionalDigits="4"/>
+      </element>
+      <element name="Quality_Monitored_Score_PCT">
+        <datatype type="DECIMAL" maxDigits="12" minFractionalDigits="4" maxFractionalDigits="4"/>
+      </element>
+      <element name="Quality_Monitored_Evaluator_NM">
+        <datatype type="STRING" maxLength="101"/>
+      </element>
+      <element name="Quality_Monitored_Classified_Correct_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Evaluation_Title_TXT">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Quality_Monitored_Evaluation_DT">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_Form_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_Form_NM">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Agent_Queue_NM">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Agent_Abandened_IND">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Agent_Call_Escalation_IND">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Source_System_Plan_Sponsor_NM">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Source_System_Plan_Sponsor_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Callback_Successful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Callback_Unsuccessful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="AGENT_USER_ID">
+        <datatype type="STRING" maxLength="129"/>
+      </element>
+      <element name="Agent_Supervisor_Name">
+        <datatype type="STRING" maxLength="529"/>
+      </element>
+      <element name="Quality_Monitored_Medicare_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Agent_Supervisor_NM">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    scm.Customer_Service_Call_Event_Key Customer_Service_Call_Event_Key, 
+    scm.Customer_Service_Call_Leg_SKEY Customer_Service_Call_Leg_SKEY, 
+    scm.Call_Answered_DTM Call_Answered_DTM, 
+    scm.Call_Hangup_DateTme Call_Hangup_DateTme, 
+    scm.Contact_Center_Call_Routing_Unit_CD Contact_Center_Call_Routing_Unit_CD, 
+    scm.Customer_Service_Call_Orgination_Type_CD Customer_Service_Call_Orgination_Type_CD, 
+    scm.Customer_Service_Call_Disposition_Type_CD Customer_Service_Call_Disposition_Type_CD, 
+    scm.Customer_Service_Caller_Type_CD Customer_Service_Caller_Type_CD, 
+    scm.NBR_Of_Legs_CNT NBR_Of_Legs_CNT, 
+    scm.callback_Offered_ind callback_Offered_ind, 
+    scm.callback_attempt_cnt callback_attempt_cnt, 
+    scm.Callback_Declined_IND Callback_Declined_IND, 
+    scm.Callback_Requested_IND Callback_Requested_IND, 
+    scm.Payment_Call_Indicator Payment_Call_Indicator, 
+    scm.Payment_IVR_Successful_Indicator Payment_IVR_Successful_Indicator, 
+    scm.Payment_IVR_Unsuccessful_Indicator Payment_IVR_Unsuccessful_Indicator, 
+    scm.Payment_Agent_Indicator Payment_Agent_Indicator, 
+    scm.Payment_Agent_Questions_Indicator Payment_Agent_Questions_Indicator, 
+    scm.Leg_Sequence_NBR Leg_Sequence_NBR, 
+    scm.IVR_TM_To_Answer_Seconds_Quanity IVR_TM_To_Answer_Seconds_Quanity, 
+    scm.IVR_Call_Time_Seconds IVR_Call_Time_Seconds, 
+    scm.Agent_Call_Answer_DTM Agent_Call_Answer_DTM, 
+    scm.Agent_Call_Hangup_DTM Agent_Call_Hangup_DTM, 
+    scm.Agent_TM_To_Answer_Seconds_QTY Agent_TM_To_Answer_Seconds_QTY, 
+    scm.Agent_Talk_Time_Seconds Agent_Talk_Time_Seconds, 
+    scm.Agent_On_Hold_TM_Seconds_QTY Agent_On_Hold_TM_Seconds_QTY, 
+    scm.Agent_after_call_work_TM_Seconds_QTY Agent_after_call_work_TM_Seconds_QTY, 
+    scm.Agent_Call_Duration_Seconds_QTY Agent_Call_Duration_Seconds_QTY, 
+    scm.Agent_NM Agent_NM, 
+    scm.Agent_Call_Transfer_IND Agent_Call_Transfer_IND, 
+    scm.Agent_Call_Transfer_Same_Call_Center_IND Agent_Call_Transfer_Same_Call_Center_IND, 
+    scm.Agent_Call_Transfer_Different_Call_Center_IND Agent_Call_Transfer_Different_Call_Center_IND, 
+    scm.Quality_Monitored_IND Quality_Monitored_IND, 
+    scm.Quality_Monitored_Score_NBR Quality_Monitored_Score_NBR, 
+    scm.Quality_Monitored_Score_PCT Quality_Monitored_Score_PCT, 
+    scm.Quality_Monitored_Evaluator_NM Quality_Monitored_Evaluator_NM, 
+    scm.Quality_Monitored_Classified_Correct_IND Quality_Monitored_Classified_Correct_IND, 
+    scm.Quality_Monitored_Evaluation_Title_TXT Quality_Monitored_Evaluation_Title_TXT, 
+    scm.Quality_Monitored_Evaluation_DT Quality_Monitored_Evaluation_DT, 
+    scm.Quality_Monitored_Incorrect_Classification_IND Quality_Monitored_Incorrect_Classification_IND, 
+    scm.Quality_Monitored_Incorrect_Classification_Form_ID Quality_Monitored_Incorrect_Classification_Form_ID, 
+    scm.Quality_Monitored_Incorrect_Classification_Form_NM Quality_Monitored_Incorrect_Classification_Form_NM, 
+    scm.Agent_Queue_NM Agent_Queue_NM, 
+    scm.Agent_Abandened_IND Agent_Abandened_IND, 
+    scm.Agent_Call_Escalation_IND Agent_Call_Escalation_IND, 
+    scm.Source_System_Plan_Sponsor_NM Source_System_Plan_Sponsor_NM, 
+    scm.Source_System_Plan_Sponsor_ID Source_System_Plan_Sponsor_ID, 
+    scm.Callback_Successful_Indicator Callback_Successful_Indicator, 
+    scm.Callback_Unsuccessful_Indicator Callback_Unsuccessful_Indicator, 
+    scm.AGENT_USER_ID, 
+    scm.Agent_Supervisor_Name, 
+    scm.Quality_Monitored_Medicare_Indicator, 
+    scm.Quality_Monitored_Agent_Supervisor_NM
+FROM      
+    /shared/Delta_DV/Physical/Formatting/EDP_CURATED/CUSTOMER_SERVICE_AGENT_CALL_MERGED scm</attribute>
+  <attribute name="creationDate" type="LONG">1606185640277</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5240201</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89821</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5240201</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1606185640277</attribute>
+</metadata>

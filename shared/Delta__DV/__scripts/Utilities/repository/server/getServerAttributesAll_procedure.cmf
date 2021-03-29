@@ -1,0 +1,482 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getServerAttributesAll" path="/shared/Delta_DV/_scripts/Utilities/repository/server/getServerAttributesAll" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getServerAttribute:
+
+&#x9;This procedure returns the server attribute value at the input server attribute location
+
+    Server values may be single scalar or may be a list, a map, or an array.
+
+    Users calling this procedure must have the ACCESS_TOOLS right and, depending on whether
+    the attribute is public or not, may need the READ_ALL_CONFIG right as well.
+
+
+&#x9;Input:
+&#x9;&#x9;attribute - The attribute to search for in the attribute repository.  
+&#x9;&#x9;&#x9;Values: Any path to an attribute
+
+
+&#x9;Output:
+&#x9;&#x9;result - The value at the input attribute location.
+&#x9;&#x9;&#x9;Values: CURSOR (
+                attrName VARCHAR(32768),       -- the attribute name
+                attrType VARCHAR(32768),       -- the value type. if not LIST, MAP, or ARRAY, then the scalar value&apos;s type
+                attrValue VARCHAR(32768),      -- the scalar value (NULL if the value type is LIST, MAP, or ARRAY)
+                listEntryType VARCHAR(32768),  -- if the attribute value is a list, this is the list entry&apos;s type
+                listEntryValue VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s value
+                mapKeyType VARCHAR(32768),     -- if the attribute value is a map, this is the map entry&apos;s key type
+                mapKeyValue VARCHAR(32768),    -- if the attribute value is a map, this is the map entry&apos;s key value
+                mapValueType VARCHAR(32768),   -- if the attribute value is a map, this is the map entry&apos;s value type
+                mapValueValue VARCHAR(32768),  -- if the attribute value is a map, this is the map entry&apos;s value value
+                arrayItem VARCHAR(32768)       -- if the attribute value is an array, this is the array entry&apos;s value
+            );
+
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;02/14/2013&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.2.2&#x9;&#x9;&#x9;Created new.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="environmentName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="startingAttribute" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="updateRuleFilter" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="visible" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="environment">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="categoryName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="attrName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrType">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="displayName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="updateRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="minValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="maxValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="unitName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="defaultValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="listEntryType">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="listEntryValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mapKeyType">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mapKeyValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mapValueType">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mapValueValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="arrayItem">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="visible">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="locallyDefined">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="pattern">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="annotation">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttribute" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="attribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="arrayItem">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttributeDefs" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="startingAttribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="categoryName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="updateRule">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="required">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="defaultValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="pattern">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="minValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="maxValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="displayName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="unitName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="parentName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="visible">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="editorHint">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="dependencyExpression">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="locallyDefined">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    getServerAttributesAll:
+
+&#x9;This procedure returns the server attribute values at the input server attribute location.
+&#x9;&#x9;Example:
+&#x9;&#x9;&#x9;DEV, / - return all of the attributes for the DEV environment.
+&#x9;&#x9;&#x9;DEV, /server - return all of the server attributes for the DEV environment.
+
+    Server values may be single scalar or may be a list, a map, or an array.
+
+    Users calling this procedure must have the ACCESS_TOOLS right and, depending on whether
+    the attribute is public or not, may need the READ_ALL_CONFIG right as well.
+
+
+&#x9;Input:
+&#x9;&#x9;environmentName&#x9;&#x9;VARCHAR,&#x9;&#x9;&#x9;-- A unique environment name qualifier that will be returned with the data.
+&#x9;&#x9;startingAttribute&#x9;VARCHAR(4096),&#x9;&#x9;-- The starting attribute location.  Values: Any path to an attribute.  root=/
+&#x9;&#x9;&#x9;Values: Any path to an attribute
+&#x9;&#x9;&#x9;&#x9;root=&#x9;&#x9;&#x9;/
+&#x9;&#x9;&#x9;&#x9;cms=&#x9;&#x9;&#x9;/cms
+&#x9;&#x9;&#x9;&#x9;diagnostic=&#x9;&#x9;/diagnostic
+&#x9;&#x9;&#x9;&#x9;discovery=&#x9;&#x9;/discovery
+&#x9;&#x9;&#x9;&#x9;monitor=&#x9;&#x9;/monitor
+&#x9;&#x9;&#x9;&#x9;server=&#x9;&#x9;&#x9;/server
+&#x9;&#x9;&#x9;&#x9;server config=&#x9;/server/config
+&#x9;&#x9;&#x9;&#x9;server jdbc=&#x9;/server/jdbc
+&#x9;&#x9;updateRuleFilter&#x9;VARCHAR,&#x9;&#x9;&#x9;-- [default] null - return all, otherwise 1 of [READ_WRITE, READ_ONLY, WRITE_ON_IMPORT]
+&#x9;&#x9;visible&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;&#x9;-- [default] null - return all, 1 - return attributes that are visible to studio. 0 - return attributes that are not visible to studio.&#x9;&#x9;
+
+&#x9;Output:
+&#x9;&#x9;result - The value at the input attribute location.
+&#x9;&#x9;&#x9;Values: PIPE (
+&#x9;&#x9;&#x9;&#x9;environment&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- the environment name
+&#x9;&#x9;&#x9;&#x9;categoryName&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Category: cms, diagnostic, discovery, monitor, server, sources, studio
+&#x9;&#x9;&#x9;&#x9;attrName &#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute name
+&#x9;&#x9;&#x9;&#x9;attrType &#x9;&#x9;&#x9;VARCHAR(32768), -- the value type. if not LIST, MAP, or ARRAY, then the scalar value&apos;s type
+&#x9;&#x9;&#x9;&#x9;displayName&#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute&apos;s name as displayed in the Studio Configuration panel
+&#x9;&#x9;&#x9;&#x9;updateRule&#x9;&#x9;&#x9;VARCHAR(32768), -- indicates whether the field is updatable or not
+&#x9;&#x9;&#x9;&#x9;minValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the minimum allowed value (NULL if there is none)
+&#x9;&#x9;&#x9;&#x9;maxValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the maximum allowed value (NULL if there is none)
+&#x9;&#x9;&#x9;&#x9;unitName &#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute&apos;s value&apos;s unit name
+&#x9;&#x9;&#x9;&#x9;defaultValue&#x9;&#x9;VARCHAR(32768), -- indicates the default value (NULL if there is none.)
+&#x9;&#x9;&#x9;&#x9;attrValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the scalar value (NULL if the value type is LIST, MAP, or ARRAY)
+&#x9;&#x9;&#x9;&#x9;listEntryType &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s type
+&#x9;&#x9;&#x9;&#x9;listEntryValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s value
+&#x9;&#x9;&#x9;&#x9;mapKeyType &#x9;&#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s key type
+&#x9;&#x9;&#x9;&#x9;mapKeyValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value type
+&#x9;&#x9;&#x9;&#x9;mapValueType &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value type
+&#x9;&#x9;&#x9;&#x9;mapValueValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value value
+&#x9;&#x9;&#x9;&#x9;arrayItem &#x9;&#x9;&#x9;VARCHAR(32768), -- if the attribute value is an array, this is the array entry&apos;s value
+&#x9;&#x9;&#x9;&#x9;visible &#x9;&#x9;&#x9;BIT, &#x9;&#x9;&#x9;-- indicates whether the configuration setting is visible in the Studio Configuration panel
+&#x9;&#x9;&#x9;&#x9;locallyDefined&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether this attribute is locally defined or not
+&#x9;&#x9;&#x9;&#x9;pattern &#x9;&#x9;&#x9;VARCHAR(32768), -- a regular expression pattern that is used to test for valid values
+&#x9;&#x9;&#x9;&#x9;annotation &#x9;&#x9;&#x9;VARCHAR(32768)&#x9;-- a description of the attribute
+&#x9;&#x9;&#x9;);
+
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.400&#x9;10/14/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getServerAttributesAll(
+&#x9;IN environmentName&#x9;&#x9;VARCHAR,&#x9;&#x9;&#x9;-- A unique environment name qualifier that will be returned with the data.
+&#x9;IN startingAttribute&#x9;VARCHAR(4096),&#x9;&#x9;-- The starting attribute location.  Values: Any path to an attribute.  root=/
+&#x9;IN updateRuleFilter&#x9;&#x9;VARCHAR,&#x9;&#x9;&#x9;-- [default] null - return all, otherwise 1 of [READ_WRITE, READ_ONLY, WRITE_ON_IMPORT]
+&#x9;IN visible&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;&#x9;-- [default] null - return all, 1 - return attributes that are visible to studio. 0 - return attributes that are not visible to studio.
+    OUT result &#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;environment&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- the environment name
+&#x9;&#x9;categoryName&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Category: cms, diagnostic, discovery, monitor, server, sources, studio
+        attrName &#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute name
+        attrType &#x9;&#x9;&#x9;VARCHAR(32768), -- the value type. if not LIST, MAP, or ARRAY, then the scalar value&apos;s type
+&#x9;&#x9;displayName&#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute&apos;s name as displayed in the Studio Configuration panel
+&#x9;&#x9;updateRule&#x9;&#x9;&#x9;VARCHAR(32768), -- indicates whether the field is updatable or not
+&#x9;&#x9;minValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the minimum allowed value (NULL if there is none)
+&#x9;&#x9;maxValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the maximum allowed value (NULL if there is none)
+&#x9;&#x9;unitName &#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute&apos;s value&apos;s unit name
+&#x9;&#x9;defaultValue&#x9;&#x9;VARCHAR(32768), -- indicates the default value (NULL if there is none.)
+        attrValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the scalar value (NULL if the value type is LIST, MAP, or ARRAY)
+        listEntryType &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s type
+        listEntryValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s value
+        mapKeyType &#x9;&#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s key type
+        mapKeyValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value type
+        mapValueType &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value type
+        mapValueValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value value
+        arrayItem &#x9;&#x9;&#x9;VARCHAR(32768), -- if the attribute value is an array, this is the array entry&apos;s value
+&#x9;&#x9;visible &#x9;&#x9;&#x9;BIT, &#x9;&#x9;&#x9;-- indicates whether the configuration setting is visible in the Studio Configuration panel
+&#x9;&#x9;locallyDefined&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether this attribute is locally defined or not
+&#x9;&#x9;pattern &#x9;&#x9;&#x9;VARCHAR(32768), -- a regular expression pattern that is used to test for valid values
+&#x9;&#x9;annotation &#x9;&#x9;&#x9;VARCHAR(32768)&#x9;-- a description of the attribute
+&#x9;)
+)
+BEGIN
+    DECLARE PUBLIC TYPE ResultRowType ROW (
+&#x9;&#x9;environment&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- the environment name
+&#x9;&#x9;categoryName&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Category: cms, diagnostic, discovery, monitor, server, sources, studio
+&#x9;&#x9;attrName &#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute name
+        attrType &#x9;&#x9;&#x9;VARCHAR(32768), -- the value type. if not LIST, MAP, or STRING_ARRAY, then the scalar value&apos;s type
+&#x9;&#x9;displayName&#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute&apos;s name as displayed in the Studio Configuration panel
+&#x9;&#x9;updateRule&#x9;&#x9;&#x9;VARCHAR(32768), -- indicates whether the field is updatable or not
+&#x9;&#x9;minValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the minimum allowed value (NULL if there is none)
+&#x9;&#x9;maxValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the maximum allowed value (NULL if there is none)
+&#x9;&#x9;unitName &#x9;&#x9;&#x9;VARCHAR(32768), -- the attribute&apos;s value&apos;s unit name
+&#x9;&#x9;defaultValue&#x9;&#x9;VARCHAR(32768), -- indicates the default value (NULL if there is none.)
+        attrValue &#x9;&#x9;&#x9;VARCHAR(32768), -- the scalar value (NULL if the value type is LIST, MAP, or STRING_ARRAY)
+        listEntryType &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s type
+        listEntryValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s value
+        mapKeyType &#x9;&#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s key type
+        mapKeyValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value type
+        mapValueType &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value type
+        mapValueValue &#x9;&#x9;VARCHAR(32768), -- if the attribute value is a map, this is the map entry&apos;s value value
+        arrayItem &#x9;&#x9;&#x9;VARCHAR(32768), -- if the attribute value is an array, this is the array entry&apos;s value
+&#x9;&#x9;visible &#x9;&#x9;&#x9;BIT, &#x9;&#x9;&#x9;-- indicates whether the configuration setting is visible in the Studio Configuration panel
+&#x9;&#x9;locallyDefined&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether this attribute is locally defined or not
+&#x9;&#x9;pattern &#x9;&#x9;&#x9;VARCHAR(32768), -- a regular expression pattern that is used to test for valid values
+&#x9;&#x9;annotation &#x9;&#x9;&#x9;VARCHAR(32768)&#x9;-- a description of the attribute
+    );
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;ResultRowType;
+ 
+&#x9;IF (updateRuleFilter IS NULL OR LENGTH(TRIM(updateRuleFilter)) = 0) THEN
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttributeDefs(startingAttribute)
+&#x9;&#x9;&#x9;WHERE attrType &lt;&gt; &apos;FOLDER&apos;
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;FOR a AS 
+&#x9;&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttribute(r.attrName)
+&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;SET rec = null;
+&#x9;&#x9;&#x9;&#x9;-- From getServerAttributeDefs
+&#x9;&#x9;&#x9;&#x9;SET rec.environment = environmentName;
+&#x9;&#x9;&#x9;&#x9;SET rec.categoryName = r.categoryName;
+&#x9;&#x9;&#x9;&#x9;SET rec.attrName = r.attrName;
+&#x9;&#x9;&#x9;&#x9;SET rec.attrType = r.attrType;
+&#x9;&#x9;&#x9;&#x9;SET rec.displayName = r.displayName;
+&#x9;&#x9;&#x9;&#x9;SET rec.updateRule = r.updateRule;
+&#x9;&#x9;&#x9;&#x9;SET rec.defaultValue = r.defaultValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.minValue = r.minValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.maxValue = r.maxValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.unitName = r.unitName;
+&#x9;&#x9;&#x9;&#x9;SET rec.visible = r.visible;
+&#x9;&#x9;&#x9;&#x9;SET rec.pattern = r.pattern;
+&#x9;&#x9;&#x9;&#x9;SET rec.locallyDefined = r.locallyDefined;
+&#x9;&#x9;&#x9;&#x9;SET rec.annotation = r.annotation;
+&#x9;&#x9;&#x9;&#x9;-- From getServerAttribute
+&#x9;&#x9;&#x9;&#x9;SET rec.attrValue = a.attrValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.listEntryType = a.listEntryType;
+&#x9;&#x9;&#x9;&#x9;SET rec.listEntryValue = a.listEntryValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapKeyType = a.mapKeyType;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapKeyValue = a.mapKeyValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapValueType = a.mapValueType;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapValueValue = a.mapValueValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.arrayItem = a.arrayItem;
+
+&#x9;&#x9;&#x9;&#x9;IF (rec.attrType &lt;&gt; &apos;STRING_ARRAY&apos; OR (rec.attrType = &apos;STRING_ARRAY&apos; AND rec.arrayItem IS NOT NULL)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (visible IS NULL OR (visible IS NOT NULL AND visible = 1 and rec.visible = 1) OR (visible IS NOT NULL AND visible = 0 and rec.visible = 0)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(rec);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;END FOR;
+&#x9;ELSE
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttributeDefs(startingAttribute)
+&#x9;&#x9;&#x9;WHERE attrType &lt;&gt; &apos;FOLDER&apos;
+&#x9;&#x9;&#x9;  AND updateRule = updateRuleFilter
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;FOR a AS 
+&#x9;&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttribute(r.attrName)
+&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;SET rec = null;
+&#x9;&#x9;&#x9;&#x9;-- From getServerAttributeDefs
+&#x9;&#x9;&#x9;&#x9;SET rec.environment = environmentName;
+&#x9;&#x9;&#x9;&#x9;SET rec.categoryName = r.categoryName;
+&#x9;&#x9;&#x9;&#x9;SET rec.attrName = r.attrName;
+&#x9;&#x9;&#x9;&#x9;SET rec.attrType = r.attrType;
+&#x9;&#x9;&#x9;&#x9;SET rec.displayName = r.displayName;
+&#x9;&#x9;&#x9;&#x9;SET rec.updateRule = r.updateRule;
+&#x9;&#x9;&#x9;&#x9;SET rec.defaultValue = r.defaultValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.minValue = r.minValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.maxValue = r.maxValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.unitName = r.unitName;
+&#x9;&#x9;&#x9;&#x9;SET rec.visible = r.visible;
+&#x9;&#x9;&#x9;&#x9;SET rec.pattern = r.pattern;
+&#x9;&#x9;&#x9;&#x9;SET rec.locallyDefined = r.locallyDefined;
+&#x9;&#x9;&#x9;&#x9;SET rec.annotation = r.annotation;
+&#x9;&#x9;&#x9;&#x9;-- From getServerAttribute
+&#x9;&#x9;&#x9;&#x9;SET rec.attrValue = a.attrValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.listEntryType = a.listEntryType;
+&#x9;&#x9;&#x9;&#x9;SET rec.listEntryValue = a.listEntryValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapKeyType = a.mapKeyType;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapKeyValue = a.mapKeyValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapValueType = a.mapValueType;
+&#x9;&#x9;&#x9;&#x9;SET rec.mapValueValue = a.mapValueValue;
+&#x9;&#x9;&#x9;&#x9;SET rec.arrayItem = a.arrayItem;
+
+&#x9;&#x9;&#x9;&#x9;IF (rec.attrType &lt;&gt; &apos;STRING_ARRAY&apos; OR (rec.attrType = &apos;STRING_ARRAY&apos; AND rec.arrayItem IS NOT NULL)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (visible IS NULL OR (visible IS NOT NULL AND visible = 1 and rec.visible = 1) OR (visible IS NOT NULL AND visible = 0 and rec.visible = 0)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(rec);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;END FOR;
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1369417729294</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_types" type="MAP">
+    <item>
+      <key type="STRING">ResultRowType</key>
+      <value type="BYTE_ARRAY">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</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

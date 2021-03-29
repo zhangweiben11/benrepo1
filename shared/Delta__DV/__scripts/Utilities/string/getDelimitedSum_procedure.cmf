@@ -1,0 +1,189 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getDelimitedSum" path="/shared/Delta_DV/_scripts/Utilities/string/getDelimitedSum" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getDelimitedSum:
+&#x9;Return the sum of occurrences of a delimited string
+ 
+&#x9;Input:
+&#x9;&#x9;inText - Text to search
+&#x9;&#x9;delimiter - the delimiter to search for
+&#x9;&#x9;startingOccurrence - the starting occurrence to begin summing
+&#x9;Output:
+&#x9;&#x9;result - the decimal result
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.1&#x9;&#x9;12/14/2011&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inText" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="delimiter" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inSstartingOccurrence" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getDelimitedSum:
+&#x9;Return the sum of occurrences of a delimited string
+ 
+&#x9;Input:
+&#x9;&#x9;inText - Text to search
+&#x9;&#x9;delimiter - the delimiter to search for
+&#x9;&#x9;startingOccurrence - the starting occurrence to begin summing
+&#x9;Output:
+&#x9;&#x9;result - the decimal result
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.1&#x9;&#x9;12/14/2011&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getDelimitedSum(
+&#x9;IN inText&#x9;&#x9;&#x9; &#x9;&#x9;LONGVARCHAR,  -- text to parse
+&#x9;IN delimiter&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;IN inSstartingOccurrence&#x9;INTEGER,
+&#x9;OUT result  &#x9;&#x9;&#x9;&#x9;DECIMAL(32,2)
+)
+BEGIN
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log;
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository;
+
+    DECLARE PROC_NAME           CONSTANT VARCHAR DEFAULT &apos;string/getDelimitedSum&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE startingOccurrence&#x9;INTEGER DEFAULT inSstartingOccurrence;
+&#x9;DECLARE totalSplit&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;if (startingOccurrence is null) then
+&#x9;&#x9;set startingOccurrence = 1;
+&#x9;end if;
+&#x9;if (delimiter IS NULL) then
+&#x9;&#x9;raise ex value &apos;Delimiter cannot be null or empty.&apos;;
+&#x9;end if;
+
+&#x9;set result = 0.0;
+&#x9;splitLoop:
+&#x9;for r as 
+&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(inText,delimiter,0,0,0,1,0)
+&#x9;do
+&#x9;&#x9;if (debug = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(PROC_NAME, debug, &apos;i = &apos; || i || &apos;, result = &apos; || result);
+&#x9;&#x9;end if;
+&#x9;&#x9;if (i &gt;= startingOccurrence) then
+&#x9;&#x9;&#x9;if (r.object IS NOT NULL AND LENGTH(TRIM(r.object)) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set result = result + cast(r.object as decimal(32,2));
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+&#x9;&#x9;set i = i + 1;
+&#x9;end for;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

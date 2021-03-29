@@ -1,0 +1,89 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="PR_FILE_STORE_VW" path="/shared/Delta_DV/Physical/Formatting/PEGA/PR_FILE_STORE_VW" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="PZABSOLUTENAME" nullable="true">
+      <datatype type="STRING" maxLength="900"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="PZISDIR" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="PZNAME" nullable="true">
+      <datatype type="STRING" maxLength="128"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="PZPATH" nullable="true">
+      <datatype type="STRING" maxLength="900"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="PZSIZE" nullable="true">
+      <datatype type="DECIMAL" maxDigits="38" minFractionalDigits="10" maxFractionalDigits="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="PZUPDATEDATETIME" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/PEGA_VIEWS/PEGA_OWNER/PR_FILE_STORE_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="PZABSOLUTENAME" nullable="false">
+        <datatype type="STRING" maxLength="900"/>
+      </element>
+      <element name="PZISDIR" nullable="false">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="PZNAME" nullable="false">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="PZPATH" nullable="false">
+        <datatype type="STRING" maxLength="900"/>
+      </element>
+      <element name="PZSIZE" nullable="false">
+        <datatype type="DECIMAL" maxDigits="38" minFractionalDigits="10" maxFractionalDigits="10"/>
+      </element>
+      <element name="PZUPDATEDATETIME" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    PR_FILE_STORE_VW.PZABSOLUTENAME, 
+    PR_FILE_STORE_VW.PZISDIR, 
+    PR_FILE_STORE_VW.PZNAME, 
+    PR_FILE_STORE_VW.PZPATH, 
+    PR_FILE_STORE_VW.PZSIZE, 
+    PR_FILE_STORE_VW.PZUPDATEDATETIME
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/PEGA_VIEWS/PEGA_OWNER/PR_FILE_STORE_VW PR_FILE_STORE_VW</attribute>
+  <attribute name="creationDate" type="LONG">1579781680546</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">1510101</attribute>
+  <attribute name="creatorUserName" type="STRING">dos88106</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">1510101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="BYTE_ARRAY">EIEJBAAAAAEQUQYBABAAUABSAF8ARgBJAEwARQBfAFMAVABPAFIARQBfAFYAVwYCABAAUABSAF8ARgBJAEwARQBfAFMAVABPAFIARQBfAFYAVwML/////wMK/////wMM/////wsRAAkABgBzAGgAYQByAGUAZAAIAEQAZQBsAHQAYQBfAEQAVgAIAFAAaAB5AHMAaQBjAGEAbAAIAE0AZQB0AGEAZABhAHQAYQALAEQAYQB0AGEAUwBvAHUAcgBjAGUAcwADAEkARABTAAoAUABFAEcAQQBfAFYASQBFAFcAUwAKAFAARQBHAEEAXwBPAFcATgBFAFIAEABQAFIAXwBGAEkATABFAF8AUwBUAE8AUgBFAF8AVgBX//8DBQAAAAAIAhAxBgH//wECAQEGAAEDAAEEAAEFAAMHAAAAAAcJAAAAAQAAAAAJCgAAAAYQQQYBAA4AUABaAEEAQgBTAE8ATABVAFQARQBOAEEATQBFBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAwAdgBhAHIAYwBoAGEAcgAoADkAMAAwACkDKwAAAA8DEgAAAAEEBAAAAAAAAAOEARMB//8DCwAAAAD//xBBBgEABwBQAFoASQBTAEQASQBSBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAoAdgBhAHIAYwBoAGEAcgAoADUAKQMrAAAADwMSAAAAAQQEAAAAAAAAAAUBEwH//wMLAAAAAP//EEEGAQAGAFAAWgBOAEEATQBFBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAwAdgBhAHIAYwBoAGEAcgAoADEAMgA4ACkDKwAAAA8DEgAAAAEEBAAAAAAAAACAARMB//8DCwAAAAD//xBBBgEABgBQAFoAUABBAFQASAYCAAAGA///BgT//wMK/////wgMEBsGAgAHAHYAYQByAGMAaABhAHIGAwAMAHYAYQByAGMAaABhAHIAKAA5ADAAMAApAysAAAAPAxIAAAABBAQAAAAAAAADhAETAf//AwsAAAAA//8QQQYBAAYAUABaAFMASQBaAEUGAgAABgP//wYE//8DCv////8IDBAXBgIABwBuAHUAbQBlAHIAaQBjBgMADgBuAHUAbQBlAHIAaQBjACgAMwA4ACwAMQAwACkDKwAAAA8DEgAAAAEDDgAAACYDEQAAAAoDEAAAAAr//wMLAAAAAP//EEEGAQAQAFAAWgBVAFAARABBAFQARQBEAEEAVABFAFQASQBNAEUGAgAABgP//wYE//8DCv////8IDBAWBgIACQBkAGEAdABlAHQAaQBtAGUAMgYDAAkAZABhAHQAZQB0AGkAbQBlADIDKwAAAA8DEgAAAAH//wMLAAAAAP////8JBgAAAAEQggMKAAAAHgMLAAAAHgMMAAAAyAMNAAAAyP//CAMQcQMBAAAACwMCAAAAMgkDAAACJhB0AwYAAAAA//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAH//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAAv//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAD//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAT//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAABf//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2////////</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1579781680546</attribute>
+</metadata>

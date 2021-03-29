@@ -1,0 +1,839 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="updateServerConfiguration" path="/shared/Delta_DV/_scripts/Utilities/repository/server/updateServerConfiguration" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="environmentName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="serverConfigurationSql" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="numRowsTotal" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="numRowsUpdated" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="numRowsSkipped" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="numRowsError" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="infoMessage" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="errMessage" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/Pause" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="timeInMilliSeconds" direction="IN">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/conversions/convertBoolean" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="request" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="response" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/RepoUtils/applyReservedListToPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttribute" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="attribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="arrayItem">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttributeDefs" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="startingAttribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="categoryName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="updateRule">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="required">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="defaultValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="pattern">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="minValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="maxValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="displayName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="unitName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="parentName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="visible">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="editorHint">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="dependencyExpression">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="locallyDefined">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/server/updateServerAttribute" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="ATTR" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="ATTR_TYPE" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="NEWVAL" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* updateServerConfiguration: 
+
+&#x9;This procedure is used to update the TDV server configuration parameters.  The invoker of this procedure must provide
+&#x9;&#x9;a SQL Statement with 3 columns to select configuration attributes from a spreadsheet, table or view.
+&#x9;&#x9;&#x9;example: &#x9;select environment, attrName, attrValue from /shared/Common/ServerConfig/ServerConfiguration/ServerConfiguration.xlsx/ServerConfiguration
+&#x9;&#x9;The input parameter &quot;environment&quot; acts as a filter and specifies which TDV environment parameters should be read.
+&#x9;&#x9;Any attribute value in the spreadsheet, table or view which contains the word &apos;null&apos; will be converted to an actual null value.
+
+&#x9;The invoker must have the following studio rights: ACCESS_TOOLS, READ_ALL_CONFIG, MODIFY_ALL_CONFIG
+
+&#x9;To produce the (csv) spreadsheet with existing values in the server consider executing the following procedure:
+&#x9;&#x9;/shared/ASAssets/Utilities/repository/server/getSpecifiedServerAttributes
+
+ &#x9;Input:
+&#x9;&#x9;debug &#x9;&#x9;&#x9;&#x9;&#x9;- Y=debug on.  N=debug off.
+&#x9;&#x9;environmentName &#x9;&#x9;- The environment name used as a filter against the spreadsheet or table.
+&#x9;&#x9;serverConfigurationSql&#x9;- The SQL statement to the ServerConfiguration spreadsheet, table or view.&#x9;Procedures are not supported within the FROM clause.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   The SQL Statement must have only 3 columns [environment, attrName, attrValue].  Where clause and order by are not needed.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   The spreadsheet, table or view may have more columns but the SQL statement must only specify the three shown below:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1. environment - the environment designation for the parameters listed.  Allows more than one environment to be stored within source.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;2. attrName - the full path to the attribute.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;3. attrValue - the configuration value to be updated.  If the value of &apos;null&apos; is found, it is converted to an actual null value.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- Example: &#x9;select environment, attrName, attrValue from /shared/Common/ServerConfig/ServerConfiguration/ServerConfiguration.xlsx/ServerConfiguration
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- Note: It is not necessary to place double-quotes around paths.  This will be taken care of within this procedure.
+
+&#x9;Output:
+&#x9;&#x9;numRowsTotal&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The total number of rows processed.
+&#x9;&#x9;numRowsUpdated&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of rows updated.
+&#x9;&#x9;numRowsSkipped&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of rows skipped and not updated.
+&#x9;&#x9;numRowsError&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of rows with exceptions.
+&#x9;&#x9;infoMessage&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A list of information messages output to itemize of completed actions.
+&#x9;&#x9;errMessage&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- Null if no messages or the list of messages.  Format: attributepath=[updateAttributeValue]  EXCEPTION=[exception message]CHR(10)
+&#x9;
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;&#x9;&#x9;&#x9;03/07/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;8.0.0&#x9;&#x9;&#x9;Created new.
+&#x9;&#x9;&#x9;&#x9;06/03/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;8.1.0&#x9;&#x9;&#x9;Fixed issue with kerberos values not getting updated.
+&#x9;&#x9;&#x9;&#x9;09/08/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;8.1.0&#x9;&#x9;&#x9;Put a BEGIN INDEPENDENT TRANSACTION block around the update to commit each transaction.
+&#x9;2019.400&#x9;10/14/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;8.2.0&#x9;&#x9;&#x9;Added ability to use any &quot;user-defined&quot; spreadsheet, table or view for the configuration attribute parameters.
+&#x9;2020.300&#x9;08/26/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;8.3.0&#x9;&#x9;&#x9;Fixed bug where procedure throws an exception if an attribute does not exist.
+&#x9;2020.401&#x9;11/02/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Skip updating null or blank values for the following attribute paths:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/server/config/files/dataDirectoryOnServerRestart
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/server/config/files/logDirectoryOnServerRestart
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/server/config/files/tempDirectoryOnServerRestart
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/server/communications/keystoreLocationOnServerRestart
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/server/communications/keystorePasswordOnServerRestart
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/server/communications/truststoreLocationOnServerRestart
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/server/communications/truststorePasswordOnServerRestart
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE updateServerConfiguration(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;IN environmentName&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The input environment name contained within the spreadsheet.  Example: DEV, UAT, PROD
+&#x9;IN serverConfigurationSql&#x9;LONGVARCHAR,&#x9;-- The SQL statement to the ServerConfiguration spreadsheet, table or view.&#x9;Procedures are not supported within the FROM clause.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--  The SQL Statement must have only 3 columns [environment, attrName, attrValue].  Where clause and order by are not needed.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The spreadsheet, table or view may have more columns but the SQL statement must only specify the three shown below:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;1. environment - the environment designation for the parameters listed.  Allows more than one environment to be stored within source.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;2. attrName - the full path to the attribute.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;3. attrValue - the configuration value to be updated.  If the value of &apos;null&apos; is found, it is converted to an actual null value.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Example: select environment, attrName, attrValue from /shared/Common/ServerConfig/ServerConfiguration/ServerConfiguration.xlsx/ServerConfiguration
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Note: It is not necessary to place double-quotes around paths.  This will be taken care of within this procedure.
+&#x9;OUT numRowsTotal&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The total number of rows processed.
+&#x9;OUT numRowsUpdated&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of rows updated.
+&#x9;OUT numRowsSkipped&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of rows skipped and not updated.
+&#x9;OUT numRowsError&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of rows with exceptions.
+&#x9;OUT infoMessage&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A list of information messages output to itemize of completed actions.
+&#x9;OUT errMessage&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- Null if no messages or the list of messages.  Format: attributepath:[updateAttributeValue]  EXCEPTION:[exception message]CHR(10)
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;updateServerConfiguration&apos;;
+&#x9;DECLARE ATTRIBUTE_PATH_BLANK_NOT_ALLOWED LONGVARCHAR DEFAULT 
+&#x9;&#x9;&apos;/server/config/files/dataDirectoryOnServerRestart|
+&#x9;&#x9; /server/config/files/logDirectoryOnServerRestart|
+&#x9;&#x9; /server/config/files/tempDirectoryOnServerRestart|
+&#x9;&#x9; /server/communications/keystoreLocationOnServerRestart|
+&#x9;&#x9; /server/communications/keystorePasswordOnServerRestart|
+&#x9;&#x9; /server/communications/truststoreLocationOnServerRestart|
+&#x9;&#x9; /server/communications/truststorePasswordOnServerRestart|&apos;;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE TYPE serverConfigType&#x9;ROW(environment VARCHAR, attrName VARCHAR, attrValue LONGVARCHAR);
+&#x9;DECLARE serverConfigCurs&#x9;&#x9;CURSOR serverConfigType;
+&#x9;DECLARE fromClausePath&#x9;&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE fromClausePathMod&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE msg&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE environment&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE attributePath&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE attributeType&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE attributePathPrev&#x9;&#x9;VARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE attributeTypePrev&#x9;&#x9;VARCHAR;
+&#x9;DECLARE attributeCountCurrent&#x9;INTEGER;
+&#x9;DECLARE nonBasicTypeCount&#x9;&#x9;INTEGER;
+&#x9;DECLARE listType&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE mapKeyType&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE mapKeyValue&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE mapValueType&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE mapValueValue&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE currentAttrValue&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE updateRule&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE displayName&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE updateAttrValue&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE updateAttrValueDisplay&#x9;LONGVARCHAR;
+&#x9;DECLARE updateListXML&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE updateMapXML&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE updateArrayXML&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE numRows&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE resExists&#x9;&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE pos1, pos2, pos3&#x9;&#x9;INTEGER;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Validate input
+&#x9;IF (environmentName IS NULL OR LENGTH(TRIM(environmentName)) = 0) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The input parameter &quot;environmentName&quot; cannot be null or empty.&apos;;
+&#x9;END IF;
+&#x9;IF (serverConfigurationSql IS NULL OR LENGTH(TRIM(serverConfigurationSql)) = 0) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The input parameter &quot;serverConfigurationSql&quot; cannot be null or empty.&apos;;
+&#x9;END IF;
+
+&#x9;-- Extract FROM clause path and apply reserved path which puts double quotes around the necessary parts of the path that need it.
+&#x9;SET sqlStatement = TRIM(REPLACE(REPLACE(serverConfigurationSql, CHR(10), &apos; &apos;), CHR(9), &apos; &apos;));
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : environmentName=[&apos;||NVL(environmentName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : sqlStatement=[&apos;||sqlStatement||&apos;]&apos;);
+&#x9;END IF;
+
+&#x9;SET pos1 = INSTR(UPPER(sqlStatement), &apos; FROM&apos;);
+&#x9;SET pos2 = INSTR(UPPER(sqlStatement), &apos; WHERE&apos;, pos1);
+&#x9;SET pos3 = INSTR(UPPER(sqlStatement), &apos; ORDER BY&apos;, pos1);
+&#x9;--call print(&apos;pos1=&apos;||pos1||&apos;  pos2=&apos;||pos2||&apos;  pos3=&apos;||pos3);
+&#x9;
+&#x9;-- In the condition statement below an extra row is forced on the end with attributePath=/zzz so that any rows
+&#x9;--&#x9;&#x9;of attributeType IN (&apos;LIST&apos;,&apos;MAP&apos;,&apos;STRING_ARRAY&apos;) are processed due to the change in attributePath.
+&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;IF (pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;IF (pos3 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET sqlStatement = SUBSTRING(sqlStatement, 1, pos3);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET fromClausePath = TRIM(SUBSTRING(sqlStatement, pos1+5, pos2-(pos1+5)));
+&#x9;&#x9;&#x9;--call print(&apos;sqlStatement=&apos;||sqlStatement);
+&#x9;&#x9;&#x9;--call print(&apos;fromClausePath=&apos;||fromClausePath);
+&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(fromClausePath, null, fromClausePathMod);
+&#x9;&#x9;&#x9;SET sqlStatement =
+&#x9;&#x9;&#x9;&#x9;&apos;SELECT * FROM (&apos;||CHR(10)|| 
+&#x9;&#x9;&#x9;&#x9;&#x9;REPLACE(sqlStatement, fromClausePath, fromClausePathMod)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;UNION&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;select &apos;&apos;&apos;||environmentName||&apos;&apos;&apos; environment, &apos;&apos;/zzz&apos;&apos; attrName, &apos;&apos;zzz&apos;&apos; attrValue from /services/databases/system/DUAL&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;) a ORDER BY attrName&apos;;
+&#x9;&#x9;ELSEIF (pos3 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET sqlStatement = SUBSTRING(sqlStatement, 1, pos3);
+&#x9;&#x9;&#x9;SET fromClausePath = TRIM(SUBSTRING(sqlStatement, pos1+5, pos3-(pos1+5)));
+&#x9;&#x9;&#x9;--call print(&apos;sqlStatement=&apos;||sqlStatement);
+&#x9;&#x9;&#x9;--call print(&apos;fromClausePath=&apos;||fromClausePath);
+&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(fromClausePath, null, fromClausePathMod);
+&#x9;&#x9;&#x9;SET sqlStatement =
+&#x9;&#x9;&#x9;&#x9;&apos;SELECT * FROM (&apos;||CHR(10)|| 
+&#x9;&#x9;&#x9;&#x9;&#x9;REPLACE(sqlStatement, fromClausePath, fromClausePathMod)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;UNION&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;select &apos;&apos;&apos;||environmentName||&apos;&apos;&apos; environment, &apos;&apos;/zzz&apos;&apos; attrName, &apos;&apos;zzz&apos;&apos; attrValue from /services/databases/system/DUAL&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;) a ORDER BY attrName&apos;;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET fromClausePath = TRIM(SUBSTRING(sqlStatement, pos1+5));
+&#x9;&#x9;&#x9;--call print(&apos;fromClausePath=&apos;||fromClausePath);
+&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(fromClausePath, null, fromClausePathMod);
+&#x9;&#x9;&#x9;SET sqlStatement = 
+&#x9;&#x9;&#x9;&#x9;&apos;SELECT * FROM (&apos;||CHR(10)|| 
+&#x9;&#x9;&#x9;&#x9;&#x9;REPLACE(sqlStatement, fromClausePath, fromClausePathMod)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;UNION&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;select &apos;&apos;&apos;||environmentName||&apos;&apos;&apos; environment, &apos;&apos;/zzz&apos;&apos; attrName, &apos;&apos;zzz&apos;&apos; attrValue from /services/databases/system/DUAL&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;) a ORDER BY attrName&apos;;
+&#x9;&#x9;END IF;
+&#x9;ELSE
+&#x9;&#x9;RAISE ex VALUE &apos;Unable to locate FROM clause for the SELECT statement.  serverConfigurationSql=&apos;||NVL(serverConfigurationSql,&apos;null&apos;);
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : sqlStatement=[&apos;||sqlStatement||&apos;]&apos;);
+&#x9;&#x9;CALL PAUSE(500);
+&#x9;END IF;
+&#x9;CALL /lib/resource/ResourceExists(fromClausePath, &apos;TABLE&apos;, null, resExists);
+&#x9;IF (NOT resExists) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The SQL Statement FROM clause path does not exist.  &quot;fromClausePath&quot;:[&apos;||fromClausePath||&apos;]&apos;;
+&#x9;END IF;
+
+&#x9;-- Initialize variables
+&#x9;SET numRowsTotal = 0;
+&#x9;SET numRowsUpdated = 0;
+&#x9;SET numRowsSkipped = 0;
+&#x9;SET numRowsError = 0;
+&#x9;SET nonBasicTypeCount = 0;
+&#x9;SET errMessage = &apos;&apos;;
+&#x9;SET infoMessage = &apos;&apos;;
+
+&#x9;-- Loop through the spreadsheet rows and update the server configuration
+&#x9;OPEN serverConfigCurs FOR sqlStatement;
+&#x9;attributeLoop:
+&#x9;FOR s AS serverConfigCurs DO
+&#x9;&#x9;-- Initialize variables
+&#x9;&#x9;SET attributeType = null;
+&#x9;&#x9;SET updateRule = null;
+&#x9;&#x9;SET displayName = null;
+&#x9;&#x9;SET currentAttrValue = null;
+
+&#x9;&#x9;-- Get the next environment and attribute
+&#x9;&#x9;SET environment = TRIM(s.environment);
+&#x9;&#x9;SET attributePath = TRIM(s.attrName);
+&#x9;&#x9;SET updateAttrValue = s.attrValue;
+
+&#x9;&#x9;-- Normalize the values
+&#x9;&#x9;IF (LENGTH(TRIM(environment)) = 0) THEN
+&#x9;&#x9;&#x9;SET environment = null;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (LENGTH(TRIM(attributePath)) = 0) THEN
+&#x9;&#x9;&#x9;SET attributePath = null;
+&#x9;&#x9;END IF;
+&#x9;&#x9;-- If the input = &apos;null&apos; as a string then change it to null
+&#x9;&#x9;--&#x9;This provides a clever way to blank out a setting that was previous set to some value.
+&#x9;&#x9;IF (LOWER(updateAttrValue) = &apos;null&apos;) THEN
+&#x9;&#x9;&#x9;SET updateAttrValue = null;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Continue if the input enironment matches the spreadsheet environment and there is an attribute path.
+&#x9;&#x9;IF (environment IS NOT NULL AND environment = environmentName AND attributePath IS NOT NULL) THEN
+
+&#x9;&#x9;&#x9;-- If this is not the last contrived (/zzz) attribute path then retrieve current attribute definition and attribute values.
+&#x9;&#x9;&#x9;IF (attributePath &lt;&gt; &apos;/zzz&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET numRowsTotal = numRowsTotal + 1;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : Retrieving:  ROW=[&apos;||numRowsTotal||&apos;]  environment=[&apos;||NVL(environment,&apos;[NULL]&apos;)||&apos;  attributePath=[&apos;||attributePath||&apos;]  updateAttrValue=[&apos;||NVL(updateAttrValue,&apos;[NULL]&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Get the current attribute definition: attrType, displayName, updateRule
+&#x9;&#x9;&#x9;&#x9;&#x9;FOR def AS SELECT attrType, displayName, updateRule FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttributeDefs(attributePath) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET attributeType = def.attrType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET displayName = def.displayName;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateRule = def.updateRule;
+&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Continue to the top of the loop if any one of these is null.  They should not be null.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (attributeType IS NULL OR displayName IS NULL OR updateRule IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ITERATE attributeLoop;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Convert to boolean
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(attributeType) = &apos;BOOLEAN&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(TRIM(updateAttrValue), updateAttrValue);&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Get the current attribute value
+&#x9;&#x9;&#x9;&#x9;&#x9;SET attributeCountCurrent = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;FOR attr AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttribute(attributePath) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET attributeCountCurrent = attributeCountCurrent + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (attr.attrType = &apos;LIST&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (attributeCountCurrent = 1) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET listType = attr.listEntryType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSEIF (attr.attrType = &apos;MAP&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (attributeCountCurrent = 1) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapKeyType = attr.mapKeyType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapValueType = attr.mapValueType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET currentAttrValue = attr.attrValue;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET errMessage = errMessage || &apos;EXCEPTION:[&apos;||TRIM(REPLACE(CAST(CURRENT_EXCEPTION.MESSAGE AS LONGVARCHAR), CHR(10), &apos; &apos;))||&apos;]&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateRule = &apos;INVALID&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsError = numRowsError + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = 0;
+&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;-- attributePath = &apos;/zzz&apos;
+&#x9;&#x9;&#x9;&#x9;SET updateRule = &apos;READ_WRITE&apos;;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Determine if the attribute should be updated if the update attribute value is different than the current attribute value or the attributeType is in &apos;LIST&apos;, &apos;MAP&apos;, &apos;STRING_ARRAY&apos;.
+&#x9;&#x9;&#x9;IF (updateRule = &apos;READ_WRITE&apos; AND
+&#x9;&#x9;&#x9;&#x9;&#x9;( ((currentAttrValue IS NULL AND updateAttrValue IS NOT NULL) OR (currentAttrValue IS NOT NULL AND updateAttrValue IS NULL) OR (currentAttrValue &lt;&gt; updateAttrValue)) OR 
+&#x9;&#x9;&#x9;&#x9;&#x9;  attributeType IN (&apos;LIST&apos;, &apos;MAP&apos;, &apos;STRING_ARRAY&apos;) )&#x9;) THEN
+&#x9;&#x9;&#x9;&#x9;IF (attributePath &lt;&gt; attributePathPrev) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;--call print(&apos;CHANGE IN ATTRIBUTE PATH: attributePathPrev=&apos;||attributePathPrev||&apos;  attributePath=&apos;||attributePath);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- If the previous attribute type was LIST, MAP or STRING_ARRAY then update the XML before moving on the current one.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (attributeTypePrev = &apos;LIST&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateListXML IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET msg = &apos;Updating LIST XML: attributeTypePrev:[&apos;||attributeTypePrev||&apos;]  attributePathPrev:[&apos;||attributePathPrev||&apos;]  updateListXML:[&apos;||REPLACE(updateListXML,CHR(10),&apos;&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET infoMessage = infoMessage || msg || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||msg);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Execute the update server attribute
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/server/updateServerAttribute(debug, attributePathPrev, attributeTypePrev, updateListXML);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Initialize variables
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsUpdated = numRowsUpdated + nonBasicTypeCount;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateListXML = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET listType = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET errMessage = errMessage || &apos;EXCEPTION:[&apos;||TRIM(REPLACE(CAST(CURRENT_EXCEPTION.MESSAGE AS LONGVARCHAR), CHR(10), &apos; &apos;))||&apos;]&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsError = numRowsError + nonBasicTypeCount;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateListXML = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET listType = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSEIF (attributeTypePrev = &apos;MAP&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateMapXML IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET msg = &apos;Updating MAP XML: attributeTypePrev:[&apos;||attributeTypePrev||&apos;]  attributePathPrev:[&apos;||attributePathPrev||&apos;]  updateMapXML:[&apos;||REPLACE(updateMapXML,CHR(10),&apos;&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET infoMessage = infoMessage || msg || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||msg);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Execute the update server attribute
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/server/updateServerAttribute(debug, attributePathPrev, attributeTypePrev, updateMapXML);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Initialize variables
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsUpdated = numRowsUpdated + nonBasicTypeCount;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateMapXML = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapKeyType = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapKeyValue = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapValueType = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapValueValue = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET errMessage = errMessage || &apos;EXCEPTION:[&apos;||TRIM(REPLACE(CAST(CURRENT_EXCEPTION.MESSAGE AS LONGVARCHAR), CHR(10), &apos; &apos;))||&apos;]&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsError = numRowsError + nonBasicTypeCount;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateMapXML = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapKeyType = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapKeyValue = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapValueType = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapValueValue = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSEIF (attributeTypePrev = &apos;STRING_ARRAY&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateArrayXML IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET msg = &apos;Updating STRING_ARRAY XML: attributeTypePrev:[&apos;||attributeTypePrev||&apos;]  attributePathPrev:[&apos;||attributePathPrev||&apos;]  updateArrayXML:[&apos;||REPLACE(updateArrayXML,CHR(10),&apos;&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET infoMessage = infoMessage || msg || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||msg);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Execute the update server attribute
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/server/updateServerAttribute(debug, attributePathPrev, attributeTypePrev, updateArrayXML);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Initialize variables
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsUpdated = numRowsUpdated + nonBasicTypeCount;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateArrayXML = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET errMessage = errMessage || &apos;EXCEPTION:[&apos;||TRIM(REPLACE(CAST(CURRENT_EXCEPTION.MESSAGE AS LONGVARCHAR), CHR(10), &apos; &apos;))||&apos;]&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsError = numRowsError + nonBasicTypeCount;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateArrayXML = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- If the current attribute path is not of type LIST, MAP or STRING_ARRAY and it is not the last row /zzz then update it.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (attributeType NOT IN (&apos;LIST&apos;, &apos;MAP&apos;, &apos;STRING_ARRAY&apos;) AND attributePath &lt;&gt; &apos;/zzz&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateAttrValueDisplay = updateAttrValue;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (attributeType = &apos;PASSWORD_STRING&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateAttrValueDisplay = &apos;********&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Execute the update server attribute for the current value
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If the attribute path is &quot;NOT&quot; in the list of attributes that are not allowed to be blank then update it.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If the attribute path is in the list of attributes that are not allowed to be blank and the value is not blank then update it.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (INSTR(ATTRIBUTE_PATH_BLANK_NOT_ALLOWED, attributePath) = 0 OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(INSTR(ATTRIBUTE_PATH_BLANK_NOT_ALLOWED, attributePath) &gt; 0 AND updateAttrValue IS NOT NULL AND LENGTH(TRIM(updateAttrValue)) &gt; 0 AND UPPER(updateAttrValue) != &apos;NULL&apos; AND UPPER(updateAttrValue) != &apos;[NULL]&apos;)) 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Since null cannot be passed into updateServerAttribute, change it to a empty value &apos;&apos;.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateAttrValue IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateAttrValue = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET msg = &apos;Updating BASIC_TYPE: attributeType:[&apos;||attributeType||&apos;]  attributePath:[&apos;||attributePath||&apos;]  updateAttrValue:[&apos;||NVL(updateAttrValueDisplay,&apos;[NULL]&apos;)||&apos;]  currentAttrValue:[&apos;||NVL(currentAttrValue,&apos;[NULL]&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET infoMessage = infoMessage || msg || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||msg);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Perform the update
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/server/updateServerAttribute(debug, attributePath, attributeType, updateAttrValue);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsUpdated = numRowsUpdated + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsSkipped = numRowsSkipped + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET msg = &apos;SKIP ROW-Null/Blank/Empty value not allowed: &quot;&apos;||NVL(displayName,&apos;null&apos;)||&apos;&quot;  attributePath:[&apos;||attributePath||&apos;] attributeType:[&apos;||attributeType||&apos;] updateRule:[&apos;||updateRule||&apos;] updateAttrValue:[&apos;||NVL(updateAttrValueDisplay,&apos;[NULL]&apos;)||&apos;] currentAttrValue:[&apos;||NVL(currentAttrValue,&apos;[NULL]&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET infoMessage = infoMessage || msg || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||msg);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET errMessage = errMessage || &apos;EXCEPTION:[&apos;||TRIM(REPLACE(CAST(CURRENT_EXCEPTION.MESSAGE AS LONGVARCHAR), CHR(10), &apos; &apos;))||&apos;]&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET numRowsError = numRowsError + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;IF (attributeType = &apos;LIST&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = nonBasicTypeCount + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateListXML IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateListXML = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET updateListXML = updateListXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                &lt;common:item&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                    &lt;common:type&gt;&apos;||NVL(listType,&apos;STRING&apos;)||&apos;&lt;/common:type&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateAttrValue IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateListXML = updateListXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                    &lt;common:value&gt;&apos;||updateAttrValue||&apos;&lt;/common:value&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateListXML = updateListXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                    &lt;common:value/&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET updateListXML = updateListXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                &lt;/common:item&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;--call print(&apos;CONCAT LIST VALUE: nonBasicTypeCount=&apos;||nonBasicTypeCount||&apos;  updateListXML=&apos;||REPLACE(updateListXML,CHR(10),&apos;&apos;));
+
+&#x9;&#x9;&#x9;&#x9;ELSEIF (attributeType = &apos;MAP&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = nonBasicTypeCount + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateMapXML IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateMapXML = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Search for an equal sign (=) in the format: mapKeyValue=mapValueValue
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(updateAttrValue, &apos;=&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapKeyValue = SUBSTRING(updateAttrValue, 1, pos1-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapValueValue = SUBSTRING(updateAttrValue, pos1+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (mapKeyValue IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapKeyValue = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (mapValueValue IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET mapValueValue = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET updateMapXML = updateMapXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                &lt;common:entry&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                    &lt;common:key&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                        &lt;common:type&gt;&apos;||NVL(mapKeyType,&apos;STRING&apos;)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                        &lt;common:value&gt;&apos;||mapKeyValue||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                    &lt;/common:key&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                    &lt;common:value&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                        &lt;common:type&gt;&apos;||NVL(mapValueType,&apos;STRING&apos;)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                        &lt;common:value&gt;&apos;||mapValueValue||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                    &lt;/common:value&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                &lt;/common:entry&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;--call print(&apos;CONCAT MAP VALUE: nonBasicTypeCount=&apos;||nonBasicTypeCount||&apos;  updateMapXML=&apos;||REPLACE(updateMapXML,CHR(10),&apos;&apos;));
+
+&#x9;&#x9;&#x9;&#x9;ELSEIF (attributeType = &apos;STRING_ARRAY&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET nonBasicTypeCount = nonBasicTypeCount + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (updateArrayXML IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET updateArrayXML = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET updateArrayXML = updateArrayXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;                &lt;common:item&gt;&apos;||updateAttrValue||&apos;&lt;/common:item&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;--call print(&apos;CONCAT STRING_ARRAY VALUE: nonBasicTypeCount=&apos;||nonBasicTypeCount||&apos;  updateArrayXML=&apos;||REPLACE(updateArrayXML,CHR(10),&apos;&apos;));
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;SET attributePathPrev = attributePath;
+&#x9;&#x9;&#x9;&#x9;SET attributeTypePrev = attributeType;
+&#x9;&#x9;&#x9;ELSEIF (updateRule = &apos;INVALID&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;-- Do nothing.  It was already counted as an error
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET numRowsSkipped = numRowsSkipped + 1;
+&#x9;&#x9;&#x9;&#x9;SET updateAttrValueDisplay = updateAttrValue;
+&#x9;&#x9;&#x9;&#x9;IF (attributeType = &apos;PASSWORD_STRING&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET updateAttrValueDisplay = &apos;********&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (updateRule &lt;&gt; &apos;READ_WRITE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET msg = &apos;SKIP ROW-Update Not allowed: &quot;&apos;||NVL(displayName,&apos;null&apos;)||&apos;&quot;  attributePath:[&apos;||attributePath||&apos;] attributeType:[&apos;||attributeType||&apos;] updateRule:[&apos;||updateRule||&apos;] updateAttrValue:[&apos;||NVL(updateAttrValueDisplay,&apos;[NULL]&apos;)||&apos;] currentAttrValue:[&apos;||NVL(currentAttrValue,&apos;[NULL]&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET infoMessage = infoMessage || msg || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||msg);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET msg = &apos;SKIP ROW-No change to value: &quot;&apos;||NVL(displayName,&apos;null&apos;)||&apos;&quot;  attributePath:[&apos;||attributePath||&apos;] attributeType:[&apos;||attributeType||&apos;] updateRule:[&apos;||updateRule||&apos;] updateAttrValue:[&apos;||NVL(updateAttrValueDisplay,&apos;[NULL]&apos;)||&apos;] currentAttrValue:[&apos;||NVL(currentAttrValue,&apos;[NULL]&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET infoMessage = infoMessage || msg || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||msg);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+&#x9;IF (UPPER(debug) = &apos;Y&apos; AND numRowsUpdated = 0) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos;  No configuration items were updated for environmentName=&apos;||NVL(environmentName,&apos;null&apos;));
+&#x9;END IF;
+&#x9;IF (numRowsError = 0) THEN
+&#x9;&#x9;SET errMessage = null;
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1551976096314</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">977816</attribute>
+  <attribute name="creatorUserName" type="STRING">mtinius001</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">977816</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">11/241</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/508</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/189</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/403</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">14/362</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">14/330</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/137</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/136</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/495</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">14/412</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/190</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">14/304</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/501</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1551976096314</attribute>
+</metadata>

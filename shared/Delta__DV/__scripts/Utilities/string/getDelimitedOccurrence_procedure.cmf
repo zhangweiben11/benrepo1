@@ -1,0 +1,177 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getDelimitedOccurrence" path="/shared/Delta_DV/_scripts/Utilities/string/getDelimitedOccurrence" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getDelimitedOccurrence:
+&#x9;Return the occurrence of a delimited string
+ 
+&#x9;Input:
+&#x9;&#x9;inText - Text to search
+&#x9;&#x9;mode - defines the mode by which to extract folder path and root name  
+&#x9;&#x9;&#x9;Values: F or R, &apos;F&apos;=forwrad, &apos;R&apos;=reverse
+&#x9;&#x9;delimiter - the delimiter to search for
+&#x9;&#x9;occurrence - the occurrence to return (default=1),  0 returns the last occurrence.
+&#x9;&#x9;trimText - 0=do not trim result, 1=do trim result text (default=0)
+&#x9;Output:
+&#x9;&#x9;result - the result
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.1&#x9;&#x9;12/14/2011&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2018.101&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inText" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="mode" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="delimiter" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inOccurrence" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inTrimText" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getDelimitedOccurrence:
+&#x9;Return the occurrence of a delimited string
+ 
+&#x9;Input:
+&#x9;&#x9;inText - Text to search
+&#x9;&#x9;mode - defines the mode by which to extract folder path and root name  
+&#x9;&#x9;&#x9;Values: F or R, &apos;F&apos;=forwrad, &apos;R&apos;=reverse
+&#x9;&#x9;delimiter - the delimiter to search for
+&#x9;&#x9;occurrence - the occurrence to return (default=1),  0 returns the last occurrence.
+&#x9;&#x9;trimText - 0=do not trim result, 1=do trim result text (default=0)
+&#x9;Output:
+&#x9;&#x9;result - the result
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.1&#x9;&#x9;12/14/2011&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2018.101&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getDelimitedOccurrence(
+&#x9;IN inText&#x9;&#x9;&#x9; &#x9;LONGVARCHAR,  &#x9;-- text to parse like /shared/myproject/mypath
+&#x9;IN mode&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1), &#x9;&#x9;-- &apos;F&apos;=forward, &apos;R&apos;=reverse
+&#x9;IN delimiter&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- &apos;/&apos;
+&#x9;IN inOccurrence&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- 1 - get the first occurrence
+&#x9;IN inTrimText&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- 0 do not trim, 1=do trim
+&#x9;OUT result  &#x9;&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE occurrence&#x9;&#x9;&#x9;INTEGER DEFAULT inOccurrence;
+&#x9;DECLARE trimText&#x9;&#x9;&#x9;INTEGER DEFAULT inTrimText;
+&#x9;DECLARE&#x9;reverseInputText&#x9;SMALLINT DEFAULT 0;&#x9;&#x9;-- 0=do not reverse input text, 1=reverse input text before parsing
+&#x9;DECLARE&#x9;reverseOutput&#x9;&#x9;SMALLINT DEFAULT 0;&#x9;&#x9;-- 0=do not reverse output text, 1=reverse output text before returning.
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;if (mode is null or (UPPER(mode) &lt;&gt; &apos;F&apos; and UPPER(mode) &lt;&gt; &apos;R&apos;) ) then
+&#x9;&#x9;raise ex value &apos;Invalid mode=[&apos;||NVL(mode,&apos;null&apos;)||&apos;]  Must be F (forward) or R (reverse).&apos;;
+&#x9;end if;
+&#x9;if (occurrence is null) then
+&#x9;&#x9;set occurrence = 1;
+&#x9;end if;
+&#x9;if (delimiter is null or length(delimiter||&apos;*&apos;)-1 = 0) then
+&#x9;&#x9;raise ex value &apos;Delimiter cannot be null or empty.&apos;;
+&#x9;end if;
+&#x9;if (trimText is null) then
+&#x9;&#x9;set trimText = 0;
+&#x9;end if;
+&#x9;if (upper(mode) = &apos;R&apos;) then
+&#x9;&#x9;set reverseInputText = 1;
+&#x9;&#x9;set reverseOutput = 1;
+&#x9;end if;
+
+&#x9;for r as 
+&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(inText,delimiter,occurrence,reverseInputText,reverseOutput,trimText,0)
+&#x9;do
+&#x9;&#x9;set result = r.object;
+&#x9;end for;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

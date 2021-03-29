@@ -1,0 +1,214 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="entityExtractToPipe" path="/shared/Delta_DV/_scripts/Utilities/string/entityExtractToPipe" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[entityExtractToPipe:
+&#x9;Invoke &quot;entityExtract&quot; and return the keywords in a pipe cursor.  
+&#x9;This is a helper procedure that takes the vector output from &quot;entityExtract&quot; and turns it into a cursor.
+ 
+&#x9;Input:
+&#x9;&#x9;inText - contains any text string.  
+&#x9;&#x9;&#x9;Values: Any text value
+&#x9;&#x9;inDelimiter - Any single delimiting character that separates words in a text string.
+&#x9;&#x9;&#x9;Values: &apos; &apos;, &apos;|&apos; or &apos;,&apos; are common separators.
+&#x9;&#x9;inNumWords - Number of words to extract  
+&#x9;&#x9;&#x9;Values: 0 or Null=extract all words, &gt;0 only extract to the number provided
+&#x9;&#x9;random - A numerical bit (1 or 0) that defines whether to return words randomly or in sequence.  
+&#x9;&#x9;&#x9; Random may be useful if you want to randomly skip over words to get a random extraction of words.
+&#x9;&#x9;&#x9; Sequential will extract words in order of their appearance in the text.
+&#x9;&#x9;&#x9;Values: true(1)=random-produce a list randomly from the incoming text
+&#x9;&#x9;&#x9;&#x9;false(0)=sequential-produce a list sequentially from the incoming text
+&#x9;&#x9;removeSymbols - A numerical bit (1 or 0) that defines whether to remove all symbols before performing the extraction.  
+&#x9;&#x9;&#x9;&#x9;The list of symbols are defined in entityConstants.
+&#x9;&#x9;&#x9;Values: true(1)=remove symbols and punctuation prior to extraction
+&#x9;&#x9;&#x9;&#x9;false(0)=do not remove symbols and punctuation prior to extraction
+&#x9;Output:
+&#x9;&#x9;keywordsPipe - A pipe cursor of keyword entities
+&#x9;&#x9;&#x9;Values: cursor of any text value such as this cursor output:
+&#x9;&#x9;&#x9;&#x9;keyword1
+&#x9;&#x9;&#x9;&#x9;keyword2
+&#x9;&#x9;&#x9;&#x9;keyword3
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Added new.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inText" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="inDelimiter" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="inNumWords" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="random" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="removeSymbols" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="keywordsPipe" direction="OUT" nullable="true">
+      <datatype name="keywordsPipe" type="TABLE" refId="256">
+        <element name="keyword">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/entityExtract" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inDelimiter" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inNumWords" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="random" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="removeSymbols" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="entityVector" direction="OUT">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+          </itemDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* entityExtractToPipe:
+&#x9;Invoke &quot;entityExtract&quot; and return the keywords in a pipe cursor.  
+&#x9;This is a helper procedure that takes the vector output from &quot;entityExtract&quot; and turns it into a cursor.
+ 
+&#x9;Input:
+&#x9;&#x9;inText - contains any text string.  
+&#x9;&#x9;&#x9;Values: Any text value
+&#x9;&#x9;inDelimiter - Any single delimiting character that separates words in a text string.
+&#x9;&#x9;&#x9;Values: &apos; &apos;, &apos;|&apos; or &apos;,&apos; are common separators.
+&#x9;&#x9;inNumWords - Number of words to extract  
+&#x9;&#x9;&#x9;Values: 0 or Null=extract all words, &gt;0 only extract to the number provided
+&#x9;&#x9;random - A numerical bit (1 or 0) that defines whether to return words randomly or in sequence.  
+&#x9;&#x9;&#x9; Random may be useful if you want to randomly skip over words to get a random extraction of words.
+&#x9;&#x9;&#x9; Sequential will extract words in order of their appearance in the text.
+&#x9;&#x9;&#x9;Values: true(1)=random-produce a list randomly from the incoming text
+&#x9;&#x9;&#x9;&#x9;false(0)=sequential-produce a list sequentially from the incoming text
+&#x9;&#x9;removeSymbols - A numerical bit (1 or 0) that defines whether to remove all symbols before performing the extraction.  
+&#x9;&#x9;&#x9;&#x9;The list of symbols are defined in entityConstants.
+&#x9;&#x9;&#x9;Values: true(1)=remove symbols and punctuation prior to extraction
+&#x9;&#x9;&#x9;&#x9;false(0)=do not remove symbols and punctuation prior to extraction
+&#x9;Output:
+&#x9;&#x9;keywordsPipe - A pipe cursor of keyword entities
+&#x9;&#x9;&#x9;Values: cursor of any text value such as this cursor output:
+&#x9;&#x9;&#x9;&#x9;keyword1
+&#x9;&#x9;&#x9;&#x9;keyword2
+&#x9;&#x9;&#x9;&#x9;keyword3
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Added new.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE entityExtractToPipe(
+&#x9;IN inText&#x9;&#x9;LONGVARCHAR,
+&#x9;IN inDelimiter&#x9;&#x9;CHAR(1),-- &apos; &apos;, &apos;|&apos; or any other single character delimiter
+&#x9;IN inNumWords&#x9;&#x9;INTEGER,-- number of words to produce.  If 0 or null then produce all words
+&#x9;IN random&#x9;&#x9;bit,&#x9;-- true(1)=random-produce a list randomly from the incoming text
+&#x9;&#x9;&#x9;&#x9;&#x9;-- false(0)=sequential-produce a list sequentially from the incoming text
+&#x9;IN removeSymbols&#x9;bit,&#x9;-- true(1)=remove symbols and punctuation prior to extraction
+&#x9;&#x9;&#x9;&#x9;&#x9;-- false(0)=do not remove symbols and punctuation prior to extraction
+&#x9;OUT keywordsPipe &#x9;Pipe (keyword LONGVARCHAR)
+)
+BEGIN
+&#x9;DECLARE outWord&#x9;&#x9;VARCHAR;
+&#x9;DECLARE entityVector&#x9;VECTOR(varchar);
+&#x9;DECLARE i,j&#x9;&#x9;INTEGER DEFAULT 1;
+&#x9;DECLARE randomNum,mod&#x9;INTEGER;
+&#x9;DECLARE numWords &#x9;INTEGER;
+
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/entityExtract(inText,inDelimiter,numWords,random,removeSymbols,entityVector);
+
+&#x9;if (inNumWords = 0) then
+&#x9;&#x9;set randomNum = CARDINALITY(entityVector);
+&#x9;&#x9;set numWords = CARDINALITY(entityVector);
+&#x9;else
+&#x9;&#x9;set randomNum = CARDINALITY(entityVector) / numWords;
+&#x9;&#x9;set numWords = inNumWords;
+&#x9;end if;
+&#x9;if (randomNum = 0) then
+&#x9;&#x9;set randomNum = 1;
+&#x9;end if;
+--call print(&apos;randomNum=&apos;||randomNum);
+--call print(&apos;CARDINALITY(entityVector)=&apos;||cast(CARDINALITY(entityVector) as varchar));
+
+&#x9;set outWord = &apos;&apos;;
+&#x9;set i = 1;
+&#x9;set j = 1;
+&#x9;outWordsLoop:
+&#x9;WHILE (i &lt;= CARDINALITY(entityVector) and j &lt;= numWords) DO
+&#x9;&#x9;set mod = i % randomNum;
+--call print(&apos;mod=&apos;||mod);
+&#x9;&#x9;if (random = 1) then
+&#x9;&#x9;&#x9;if (mod = 0) then
+&#x9;&#x9;&#x9;&#x9;insert into keywordsPipe values(entityVector[i]);
+&#x9;&#x9;&#x9;&#x9;set j = j + 1;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;insert into keywordsPipe values ( entityVector[i] );
+&#x9;&#x9;&#x9;set j = j + 1;
+&#x9;&#x9;end if;
+&#x9;&#x9;set i = i + 1;
+&#x9;END WHILE;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1382624151125</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

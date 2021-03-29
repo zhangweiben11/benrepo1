@@ -1,0 +1,104 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkg_MEMBER_POSTAL_ADDRESS" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/EDP/pkg_MEMBER_POSTAL_ADDRESS" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype type="TABLE" refId="256">
+        <element name="Member_Postal_Address_SKEY">
+          <datatype name="INTEGER" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="Address_Line1_TXT">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Address_Line2_TXT">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Address_Line3_TXT">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="City_NM">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Postal_CD_TXT">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Longitude_Coordinate_NBR">
+          <datatype name="DECIMAL" extendedName="decimal(38,23)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+        </element>
+        <element name="Latitude_Coordinate_NBR">
+          <datatype name="DECIMAL" extendedName="decimal(38,23)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+        </element>
+        <element name="State_Province_CD">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Country_3_CD">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Member_SKEY">
+          <datatype name="INTEGER" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="Source_System_Unique_ID">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Source_System_NM">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Create_DTM">
+          <datatype name="TIMESTAMP" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+        </element>
+        <element name="Created_By_ID">
+          <datatype name="VARCHAR" extendedName="nvarchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+        </element>
+        <element name="Last_Updated_By_ID">
+          <datatype name="VARCHAR" extendedName="nvarchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+        </element>
+        <element name="Last_Update_DTM">
+          <datatype name="TIMESTAMP" extendedName="datetime" subType="DATASOURCE_TYPE" type="DATETIME"/>
+        </element>
+        <element name="County_CD">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT   
+EBX_MEM_PERSON_POSTAL_ADDRESS.PERSON_POSTAL_ADDRESS_SKEY Member_Postal_Address_SKEY, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.ADDRESS_LINE1_TXT Address_Line1_TXT, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.ADDRESS_LINE2_TXT Address_Line2_TXT, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.ADDRESS_LINE3_TXT Address_Line3_TXT, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.CITY_NM City_NM, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.POSTAL_CD_TXT Postal_CD_TXT, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.LONGITUDE_COORDINATE_NBR Longitude_Coordinate_NBR, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.LATITUDE_COORDINATE_NBR Latitude_Coordinate_NBR, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.STATE_PROVINCE_CD_ State_Province_CD, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.COUNTRY_3_CD_ Country_3_CD, 
+    EBX_MEM_MEMBER_ROLE.MEMBER_ROLE_SKEY Member_SKEY, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.SOURCE_SYSTEM_ID Source_System_Unique_ID, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.SOURCE_SYSTEM_NM Source_System_NM, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.T_CREATION_DATE Create_DTM, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.T_CREATOR_ID Created_By_ID, 
+    EBX_MEM_PERSON_POSTAL_ADDRESS.T_LAST_USER_ID Last_Updated_By_ID, 
+  cast(DATEADD(S, CONVERT(int,LEFT(EBX_MEM_PERSON_POSTAL_ADDRESS.T_LAST_WRITE  , 10)), &apos;1970-01-01&apos;)  AT TIME ZONE &apos;UTC&apos; AT TIME ZONE &apos;Pacific Standard Time&apos; as DATETIME) Last_Update_DTM,  
+    EBX_MEM_PERSON_POSTAL_ADDRESS.COUNTY_CD County_CD
+FROM      
+   tibcoebx.dbo.EBX_MEM_PERSON_POSTAL_ADDRESS EBX_MEM_PERSON_POSTAL_ADDRESS INNER JOIN 
+       tibcoebx.dbo.EBX_MEM_MEMBER_ROLE EBX_MEM_MEMBER_ROLE
+    ON EBX_MEM_MEMBER_ROLE.PERSON_SKEY_ = EBX_MEM_PERSON_POSTAL_ADDRESS.PERSON_SKEY_</attribute>
+  <attribute name="creationDate" type="LONG">1606260918869</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1606260918869</attribute>
+</metadata>

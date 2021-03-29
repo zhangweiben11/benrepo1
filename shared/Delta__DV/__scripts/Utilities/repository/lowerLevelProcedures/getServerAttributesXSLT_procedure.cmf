@@ -1,0 +1,416 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getServerAttributesXSLT" path="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getServerAttributesXSLT" type="PROCEDURE" subtype="XSLT_TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getServerAttributeXSLT:
+
+&#x9;This lower level procedure returns the server attribute value at the input server attribute location
+
+    Server values may be single scalar or may be a list, a map, or an array.
+
+
+&#x9;Input:
+&#x9;&#x9;attributeXML - The XML describing the attribute to search for in the attribute repository.  
+&#x9;&#x9;&#x9;Values: XML
+
+
+&#x9;Output:
+&#x9;&#x9;result - The value at the input attribute location.
+&#x9;&#x9;&#x9;Values: CURSOR (
+                attrName VARCHAR(32768),       -- the attribute name
+                attrType VARCHAR(32768),       -- the value type. if not LIST, MAP, or ARRAY, then the scalar value&apos;s type
+                attrValue VARCHAR(32768),      -- the scalar value (NULL if the value type is LIST, MAP, or ARRAY)
+                listEntryType VARCHAR(32768),  -- if the attribute value is a list, this is the list entry&apos;s type
+                listEntryValue VARCHAR(32768), -- if the attribute value is a list, this is the list entry&apos;s value
+                mapKeyType VARCHAR(32768),     -- if the attribute value is a map, this is the map entry&apos;s key type
+                mapKeyValue VARCHAR(32768),    -- if the attribute value is a map, this is the map entry&apos;s key value
+                mapValueType VARCHAR(32768),   -- if the attribute value is a map, this is the map entry&apos;s value type
+                mapValueValue VARCHAR(32768),  -- if the attribute value is a map, this is the map entry&apos;s value value
+                arrayItem VARCHAR(32768)       -- if the attribute value is an array, this is the array entry&apos;s value
+            );
+
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;2/14/2013&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.2.2&#x9;&#x9;&#x9;Created new.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="getServerAttributes" direction="IN" nullable="true">
+      <datatype name="getServerAttributes" extendedName="{http://www.compositesw.com/services/system/admin/server}getServerAttributes" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}getServerAttributes" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}getServerAttributes">
+        <schemaDatatype>
+          <datatype name="getServerAttributes" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="getServerAttributesRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="257">
+            <element name="paths" namespace="http://www.compositesw.com/services/system/admin/server">
+              <datatype name="pathList" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="path" namespace="http://www.compositesw.com/services/system/admin/server" maxOccurs="2147483647" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+              </datatype>
+            </element>
+            <element name="getAllAttributes" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+              <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="outputs" direction="OUT" nullable="false">
+      <datatype name="outputs" type="TABLE" refId="256">
+        <element name="attrName">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrType">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="value">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="listEntryType">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="listEntryValue">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mapKeyType">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mapKeyValue">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mayValueType">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="mapValueValue">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="arrayItem">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/services/webservices/system/admin/server/operations/ServerSchema" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/server/operations/getServerAttributes" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getServerAttributes" direction="IN">
+        <datatype name="getServerAttributes" extendedName="{http://www.compositesw.com/services/system/admin/server}getServerAttributes" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}getServerAttributes" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}getServerAttributes">
+          <schemaDatatype>
+            <datatype name="getServerAttributes" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="getServerAttributesRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="paths" namespace="http://www.compositesw.com/services/system/admin/server">
+                <datatype name="pathList" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="path" namespace="http://www.compositesw.com/services/system/admin/server" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+              <element name="getAllAttributes" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="getServerAttributesResponse" direction="OUT">
+        <datatype name="getServerAttributesResponse" extendedName="{http://www.compositesw.com/services/system/admin/server}getServerAttributesResponse" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}getServerAttributesResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}getServerAttributesResponse">
+          <schemaDatatype>
+            <datatype name="getServerAttributesResponse" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="getServerAttributesResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="769">
+              <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/server">
+                <datatype name="attributeList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                  <element name="attribute" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="attribute" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeTypeValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                          <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                            <datatype name="attributeTypeValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                              <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="1537"/>
+                              </element>
+                              <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeTypeValueMap" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                  <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                                      <element name="key" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1793"/>
+                                      </element>
+                                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1793"/>
+                                      </element>
+                                    </datatype>
+                                  </element>
+                                </datatype>
+                              </element>
+                              <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2561">
+                                  <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="2049"/>
+                      </element>
+                      <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="2561"/>
+                      </element>
+                      <element name="unset" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="2817">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3073">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="sourcePath" type="STRING">/services/webservices/system/admin/server/operations/getServerAttributes</attribute>
+  <attribute name="sourceType" type="SHORT">3</attribute>
+  <attribute name="transformModel" type="BYTE_ARRAY">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</attribute>
+  <attribute name="xqueryModel" type="NULL"/>
+  <attribute name="xslt" type="STRING">&lt;xslt:stylesheet xmlns:xslt=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:csw-xform=&quot;http://www.compositesw.com/2003/xform&quot; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/server&quot; xmlns:ns2=&quot;http://www.compositesw.com/services/system/util/common&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; version=&quot;2.0&quot;&gt;
+  &lt;xslt:template match=&quot;/&quot;&gt;
+    &lt;xslt:variable name=&quot;_attrName&quot;/&gt;
+    &lt;xslt:variable name=&quot;_attrType&quot;/&gt;
+    &lt;xslt:variable name=&quot;_value&quot;/&gt;
+    &lt;xslt:variable name=&quot;_listEntryType&quot;/&gt;
+    &lt;xslt:variable name=&quot;_listEntryValue&quot;/&gt;
+    &lt;xslt:variable name=&quot;_mapKeyType&quot;/&gt;
+    &lt;xslt:variable name=&quot;_mapKeyValue&quot;/&gt;
+    &lt;xslt:variable name=&quot;_mayValueType&quot;/&gt;
+    &lt;xslt:variable name=&quot;_mapValueValue&quot;/&gt;
+    &lt;xslt:variable name=&quot;_arrayItem&quot;/&gt;
+    &lt;xslt:element name=&quot;results&quot;&gt;
+      &lt;xslt:for-each select=&quot;ns1:getServerAttributesResponse&quot;&gt;
+        &lt;xslt:for-each select=&quot;ns1:attributes&quot;&gt;
+          &lt;xslt:for-each select=&quot;ns2:attribute&quot;&gt;
+            &lt;xslt:variable name=&quot;_attrName&quot; select=&quot;ns2:name&quot;/&gt;
+            &lt;xslt:variable name=&quot;_attrType&quot; select=&quot;ns2:type&quot;/&gt;
+            &lt;xslt:variable name=&quot;_value&quot; select=&quot;ns2:value&quot;/&gt;
+            &lt;xslt:for-each select=&quot;ns2:valueList&quot;&gt;
+              &lt;xslt:for-each select=&quot;ns2:item&quot;&gt;
+                &lt;xslt:variable name=&quot;_listEntryType&quot; select=&quot;ns2:type&quot;/&gt;
+                &lt;xslt:variable name=&quot;_listEntryValue&quot; select=&quot;ns2:value&quot;/&gt;
+                &lt;xslt:element name=&quot;result&quot;&gt;
+                  &lt;xslt:element name=&quot;attrName&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_attrName&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;attrType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_attrType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;value&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_value&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;listEntryType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_listEntryType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;listEntryValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_listEntryValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapKeyType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapKeyType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapKeyValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapKeyValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mayValueType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mayValueType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapValueValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapValueValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;arrayItem&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_arrayItem&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                &lt;/xslt:element&gt;
+              &lt;/xslt:for-each&gt;
+            &lt;/xslt:for-each&gt;
+            &lt;xslt:for-each select=&quot;ns2:valueMap&quot;&gt;
+              &lt;xslt:for-each select=&quot;ns2:entry&quot;&gt;
+                &lt;xslt:variable name=&quot;_mapKeyType&quot; select=&quot;ns2:key[1]/ns2:type&quot;/&gt;
+                &lt;xslt:variable name=&quot;_mapKeyValue&quot; select=&quot;ns2:key[1]/ns2:value&quot;/&gt;
+                &lt;xslt:variable name=&quot;_mayValueType&quot; select=&quot;ns2:value[1]/ns2:type&quot;/&gt;
+                &lt;xslt:variable name=&quot;_mapValueValue&quot; select=&quot;ns2:value[1]/ns2:value&quot;/&gt;
+                &lt;xslt:element name=&quot;result&quot;&gt;
+                  &lt;xslt:element name=&quot;attrName&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_attrName&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;attrType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_attrType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;value&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_value&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;listEntryType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_listEntryType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;listEntryValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_listEntryValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapKeyType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapKeyType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapKeyValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapKeyValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mayValueType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mayValueType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapValueValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapValueValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;arrayItem&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_arrayItem&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                &lt;/xslt:element&gt;
+              &lt;/xslt:for-each&gt;
+            &lt;/xslt:for-each&gt;
+            &lt;xslt:for-each select=&quot;ns2:valueArray&quot;&gt;
+              &lt;xslt:for-each select=&quot;ns2:item&quot;&gt;
+                &lt;xslt:variable name=&quot;_arrayItem&quot; select=&quot;.&quot;/&gt;
+                &lt;xslt:element name=&quot;result&quot;&gt;
+                  &lt;xslt:element name=&quot;attrName&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_attrName&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;attrType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_attrType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;value&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_value&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;listEntryType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_listEntryType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;listEntryValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_listEntryValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapKeyType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapKeyType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapKeyValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapKeyValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mayValueType&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mayValueType&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;mapValueValue&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_mapValueValue&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;arrayItem&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_arrayItem&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                &lt;/xslt:element&gt;
+              &lt;/xslt:for-each&gt;
+            &lt;/xslt:for-each&gt;
+            &lt;xslt:element name=&quot;result&quot;&gt;
+              &lt;xslt:element name=&quot;attrName&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_attrName&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;attrType&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_attrType&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;value&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_value&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;listEntryType&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_listEntryType&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;listEntryValue&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_listEntryValue&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;mapKeyType&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_mapKeyType&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;mapKeyValue&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_mapKeyValue&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;mayValueType&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_mayValueType&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;mapValueValue&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_mapValueValue&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;arrayItem&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_arrayItem&quot;/&gt;
+              &lt;/xslt:element&gt;
+            &lt;/xslt:element&gt;
+          &lt;/xslt:for-each&gt;
+        &lt;/xslt:for-each&gt;
+      &lt;/xslt:for-each&gt;
+    &lt;/xslt:element&gt;
+  &lt;/xslt:template&gt;
+&lt;/xslt:stylesheet&gt;</attribute>
+</metadata>

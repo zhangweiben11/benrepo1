@@ -1,0 +1,448 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="template_generatePDToolDeployableResourcePlan" path="/shared/Delta_DV/_scripts/Utilities/pdtool/template_generatePDToolDeployableResourcePlan" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[template_generatePDToolDeployableResourcePlan:
+&#x9;-- CIS Repository Helper Procedure --
+
+&#x9;&#x9;This procedure provides a template for invoking &quot;generatePDToolDeployableResourcePlanByLineage&quot; or &quot;generatePDToolDeployableResourcePlanByDate&quot;.
+&#x9;&#x9;This procedure should be copied to a working folder within the project and modified by the user for developers to use with ease.
+
+&#x9;&#x9;Note that when using &quot;generatePDToolDeployableResourcePlanByDate&quot; to create a deployment plan based on a resource date
+&#x9;&#x9;can only be used with CIS 6.2.2 and higher.  CIS 6.2.2 and higher introduced a &quot;lastModifiedDate&quot; and &quot;creationDate&quot; 
+&#x9;&#x9;in the metadata.  Prior to this release their are no date values to compare with.
+
+&#x9;&#x9;Recommendation for location:
+&#x9;&#x9;&#x9;/shared/PROJECT_FOLDER_PATH/Deployment
+
+&#x9;&#x9;
+&#x9;&#x9;Modify the CASE Statement found in this procedure to specify your specific environment.   Add or delete WHEN statements as needed.
+&#x9;&#x9;&#x9;WHEN 1 THEN
+&#x9;&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Turn debugging on or off (recommend keeping it on).  Y or N
+&#x9;&#x9;&#x9;&#x9;set planFileRootPath = &apos;C:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the root path of the plan file. e.g. C:
+&#x9;&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan1.dp&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the complete path to the file system deployment plan file. e.g. D:/PDTool62/resources/plans/plan1.dp
+&#x9;&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- number of rows to buffer
+&#x9;&#x9;&#x9;&#x9;set resourcePathList = &apos;/services/databases/MYTEST/ViewSales,/services/databases/MYTEST/LookupProduct,/services/databases/MYTEST/ViewSales2&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of resource paths
+&#x9;&#x9;&#x9;&#x9;set resourceTimestamp = null or PARSE_TIMESTAMP(&apos;2013-08-06 16:30:00&apos;, &apos;YYYY-MM-DD HH24:MI:SS&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set to null when invoking the (LINEAGE): generatePDToolDeployableResourcePlanByLineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set to a timestamp when invoking (TIMESTAMP): generatePDToolDeployableResourcePlanByDate
+&#x9;&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0=do not include, 1=include 1st level trigger dependents
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For each resource encountered, look to see if any dependent resources are triggers and include them if this variable is set to 1.
+&#x9;&#x9;&#x9;&#x9;set excludePathsList = &apos;/shared/examples/ds_XML/&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;&#x9;&#x9;&#x9;set excludeSystemPathsList =&apos;/shared/ASAssets/BestPractices/,/lib/&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of system paths that should not be included in deployment.
+&#x9;&#x9;&#x9;&#x9;set includeBasePath = &apos;/shared/test00&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of project folders that serve as the base folder.  Exclude any folders not identified by these base path folders.
+
+&#x9;&#x9;The following is a default path that should include all system level and Composite utility paths.
+&#x9;&#x9;&#x9;&#x9;DECLARE excludeSystemPathsList&#x9;&#x9;LONGVARCHAR DEFAULT &apos;/shared/BestPractices,/shared/Utilities,/lib&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- all system level and Composite utility paths that should not be included in the list
+
+&#x9;&#x9;PDTool (Promotion and Deployment Tool) is used to execute generated plan files.  If 
+&#x9;&#x9;you do not have PDTool on site, you may obtain it through a Professional Services engagement.
+
+&#x9;Input:
+&#x9;&#x9;planOption&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;- The number of the deployment plan option to generate
+&#x9;Output:
+&#x9;&#x9;success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER -- 1=success, 0=failure
+
+&#x9;Exceptions: none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.301&#x9;07/30/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.4&#x9;&#x9;10/28/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Added parameter inIgnoreResourceDoesNotExist
+&#x9;2013.4&#x9;&#x9;10/28/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Added parameter inIgnoreResourceDoesNotExist
+&#x9;2014.3&#x9;&#x9;07/07/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Modified to use optionType to provide a choice of using Creation Date or Modified Date but not both at the same time.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="planOption" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/pdtool/generatePDToolDeployableResourcePlanByDate" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="planFilePath" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="bufferSize" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="PDToolPlanTemplateVCS" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="PDToolPlanTemplateFolders" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="resourcePathList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="resourceTimestamp" direction="IN">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="optionType" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="includeBasePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="excludePathsList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/pdtool/generatePDToolDeployableResourcePlanByLineage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="planFilePath" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="bufferSize" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="PDToolPlanTemplateVCS" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="PDToolPlanTemplateFolders" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="resourcePathList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="includeDependentTriggers" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="includeBasePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="excludePathsList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inIgnoreResourceDoesNotExist" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*&#x9;template_generatePDToolDeployableResourcePlan:
+&#x9;-- CIS Repository Helper Procedure --
+
+&#x9;&#x9;This procedure provides a template for invoking &quot;generatePDToolDeployableResourcePlanByLineage&quot; or &quot;generatePDToolDeployableResourcePlanByDate&quot;.
+&#x9;&#x9;This procedure should be copied to a working folder within the project and modified by the user for developers to use with ease.
+
+&#x9;&#x9;Note that when using &quot;generatePDToolDeployableResourcePlanByDate&quot; to create a deployment plan based on a resource date
+&#x9;&#x9;can only be used with CIS 6.2.2 and higher.  CIS 6.2.2 and higher introduced a &quot;lastModifiedDate&quot; and &quot;creationDate&quot; 
+&#x9;&#x9;in the metadata.  Prior to this release their are no date values to compare with.
+
+&#x9;&#x9;Recommendation for location:
+&#x9;&#x9;&#x9;/shared/PROJECT_FOLDER_PATH/Deployment
+
+&#x9;&#x9;
+&#x9;&#x9;Modify the CASE Statement found in this procedure to specify your specific environment.   Add or delete WHEN statements as needed.
+&#x9;&#x9;&#x9;WHEN 1 THEN
+&#x9;&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Turn debugging on or off (recommend keeping it on).  Y or N
+&#x9;&#x9;&#x9;&#x9;set planFileRootPath = &apos;C:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the root path of the plan file. e.g. C:
+&#x9;&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan1.dp&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the complete path to the file system deployment plan file. e.g. D:/PDTool62/resources/plans/plan1.dp
+&#x9;&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- number of rows to buffer
+&#x9;&#x9;&#x9;&#x9;set resourcePathList = &apos;/services/databases/MYTEST/ViewSales,/services/databases/MYTEST/LookupProduct,/services/databases/MYTEST/ViewSales2&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of resource paths
+&#x9;&#x9;&#x9;&#x9;set resourceTimestamp = null or PARSE_TIMESTAMP(&apos;2013-08-06 16:30:00&apos;, &apos;YYYY-MM-DD HH24:MI:SS&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set to null when invoking the (LINEAGE): generatePDToolDeployableResourcePlanByLineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set to a timestamp when invoking (TIMESTAMP): generatePDToolDeployableResourcePlanByDate
+&#x9;&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0=do not include, 1=include 1st level trigger dependents
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For each resource encountered, look to see if any dependent resources are triggers and include them if this variable is set to 1.
+&#x9;&#x9;&#x9;&#x9;set excludePathsList = &apos;/shared/examples/ds_XML/&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;&#x9;&#x9;&#x9;set excludeSystemPathsList =&apos;/shared/ASAssets/BestPractices/,/lib/&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of system paths that should not be included in deployment.
+&#x9;&#x9;&#x9;&#x9;set includeBasePath = &apos;/shared/test00&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- a comma separated list of project folders that serve as the base folder.  Exclude any folders not identified by these base path folders.
+
+&#x9;&#x9;The following is a default path that should include all system level and Composite utility paths.
+&#x9;&#x9;&#x9;&#x9;DECLARE excludeSystemPathsList&#x9;&#x9;LONGVARCHAR DEFAULT &apos;/shared/BestPractices,/shared/Utilities,/lib&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- all system level and Composite utility paths that should not be included in the list
+
+&#x9;&#x9;PDTool (Promotion and Deployment Tool) is used to execute generated plan files.  If 
+&#x9;&#x9;you do not have PDTool on site, you may obtain it through a Professional Services engagement.
+
+&#x9;Input:
+&#x9;&#x9;planOption&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;- The number of the deployment plan option to generate
+&#x9;Output:
+&#x9;&#x9;success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER -- 1=success, 0=failure
+
+&#x9;Exceptions: none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.301&#x9;07/30/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.4&#x9;&#x9;10/28/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Added parameter inIgnoreResourceDoesNotExist
+&#x9;2013.4&#x9;&#x9;10/28/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Added parameter inIgnoreResourceDoesNotExist
+&#x9;2014.3&#x9;&#x9;07/07/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Modified to use optionType to provide a choice of using Creation Date or Modified Date but not both at the same time.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE template_generatePDToolDeployableResourcePlan(
+&#x9;IN planOption&#x9;INTEGER,
+&#x9;OUT success&#x9;&#x9;INTEGER
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;template_generatePDToolDeployableResourcePlan&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1);&#x9;&#x9;-- Y or N
+&#x9;DECLARE planFileRootPath&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;C:&apos;; -- the root path can be as simple as C: or any common path
+&#x9;DECLARE planFilePath&#x9;&#x9;&#x9;&#x9;VARCHAR(1024);&#x9;-- the complete path to the file system deployment plan file. e.g. D:/PDTool62/resources/plans/plan1.dp
+&#x9;DECLARE bufferSize&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER; &#x9;&#x9;-- number of rows to buffer
+&#x9;DECLARE PDToolPlanTemplateVCS&#x9;&#x9;LONGVARCHAR;&#x9;-- this is a template line from the deployment plan with the use of variables for $RESOURCE_PATH and $RESOURCE_TYPE
+&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;$RESOURCE_PATH&quot; &quot;$RESOURCE_TYPE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;DECLARE PDToolPlanTemplateFolders&#x9;LONGVARCHAR;
+&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;$RESOURCE_PATH&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;DECLARE resourcePathList&#x9;&#x9;&#x9;LONGVARCHAR; &#x9;-- a comma separated list of resource paths
+&#x9;DECLARE resourceTimestamp&#x9;&#x9;&#x9;TIMESTAMP;&#x9; &#x9;-- resource timestamp value to compare with either the creation date or modified date of a resource with CIS 6.2.2 or higher
+&#x9;DECLARE optionType&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;&#x9;&#x9;-- 3=Compare with Modified Date, 5=Compare with Creation Date
+&#x9;&#x9;&#x9;-- 1: Find the n most recent modified resources in the path (default of n is 1).  results are not ordered
+&#x9;&#x9;&#x9;-- 2: Find the n least recent modified resources in the path (default of n is 1). results are not ordered
+&#x9;&#x9;&#x9;-- 3: Find all resources modified after the passed in resource date
+&#x9;&#x9;&#x9;-- 4: Find all resources modifed before the passed in resource date
+&#x9;&#x9;&#x9;-- 5: Find all resources created after the passed in resource date
+&#x9;&#x9;&#x9;-- 6: Find all resources created before the passed in resource date
+&#x9;DECLARE includeDependentTriggers&#x9;INTEGER; &#x9; &#x9;-- 0=do not include, 1=include 1st level trigger dependents
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For each resource encountered, look to see if any dependent resources are triggers and include them if this variable is set to 1.
+&#x9;DECLARE includeBasePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If present, then include any resources found in this comma separated list of base paths and exclude all others.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--   It is intended to allow the user to specify a base path for published resources and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--   /shared project folder resources that are related project level resources but exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--   any other resources not associated with those base paths.
+&#x9;DECLARE excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR; &#x9;-- a comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;-- all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;DECLARE excludeSystemPathsList&#x9;&#x9;LONGVARCHAR DEFAULT &apos;/shared/ASAssets/BestPractices,/lib&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- all system level and Composite utility paths that should not be included in the list
+&#x9;DECLARE inIgnoreResourceDoesNotExist INTEGER;&#x9;&#x9;-- Ignore any resources that do not exist
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 1 = Bypass the processing of that resource.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+ 
+&#x9;set success = 0;
+&#x9;-- Set general template for VCS and Folders
+&#x9;set PDToolPlanTemplateVCS = &apos;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;$RESOURCE_PATH&quot; &quot;$RESOURCE_TYPE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;&apos;;
+&#x9;set PDToolPlanTemplateFolders = &apos;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;$RESOURCE_PATH&quot; &quot;$MODULE_HOME/servers.xml&quot; true&apos;;
+
+&#x9;CASE planOption
+&#x9;&#x9;-- This example shows how to generate a deployment plan for a comma separated list of specific &quot;published&quot; resources found within the MYTEST database sevice
+&#x9;&#x9;WHEN 1 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan1.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/services/databases/MYTEST/ViewSales,/services/databases/MYTEST/LookupProduct,/services/databases/MYTEST/CAT1/SCH1/proc2&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = null;
+&#x9;&#x9;&#x9;set optionType = null;
+&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;set excludePathsList = &apos;/shared/examples/ds_XML/&apos;;
+&#x9;&#x9;&#x9;set includeBasePath = &apos;/services/databases/MYTEST,/shared/Utilities&apos;;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- This example shows how to generate a deployment plan for a published web service
+&#x9;&#x9;WHEN 2 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan2.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/services/webservices/testWebService00&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = null;
+&#x9;&#x9;&#x9;set optionType = null;
+&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set includeBasePath = null;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- This example shows how to generate a deployment plan for a specific operation within a published web service
+&#x9;&#x9;WHEN 3 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan3.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/services/webservices/testWebService00/testService/operations/testprocsimple&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = null;
+&#x9;&#x9;&#x9;set optionType = null;
+&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set includeBasePath = null;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- This example shows how to generate a deployment plan for all resources found within a published database service
+&#x9;&#x9;WHEN 4 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan4.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/services/databases/MYTEST&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = null;
+&#x9;&#x9;&#x9;set optionType = null;
+&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set includeBasePath = null;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- This example shows how to generate a plan for a specific resource and associated triggers
+&#x9;&#x9;WHEN 5 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan5.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/shared/ASAssets/Utilities/examples/repository/source/proc1&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = null;
+&#x9;&#x9;&#x9;set optionType = null;
+&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set excludeSystemPathsList =&apos;/shared/BestPractices,/lib&apos;;
+&#x9;&#x9;&#x9;set includeBasePath = null;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- This example shows how to generate a plan for a specific resource and associated triggers
+&#x9;&#x9;WHEN 6 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan6.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/shared/ASAssets/Utilities/examples/repository/source/proc2&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = PARSE_TIMESTAMP(&apos;2013-08-06 16:30:00&apos;, &apos;YYYY-MM-DD HH24:MI:SS&apos;);
+&#x9;&#x9;&#x9;set optionType = 3; -- Compare with Modified Date
+&#x9;&#x9;&#x9;set includeDependentTriggers = null;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set excludeSystemPathsList =&apos;/shared/BestPractices,/lib&apos;;
+&#x9;&#x9;&#x9;set includeBasePath = null;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- This example shows how to generate a plan for a specific resource and associated triggers
+&#x9;&#x9;WHEN 7 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan7.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/shared/ASAssets/Utilities/examples/repository/source/ds_orders&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = PARSE_TIMESTAMP(&apos;2013-08-06 16:30:00&apos;, &apos;YYYY-MM-DD HH24:MI:SS&apos;);
+&#x9;&#x9;&#x9;set optionType = 5; -- Compare with Creation Date
+&#x9;&#x9;&#x9;set includeDependentTriggers = null;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set excludeSystemPathsList =&apos;/shared/BestPractices,/lib&apos;;
+&#x9;&#x9;&#x9;set includeBasePath = null;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- This example shows how to generate a plan for a specific resource and associated triggers
+&#x9;&#x9;WHEN 8 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan8.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/shared/ASAssets/Utilities/examples/repository/source/ds_orders/employees&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = PARSE_TIMESTAMP(&apos;2013-08-06 16:30:00&apos;, &apos;YYYY-MM-DD HH24:MI:SS&apos;);
+&#x9;&#x9;&#x9;set optionType = 3; -- Compare with Modified Date
+&#x9;&#x9;&#x9;set includeDependentTriggers = null;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set excludeSystemPathsList =&apos;/shared/ASAssets/BestPractices,/lib&apos;;
+&#x9;&#x9;&#x9;set includeBasePath = &apos;/shared/ASAssets/Utilities/examples&apos;;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;WHEN 9 THEN
+&#x9;&#x9;&#x9;set debug = &apos;Y&apos;;
+&#x9;&#x9;&#x9;set planFilePath = planFileRootPath||&apos;\temp\plan9.dp&apos;;
+&#x9;&#x9;&#x9;set bufferSize = 1000;
+&#x9;&#x9;&#x9;set resourcePathList = &apos;/services/databases/ds_hr/HR/EMPLOYEES&apos;;
+&#x9;&#x9;&#x9;set resourceTimestamp = null;
+&#x9;&#x9;&#x9;set optionType = null;
+&#x9;&#x9;&#x9;set includeDependentTriggers = 1;
+&#x9;&#x9;&#x9;set excludePathsList = null;
+&#x9;&#x9;&#x9;set includeBasePath = null;
+&#x9;&#x9;&#x9;set inIgnoreResourceDoesNotExist = 1;
+
+&#x9;&#x9;-- Additional WHEN statements here:
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,&apos;Y&apos;,&apos;The plan option selection does not exist.  Reenter a valid plan option.  planOption=[&apos;||NVL(CAST(planOption AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;END CASE;
+
+&#x9;-- Include the system paths in the exclude list
+&#x9;if (excludePathsList is null) then
+&#x9;&#x9;set excludePathsList = excludeSystemPathsList;
+&#x9;else
+&#x9;&#x9;set excludePathsList = excludePathsList||&apos;,&apos;||excludeSystemPathsList;
+&#x9;end if;
+
+&#x9;if (planFilePath IS NOT NULL AND LENGTH(&apos;|&apos;||planFilePath||&apos;|&apos;) &gt; 2 AND resourcePathList IS NOT NULL AND LENGTH(&apos;|&apos;||resourcePathList||&apos;|&apos;) &gt; 2) then
+&#x9;&#x9;if (resourceTimestamp is null) then
+ &#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/pdtool/generatePDToolDeployableResourcePlanByLineage(planFilePath,bufferSize,PDToolPlanTemplateVCS,PDToolPlanTemplateFolders,resourcePathList,includeDependentTriggers,includeBasePath,excludePathsList,inIgnoreResourceDoesNotExist,debug,success);
+&#x9;&#x9;else
+ &#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/pdtool/generatePDToolDeployableResourcePlanByDate(planFilePath,bufferSize,PDToolPlanTemplateVCS,PDToolPlanTemplateFolders,resourcePathList,resourceTimestamp,optionType, includeBasePath,excludePathsList,debug,success);
+&#x9;&#x9;end if;
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

@@ -1,0 +1,2035 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="rebindReplaceText" path="/shared/Delta_DV/_scripts/Utilities/repository/rebind/rebindReplaceText" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[rebindReplaceText:
+
+&#x9;-- CIS Repository Helper Procedure --
+   &#x9;This procedure is used by both rebindFolder and rebindResource to replace the script text when the old path does not exist.
+
+&#x9;Use the method to replace the path text within the table or procedure script
+&#x9;This only gets used when the &quot;from&quot; path does not exist in the target CIS server.
+&#x9;This can happen when a car file is imported from one environment like DEV where the 
+&#x9;physical layer resources point to one data source and the target CIS server like TEST
+&#x9;contains a different data source name.   In that use case, it is not permitted to use
+&#x9;the regular rebind as it will throw an error, therefore, the only recourse is to rebind
+&#x9;the actual script or procedure text and use the individual methods for each sub-type
+&#x9;to perform the update.
+
+&#x9;The following resource types and sub-types are supported:
+&#x9;&#x9;resourceType = &apos;TABLE&apos;
+&#x9;&#x9;&#x9;subtype = &apos;SQL_TABLE&apos; -- Get Regular View
+&#x9;
+&#x9;&#x9;resourceType = &apos;PROCEDURE&apos;
+&#x9;&#x9;&#x9;subtype = &apos;SQL_SCRIPT_PROCEDURE&apos; -- Get Regular Procedure
+&#x9;&#x9;&#x9;subtype = &apos;EXTERNAL_SQL_PROCEDURE&apos; -- Get Packaged Query Procedure
+&#x9;&#x9;&#x9;subtype = &apos;BASIC_TRANSFORM_PROCEDURE&apos; -- Get XSLT Basic Transformation definition
+&#x9;&#x9;&#x9;subtype = &apos;XSLT_TRANSFORM_PROCEDURE&apos; -- Get XSLT Transformation text
+&#x9;&#x9;&#x9;subtype = &apos;STREAM_TRANSFORM_PROCEDURE&apos; -- Get XSLT Stream Transformation text
+
+&#x9;Textual Path Replacement Rules:
+&#x9;------------------------------
+&#x9; Caveat:
+&#x9;   For textual path replacement, when the &quot;fromFolder&quot; does not exist and the SQL_TABLE (Views) and 
+&#x9;   SQL_SCRIPT_PROCEDURE (Procedures) have models, the model is lost.  The reason is there is no way
+&#x9;   to programatically create a model in the API.   For parameterized queries this is unfortunate as
+&#x9;   there is no way to rebuild the model once removed.  For Views, the model can be regenerated in
+&#x9;   most cases.
+&#x9;
+&#x9;resourceType = &apos;TABLE&apos;
+&#x9;&#x9;subtype = &apos;SQL_TABLE&apos; -- Get Regular View
+&#x9;&#x9;&#x9;procedureTextCurr = tableResource.getSqlText();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;procedureText = procedureTextCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateSqlTable(resourcePath, detailLevel, procedureText, model, isExplicitDesign, columns, annotation, attributes);
+
+&#x9;resourceType = &apos;PROCEDURE&apos;
+&#x9;&#x9;subtype = &apos;SQL_SCRIPT_PROCEDURE&apos; -- Update Regular Procedure
+&#x9;&#x9;&#x9;procedureTextCurr = procedureResource.getScriptText();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;procedureText = procedureTextCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateSqlScriptProcedure(resourcePath, detailLevel, procedureText, model, isExplicitDesign, parameters, annotation, attributes);
+
+&#x9;&#x9;subtype = &apos;EXTERNAL_SQL_PROCEDURE&apos; -- Update Packaged Query Procedure
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getExternalDataSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateExternalSqlProcedure(resourcePath, detailLevel, procedureText, usedResourcePath, parameters, annotation, attributes);
+
+&#x9;&#x9;subtype = &apos;BASIC_TRANSFORM_PROCEDURE&apos; -- Update XSLT Basic Transformation definition
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getTransformSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateBasicTransformProcedure(resourcePath, detailLevel, usedResourcePath, resourceType, annotation, attributes);
+
+&#x9;&#x9;subtype = &apos;XSLT_TRANSFORM_PROCEDURE&apos; -- Update XSLT Transformation text
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getTransformSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateXsltTransformProcedure(resourcePath, detailLevel, usedResourcePath, resourceType, procedureText, model, annotation, isExplicitDesign, parameters, attributes);
+
+&#x9;&#x9;subtype = &apos;STREAM_TRANSFORM_PROCEDURE&apos; -- Update XSLT Stream Transformation text
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getTransformSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateStreamTransformProcedure(resourcePath, detailLevel, usedResourcePath, resourceType, model, isExplicitDesign, parameters, annotation, attributes);
+
+
+&#x9;Input:
+&#x9;&#x9;resourcePath - the resource path of the resource being rebound
+
+&#x9;&#x9;resourceType - the type of the resource being rebound
+
+&#x9;&#x9;subtype - the subtype of the resource beging rebound
+
+&#x9;&#x9;fromFolder - the original &quot;from&quot; path of the &quot;used&quot; resource
+
+&#x9;&#x9;to Folder - the target &quot;to&quot; path of the for the &quot;used&quot; resource
+
+
+&#x9;Output:
+&#x9;&#x9;success - 1 or 0 - 1=success, 0=unsuccessful
+
+
+&#x9;Exceptions:
+        System.IllegalArgumentException - thrown if an input value is missing
+        System.SOAPFaultException - thrown if there is a fault
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;04/24/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.3&#x9;&#x9;05/24/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Fixed issue with script text needing to be XML &quot;unescaped&quot; prior to it being updated and XML &quot;escaped&quot;
+&#x9;2013.3&#x9;&#x9;06/25/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.1.0&#x9;&#x9;&#x9;Set explicit success=1 in the different sections to insure a proper value is returned.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/22/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added the ability to update a trigger.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="resourcePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="fromFolder" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="toFolder" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/updateTrigger" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="updateTrigger" direction="IN">
+        <datatype name="updateTrigger" extendedName="{http://www.compositesw.com/services/system/admin/resource}updateTrigger" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}updateTrigger" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}updateTrigger">
+          <schemaDatatype>
+            <datatype name="updateTrigger" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="updateTriggerRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="enabled" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+              <element name="conditionType" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="conditionSchedule" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="schedule" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="scheduleMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="startTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                  </element>
+                  <element name="fromTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                  </element>
+                  <element name="endTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                  </element>
+                  <element name="recurringDay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="interval" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="period" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="calendarPeriod" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="count" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="isCluster" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                </datatype>
+              </element>
+              <element name="conditionAttributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="attributeList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="attribute" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="attribute" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeTypeValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                            <datatype name="attributeTypeValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                              <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="1281"/>
+                              </element>
+                              <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeTypeValueMap" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                                  <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                      <element name="key" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1537"/>
+                                      </element>
+                                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1537"/>
+                                      </element>
+                                    </datatype>
+                                  </element>
+                                </datatype>
+                              </element>
+                              <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                                  <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="1793"/>
+                      </element>
+                      <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="2305"/>
+                      </element>
+                      <element name="unset" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="actionType" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="actionAttributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <reference refId="769"/>
+              </element>
+              <element name="maxEventsQueued" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+              </element>
+              <element name="annotation" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <reference refId="769"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="updateTriggerResponse" direction="OUT">
+        <datatype name="updateTriggerResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}updateTriggerResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}updateTriggerResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}updateTriggerResponse">
+          <schemaDatatype>
+            <datatype name="updateTriggerResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="updateTriggerResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="2561">
+              <element name="resources" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="resourceList" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                  <element name="resource" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="resource" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3073">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="subtype" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="resourceSubType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="id" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="changeId" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                      </element>
+                      <element name="version" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="introspectState" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="introspectState" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="ownerDomain" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="ownerName" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="impactLevel" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="impactLevel" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="impactMessage" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="enabled" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                      <element name="lockState" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="lockState" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3329">
+                          <element name="lockOwnerDomain" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="lockOwnerName" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="lockCreateTime" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                          </element>
+                          <element name="lockParentPath" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="hints" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3585">
+                          <element name="hint" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                            <reference refId="1025"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="annotation" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <reference refId="769"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="3841">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="4097">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/RepoUtils/applyReservedListToPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor_ActionAttributes" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceCursor" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="actionType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="value">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getBasicResourceXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="pathType" type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateBasicTransformationProcedure" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="transformSourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="transformSourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="annotation" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="attributeVector" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <datatype name="AttributeCompleteType" type="TREE" refId="257">
+              <element name="attrName">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="attrType">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="attrValue">
+                <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="valueList">
+                <datatype name="valueList" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="itemType" type="TREE" refId="513">
+                      <element name="type">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="value">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="valueMap">
+                <datatype name="valueMap" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="entryType" type="TREE" refId="769">
+                      <element name="key">
+                        <datatype name="key" type="ARRAY">
+                          <itemDatatype>
+                            <reference refId="513"/>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="value">
+                        <datatype name="value" type="ARRAY">
+                          <itemDatatype>
+                            <reference refId="513"/>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="valueArray">
+                <datatype name="valueArray" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="unset">
+                <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+            </datatype>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateExternalSqlProcedure" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="externalSqlText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="externalDatasaourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="parameterVector" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <datatype name="ParameterType" type="TREE" refId="257">
+              <element name="name">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="sqlType">
+                <datatype name="sqlType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="sqlType" type="TREE" refId="513">
+                      <element name="definition">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="nativeType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="referencePath">
+                        <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+                      </element>
+                      <element name="referenceTypeName">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="proprietaryModel">
+                        <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+                      </element>
+                      <element name="name">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="trailingSpaces">
+                        <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="xmlType">
+                <datatype name="xmlType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="xmlType" type="TREE" refId="769">
+                      <element name="name">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="namespace">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="nativeType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="schema">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="referencePath">
+                        <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+                      </element>
+                      <element name="proprietaryModel">
+                        <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="pseudoType">
+                <datatype name="pseudoType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="pseudoType" type="TREE" refId="1025">
+                      <element name="definition">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="direction">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="isNullable">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="attributes">
+                <datatype name="attributes" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="AttributeCompleteType" type="TREE" refId="1281">
+                      <element name="attrName">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="attrType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="attrValue">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="valueList">
+                        <datatype name="valueList" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="itemType" type="TREE" refId="1537">
+                              <element name="type">
+                                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                              </element>
+                              <element name="value">
+                                <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="valueMap">
+                        <datatype name="valueMap" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="entryType" type="TREE" refId="1793">
+                              <element name="key">
+                                <datatype name="key" type="ARRAY">
+                                  <itemDatatype>
+                                    <reference refId="1537"/>
+                                  </itemDatatype>
+                                </datatype>
+                              </element>
+                              <element name="value">
+                                <datatype name="value" type="ARRAY">
+                                  <itemDatatype>
+                                    <reference refId="1537"/>
+                                  </itemDatatype>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="valueArray">
+                        <datatype name="valueArray" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="unset">
+                        <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="annotation">
+                <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="annotation" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="attributeVector" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <reference refId="1281"/>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateSqlScript" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="scripttext" direction="INOUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="createResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateSqlTable" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="inScripttext" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="createResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateStreamTransformProcedure" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="transformSourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="transformSourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="streamModel" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <datatype name="xsltModelType" type="TREE" refId="257">
+              <element name="version">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="type">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="proprietaryModel">
+                <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+              </element>
+            </datatype>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="annotation" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="isExplicitlyDesigned" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="parameterVector" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <datatype name="ParameterType" type="TREE" refId="513">
+              <element name="name">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="sqlType">
+                <datatype name="sqlType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="sqlType" type="TREE" refId="769">
+                      <element name="definition">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="nativeType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="referencePath">
+                        <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+                      </element>
+                      <element name="referenceTypeName">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="proprietaryModel">
+                        <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+                      </element>
+                      <element name="name">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="trailingSpaces">
+                        <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="xmlType">
+                <datatype name="xmlType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="xmlType" type="TREE" refId="1025">
+                      <element name="name">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="namespace">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="nativeType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="schema">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="referencePath">
+                        <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+                      </element>
+                      <element name="proprietaryModel">
+                        <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="pseudoType">
+                <datatype name="pseudoType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="pseudoType" type="TREE" refId="1281">
+                      <element name="definition">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="direction">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="isNullable">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="attributes">
+                <datatype name="attributes" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="AttributeCompleteType" type="TREE" refId="1537">
+                      <element name="attrName">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="attrType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="attrValue">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="valueList">
+                        <datatype name="valueList" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="itemType" type="TREE" refId="1793">
+                              <element name="type">
+                                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                              </element>
+                              <element name="value">
+                                <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="valueMap">
+                        <datatype name="valueMap" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="entryType" type="TREE" refId="2049">
+                              <element name="key">
+                                <datatype name="key" type="ARRAY">
+                                  <itemDatatype>
+                                    <reference refId="1793"/>
+                                  </itemDatatype>
+                                </datatype>
+                              </element>
+                              <element name="value">
+                                <datatype name="value" type="ARRAY">
+                                  <itemDatatype>
+                                    <reference refId="1793"/>
+                                  </itemDatatype>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="valueArray">
+                        <datatype name="valueArray" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="unset">
+                        <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="annotation">
+                <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="attributeVector" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <reference refId="1537"/>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateXsltTransformProcedure" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="transformSourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="transformSourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="xsltText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="xsltModel" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <datatype name="xsltModelType" type="TREE" refId="257">
+              <element name="version">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="type">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="proprietaryModel">
+                <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+              </element>
+            </datatype>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="annotation" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="isExplicitDesign" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="parameterVector" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <datatype name="ParameterType" type="TREE" refId="513">
+              <element name="name">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="sqlType">
+                <datatype name="sqlType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="sqlType" type="TREE" refId="769">
+                      <element name="definition">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="nativeType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="referencePath">
+                        <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+                      </element>
+                      <element name="referenceTypeName">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="proprietaryModel">
+                        <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+                      </element>
+                      <element name="name">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="trailingSpaces">
+                        <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="xmlType">
+                <datatype name="xmlType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="xmlType" type="TREE" refId="1025">
+                      <element name="name">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="namespace">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="nativeType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="schema">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="referencePath">
+                        <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+                      </element>
+                      <element name="proprietaryModel">
+                        <datatype name="VARBINARY" type="BINARY" maxLength="1024"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="pseudoType">
+                <datatype name="pseudoType" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="pseudoType" type="TREE" refId="1281">
+                      <element name="definition">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="direction">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="isNullable">
+                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+              </element>
+              <element name="attributes">
+                <datatype name="attributes" type="ARRAY">
+                  <itemDatatype>
+                    <datatype name="AttributeCompleteType" type="TREE" refId="1537">
+                      <element name="attrName">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="attrType">
+                        <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                      </element>
+                      <element name="attrValue">
+                        <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="valueList">
+                        <datatype name="valueList" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="itemType" type="TREE" refId="1793">
+                              <element name="type">
+                                <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                              </element>
+                              <element name="value">
+                                <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="valueMap">
+                        <datatype name="valueMap" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="entryType" type="TREE" refId="2049">
+                              <element name="key">
+                                <datatype name="key" type="ARRAY">
+                                  <itemDatatype>
+                                    <reference refId="1793"/>
+                                  </itemDatatype>
+                                </datatype>
+                              </element>
+                              <element name="value">
+                                <datatype name="value" type="ARRAY">
+                                  <itemDatatype>
+                                    <reference refId="1793"/>
+                                  </itemDatatype>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="valueArray">
+                        <datatype name="valueArray" type="ARRAY">
+                          <itemDatatype>
+                            <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                          </itemDatatype>
+                        </datatype>
+                      </element>
+                      <element name="unset">
+                        <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </itemDatatype>
+                </datatype>
+              </element>
+              <element name="annotation">
+                <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="attributeVector" direction="IN">
+        <datatype type="ARRAY">
+          <itemDatatype>
+            <reference refId="1537"/>
+          </itemDatatype>
+        </datatype>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/xml/unescapeXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inStr" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="outStr" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    rebindReplaceText:
+
+&#x9;-- CIS Repository Helper Procedure --
+   &#x9;This procedure is used by both rebindFolder and rebindResource to replace the script text when the old path does not exist.
+
+&#x9;Use the method to replace the path text within the table or procedure script
+&#x9;This only gets used when the &quot;from&quot; path does not exist in the target CIS server.
+&#x9;This can happen when a car file is imported from one environment like DEV where the 
+&#x9;physical layer resources point to one data source and the target CIS server like TEST
+&#x9;contains a different data source name.   In that use case, it is not permitted to use
+&#x9;the regular rebind as it will throw an error, therefore, the only recourse is to rebind
+&#x9;the actual script or procedure text and use the individual methods for each sub-type
+&#x9;to perform the update.
+
+&#x9;The following resource types and sub-types are supported:
+&#x9;&#x9;resourceType = &apos;TABLE&apos;
+&#x9;&#x9;&#x9;subtype = &apos;SQL_TABLE&apos; -- Get Regular View
+&#x9;
+&#x9;&#x9;resourceType = &apos;PROCEDURE&apos;
+&#x9;&#x9;&#x9;subtype = &apos;SQL_SCRIPT_PROCEDURE&apos; -- Get Regular Procedure
+&#x9;&#x9;&#x9;subtype = &apos;EXTERNAL_SQL_PROCEDURE&apos; -- Get Packaged Query Procedure
+&#x9;&#x9;&#x9;subtype = &apos;BASIC_TRANSFORM_PROCEDURE&apos; -- Get XSLT Basic Transformation definition
+&#x9;&#x9;&#x9;subtype = &apos;XSLT_TRANSFORM_PROCEDURE&apos; -- Get XSLT Transformation text
+&#x9;&#x9;&#x9;subtype = &apos;STREAM_TRANSFORM_PROCEDURE&apos; -- Get XSLT Stream Transformation text
+
+&#x9;Textual Path Replacement Rules:
+&#x9;------------------------------
+&#x9; Caveat:
+&#x9;   For textual path replacement, when the &quot;fromFolder&quot; does not exist and the SQL_TABLE (Views) and 
+&#x9;   SQL_SCRIPT_PROCEDURE (Procedures) have models, the model is lost.  The reason is there is no way
+&#x9;   to programatically create a model in the API.   For parameterized queries this is unfortunate as
+&#x9;   there is no way to rebuild the model once removed.  For Views, the model can be regenerated in
+&#x9;   most cases.
+&#x9;
+&#x9;resourceType = &apos;TABLE&apos;
+&#x9;&#x9;subtype = &apos;SQL_TABLE&apos; -- Get Regular View
+&#x9;&#x9;&#x9;procedureTextCurr = tableResource.getSqlText();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;procedureText = procedureTextCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateSqlTable(resourcePath, detailLevel, procedureText, model, isExplicitDesign, columns, annotation, attributes);
+
+&#x9;resourceType = &apos;PROCEDURE&apos;
+&#x9;&#x9;subtype = &apos;SQL_SCRIPT_PROCEDURE&apos; -- Update Regular Procedure
+&#x9;&#x9;&#x9;procedureTextCurr = procedureResource.getScriptText();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;procedureText = procedureTextCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateSqlScriptProcedure(resourcePath, detailLevel, procedureText, model, isExplicitDesign, parameters, annotation, attributes);
+
+&#x9;&#x9;subtype = &apos;EXTERNAL_SQL_PROCEDURE&apos; -- Update Packaged Query Procedure
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getExternalDataSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateExternalSqlProcedure(resourcePath, detailLevel, procedureText, usedResourcePath, parameters, annotation, attributes);
+
+&#x9;&#x9;subtype = &apos;BASIC_TRANSFORM_PROCEDURE&apos; -- Update XSLT Basic Transformation definition
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getTransformSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateBasicTransformProcedure(resourcePath, detailLevel, usedResourcePath, resourceType, annotation, attributes);
+
+&#x9;&#x9;subtype = &apos;XSLT_TRANSFORM_PROCEDURE&apos; -- Update XSLT Transformation text
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getTransformSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateXsltTransformProcedure(resourcePath, detailLevel, usedResourcePath, resourceType, procedureText, model, annotation, isExplicitDesign, parameters, attributes);
+
+&#x9;&#x9;subtype = &apos;STREAM_TRANSFORM_PROCEDURE&apos; -- Update XSLT Stream Transformation text
+&#x9;&#x9;&#x9;usedResourcePathCurr = procedureResource.getTransformSourcePath();
+&#x9;&#x9;&#x9;// Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path
+&#x9;&#x9;&#x9;usedResourcePath = usedResourcePathCurr.replaceAll(fromFolder, toFolder);
+&#x9;&#x9;&#x9;updateStreamTransformProcedure(resourcePath, detailLevel, usedResourcePath, resourceType, model, isExplicitDesign, parameters, annotation, attributes);
+
+&#x9;resourceType = &apos;TRIGGER&apos;
+&#x9;&#x9;subtype = &apos;NONE&apos; -- Update Trigger
+&#x9;&#x9;&#x9;Loop over getBasicResourceCursor_ActionAttributes [PATH attribute]
+&#x9;&#x9;&#x9;&#x9;Replace all of the matching old &quot;fromFolder&quot; paths with the new &quot;toFolder&quot; path for attribute PATH
+&#x9;&#x9;&#x9;&#x9;updateTrigger(createInput, createResponse, faultResponse);
+
+&#x9;Input:
+&#x9;&#x9;resourcePath - the resource path of the resource being rebound
+&#x9;&#x9;resourceType - the type of the resource being rebound
+&#x9;&#x9;subtype - the subtype of the resource beging rebound
+&#x9;&#x9;fromFolder - the original &quot;from&quot; path of the &quot;used&quot; resource
+&#x9;&#x9;to Folder - the target &quot;to&quot; path of the for the &quot;used&quot; resource
+
+&#x9;Output:
+&#x9;&#x9;success - 1 or 0 - 1=success, 0=unsuccessful
+
+&#x9;Exceptions:
+        System.IllegalArgumentException - thrown if an input value is missing
+        System.SOAPFaultException - thrown if there is a fault
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;04/24/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.3&#x9;&#x9;05/24/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Fixed issue with script text needing to be XML &quot;unescaped&quot; prior to it being updated and XML &quot;escaped&quot;
+&#x9;2013.3&#x9;&#x9;06/25/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.1.0&#x9;&#x9;&#x9;Set explicit success=1 in the different sections to insure a proper value is returned.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/22/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added the ability to update a trigger.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE rebindReplaceText(
+&#x9;IN resourcePath&#x9;&#x9;LONGVARCHAR, 
+&#x9;IN resourceType&#x9;&#x9;VARCHAR,
+&#x9;IN fromFolder&#x9;&#x9;LONGVARCHAR, 
+&#x9;IN toFolder&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN debug&#x9;&#x9;&#x9;CHAR(1),
+&#x9;OUT success&#x9;&#x9;&#x9;BIT
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;rebindReplaceText&apos;;
+&#x9;DECLARE fromFolder_&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT fromFolder;
+&#x9;DECLARE toFolder_&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT toFolder;
+&#x9;-- A comma-separated list of words that come back as reserved but are not reserved.  applyReservedListToPath is incorrectly double-quoting these words.
+&#x9;DECLARE notReservedWordList&#x9;&#x9;LONGVARCHAR DEFAULT &apos;source&apos;;
+&#x9;DECLARE createInput &#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE createResponse &#x9;&#x9;&#x9;XML;
+&#x9;DECLARE faultResponse &#x9;&#x9;&#x9;XML;
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE xmlOut&#x9;&#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE xmlOutStr&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE subtype&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE scriptText&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE modifiedPath&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT null;
+&#x9;DECLARE externalDataSourcePath &#x9;LONGVARCHAR;
+   &#x9;DECLARE transformSourcePath &#x9;LONGVARCHAR;
+&#x9;DECLARE transformSourceType&#x9;&#x9;VARCHAR;
+&#x9;DECLARE word&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE pos1, pos2, len&#x9;&#x9;&#x9;INTEGER;
+&#x9;-- These variables are for trigger update
+&#x9;DECLARE actionPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE actionType&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE actionAttributes&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE enabled&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;&#x9;-- true or false
+
+&#x9;set success = 0;
+
+&#x9;if ((resourcePath IS NOT NULL AND LENGTH(&apos;|&apos;||resourcePath||&apos;|&apos;) &gt; 2) and
+&#x9;&#x9;(resourceType IS NOT NULL AND LENGTH(&apos;|&apos;||resourceType||&apos;|&apos;) &gt; 2) ) then
+
+&#x9;&#x9;-- Retrieve the resource XML
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getBasicResourceXML(resourcePath, resourceType, xmlOut);
+&#x9;&#x9;set xmlOutStr = CAST(xmlOut as LONGVARCHAR);
+
+&#x9;&#x9;-- Get the subtype:  &lt;resource:subtype&gt;NONE&lt;/resource:subtype&gt;
+&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:subtype&gt;&apos;);
+&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:subtype&gt;&apos;);
+&#x9;&#x9;set len = length(&apos;&lt;resource:subtype&gt;&apos;);
+&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;set subtype = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/*************************************************************
+&#x9;&#x9; * Resource: TABLE / SQL_TABLE - View
+&#x9;&#x9; *************************************************************/
+&#x9;&#x9;if (resourceType = &apos;TABLE&apos; and subtype =&apos;SQL_TABLE&apos;) then
+&#x9;&#x9;&#x9;-- Get the view script text:  &lt;resource:sqlText&gt;...&lt;/resource:sqlText&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:sqlText&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:sqlText&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:sqlText&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set scriptText = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;-- Unescape the XML in preparation for it to be escaped again during update
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;xml&quot;/unescapeXML(scriptText, scriptText);
+
+&#x9;&#x9;&#x9;-- Apply reserved path to both the rebind from and the rebind to paths
+&#x9;&#x9;&#x9;set fromFolder_ = REPLACE(fromFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;set toFolder_ = REPLACE(toFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(fromFolder_, null, fromFolder_);
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(toFolder_, null, toFolder_);
+
+&#x9;&#x9;&#x9;-- Words that are not actually reserved but come back as reserved from applyReservedListToPath:
+&#x9;&#x9;&#x9;for r as 
+&#x9;&#x9;&#x9;&#x9;select object from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(notReservedWordList, &apos;,&apos;, 0, 0, 0, 1, 0)
+&#x9;&#x9;&#x9;&#x9;where object is not null and length(trim(object)) &gt; 0
+&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;set word = &apos;&quot;&apos;||lower(r.object)||&apos;&quot;&apos;;
+&#x9;&#x9;&#x9;&#x9;set len = length(word);
+&#x9;&#x9;&#x9;&#x9;-- Look for non-reserved words in the fromFolder_
+&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(fromFolder_), word);
+&#x9;&#x9;&#x9;&#x9;while (pos1 &gt; 0) do
+&#x9;&#x9;&#x9;&#x9;&#x9;set fromFolder_ = SUBSTRING(fromFolder_, 1, pos1-1) || SUBSTRING(fromFolder_, pos1+1, len-2) || SUBSTRING(fromFolder_, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(fromFolder_), word);
+&#x9;&#x9;&#x9;&#x9;end while;
+&#x9;&#x9;&#x9;&#x9;--call print(&apos;fromFolder_=&apos;||fromFolder_);
+
+&#x9;&#x9;&#x9;&#x9;-- Look for non-reserved words in the toFolder_
+&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(toFolder_), word);
+&#x9;&#x9;&#x9;&#x9;while (pos1 &gt; 0) do
+&#x9;&#x9;&#x9;&#x9;&#x9;set toFolder_ = SUBSTRING(toFolder_, 1, pos1-1) || SUBSTRING(toFolder_, pos1+1, len-2) || SUBSTRING(toFolder_, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(toFolder_), word);
+&#x9;&#x9;&#x9;&#x9;end while;
+&#x9;&#x9;&#x9;&#x9;--call print(&apos;toFolder_=&apos;||toFolder_);
+&#x9;&#x9;&#x9;end for;
+
+&#x9;&#x9;&#x9;-- Check to see if the script text contains a partial path for rebind by adding a / to the end to insure it is a complete partial path.
+&#x9;&#x9;&#x9;if (INSTR(scriptText, fromFolder_) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set message = &apos;UPDATED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||fromFolder_);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;&#x9;-- Replace the from path with the new to path
+&#x9;&#x9;&#x9;&#x9;set scriptText = REPLACE(scriptText, fromFolder_, toFolder_);
+
+/*  updateSqlTable:
+&#x9;IN fullResourcePath &#x9;/shared/Utilities/TypeDefinitions.pathType, 
+    IN inScripttext &#x9;&#x9;LONGVARCHAR,
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;OUT createResponse &#x9;&#x9;XML,
+&#x9;OUT faultResponse&#x9;&#x9;XML
+*/
+&#x9;&#x9;&#x9;&#x9;-- Update the table text
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateSqlTable(resourcePath,scriptText,success,createResponse,faultResponse);
+&#x9;&#x9;&#x9;&#x9;if (faultResponse is not null or success = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = &apos;ERROR: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;raise System.SOAPFaultException value cast(faultResponse as longvarchar);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set message = &apos;INSPECTED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||fromFolder_);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/*************************************************************
+&#x9;&#x9; * Resource: PROCEDURE / SQL_SCRIPT_PROCEDURE - sql script procedure
+&#x9;&#x9; *************************************************************/
+&#x9;&#x9;if (resourceType = &apos;PROCEDURE&apos; and subtype = &apos;SQL_SCRIPT_PROCEDURE&apos;) then
+&#x9;&#x9;&#x9;-- Get procedure script text :  &lt;resource:scriptText&gt;...&lt;/resource:scriptText&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:scriptText&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:scriptText&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:scriptText&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set scriptText = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;-- Unescape the XML in preparation for it to be escaped again during update
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;xml&quot;/unescapeXML(scriptText, scriptText);
+
+&#x9;&#x9;&#x9;-- Apply reserved path to both the rebind from and the rebind to paths
+&#x9;&#x9;&#x9;set fromFolder_ = REPLACE(fromFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;set toFolder_ = REPLACE(toFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(fromFolder_, null, fromFolder_);
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(toFolder_, null, toFolder_);
+
+&#x9;&#x9;&#x9;-- Words that are not actually reserved but come back as reserved from applyReservedListToPath:
+&#x9;&#x9;&#x9;for r as 
+&#x9;&#x9;&#x9;&#x9;select object from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(notReservedWordList, &apos;,&apos;, 0, 0, 0, 1, 0)
+&#x9;&#x9;&#x9;&#x9;where object is not null and length(trim(object)) &gt; 0
+&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;set word = &apos;&quot;&apos;||lower(r.object)||&apos;&quot;&apos;;
+&#x9;&#x9;&#x9;&#x9;set len = length(word);
+&#x9;&#x9;&#x9;&#x9;-- Look for non-reserved words in the fromFolder_
+&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(fromFolder_), word);
+&#x9;&#x9;&#x9;&#x9;while (pos1 &gt; 0) do
+&#x9;&#x9;&#x9;&#x9;&#x9;set fromFolder_ = SUBSTRING(fromFolder_, 1, pos1-1) || SUBSTRING(fromFolder_, pos1+1, len-2) || SUBSTRING(fromFolder_, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(fromFolder_), word);
+&#x9;&#x9;&#x9;&#x9;end while;
+&#x9;&#x9;&#x9;&#x9;--call print(&apos;fromFolder_=&apos;||fromFolder_);
+
+&#x9;&#x9;&#x9;&#x9;-- Look for non-reserved words in the toFolder_
+&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(toFolder_), word);
+&#x9;&#x9;&#x9;&#x9;while (pos1 &gt; 0) do
+&#x9;&#x9;&#x9;&#x9;&#x9;set toFolder_ = SUBSTRING(toFolder_, 1, pos1-1) || SUBSTRING(toFolder_, pos1+1, len-2) || SUBSTRING(toFolder_, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(lower(toFolder_), word);
+&#x9;&#x9;&#x9;&#x9;end while;
+&#x9;&#x9;&#x9;&#x9;--call print(&apos;toFolder_=&apos;||toFolder_);
+&#x9;&#x9;&#x9;end for;
+
+&#x9;&#x9;&#x9;-- Check to see if the script text contains a partial path for rebind by adding a / to the end to insure it is a complete partial path.
+&#x9;&#x9;&#x9;if (INSTR(scriptText, fromFolder_) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set message = &apos;UPDATED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||fromFolder_);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;&#x9;-- Replace the from path with the new to path
+&#x9;&#x9;&#x9;&#x9;set scriptText = REPLACE(scriptText, fromFolder_, toFolder_);
+
+/*  updateSqlScript:
+&#x9;IN fullResourcePath &#x9;/shared/Utilities/TypeDefinitions.pathType, 
+    INOUT scripttext &#x9;&#x9;LONGVARCHAR,
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;OUT createResponse &#x9;&#x9;XML,
+&#x9;OUT faultResponse&#x9;&#x9;XML
+*/
+&#x9;&#x9;&#x9;&#x9;-- Update the script text
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateSqlScript(resourcePath,scriptText,success,createResponse,faultResponse);
+&#x9;&#x9;&#x9;&#x9;if (faultResponse is not null or success = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = &apos;ERROR: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;raise System.SOAPFaultException value cast(faultResponse as longvarchar);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set message = &apos;INSPECTED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||fromFolder_);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/*************************************************************
+&#x9;&#x9; * Resource: PROCEDURE / EXTERNAL_SQL_PROCEDURE -- Packaged Query Procedure
+&#x9;&#x9; *************************************************************/
+&#x9;&#x9;if (resourceType = &apos;PROCEDURE&apos; and subtype =&apos;EXTERNAL_SQL_PROCEDURE&apos;) then
+&#x9;&#x9;&#x9;-- Get external procedure datasource path :  &lt;resource:externalDataSourcePath&gt;...&lt;/resource:externalDataSourcePath&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:externalDataSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:externalDataSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:externalDataSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set externalDataSourcePath = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Get external SQL script text :  &lt;resource:externalSqlText&gt;...&lt;/resource:externalSqlText&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:externalSqlText&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:externalSqlText&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:externalSqlText&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set scriptText = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;-- Unescape the XML in preparation for it to be escaped again during update
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;xml&quot;/unescapeXML(scriptText, scriptText);
+
+&#x9;&#x9;&#x9;-- Check to see if the actual path is the same as the rebind from path
+&#x9;&#x9;&#x9;if (externalDataSourcePath = fromFolder_) then
+&#x9;&#x9;&#x9;&#x9;set modifiedPath = toFolder_;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set fromFolder_ = REPLACE(fromFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;set toFolder_ = REPLACE(toFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;-- Check to see if the actual path contains a partial path for rebind by adding a / to the end to insure it is a complete partial path.
+&#x9;&#x9;&#x9;&#x9;if (INSTR(externalDataSourcePath, fromFolder_) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set modifiedPath = REPLACE(externalDataSourcePath, fromFolder_, toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;if (modifiedPath is not null) then
+&#x9;&#x9;&#x9;&#x9;set message = &apos;UPDATED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;externalDataSourcePath=&apos;||NVL(externalDataSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;modifiedPath=&apos;||NVL(modifiedPath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+
+/* &#x9;updateExternalSqlProcedure:
+&#x9;IN resourcePath &#x9;&#x9;&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+   &#x9;IN externalSqlText &#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN externalDatasaourcePath&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+&#x9;IN parameterVector&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.ParameterVectorType,
+&#x9;IN annotation&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN attributeVector&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteVectorType,
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;&#x9;BIT
+*/
+&#x9;&#x9;&#x9;&#x9;-- Update the External Package
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateExternalSqlProcedure(resourcePath, scriptText, modifiedPath, null, null, null, success);
+
+&#x9;&#x9;&#x9;&#x9;if (faultResponse is not null or success = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = &apos;ERROR: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;raise System.SOAPFaultException value cast(faultResponse as longvarchar);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set message = &apos;INSPECTED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;externalDataSourcePath=&apos;||NVL(externalDataSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/*************************************************************
+&#x9;&#x9; * Resource: PROCEDURE / BASIC_TRANSFORM_PROCEDURE -- Basic Transformation
+&#x9;&#x9; *************************************************************/
+&#x9;&#x9;if (resourceType = &apos;PROCEDURE&apos; and subtype =&apos;BASIC_TRANSFORM_PROCEDURE&apos;) then
+&#x9;&#x9;&#x9;-- Get transform source path :  &lt;resource:transformSourcePath&gt;...&lt;/resource:transformSourcePath&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set transformSourcePath = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Get transform source type :  &lt;resource:transformSourceType&gt;...&lt;/resource:transformSourceType&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set transformSourceType = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Check to see if the actual path is the same as the rebind from path
+&#x9;&#x9;&#x9;if (transformSourcePath = fromFolder_) then
+&#x9;&#x9;&#x9;&#x9;set modifiedPath = toFolder_;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set fromFolder_ = REPLACE(fromFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;set toFolder_ = REPLACE(toFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;-- Check to see if the actual path contains a partial path for rebind by adding a / to the end to insure it is a complete partial path.
+&#x9;&#x9;&#x9;&#x9;if (INSTR(transformSourcePath, fromFolder_) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set modifiedPath = REPLACE(transformSourcePath, fromFolder_, toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;if (modifiedPath is not null) then
+&#x9;&#x9;&#x9;&#x9;set message = &apos;UPDATED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourcePath=&apos;||NVL(transformSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourceType=&apos;||NVL(transformSourceType,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;modifiedPath=&apos;||NVL(modifiedPath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+
+/*  updateBasicTransformationProcedure:
+&#x9;IN resourcePath &#x9;&#x9;&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+   &#x9;IN transformSourcePath &#x9;&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+&#x9;IN transformSourceType&#x9;&#x9;VARCHAR,
+&#x9;IN annotation&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN attributeVector&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteVectorType,
+*/
+&#x9;&#x9;&#x9;&#x9;-- Update the Basic XSLT Transformation
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateBasicTransformationProcedure(resourcePath, modifiedPath, transformSourceType, null, null, success);
+
+&#x9;&#x9;&#x9;&#x9;if (faultResponse is not null or success = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = &apos;ERROR: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;raise System.SOAPFaultException value cast(faultResponse as longvarchar);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set message = &apos;INSPECTED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourcePath=&apos;||NVL(transformSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourceType=&apos;||NVL(transformSourceType,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/*************************************************************
+&#x9;&#x9; * Resource: PROCEDURE / XSLT_TRANSFORM_PROCEDURE -- XSLT Custom Transformation
+&#x9;&#x9; *************************************************************/
+&#x9;&#x9;if (resourceType = &apos;PROCEDURE&apos; and subtype =&apos;XSLT_TRANSFORM_PROCEDURE&apos;) then
+&#x9;&#x9;&#x9;-- Get transform source path :  &lt;resource:transformSourcePath&gt;...&lt;/resource:transformSourcePath&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set transformSourcePath = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Get transform source type :  &lt;resource:transformSourceType&gt;...&lt;/resource:transformSourceType&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set transformSourceType = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Check to see if the actual path is the same as the rebind from path
+&#x9;&#x9;&#x9;if (transformSourcePath = fromFolder_) then
+&#x9;&#x9;&#x9;&#x9;set modifiedPath = toFolder_;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set fromFolder_ = REPLACE(fromFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;set toFolder_ = REPLACE(toFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;-- Check to see if the actual path contains a partial path for rebind by adding a / to the end to insure it is a complete partial path.
+&#x9;&#x9;&#x9;&#x9;if (INSTR(transformSourcePath, fromFolder_) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set modifiedPath = REPLACE(transformSourcePath, fromFolder_, toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;if (modifiedPath is not null) then
+&#x9;&#x9;&#x9;&#x9;set message = &apos;UPDATED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourcePath=&apos;||NVL(transformSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourceType=&apos;||NVL(transformSourceType,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;modifiedPath=&apos;||NVL(modifiedPath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+
+/*  updateXsltTransformProcedure:
+&#x9;IN resourcePath &#x9;&#x9;&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+   &#x9;IN transformSourcePath &#x9;&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+&#x9;IN transformSourceType&#x9;&#x9;VARCHAR,
+&#x9;IN xsltText&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN xsltModel&#x9;&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.XsltModelVectorType,
+&#x9;IN annotation&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN isExplicitDesign&#x9;&#x9;&#x9;BIT,
+&#x9;IN parameterVector&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.ParameterVectorType,
+&#x9;IN attributeVector&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteVectorType,
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;&#x9;BIT
+*/
+&#x9;&#x9;&#x9;&#x9;-- Update the XSLT Transformation
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateXsltTransformProcedure(resourcePath, modifiedPath, transformSourceType, null, null, null, null, null, null, success);
+
+&#x9;&#x9;&#x9;&#x9;if (faultResponse is not null or success = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = &apos;ERROR: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;raise System.SOAPFaultException value cast(faultResponse as longvarchar);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set message = &apos;INSPECTED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourcePath=&apos;||NVL(transformSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourceType=&apos;||NVL(transformSourceType,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/*************************************************************
+&#x9;&#x9; * Resource: PROCEDURE / STREAM_TRANSFORM_PROCEDURE -- XSLT Custom Transformation
+&#x9;&#x9; *************************************************************/
+&#x9;&#x9;if (resourceType = &apos;PROCEDURE&apos; and subtype =&apos;STREAM_TRANSFORM_PROCEDURE&apos;) then
+&#x9;&#x9;&#x9;-- Get transform source path :  &lt;resource:transformSourcePath&gt;...&lt;/resource:transformSourcePath&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:transformSourcePath&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set transformSourcePath = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Get transform source type :  &lt;resource:transformSourceType&gt;...&lt;/resource:transformSourceType&gt;
+&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:transformSourceType&gt;&apos;);
+&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;set transformSourceType = SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Check to see if the actual path is the same as the rebind from path
+&#x9;&#x9;&#x9;if (transformSourcePath = fromFolder_) then
+&#x9;&#x9;&#x9;&#x9;set modifiedPath = toFolder_;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set fromFolder_ = REPLACE(fromFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;set toFolder_ = REPLACE(toFolder_ ||&apos;/&apos;, &apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;-- Check to see if the actual path contains a partial path for rebind by adding a / to the end to insure it is a complete partial path.
+&#x9;&#x9;&#x9;&#x9;if (INSTR(transformSourcePath, fromFolder_) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set modifiedPath = REPLACE(transformSourcePath, fromFolder_, toFolder_);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;if (modifiedPath is not null) then
+&#x9;&#x9;&#x9;&#x9;set message = &apos;UPDATED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourcePath=&apos;||NVL(transformSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourceType=&apos;||NVL(transformSourceType,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;modifiedPath=&apos;||NVL(modifiedPath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+
+/*  updateStreamTransformProcedure:
+&#x9;IN resourcePath &#x9;&#x9;&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+   &#x9;IN transformSourcePath &#x9;&#x9;/shared/Utilities/TypeDefinitions.pathType, 
+&#x9;IN transformSourceType&#x9;&#x9;VARCHAR,
+&#x9;IN streamModel&#x9;&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.XsltModelVectorType,
+&#x9;IN annotation&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN isExplicitlyDesigned&#x9;&#x9;BIT,
+&#x9;IN parameterVector&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.ParameterVectorType,
+&#x9;IN attributeVector&#x9;&#x9;&#x9;/shared/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteVectorType,
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;&#x9;BIT
+*/
+&#x9;&#x9;&#x9;&#x9;-- Update the XSLT Streaming Transformation
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateStreamTransformProcedure(resourcePath, modifiedPath, transformSourceType, null, null, null, null, null, success);
+
+&#x9;&#x9;&#x9;&#x9;if (faultResponse is not null or success = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = &apos;ERROR: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;raise System.SOAPFaultException value cast(faultResponse as longvarchar);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set message = &apos;INSPECTED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourcePath=&apos;||NVL(transformSourcePath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;transformSourceType=&apos;||NVL(transformSourceType,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/*************************************************************
+&#x9;&#x9; * Resource: TRIGGER / NONE -- Trigger
+&#x9;&#x9; *************************************************************/
+&#x9;&#x9;if (resourceType = &apos;TRIGGER&apos; and subtype =&apos;NONE&apos;) then
+&#x9;&#x9;&#x9;set actionAttributes = &apos;&apos;;
+&#x9;&#x9;&#x9;set actionType = null;
+&#x9;&#x9;&#x9;set actionPath = null;
+&#x9;&#x9;&#x9;set modifiedPath = null;
+&#x9;&#x9;&#x9;for a as
+&#x9;&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor_ActionAttributes(resourcePath, resourceType)
+&#x9;&#x9;&#x9;&#x9;where name is not null
+&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;if (actionType is null and a.actionType is not null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set actionType = a.actionType;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;if (a.name = &apos;PATH&apos; and a.&quot;value&quot; is not null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set actionPath = a.&quot;value&quot;;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Check to see if the actual path is the same as the rebind from path
+&#x9;&#x9;&#x9;&#x9;&#x9;if (actionPath = fromFolder_) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set modifiedPath = toFolder_;
+&#x9;&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Check to see if the actual path contains a partial path for rebind by adding a / to the end to insure it is a complete partial path.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;if (INSTR(actionPath, fromFolder_||&apos;/&apos;) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set modifiedPath = REPLACE(actionPath, fromFolder_||&apos;/&apos;, toFolder_||&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;end if;&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (modifiedPath is not null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set actionAttributes = actionAttributes ||
+                   &#x9;     &#x9;&apos;        &lt;common:attribute&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:name&gt;PATH&lt;/common:name&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(modifiedPath) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                       &#x9;&#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(a.&quot;type&quot;) = &apos;NULL&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set actionAttributes = actionAttributes ||
+                        &#x9;&apos;        &lt;common:attribute&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:name&gt;&apos;||CAST(XMLTEXT(a.name) AS LONGVARCHAR)||&apos;&lt;/common:name&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:type&gt;&apos;||CAST(XMLTEXT(a.&quot;type&quot;) AS LONGVARCHAR)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:value/&gt;&apos;||CHR(10)||
+                       &#x9;&#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set actionAttributes = actionAttributes ||
+                        &#x9;&apos;        &lt;common:attribute&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:name&gt;&apos;||CAST(XMLTEXT(a.name) AS LONGVARCHAR)||&apos;&lt;/common:name&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:type&gt;&apos;||CAST(XMLTEXT(a.&quot;type&quot;) AS LONGVARCHAR)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+                            &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(a.&quot;value&quot;,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                       &#x9;&#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end for;
+
+&#x9;&#x9;&#x9;if (actionType is not null and modifiedPath is not null) then
+&#x9;&#x9;&#x9;&#x9;set message = &apos;UPDATED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;actionType=&apos;||NVL(actionType,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;actionPath=&apos;||NVL(actionPath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;modifiedPath=&apos;||NVL(modifiedPath,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;&#x9;-- Get enabled :  &lt;resource:enabled&gt;false&lt;/resource:enabled&gt;
+&#x9;&#x9;&#x9;&#x9;set pos1 = INSTR(xmlOutStr, &apos;&lt;resource:enabled&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;set pos2 = INSTR(xmlOutStr, &apos;&lt;/resource:enabled&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;set len = length(&apos;&lt;resource:enabled&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;if (pos1 &gt; 0 and pos2 &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set enabled = LOWER(SUBSTRING(xmlOutStr, pos1+len, pos2-pos1-len));
+&#x9;&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;&#x9;-- Update the trigger
+&#x9;&#x9;&#x9;&#x9;set createInput = 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&lt;resource:updateTrigger&apos;||CHR(10)||
+ &#x9;&#x9;&#x9;                &apos;   xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;                &apos;    xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;                &apos;    &lt;resource:path&gt;&apos;||CAST(XMLTEXT(resourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;                &apos;    &lt;resource:enabled&gt;&apos;||enabled||&apos;&lt;/resource:enabled&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;                &apos;    &lt;resource:detail&gt;SIMPLE&lt;/resource:detail&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;resource:actionType&gt;&apos;||actionType||&apos;&lt;/resource:actionType&gt;&apos;||CHR(10)||
+                    &#x9;&#x9;&apos;    &lt;resource:actionAttributes&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;actionAttributes||
+                    &#x9;&#x9;&apos;    &lt;/resource:actionAttributes&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;                &apos;&lt;/resource:updateTrigger&gt;&apos;;
+
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;updateTrigger: createInput:&apos;||CHR(10)||NVL(createInput,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;&#x9;-- Invoke the API to update the trigger PATH action attribute
+&#x9;&#x9;&#x9;&#x9;CALL /services/webservices/system/admin/resource/operations/updateTrigger(createInput, createResponse, faultResponse);
+&#x9;&#x9;&#x9;&#x9;if (faultResponse is not null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = &apos;ERROR: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;raise System.SOAPFaultException value cast(faultResponse as longvarchar);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set message = &apos;INSPECTED: &apos;||LPAD(&apos;[&apos;||resourceType||&apos;]&apos;,11,&apos; &apos;)||LPAD(&apos;[&apos;||subtype||&apos;]&apos;,30,&apos; &apos;)||&apos; resourcePath=&apos;||resourcePath;
+&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fromFolder=&apos;||NVL(fromFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;__toFolder=&apos;||NVL(toFolder_,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+
+&#x9;else
+&#x9;&#x9;raise System.IllegalArgumentException value &apos;Resource Path=[&apos;||NVL(resourcePath,&apos;null&apos;)||&apos;] and Type=[&apos;||NVL(resourceType,&apos;null&apos;)||&apos;] and Subtype=[&apos;||NVL(subtype,&apos;null&apos;)||&apos;] cannot be empty.&apos;;
+&#x9;end if;
+&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;success=&apos;||NVL(cast(success as varchar),&apos;null&apos;));
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">12/322</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/396</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/468</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/546</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/623</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/239</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/735</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/749</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

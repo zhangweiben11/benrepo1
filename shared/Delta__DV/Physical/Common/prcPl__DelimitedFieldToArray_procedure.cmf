@@ -1,0 +1,101 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="prcPl_DelimitedFieldToArray" path="/shared/Delta_DV/Physical/Common/prcPl_DelimitedFieldToArray" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[/*
+prcPl_FormatDelimtedFieldToTabularForm:
+&#x9;Take any field delimited by &apos;,&apos; and converts it to a tabular output cursor
+
+&#x9;Input:
+&#x9;&#x9;request: inStr &lt;VARCHAR&gt;
+&#x9;&#x9;&#x9;a,b,c
+
+&#x9;Output: 
+&#x9;&#x9;response: outStrCur &lt;PIPE&gt;
+&#x9;&#x9;&#x9;inStr                  outValue
+&#x9;&#x9;&#x9;a,b,c&#x9;&#x9;&#x9;&#x9;&#x9;a
+&#x9;&#x9;&#x9;a,b,c&#x9;&#x9;&#x9;&#x9;&#x9;b
+&#x9;&#x9;&#x9;a,b,c&#x9;&#x9;&#x9;&#x9;&#x9;c&#x9;&#x9;
+
+*/]]></annotation>
+  <parameters>
+    <parameter name="inStr" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="outStrCur" direction="OUT" nullable="true">
+      <datatype name="outStrCur" type="TABLE" refId="256">
+        <element name="inStr">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="outValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/*
+prcPl_FormatDelimtedFieldToTabularForm:
+&#x9;Take any field delimited by &apos;,&apos; and converts it to a tabular output cursor
+
+&#x9;Input:
+&#x9;&#x9;request: inStr &lt;VARCHAR&gt;
+&#x9;&#x9;&#x9;a,b,c
+
+&#x9;Output: 
+&#x9;&#x9;response: outStrCur &lt;PIPE&gt;
+&#x9;&#x9;&#x9;inStr                  outValue
+&#x9;&#x9;&#x9;a,b,c&#x9;&#x9;&#x9;&#x9;&#x9;a
+&#x9;&#x9;&#x9;a,b,c&#x9;&#x9;&#x9;&#x9;&#x9;b
+&#x9;&#x9;&#x9;a,b,c&#x9;&#x9;&#x9;&#x9;&#x9;c&#x9;&#x9;
+
+*/
+
+
+PROCEDURE prcPl_DelimitedFieldToArray(
+    IN inStr VARCHAR(255), 
+    OUT outStrCur PIPE (
+        inStr VARCHAR(255), 
+        outValue VARCHAR(255)
+       )
+    )
+    BEGIN
+ 
+        DECLARE currString VARCHAR(255);
+        DECLARE delim VARCHAR(10) DEFAULT &apos;,&apos;;
+        DECLARE delimLength INTEGER DEFAULT CHARACTER_LENGTH(delim);
+        DECLARE chrLength INTEGER DEFAULT CHARACTER_LENGTH(inStr);
+ 
+        SET currString = inStr;
+ 
+        WHILE CHARACTER_LENGTH(currString)&gt;0 
+           DO
+              BEGIN
+                 IF FIND(currString,delim)&gt;0 AND CHARACTER_LENGTH(currString)&gt;1 THEN
+                    INSERT INTO outStrCur(inStr,outValue) VALUES (inStr,SUBSTRING(currString,0,FIND(currString,delim))); 
+                    SET currString = SUBSTRING(currString,FIND(currString,delim)+delimLength,chrLength);
+                 ELSEIF CHARACTER_LENGTH(currString)&gt;0 AND currString &lt;&gt; delim THEN
+                    INSERT INTO outStrCur(inStr,outValue) VALUES (inStr,currString);
+                    SET currString=&apos;&apos;;
+                 ELSE
+                    SET currString=&apos;&apos;;
+                 END IF;
+              END;
+        END WHILE;
+
+    END</attribute>
+  <attribute name="creationDate" type="LONG">1593723602608</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611958282210</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1593723602608</attribute>
+</metadata>

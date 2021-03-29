@@ -1,0 +1,346 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getFacetSearch" path="/shared/Delta_DV/Application/Published/Billing/getFacetSearch" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="root" direction="OUT" nullable="true">
+      <datatype name="root" referenceDefinitionSet="/shared/Delta_DV/Application/DefinitionSets/Billing/defxAI_FacetSearch" referenceType="root" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="root">
+        <schemaDatatype>
+          <datatype name="root" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="facet">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="billToId_billToGroupName" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                    <element name="billToId">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="billToGroupName">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="billerIds" maxOccurs="2147483647" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="legalEntities" maxOccurs="2147483647" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="inJson" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="5000"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/DefinitionSets/Billing/defxAI_FacetSearch" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1612482592305</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612915291961</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89313</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1612482592305</attribute>
+  <attribute name="transformModel" type="NULL"/>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare variable $inJson external;
+
+&lt;root xmlns:ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+  let $nodes := (
+    element root {
+      let $nodes := (
+&#x9;&#x9;let $inputs := (if (empty($inJson)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$inJson), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select * from /shared/Delta_DV/Business/BusinessSemantic/Billing/Procedures/prcBI_GetFacetSearch(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        let $procResult1 := composite:executeQuery($query)//result
+&#x9;&#x9;let $procResult2 := composite:executeQuery($query)
+&#x9;&#x9;let $facet_billToId_billToGroupName := &quot;[billToId,billToGroupName]&quot;
+&#x9;&#x9;let $facet_billerId := &quot;[billerId]&quot;
+&#x9;&#x9;let $facet_legalEntity := &quot;[legalEntity]&quot;
+&#x9;&#x9;let $resultFacet := composite:executeQuery($query)//result[1]/facetField[1]
+        for $procResult in $procResult1
+        return
+        element facet {
+
+
+
+&#x9;&#x9;if (contains($resultFacet,$facet_billToId_billToGroupName))
+&#x9;&#x9;then for $varBillGrp in distinct-values($procResult2//result/billToGroupName)
+&#x9;&#x9;&#x9;&#x9;return 
+&#x9;&#x9;&#x9;&#x9;for $varBillId in distinct-values($procResult2//result[billToGroupName=$varBillGrp]/billToId)
+&#x9;&#x9;&#x9;&#x9;return
+&#x9;&#x9;&#x9;&#x9;  &#x9;element billToId_billToGroupName {
+&#x9;&#x9;&#x9;&#x9;&#x9;element billToId {$varBillId},
+&#x9;&#x9;&#x9;&#x9;&#x9;element billToGroupName {$varBillGrp}
+&#x9;&#x9;&#x9;&#x9;  }
+&#x9;&#x9;else (),
+
+       
+&#x9;&#x9;if (contains($resultFacet,$facet_billerId))
+&#x9;&#x9;then for $varBillerId in distinct-values($procResult2//result/billerId)
+&#x9;&#x9;&#x9;&#x9;  return 
+&#x9;&#x9;&#x9;&#x9;  element billerIds {$varBillerId}
+&#x9;&#x9;else (),
+
+&#x9;&#x9;if (contains($resultFacet,$facet_legalEntity))
+&#x9;&#x9;then for $varLegalId in distinct-values($procResult2//result/legalEntity)
+&#x9;&#x9;&#x9;&#x9;  return 
+&#x9;&#x9;&#x9;&#x9;  element legalEntities {$varLegalId}
+&#x9;&#x9;else ()
+        }
+      )
+      return
+      $nodes[1]
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/root</attribute>
+  <attribute name="xqueryModel" type="STRING">
+&lt;xqueryModel customized=&quot;true&quot; version=&quot;new&quot;&gt;
+  &lt;rootNode&gt;
+    &lt;nodeType&gt;COMPLEX&lt;/nodeType&gt;
+    &lt;element name=&quot;root&quot;&gt;
+      &lt;datatype name=&quot;root&quot; referenceDefinitionSet=&quot;/shared/Delta_DV/Application/DefinitionSets/Billing/defxAI_FacetSearch&quot; referenceType=&quot;root&quot; subType=&quot;ELEMENT_DECL&quot; type=&quot;XML&quot; contentConstraint=&quot;SEQUENCE&quot; schemaConstraint=&quot;ANY&quot; componentType=&quot;ELEMENT&quot; componentName=&quot;root&quot;&gt;
+        &lt;schemaDatatype&gt;
+          &lt;datatype name=&quot;root&quot; superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;ELEMENT_DECL&quot; anonymous=&quot;true&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+            &lt;element name=&quot;facet&quot;&gt;
+              &lt;datatype superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;COMPLEX_TYPE&quot; type=&quot;TREE&quot; refId=&quot;2&quot;&gt;
+                &lt;element name=&quot;billToId_billToGroupName&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+                  &lt;datatype superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;COMPLEX_TYPE&quot; type=&quot;TREE&quot; refId=&quot;3&quot;&gt;
+                    &lt;element name=&quot;billToId&quot;&gt;
+                      &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                    &lt;/element&gt;
+                    &lt;element name=&quot;billToGroupName&quot;&gt;
+                      &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                    &lt;/element&gt;
+                  &lt;/datatype&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;billerIds&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+                  &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;legalEntities&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+                  &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                &lt;/element&gt;
+              &lt;/datatype&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/schemaDatatype&gt;
+      &lt;/datatype&gt;
+    &lt;/element&gt;
+    &lt;sourcePath/&gt;
+    &lt;sourceType/&gt;
+    &lt;sourceSignature/&gt;
+    &lt;sourceAlias/&gt;
+    &lt;sourceJoin/&gt;
+    &lt;sourceFilter&gt;
+      &lt;text/&gt;
+    &lt;/sourceFilter&gt;
+    &lt;sourceSortOrder/&gt;
+    &lt;sourceGroupBy/&gt;
+    &lt;sourceInputs/&gt;
+    &lt;childNodes&gt;
+      &lt;childNode&gt;
+        &lt;nodeType&gt;COMPLEX&lt;/nodeType&gt;
+        &lt;element name=&quot;facet&quot;&gt;
+          &lt;datatype superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;COMPLEX_TYPE&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+            &lt;element name=&quot;billToId_billToGroupName&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+              &lt;datatype superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;COMPLEX_TYPE&quot; type=&quot;TREE&quot; refId=&quot;2&quot;&gt;
+                &lt;element name=&quot;billToId&quot;&gt;
+                  &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;billToGroupName&quot;&gt;
+                  &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                &lt;/element&gt;
+              &lt;/datatype&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;billerIds&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;legalEntities&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/element&gt;
+        &lt;sourcePath&gt;/shared/Delta_DV/Business/BusinessSemantic/Billing/Procedures/prcBI_GetFacetSearch&lt;/sourcePath&gt;
+        &lt;sourceType&gt;PROCEDURE&lt;/sourceType&gt;
+        &lt;sourceSignature&gt;
+          &lt;datatype type=&quot;PROCEDURE&quot; refId=&quot;1&quot;&gt;
+            &lt;element name=&quot;inJson&quot; direction=&quot;IN&quot;&gt;
+              &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;5000&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;result&quot; direction=&quot;OUT&quot;&gt;
+              &lt;datatype name=&quot;result&quot; type=&quot;TABLE&quot; refId=&quot;2&quot;&gt;
+                &lt;element name=&quot;billToGroupName&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;200&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;invoiceNumber&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;200&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;legalEntity&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;200&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;billToId&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;200&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;billerId&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;200&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;billToGroupNumber&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;200&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;reconNoteExists&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;1&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;reconLineItemExists&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;1&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;facetField&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;1000&quot;/&gt;
+                &lt;/element&gt;
+              &lt;/datatype&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/sourceSignature&gt;
+        &lt;sourceAlias&gt;prcBI_GetFacetSearch&lt;/sourceAlias&gt;
+        &lt;sourceJoin&gt;
+          &lt;joinType&gt;CROSS&lt;/joinType&gt;
+          &lt;joinExpression/&gt;
+        &lt;/sourceJoin&gt;
+        &lt;sourceFilter&gt;
+          &lt;text/&gt;
+        &lt;/sourceFilter&gt;
+        &lt;sourceSortOrder/&gt;
+        &lt;sourceGroupBy/&gt;
+        &lt;sourceInputs&gt;
+          &lt;type&gt;
+            &lt;datatype name=&quot;TREE&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+              &lt;element name=&quot;inJson&quot; direction=&quot;IN&quot;&gt;
+                &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+              &lt;/element&gt;
+            &lt;/datatype&gt;
+          &lt;/type&gt;
+          &lt;value&gt;
+            &lt;inJson&gt;$inJson&lt;/inJson&gt;
+          &lt;/value&gt;
+        &lt;/sourceInputs&gt;
+        &lt;childNodes&gt;
+          &lt;childNode&gt;
+            &lt;nodeType&gt;COMPLEX&lt;/nodeType&gt;
+            &lt;element name=&quot;billToId_billToGroupName&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+              &lt;datatype superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;COMPLEX_TYPE&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+                &lt;element name=&quot;billToId&quot;&gt;
+                  &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;billToGroupName&quot;&gt;
+                  &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                &lt;/element&gt;
+              &lt;/datatype&gt;
+            &lt;/element&gt;
+            &lt;sourcePath/&gt;
+            &lt;sourceType/&gt;
+            &lt;sourceSignature/&gt;
+            &lt;sourceAlias/&gt;
+            &lt;sourceJoin&gt;
+              &lt;joinType&gt;CROSS&lt;/joinType&gt;
+              &lt;joinExpression/&gt;
+            &lt;/sourceJoin&gt;
+            &lt;sourceFilter&gt;
+              &lt;text/&gt;
+            &lt;/sourceFilter&gt;
+            &lt;sourceSortOrder/&gt;
+            &lt;sourceGroupBy/&gt;
+            &lt;sourceInputs/&gt;
+            &lt;childNodes&gt;&lt;/childNodes&gt;
+          &lt;/childNode&gt;
+          &lt;childNode&gt;
+            &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+            &lt;element name=&quot;billerIds&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;value/&gt;
+          &lt;/childNode&gt;
+          &lt;childNode&gt;
+            &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+            &lt;element name=&quot;legalEntities&quot; maxOccurs=&quot;2147483647&quot; minOccurs=&quot;0&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;value/&gt;
+          &lt;/childNode&gt;
+        &lt;/childNodes&gt;
+      &lt;/childNode&gt;
+    &lt;/childNodes&gt;
+  &lt;/rootNode&gt;
+  &lt;inputSignature&gt;
+    &lt;datatype type=&quot;PROCEDURE&quot; refId=&quot;1&quot;&gt;
+      &lt;element name=&quot;inJson&quot; direction=&quot;IN&quot;&gt;
+        &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;5000&quot;/&gt;
+      &lt;/element&gt;
+    &lt;/datatype&gt;
+  &lt;/inputSignature&gt;
+  &lt;xquery&gt;declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;;
+declare variable $inJson external;
+
+&amp;lt;root xmlns:ns1=&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;&amp;gt;{
+  let $nodes := (
+    element root {
+      let $nodes := (
+&#x9;&#x9;let $inputs := (if (empty($inJson)) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$inJson), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string)
+        let $query := concat( &amp;quot;select * from /shared/Delta_DV/Business/BusinessSemantic/Billing/Procedures/prcBI_GetFacetSearch(&amp;quot;, concat( string-join($inputs,&amp;quot;,&amp;quot;), &amp;quot;)&amp;quot;))
+        let $procResult1 := composite:executeQuery($query)//result
+&#x9;&#x9;let $procResult2 := composite:executeQuery($query)
+&#x9;&#x9;let $facet_billToId_billToGroupName := &amp;quot;[billToId,billToGroupName]&amp;quot;
+&#x9;&#x9;let $facet_billerId := &amp;quot;[billerId]&amp;quot;
+&#x9;&#x9;let $facet_legalEntity := &amp;quot;[legalEntity]&amp;quot;
+&#x9;&#x9;let $resultFacet := composite:executeQuery($query)//result[1]/facetField[1]
+        for $procResult in $procResult1
+        return
+        element facet {
+
+
+
+&#x9;&#x9;if (contains($resultFacet,$facet_billToId_billToGroupName))
+&#x9;&#x9;then for $varBillGrp in distinct-values($procResult2//result/billToGroupName)
+&#x9;&#x9;&#x9;&#x9;return 
+&#x9;&#x9;&#x9;&#x9;for $varBillId in distinct-values($procResult2//result[billToGroupName=$varBillGrp]/billToId)
+&#x9;&#x9;&#x9;&#x9;return
+&#x9;&#x9;&#x9;&#x9;  &#x9;element billToId_billToGroupName {
+&#x9;&#x9;&#x9;&#x9;&#x9;element billToId {$varBillId},
+&#x9;&#x9;&#x9;&#x9;&#x9;element billToGroupName {$varBillGrp}
+&#x9;&#x9;&#x9;&#x9;  }
+&#x9;&#x9;else (),
+
+       
+&#x9;&#x9;if (contains($resultFacet,$facet_billerId))
+&#x9;&#x9;then for $varBillerId in distinct-values($procResult2//result/billerId)
+&#x9;&#x9;&#x9;&#x9;  return 
+&#x9;&#x9;&#x9;&#x9;  element billerIds {$varBillerId}
+&#x9;&#x9;else (),
+
+&#x9;&#x9;if (contains($resultFacet,$facet_legalEntity))
+&#x9;&#x9;then for $varLegalId in distinct-values($procResult2//result/legalEntity)
+&#x9;&#x9;&#x9;&#x9;  return 
+&#x9;&#x9;&#x9;&#x9;  element legalEntities {$varLegalId}
+&#x9;&#x9;else ()
+        }
+      )
+      return
+      $nodes[1]
+    }
+  )
+  return
+  $nodes[1]
+}&amp;lt;/root&amp;gt;/root
+&lt;/xquery&gt;
+&lt;/xqueryModel&gt;</attribute>
+</metadata>

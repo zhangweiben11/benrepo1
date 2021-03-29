@@ -1,0 +1,82 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="test" path="/shared/Delta_DV/Physical/Formatting/EDP_CURATED/test" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Visit_DT" nullable="true">
+      <datatype type="DATE"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Stakeholder_SKEY" nullable="true">
+      <datatype type="STRING" maxLength="20"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Session_CNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Page_View_CNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Duration_Per_Session_Group_TXT" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/ENROLLEE_WEB_TOUCHPOINT" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Visit_DT">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Stakeholder_SKEY">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+      <element name="Session_CNT">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Page_View_CNT">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Duration_Per_Session_Group_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Source_System_NM">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    ENROLLEE_WEB_TOUCHPOINT.Visit_DT, 
+    ENROLLEE_WEB_TOUCHPOINT.Stakeholder_SKEY, 
+    ENROLLEE_WEB_TOUCHPOINT.Session_CNT, 
+    ENROLLEE_WEB_TOUCHPOINT.Page_View_CNT, 
+    ENROLLEE_WEB_TOUCHPOINT.Duration_Per_Session_Group_TXT
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/ENROLLEE_WEB_TOUCHPOINT ENROLLEE_WEB_TOUCHPOINT </attribute>
+  <attribute name="creationDate" type="LONG">1611184234239</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611184424981</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89575</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611184234239</attribute>
+</metadata>

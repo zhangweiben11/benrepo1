@@ -1,0 +1,171 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="test_getDocDataSourceLineage" path="/shared/Delta_DV/_scripts/Utilities/documentation/test/test_getDocDataSourceLineage" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+
+]]></annotation>
+  <parameters>
+    <parameter name="formattedText" direction="OUT" nullable="true">
+      <datatype name="Text" referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/TypeDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/documentation/modules/getDocDataSourceLineage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="constantPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="commandOptionValueDsAccessed" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="commandOptionValueDsLineage" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="formattedText" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/getConstantV2" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="constantsPath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="constantsName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="optionReturn" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="outValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE test_getDocDataSourceLineage(
+&#x9;OUT formattedText&#x9;&#x9;&#x9;&#x9;/lib/util/System.Text
+)
+BEGIN
+&#x9;DECLARE moduleName &#x9;&#x9;&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.moduleNameType DEFAULT &apos;test_getDocDataSourceLineage&apos;;
+&#x9;DECLARE constantPath&#x9;&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.pathType DEFAULT &apos;/shared/ASAssets/Utilities/documentation/constants&apos;;
+&#x9;DECLARE debug &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1);
+ &#x9;DECLARE moduleText&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE commandOptionValueDsAccessed INTEGER; --&apos;print_datasource_accessed&apos;
+&#x9;DECLARE commandOptionValueDsLineage INTEGER; --&apos;print_datasource_lineage&apos;
+&#x9;DECLARE startTime&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;DECLARE duration&#x9;&#x9;&#x9;&#x9;&#x9;INTERVAL DAY TO SECOND;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+&#x9;DECLARE eol&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;debug&apos;, 1, debug);
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;eol&apos;, 1, eol);
+&#x9;set resPath = &apos;/shared/examples/CompositeView&apos;;
+&#x9;set resType = &apos;TABLE&apos;;
+--&#x9;set resPath = &apos;/shared/ASAssets/BestPractices_v81/DataAbstractionSample/generationScripts/Generate/generateViews&apos;;
+--&#x9;set resType = &apos;PROCEDURE&apos;;
+
+&#x9;-- Parse the switches for the &apos;print_datasource_lineage&apos; option
+&#x9;set startTime = CURRENT_TIMESTAMP;
+&#x9;set commandOptionValueDsAccessed = 1;
+&#x9;set commandOptionValueDsLineage = 1;
+
+&#x9;set formattedText = &apos;&apos;;
+&#x9;if (commandOptionValueDsAccessed = 1 OR commandOptionValueDsLineage = 1) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/modules/getDocDataSourceLineage(
+&#x9;&#x9;&#x9;resPath,resType, constantPath, commandOptionValueDsAccessed, commandOptionValueDsLineage, moduleText);
+&#x9;&#x9;if (moduleText is null) then
+&#x9;&#x9;&#x9;set moduleText = &apos;&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (moduleText IS NOT NULL AND LENGTH(&apos;|&apos;||moduleText||&apos;|&apos;) &gt; 2) then
+&#x9;&#x9;&#x9;set formattedText = formattedText || moduleText;
+&#x9;&#x9;end if;
+&#x9;end if;
+&#x9;set duration = CURRENT_TIMESTAMP - startTime;
+&#x9;call print(&apos;moduleText=&apos;||NVL(moduleText,&apos;null&apos;));
+&#x9;call print(&apos;Datasource Documentation Duration=&apos;||NVL(CAST(duration AS VARCHAR),&apos;null&apos;)||eol);
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">7/59</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/60</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

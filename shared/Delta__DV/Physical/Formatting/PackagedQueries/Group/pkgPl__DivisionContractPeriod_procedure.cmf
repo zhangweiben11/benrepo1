@@ -1,0 +1,70 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_DivisionContractPeriod" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionContractPeriod" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="ContractEffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="ContractEndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT EMPGRP_LEVEL_1_ID, EMPGRP_LEVEL_2_ID, 
+       CASE  
+          WHEN CONTRACT_YEAR_EFFECTIVE_DATE &gt; {2} THEN 
+               ADD_MONTHS (CONTRACT_YEAR_EFFECTIVE_DATE, -12)  
+          ELSE CONTRACT_YEAR_EFFECTIVE_DATE  
+       END AS CONTRACT_YEAR_EFFECTIVE_DATE,  
+       CASE  
+          WHEN CONTRACT_YEAR_EFFECTIVE_DATE &gt; {2} THEN 
+               ADD_MONTHS (ADD_MONTHS (CONTRACT_YEAR_EFFECTIVE_DATE, -12),12)- 1  
+          ELSE CONTRACT_YEAR_END_DATE  
+       END AS CONTRACT_YEAR_END_DATE  
+FROM  (SELECT GRP.EMPGRP_LEVEL_1_ID, GRP.EMPGRP_LEVEL_2_ID, 
+              GRP.EFFECTIVE_DATE, GRP.END_DATE,   
+              TO_DATE (TO_CHAR (GRP.EFFECTIVE_DATE, &apos;MMDD&apos;) || TO_CHAR ({2}, &apos;YYYY&apos;),&apos;MM/DD/YYYY&apos;) AS CONTRACT_YEAR_EFFECTIVE_DATE,  
+              ADD_MONTHS (TO_DATE (TO_CHAR (GRP.EFFECTIVE_DATE, &apos;MMDD&apos;) || TO_CHAR ({2}, &apos;YYYY&apos;),&apos;MM/DD/YYYY&apos;),12)- 1 AS CONTRACT_YEAR_END_DATE  
+       FROM   MVPPPRD.EMP_GRP_LEVEL_SPAN GRP
+       WHERE  GRP.EMPGRP_LEVEL_1_ID = &apos;{0}&apos;  
+       AND    GRP.EMPGRP_LEVEL_2_ID = &apos;{1}&apos;
+       AND    {2} BETWEEN GRP.EFFECTIVE_DATE AND GRP.END_DATE
+       AND    GRP.AUDIT_FLAG = &apos;N&apos; AND GRP.VOID_FLAG = &apos;N&apos;
+      ) SP
+</attribute>
+  <attribute name="creationDate" type="LONG">1611968403596</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611968798917</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/MTV</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611968403596</attribute>
+</metadata>

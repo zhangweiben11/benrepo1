@@ -1,0 +1,423 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="test_archiveMetadataXSLT" path="/shared/Delta_DV/_scripts/Utilities/repository/modelXSLT/modelArchiveMetadata/test_archiveMetadataXSLT" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+
+]]></annotation>
+  <parameters>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="packageFormatVersion">
+          <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+        </element>
+        <element name="name">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="path">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="type">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="changeToken">
+          <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+        </element>
+        <element name="virtual">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="tableType">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrType">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/modelXSLT/modelArchiveMetadata/archiveMetadataXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inXML" direction="IN" nullable="false">
+        <datatype name="XML" referenceType="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="packageFormatVersion">
+            <datatype type="INTEGER" minValue="-128" maxValue="127"/>
+          </element>
+          <element name="name">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="path">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="type">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="subtype">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="changeToken">
+            <datatype type="INTEGER" minValue="-128" maxValue="127"/>
+          </element>
+          <element name="virtual">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="tableType">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrName">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrValue">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE test_archiveMetadataXSLT(
+    OUT result CURSOR (
+    packageFormatVersion smallint,
+    name VARCHAR(32768), 
+    &quot;path&quot; VARCHAR(32768), 
+    &quot;type&quot; VARCHAR(32768), 
+    subtype VARCHAR(32768), 
+    changeToken smallint,
+    virtual VARCHAR(32768), 
+    tableType VARCHAR(32768), 
+    attrName VARCHAR(32768),  
+    attrType VARCHAR(32768), 
+    attrValue VARCHAR(32768)
+    )
+)
+BEGIN
+declare inXML XML;
+set inXML = &apos;&lt;?xml version=&quot;1.1&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;archiveMetadata xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+  &lt;packageFormatVersion&gt;10&lt;/packageFormatVersion&gt;
+  &lt;metadata changeToken=&quot;0&quot; name=&quot;View&apos;&apos;Order&apos;&apos;&quot; path=&quot;/services/databases/ASAssets_Test/NEWSCHEMA3/View&apos;&apos;Order&apos;&apos;&quot; subtype=&quot;NONE&quot; type=&quot;LINK&quot; virtual=&quot;true&quot;&gt;
+    &lt;security&gt;
+      &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+      &lt;privilege domain=&quot;composite&quot; group=&quot;all&quot; privileges=&quot;READ&quot;/&gt;
+    &lt;/security&gt;
+    &lt;dependency target=&quot;/shared/ASAssets_Test/KPImetrics_Implementation/View&apos;&apos;Order&apos;&apos;&quot; type=&quot;TABLE&quot;&gt;
+      &lt;datatype refId=&quot;1&quot; type=&quot;TABLE&quot;&gt;
+        &lt;element name=&quot;OrderID&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;ProductID&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;Discount&quot;&gt;
+          &lt;datatype maxDigits=&quot;12&quot; maxFractionalDigits=&quot;2&quot; minFractionalDigits=&quot;2&quot; type=&quot;DECIMAL&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;OrderDate&quot;&gt;
+          &lt;datatype type=&quot;DATE&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;CompanyName&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;CustomerContactFirstName&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;CustomerContactLastName&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;CustomerContactPhone&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;CustomerFaxNumber&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+      &lt;/datatype&gt;
+    &lt;/dependency&gt;
+    &lt;attribute name=&quot;creationDate&quot; type=&quot;LONG&quot;&gt;1488905714877&lt;/attribute&gt;
+    &lt;attribute name=&quot;creatorUserDomain&quot; type=&quot;STRING&quot;&gt;ldap&lt;/attribute&gt;
+    &lt;attribute name=&quot;creatorUserId&quot; type=&quot;INTEGER&quot;&gt;4005&lt;/attribute&gt;
+    &lt;attribute name=&quot;creatorUserName&quot; type=&quot;STRING&quot;&gt;zkxl6un&lt;/attribute&gt;
+    &lt;attribute name=&quot;lastModifiedDate&quot; type=&quot;LONG&quot;&gt;1568754496563&lt;/attribute&gt;
+    &lt;attribute name=&quot;lastModifiedUserDomain&quot; type=&quot;STRING&quot;&gt;composite&lt;/attribute&gt;
+    &lt;attribute name=&quot;lastModifiedUserId&quot; type=&quot;INTEGER&quot;&gt;4005&lt;/attribute&gt;
+    &lt;attribute name=&quot;lastModifiedUserName&quot; type=&quot;STRING&quot;&gt;admin&lt;/attribute&gt;
+    &lt;attribute name=&quot;resourceModifiedDateOnSourceCISSite&quot; type=&quot;LONG&quot;&gt;1488905714877&lt;/attribute&gt;
+    &lt;attribute name=&quot;targetPath&quot; type=&quot;STRING&quot;&gt;/shared/ASAssets_Test/KPImetrics_Implementation/View&apos;&apos;Order&apos;&apos;&lt;/attribute&gt;
+    &lt;attribute name=&quot;targetType&quot; type=&quot;SHORT&quot;&gt;2&lt;/attribute&gt;
+  &lt;/metadata&gt;
+  &lt;metadata changeToken=&quot;0&quot; name=&quot;View&apos;&apos;Order&apos;&apos;&quot; path=&quot;/shared/ASAssets_Test/KPImetrics_Implementation/View&apos;&apos;Order&apos;&apos;&quot; subtype=&quot;SQL_TABLE&quot; tableType=&quot;NONE&quot; type=&quot;TABLE&quot;&gt;
+    &lt;columns&gt;
+      &lt;column name=&quot;OrderID&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;ProductID&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;Discount&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxDigits=&quot;12&quot; maxFractionalDigits=&quot;2&quot; minFractionalDigits=&quot;2&quot; type=&quot;DECIMAL&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;OrderDate&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype type=&quot;DATE&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;CompanyName&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;CustomerContactFirstName&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;CustomerContactLastName&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;CustomerContactPhone&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+      &lt;column name=&quot;CustomerFaxNumber&quot; nullable=&quot;true&quot;&gt;
+        &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;security&gt;
+          &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+        &lt;/security&gt;
+      &lt;/column&gt;
+    &lt;/columns&gt;
+    &lt;indexes&gt;
+      &lt;index name=&quot;Pk_OrderId&quot; type=&quot;PRIMARY_KEY&quot; unique=&quot;true&quot;&gt;
+        &lt;indexColumn name=&quot;OrderID&quot; sortOrder=&quot;ASCENDING&quot;/&gt;
+      &lt;/index&gt;
+    &lt;/indexes&gt;
+    &lt;foreignKeys/&gt;
+    &lt;security&gt;
+      &lt;owner domain=&quot;composite&quot; user=&quot;admin&quot;/&gt;
+      &lt;privilege domain=&quot;composite&quot; group=&quot;all&quot; privileges=&quot;READ SELECT&quot;/&gt;
+    &lt;/security&gt;
+    &lt;dependency target=&quot;/shared/ASAssets_Test/KPImetrics_Implementation/examples/ds_orders/tutorial/customers&quot; type=&quot;TABLE&quot;&gt;
+      &lt;datatype refId=&quot;1&quot; type=&quot;TABLE&quot;&gt;
+        &lt;element name=&quot;customerid&quot; nullable=&quot;false&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;companyname&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;contactfirstname&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;contactlastname&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;billingaddress&quot;&gt;
+          &lt;datatype maxLength=&quot;255&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;city&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;stateorprovince&quot;&gt;
+          &lt;datatype maxLength=&quot;20&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;postalcode&quot;&gt;
+          &lt;datatype maxLength=&quot;20&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;countryregion&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;contacttitle&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;phonenumber&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;faxnumber&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+      &lt;/datatype&gt;
+    &lt;/dependency&gt;
+    &lt;dependency target=&quot;/shared/ASAssets_Test/KPImetrics_Implementation/examples/ds_orders/tutorial/orderdetails&quot; type=&quot;TABLE&quot;&gt;
+      &lt;datatype refId=&quot;1&quot; type=&quot;TABLE&quot;&gt;
+        &lt;element name=&quot;orderdetailid&quot; nullable=&quot;false&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;orderid&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;productid&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;quantity&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;unitprice&quot;&gt;
+          &lt;datatype maxDigits=&quot;12&quot; maxFractionalDigits=&quot;2&quot; minFractionalDigits=&quot;2&quot; type=&quot;DECIMAL&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;status&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;discount&quot;&gt;
+          &lt;datatype maxDigits=&quot;12&quot; maxFractionalDigits=&quot;2&quot; minFractionalDigits=&quot;2&quot; type=&quot;DECIMAL&quot;/&gt;
+        &lt;/element&gt;
+      &lt;/datatype&gt;
+    &lt;/dependency&gt;
+    &lt;dependency target=&quot;/shared/ASAssets_Test/KPImetrics_Implementation/examples/ds_orders/tutorial/orders&quot; type=&quot;TABLE&quot;&gt;
+      &lt;datatype refId=&quot;1&quot; type=&quot;TABLE&quot;&gt;
+        &lt;element name=&quot;orderid&quot; nullable=&quot;false&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;customerid&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;employeeid&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;orderdate&quot;&gt;
+          &lt;datatype type=&quot;DATE&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;purchaseordernumber&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shipname&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shipaddress&quot;&gt;
+          &lt;datatype maxLength=&quot;255&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shipcity&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shipstateorprovince&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shippostalcode&quot;&gt;
+          &lt;datatype maxLength=&quot;20&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shipcountry&quot;&gt;
+          &lt;datatype maxLength=&quot;50&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shipphonenumber&quot;&gt;
+          &lt;datatype maxLength=&quot;30&quot; type=&quot;STRING&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shipdate&quot;&gt;
+          &lt;datatype type=&quot;DATE&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;shippingmethodid&quot;&gt;
+          &lt;datatype maxValue=&quot;2147483647&quot; minValue=&quot;-2147483648&quot; type=&quot;INTEGER&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;freightcharge&quot;&gt;
+          &lt;datatype maxDigits=&quot;12&quot; maxFractionalDigits=&quot;2&quot; minFractionalDigits=&quot;2&quot; type=&quot;DECIMAL&quot;/&gt;
+        &lt;/element&gt;
+      &lt;/datatype&gt;
+    &lt;/dependency&gt;
+    &lt;attribute name=&quot;SQL&quot; type=&quot;STRING&quot;&gt;SELECT 
+    orderdetails.orderid OrderID, 
+    orderdetails.productid ProductID, 
+    orderdetails.discount Discount, 
+    orders.orderdate OrderDate, 
+    customers.companyname CompanyName, 
+    customers.contactfirstname CustomerContactFirstName, 
+    customers.contactlastname CustomerContactLastName, 
+    customers.phonenumber CustomerContactPhone,
+-- CHANGE ID:2 mtinius
+&#x9;customers.faxnumber CustomerFaxNumber
+FROM      
+    /shared/ASAssets_Test/KPImetrics_Implementation/examples/ds_orders/tutorial/orders orders INNER JOIN 
+        /shared/ASAssets_Test/KPImetrics_Implementation/examples/ds_orders/tutorial/orderdetails orderdetails
+    ON orders.orderid = orderdetails.orderid INNER JOIN 
+        /shared/ASAssets_Test/KPImetrics_Implementation/examples/ds_orders/tutorial/customers customers
+    ON customers.customerid = orders.customerid&lt;/attribute&gt;
+    &lt;attribute name=&quot;creationDate&quot; type=&quot;LONG&quot;&gt;0&lt;/attribute&gt;
+    &lt;attribute name=&quot;creatorUserDomain&quot; type=&quot;STRING&quot;/&gt;
+    &lt;attribute name=&quot;creatorUserName&quot; type=&quot;STRING&quot;/&gt;
+    &lt;attribute name=&quot;explicitly.designed&quot; type=&quot;BOOLEAN&quot;&gt;false&lt;/attribute&gt;
+    &lt;attribute name=&quot;lastModifiedDate&quot; type=&quot;LONG&quot;&gt;1568754496563&lt;/attribute&gt;
+    &lt;attribute name=&quot;lastModifiedUserDomain&quot; type=&quot;STRING&quot;&gt;composite&lt;/attribute&gt;
+    &lt;attribute name=&quot;lastModifiedUserName&quot; type=&quot;STRING&quot;&gt;admin&lt;/attribute&gt;
+    &lt;attribute name=&quot;model&quot; type=&quot;NULL&quot;/&gt;
+  &lt;/metadata&gt;
+&lt;/archiveMetadata&gt;
+&apos;;
+        OPEN result FOR 
+            SELECT 
+                *
+            FROM      
+                /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/modelXSLT/modelArchiveMetadata/archiveMetadataXSLT(inXML);
+    END</attribute>
+  <attribute name="creationDate" type="LONG">1383622341943</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

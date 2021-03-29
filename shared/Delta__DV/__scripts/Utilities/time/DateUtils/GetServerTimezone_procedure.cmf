@@ -1,0 +1,63 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="GetServerTimezone" path="/shared/Delta_DV/_scripts/Utilities/time/DateUtils/GetServerTimezone" type="PROCEDURE" subtype="CUSTOM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[GetServerTimezone
+
+&#x9;Description:
+&#x9;  Returns the timezone this instance of CIS is running in. Various display types are available:
+&#x9;
+&#x9;  ID         - The timezone ID (according to Java, i.e. &quot;America/Los_Angeles&quot;)
+&#x9;  SHORT_NAME - The name of the timezone in short format (i.e. &quot;PDT&quot;)
+&#x9;  LONG_NAME  - The name of the timezone in long format (i.e. &quot;Pacific Daylight Time&quot;)
+&#x9;  OFFSET     - The number of milliseconds to add to GMT time to get the current timezone&apos;s time (i.e. &quot;-28800000&quot;)
+&#x9;  XML        - The timezone in hours:minutes format needed for XML timestamps
+&#x9;
+&#x9;Inputs:
+&#x9;  displayType - The desired format of the timezone
+&#x9;
+&#x9;Outputs:
+&#x9;  outValue    - This CIS instance&apos;s timezone in the specified format
+&#x9;
+&#x9;Exceptions:
+&#x9;  None
+&#x9;
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/11/2010      Calvin Goodrich     5.1.0           Created new
+&#x9;2014.4&#x9;&#x9;11/07/2014      Calvin Goodrich     6.2.6           Updated to include XML timezone format
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="displayType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" subType="DATASOURCE_TYPE" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="outValue" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" subType="DATASOURCE_TYPE" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="className" type="STRING">com.tibco.ps.utils.date.GetServerTimezone</attribute>
+  <attribute name="creationDate" type="LONG">1383622342324</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="selectionState" type="INTEGER">2</attribute>
+</metadata>

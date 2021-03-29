@@ -1,0 +1,70 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="REGULATORY_AGENCY" path="/shared/Delta_DV/Business/Logical/EDP/REGULATORY_AGENCY" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Regulatory_Agency_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Begin_DT" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Regulatory_Agency_CD" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Regulatory_Agency_NM" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/TIBCOEBX/REGULATORY_AGENCY" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Regulatory_Agency_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Regulatory_Agency_NM">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="Begin_DT">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Regulatory_Agency_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    REGULATORY_AGENCY.Regulatory_Agency_SKEY, 
+    REGULATORY_AGENCY.Begin_DT, 
+    REGULATORY_AGENCY.Regulatory_Agency_CD, 
+    REGULATORY_AGENCY.Regulatory_Agency_NM
+   
+FROM      
+    /shared/Delta_DV/Physical/Formatting/TIBCOEBX/REGULATORY_AGENCY REGULATORY_AGENCY</attribute>
+  <attribute name="creationDate" type="LONG">1603841142585</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1603841142585</attribute>
+</metadata>

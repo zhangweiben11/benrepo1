@@ -1,0 +1,214 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_DivisionDetail" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionDetail" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionName">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+        </element>
+        <element name="DivisionSurrogateID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="GroupSurrogateID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="PrePaidGroupIND">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+        </element>
+        <element name="ProgramType">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+        </element>
+        <element name="SelfFundedIND">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+        </element>
+        <element name="BenefitAssignmentIND">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+        </element>
+        <element name="ToaIND">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+        </element>
+        <element name="DeltaCareOrthoMsgIND">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+        </element>
+        <element name="ProductID">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+        </element>
+        <element name="PricingRuleCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="BasisOfPayment">
+          <datatype name="VARCHAR" type="STRING" maxLength="80"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT A.*, RTRIM(LKP.REPORT_DESC) BasisOfPayment
+FROM  (SELECT DISTINCT 
+              EGL1.IDENTIFIER GroupID
+             ,EGL2.IDENTIFIER DivisionID
+             ,EGL2.UC_NAME DivisionName
+             ,EGL2.SURROGATE_ID DivisionSurrogateID
+             ,EGL1.SURROGATE_ID GroupSurrogateID
+             ,MAX(CASE
+                     WHEN BL.BUS_LEVEL_4_ID IN (&apos;AARP&apos;, &apos;DNTGRA INDVL&apos;, &apos;INDIVIDUAL&apos;, &apos;DNTGRAIXDDIC&apos;, &apos;INDIVXDDP&apos;) THEN &apos;true&apos;
+                     WHEN BL.BUS_LEVEL_4_ID = &apos;GROUP&apos; AND
+                          BL.BUS_LEVEL_7_ID IN (&apos;DLTACARE USA&apos;, &apos;PPO&apos;) AND
+                         (EGL2_MC.CONTACT_TYPE_CODE = &apos;PP&apos; OR EGL1_MC.CONTACT_TYPE_CODE = &apos;PP&apos;) THEN &apos;true&apos;
+                     ELSE &apos;false&apos;
+                  END
+                 ) OVER (PARTITION BY EGL2.EMPGRP_LEVEL_1_ID, EGL2.IDENTIFIER) PrePaidGroupIND
+             ,CASE
+                  WHEN BL.BUS_LEVEL_6_ID = &apos;TX&apos; AND
+                       BL.BUS_LEVEL_7_ID IN (&apos;PPO&apos;, &apos;NOFQLTRT&apos;) THEN &apos;DPO&apos;
+                  WHEN BL.BUS_LEVEL_4_ID = &apos;AARP&apos; AND
+                       BL.BUS_LEVEL_6_ID = &apos;NC&apos; AND
+                       BL.BUS_LEVEL_7_ID IN (&apos;PPO&apos;, &apos;NOFQLTRT&apos;) THEN &apos;DPO&apos;
+                  WHEN BL.BUS_LEVEL_7_ID = &apos;CPP Dental&apos; THEN &apos;CPP Dental&apos;
+                  ELSE RTRIM(BL.BUS_LEVEL_7_ID)
+              END ProgramType
+             ,CASE
+                 WHEN BDC.BILLING_ARRGMT_IND = &apos;A&apos; THEN &apos;true&apos;
+                 ELSE &apos;false&apos;
+              END SelfFundedIND
+             ,CASE 
+                 WHEN EGL2.BEN_ASSIGNMENT_IND = &apos;Y&apos; THEN &apos;true&apos;
+                 WHEN EGL2.BEN_ASSIGNMENT_IND = &apos;N&apos; THEN &apos;false&apos;
+                 WHEN EGL1.BEN_ASSIGNMENT_IND = &apos;Y&apos; THEN &apos;true&apos;
+                 WHEN EGL1.BEN_ASSIGNMENT_IND = &apos;N&apos; THEN &apos;false&apos;
+                 ELSE &apos;false&apos;
+              END BenefitAssignmentIND
+             ,MAX(CASE
+                     WHEN EGL2_MC.CONTACT_TYPE_CODE = &apos;ZB&apos; OR EGL1_MC.CONTACT_TYPE_CODE = &apos;ZB&apos; THEN &apos;true&apos;
+                     ELSE &apos;false&apos;
+                  END
+                 ) OVER (PARTITION BY EGL2.EMPGRP_LEVEL_1_ID, EGL2.IDENTIFIER) ToaIND
+             ,MAX(CASE
+                     WHEN EGL2_MC.CONTACT_TYPE_CODE = &apos;ZE&apos; OR EGL1_MC.CONTACT_TYPE_CODE = &apos;ZE&apos; THEN &apos;true&apos;
+                     ELSE &apos;false&apos;
+                  END
+                 ) OVER (PARTITION BY EGL2.EMPGRP_LEVEL_1_ID, EGL2.IDENTIFIER) DeltaCareOrthoMessageIND
+             ,RTRIM(BL.BUS_LEVEL_7_ID) ProductID
+             ,CASE
+                 WHEN PricingRule_1.ROWID IS NOT NULL THEN PricingRule_1.PRICING_RULE_CD
+                 WHEN PricingRule_2.ROWID IS NOT NULL THEN PricingRule_2.PRICING_RULE_CD
+                 WHEN PricingRule_3.ROWID IS NOT NULL THEN PricingRule_3.PRICING_RULE_CD
+                 WHEN PricingRule_4.ROWID IS NOT NULL THEN PricingRule_4.PRICING_RULE_CD
+                 WHEN BL.BUS_LEVEL_4_ID LIKE &apos;CPP%&apos; THEN &apos;CP009&apos;
+                 ELSE &apos;DF001&apos;
+              END PricingRuleCD
+       FROM   MVPPPRD.EMP_GRP_LVL_2 EGL2
+       JOIN   MVPPPRD.EMP_GRP_LVL_1 EGL1
+       ON     EGL2.EMPGRP_LEVEL_1_ID = EGL1.IDENTIFIER 
+       JOIN   MVPPPRD.EMP_GRP_LEVEL_SPAN EGLS
+       ON     EGL2.EMPGRP_LEVEL_1_ID = EGLS.EMPGRP_LEVEL_1_ID
+       AND    EGL2.IDENTIFIER = EGLS.EMPGRP_LEVEL_2_ID
+       JOIN   MVPPPRD.EMPGRP_LVL_BUS_LVL BL
+       ON     EGL2.EMPGRP_LEVEL_1_ID = BL.EMPGRP_LEVEL_1_ID
+       AND    EGL2.IDENTIFIER = BL.EMPGRP_LEVEL_2_ID
+       JOIN   MVPPPRD.EMPGRP_LVX_BEN_PKG BP
+       ON     EGL2.EMPGRP_LEVEL_1_ID = BP.EMPGRP_LEVEL_1_ID
+       AND    EGL2.IDENTIFIER = BP.EMPGRP_LEVEL_2_ID
+       LEFT OUTER JOIN MVPPPRD.BILLING_DIV_CONFIG BDC
+       ON     EGL2.EMPGRP_LEVEL_1_ID = BDC.FK_EMPGRP_LVL1_ID
+       AND    CAST(EGL2.IDENTIFIER AS CHAR(25)) = BDC.FK_BILL_ENT_ID
+       AND    {2} BETWEEN BDC.EFF_DATE AND BDC.END_DATE
+       AND    BDC.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MVPPPRD.METAVANCE_CONTACT EGL1_MC
+       ON     CAST(EGL1.SURROGATE_ID AS CHAR(25)) = EGL1_MC.WHO_IDENTIFIER
+       AND    &apos;G1&apos; = EGL1_MC.WHO_TYPE_INDICATOR
+       AND    EGL1_MC.AUDIT_FLAG = &apos;N&apos; AND EGL1_MC.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MVPPPRD.METAVANCE_CONTACT EGL2_MC
+       ON     CAST(EGL2.SURROGATE_ID AS CHAR(25))= EGL2_MC.WHO_IDENTIFIER
+       AND    &apos;G2&apos; = EGL2_MC.WHO_TYPE_INDICATOR
+       AND    EGL2_MC.AUDIT_FLAG = &apos;N&apos; AND EGL2_MC.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MVPPPRD.RULE_ASSIGNMENT PricingRule_1
+       ON     PricingRule_1.BUS_LEVEL_7_ID = BL.BUS_LEVEL_7_ID
+       AND    PricingRule_1.BUS_LEVEL_6_ID = BL.BUS_LEVEL_6_ID
+       AND    PricingRule_1.BUS_LEVEL_5_ID = BL.BUS_LEVEL_5_ID
+       AND    PricingRule_1.BUS_LEVEL_4_ID = BL.BUS_LEVEL_4_ID
+       AND    PricingRule_1.EMPGRP_LEVEL_1_ID = BL.EMPGRP_LEVEL_1_ID
+       AND    PricingRule_1.EMPGRP_LEVEL_2_ID = BL.EMPGRP_LEVEL_2_ID
+       AND    PricingRule_1.BENEFIT_PACKAGE_ID = BP.BENEFIT_PACKAGE_ID
+       AND    {2} BETWEEN PricingRule_1.EFFECTIVE_DATE AND PricingRule_1.END_DATE
+       AND    PricingRule_1.PRICING_RULE_CD &lt;&gt; RPAD(&apos; &apos;, 5, &apos; &apos;)
+       AND    PricingRule_1.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MVPPPRD.RULE_ASSIGNMENT PricingRule_2
+       ON     PricingRule_2.BUS_LEVEL_7_ID = BL.BUS_LEVEL_7_ID
+       AND    PricingRule_2.BUS_LEVEL_6_ID = BL.BUS_LEVEL_6_ID
+       AND    PricingRule_2.BUS_LEVEL_5_ID = BL.BUS_LEVEL_5_ID
+       AND    PricingRule_2.BUS_LEVEL_4_ID = BL.BUS_LEVEL_4_ID
+       AND    PricingRule_2.EMPGRP_LEVEL_1_ID = BL.EMPGRP_LEVEL_1_ID
+       AND    PricingRule_2.EMPGRP_LEVEL_2_ID = BL.EMPGRP_LEVEL_2_ID
+       AND    {2} BETWEEN PricingRule_2.EFFECTIVE_DATE AND PricingRule_2.END_DATE
+       AND    PricingRule_2.PRICING_RULE_CD &lt;&gt; RPAD(&apos; &apos;, 5, &apos; &apos;)
+       AND    PricingRule_2.EMPGRP_LEVEL_1_ID &lt;&gt; RPAD(&apos; &apos;, 12, &apos; &apos;) AND PricingRule_2.EMPGRP_LEVEL_2_ID &lt;&gt; RPAD(&apos; &apos;, 12, &apos; &apos;) AND PricingRule_2.BENEFIT_PACKAGE_ID = RPAD(&apos; &apos;, 8, &apos; &apos;)
+       AND    PricingRule_2.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MVPPPRD.RULE_ASSIGNMENT PricingRule_3
+       ON     PricingRule_3.BUS_LEVEL_7_ID = BL.BUS_LEVEL_7_ID
+       AND    PricingRule_3.BUS_LEVEL_6_ID = BL.BUS_LEVEL_6_ID
+       AND    PricingRule_3.BUS_LEVEL_5_ID = BL.BUS_LEVEL_5_ID
+       AND    PricingRule_3.BUS_LEVEL_4_ID = BL.BUS_LEVEL_4_ID
+       AND    PricingRule_3.EMPGRP_LEVEL_1_ID = BL.EMPGRP_LEVEL_1_ID
+       AND    {2} BETWEEN PricingRule_3.EFFECTIVE_DATE AND PricingRule_3.END_DATE
+       AND    PricingRule_3.PRICING_RULE_CD &lt;&gt; RPAD(&apos; &apos;, 5, &apos; &apos;)
+       AND    PricingRule_3.EMPGRP_LEVEL_1_ID &lt;&gt; RPAD(&apos; &apos;, 12, &apos; &apos;) AND PricingRule_3.EMPGRP_LEVEL_2_ID = RPAD(&apos; &apos;, 12, &apos; &apos;) AND PricingRule_3.BENEFIT_PACKAGE_ID = RPAD(&apos; &apos;, 8, &apos; &apos;)
+       AND    PricingRule_3.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MVPPPRD.RULE_ASSIGNMENT PricingRule_4
+       ON     PricingRule_4.BUS_LEVEL_7_ID = BL.BUS_LEVEL_7_ID
+       AND    PricingRule_4.BUS_LEVEL_6_ID = BL.BUS_LEVEL_6_ID
+       AND    PricingRule_4.BUS_LEVEL_5_ID = BL.BUS_LEVEL_5_ID
+       AND    PricingRule_4.BUS_LEVEL_4_ID = BL.BUS_LEVEL_4_ID
+       AND    {2} BETWEEN PricingRule_4.EFFECTIVE_DATE AND PricingRule_4.END_DATE
+       AND    PricingRule_4.PRICING_RULE_CD &lt;&gt; RPAD(&apos; &apos;, 5, &apos; &apos;)
+       AND    PricingRule_4.EMPGRP_LEVEL_1_ID = RPAD(&apos; &apos;, 12, &apos; &apos;) AND PricingRule_4.EMPGRP_LEVEL_2_ID = RPAD(&apos; &apos;, 12, &apos; &apos;) AND PricingRule_4.BUS_LEVEL_7_ID &lt;&gt; RPAD(&apos; &apos;, 12, &apos; &apos;)
+       AND    PricingRule_4.VOID_FLAG = &apos;N&apos;
+       WHERE  EGL2.EMPGRP_LEVEL_1_ID = &apos;{0}&apos;
+       AND    EGL2.IDENTIFIER = CAST(COALESCE(NULLIF(&apos;{1}&apos;,&apos;null&apos;),EGL2.IDENTIFIER) AS CHAR(12))
+       AND    EGL2.AUDIT_FLAG = &apos;N&apos;
+       AND    EGL1.AUDIT_FLAG = &apos;N&apos;
+       AND    EGLS.EMPGRP_LEVEL = &apos;2&apos;  
+       AND    {2} BETWEEN EGLS.EFFECTIVE_DATE AND EGLS.END_DATE
+       AND    EGLS.AUDIT_FLAG = &apos;N&apos; AND EGLS.VOID_FLAG = &apos;N&apos;
+       AND    {2} BETWEEN BL.EFFECTIVE_DATE AND BL.END_DATE
+       AND    BL.AUDIT_FLAG = &apos;N&apos; AND BL.VOID_FLAG = &apos;N&apos;
+       AND    {2} BETWEEN BP.EFFECTIVE_DATE AND BP.END_DATE
+       AND    BP.AUDIT_FLAG = &apos;N&apos; AND BP.VOID_FLAG = &apos;N&apos;
+      ) A
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE LKP
+ON     LKP.FK_CODE_CATG_ID = &apos;UE3&apos;
+AND    LKP.CODE_VALUE_ID = A.PricingRuleCD
+ORDER BY 1, 2</attribute>
+  <attribute name="creationDate" type="LONG">1611861160949</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612830684501</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/MTV</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611861160949</attribute>
+</metadata>

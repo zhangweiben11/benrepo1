@@ -1,0 +1,150 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="AR_CONS_INV_TRX_ALL" path="/shared/Delta_DV/Physical/Metadata/DataSources/efs/APPS/AR_CONS_INV_TRX_ALL" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="SYNONYM">
+  <columns>
+    <column name="CONS_INV_ID" nullable="false">
+      <datatype name="BIGINT" extendedName="NUMBER(15,0)" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-999999999999999" maxValue="999999999999999"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CONS_INV_LINE_NUMBER" nullable="true">
+      <datatype name="BIGINT" extendedName="NUMBER(15,0)" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-999999999999999" maxValue="999999999999999"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="TRANSACTION_TYPE" nullable="false">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(30)" subType="DATASOURCE_TYPE" type="STRING" maxLength="30"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="TRX_NUMBER" nullable="true">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(30)" subType="DATASOURCE_TYPE" type="STRING" maxLength="30"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="TRANSACTION_DATE" nullable="false">
+      <datatype name="DATE" extendedName="DATE" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="AMOUNT_ORIGINAL" nullable="true">
+      <datatype name="DOUBLE" extendedName="NUMBER" subType="DATASOURCE_TYPE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="TAX_ORIGINAL" nullable="true">
+      <datatype name="DOUBLE" extendedName="NUMBER" subType="DATASOURCE_TYPE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="ADJ_PS_ID" nullable="true">
+      <datatype name="BIGINT" extendedName="NUMBER(15,0)" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-999999999999999" maxValue="999999999999999"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="ORG_ID" nullable="true">
+      <datatype name="BIGINT" extendedName="NUMBER(15,0)" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-999999999999999" maxValue="999999999999999"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CUSTOMER_TRX_ID" nullable="true">
+      <datatype name="BIGINT" extendedName="NUMBER(15,0)" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-999999999999999" maxValue="999999999999999"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="JUSTIFICATION" nullable="true">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(200)" subType="DATASOURCE_TYPE" type="STRING" maxLength="200"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="UNPAID_REASON" nullable="true">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(30)" subType="DATASOURCE_TYPE" type="STRING" maxLength="30"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="SHIP_TO_SITE_ID" nullable="true">
+      <datatype name="BIGINT" extendedName="NUMBER(15,0)" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-999999999999999" maxValue="999999999999999"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="TRX_DESCRIPTION" nullable="true">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(150)" subType="DATASOURCE_TYPE" type="STRING" maxLength="150"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="AR_CONS_INV_TRX_N2" type="OTHER" unique="false">
+      <indexColumn name="ADJ_PS_ID" sortOrder="ASCENDING"/>
+      <indexColumn name="TRANSACTION_TYPE" sortOrder="ASCENDING"/>
+      <attribute name="indexSchema" type="STRING">AR</attribute>
+    </index>
+    <index name="AR_CONS_INV_TRX_N1" type="OTHER" unique="false">
+      <indexColumn name="CONS_INV_ID" sortOrder="ASCENDING"/>
+      <indexColumn name="CONS_INV_LINE_NUMBER" sortOrder="ASCENDING"/>
+      <attribute name="indexSchema" type="STRING">AR</attribute>
+    </index>
+    <index name="AR_CONS_INV_TRX_T1" type="OTHER" unique="false">
+      <indexColumn name="CUSTOMER_TRX_ID" sortOrder="ASCENDING"/>
+      <attribute name="indexSchema" type="STRING">AR</attribute>
+    </index>
+  </indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:10:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:11:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:12:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:13:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:3:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:4:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:5:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:6:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:7:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:8:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:9:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1591746917599</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">900122</attribute>
+  <attribute name="creatorUserName" type="STRING">dca33579</attribute>
+  <attribute name="i:0:indexSchema" type="STRING">AR</attribute>
+  <attribute name="i:1:indexSchema" type="STRING">AR</attribute>
+  <attribute name="i:2:indexSchema" type="STRING">AR</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">900122</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1591746917599</attribute>
+</metadata>

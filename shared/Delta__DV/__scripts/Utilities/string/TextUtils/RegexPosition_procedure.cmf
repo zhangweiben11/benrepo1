@@ -1,0 +1,72 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="RegexPosition" path="/shared/Delta_DV/_scripts/Utilities/string/TextUtils/RegexPosition" type="PROCEDURE" subtype="CUSTOM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[Description:
+  Finds an occurrence of a regular expression match in a VARCHAR and returns the position
+  of the match (similar to the SQL POSITION function, positions start at 1 with 0 indicating
+  a match was not found.) The value of the occurrence input value determines which 
+  occurrence to return (numbered starting at 1 from left to right. Use negative values to 
+  number occurrences from right to left.) If a NULL value is passed in as the value of 
+  any of the inputs, a NULL is returned. Zero may not be used as a value for an 
+  occurrence.
+
+  The regular expression language used is what is supported by the JDK used by CIS 
+  (currently 1.5 in CIS 4.0.1) See the javadoc for java.util.regex.Pattern for 
+  details on what is supported.
+
+Inputs:
+  Input Text         - The text to search
+  Regular Expression - The regular expression to search for
+  Occurrence         - The occurrance of the match (starting from 1 left to right or -1 right to left)
+
+Outputs:
+  result             - The starting position of the matched text (starting from 1.) 0 if no match found.
+
+Exceptions:
+  None
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/11/2010      Calvin Goodrich&#x9;&#x9;5.1.0           Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="Input Text" direction="IN" nullable="true">
+      <datatype name="VARCHAR" subType="DATASOURCE_TYPE" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="Regular Expression" direction="IN" nullable="true">
+      <datatype name="VARCHAR" subType="DATASOURCE_TYPE" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="Occurrence" direction="IN" nullable="true">
+      <datatype name="INTEGER" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="INTEGER" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="className" type="STRING">com.tibco.ps.utils.text.RegexPosition</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="selectionState" type="INTEGER">2</attribute>
+</metadata>

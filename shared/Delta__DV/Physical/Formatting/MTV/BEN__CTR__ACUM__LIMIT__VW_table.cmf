@@ -1,0 +1,139 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="BEN_CTR_ACUM_LIMIT_VW" path="/shared/Delta_DV/Physical/Formatting/MTV/BEN_CTR_ACUM_LIMIT_VW" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="SURROGATE_ID" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ACCUM_PERIOD" nullable="true">
+      <datatype type="STRING" minLength="10" maxLength="10"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="COUNTER_LIMIT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="11" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ACCUM_PD_START_DT" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ACCUM_PD_END_DT" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRESENT_SUMMARY_FG" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="1"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRESENT_EOB_FLAG" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="1"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CREATION_TS" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LAST_MAINT_TS" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="OPERATOR_ID" nullable="true">
+      <datatype type="STRING" minLength="8" maxLength="8"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FK_BEN_CTR_SRC_SI" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/MTV_VIEWS/dbo/BEN_CTR_ACUM_LIMIT_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="SURROGATE_ID" nullable="false">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="ACCUM_PERIOD" nullable="false">
+        <datatype type="STRING" minLength="10" maxLength="10"/>
+      </element>
+      <element name="COUNTER_LIMIT" nullable="false">
+        <datatype type="DECIMAL" maxDigits="11" maxFractionalDigits="2"/>
+      </element>
+      <element name="ACCUM_PD_START_DT" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="ACCUM_PD_END_DT" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="PRESENT_SUMMARY_FG" nullable="false">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="PRESENT_EOB_FLAG" nullable="false">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="CREATION_TS" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="LAST_MAINT_TS" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="OPERATOR_ID" nullable="false">
+        <datatype type="STRING" minLength="8" maxLength="8"/>
+      </element>
+      <element name="FK_BEN_CTR_SRC_SI">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    BEN_CTR_ACUM_LIMIT_VW.SURROGATE_ID, 
+    BEN_CTR_ACUM_LIMIT_VW.ACCUM_PERIOD, 
+    BEN_CTR_ACUM_LIMIT_VW.COUNTER_LIMIT, 
+    BEN_CTR_ACUM_LIMIT_VW.ACCUM_PD_START_DT, 
+    BEN_CTR_ACUM_LIMIT_VW.ACCUM_PD_END_DT, 
+    BEN_CTR_ACUM_LIMIT_VW.PRESENT_SUMMARY_FG, 
+    BEN_CTR_ACUM_LIMIT_VW.PRESENT_EOB_FLAG, 
+    BEN_CTR_ACUM_LIMIT_VW.CREATION_TS, 
+    BEN_CTR_ACUM_LIMIT_VW.LAST_MAINT_TS, 
+    BEN_CTR_ACUM_LIMIT_VW.OPERATOR_ID, 
+    BEN_CTR_ACUM_LIMIT_VW.FK_BEN_CTR_SRC_SI
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/MTV_VIEWS/dbo/BEN_CTR_ACUM_LIMIT_VW BEN_CTR_ACUM_LIMIT_VW</attribute>
+  <attribute name="creationDate" type="LONG">1594051226095</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="BYTE_ARRAY">EIEJBAAAAAEQUQYBABUAQgBFAE4AXwBDAFQAUgBfAEEAQwBVAE0AXwBMAEkATQBJAFQAXwBWAFcGAgAVAEIARQBOAF8AQwBUAFIAXwBBAEMAVQBNAF8ATABJAE0ASQBUAF8AVgBXAwv/////Awr/////Awz/////CxEACQAGAHMAaABhAHIAZQBkAAgARABlAGwAdABhAF8ARABWAAgAUABoAHkAcwBpAGMAYQBsAAgATQBlAHQAYQBkAGEAdABhAAsARABhAHQAYQBTAG8AdQByAGMAZQBzAAMASQBEAFMACQBNAFQAVgBfAFYASQBFAFcAUwADAGQAYgBvABUAQgBFAE4AXwBDAFQAUgBfAEEAQwBVAE0AXwBMAEkATQBJAFQAXwBWAFf//wMFAAAAAAgCEDEGAf//AQIBAQYAAQMAAQQAAQUAAwcAAAAABwkAAAABAAAAAAkKAAAACxBBBgEADABTAFUAUgBSAE8ARwBBAFQARQBfAEkARAYCAAAGA///BgT//wMK/////wgMEBkGAgAGAGIAaQBnAGkAbgB0BgMABgBiAGkAZwBpAG4AdAMrAAAADwMSAAAAAQQHgAAAAAAAAAD//wMLAAAAAP//EEEGAQAMAEEAQwBDAFUATQBfAFAARQBSAEkATwBEBgIAAAYD//8GBP//Awr/////CAwQGwYCAAQAYwBoAGEAcgYDAAgAYwBoAGEAcgAoADEAMAApAysAAAAPAxIAAAABBAUAAAAAAAAACgQEAAAAAAAAAAoBEwH//wMLAAAAAP//EEEGAQANAEMATwBVAE4AVABFAFIAXwBMAEkATQBJAFQGAgAABgP//wYE//8DCv////8IDBAXBgIABwBkAGUAYwBpAG0AYQBsBgMADQBkAGUAYwBpAG0AYQBsACgAMQAxACwAMgApAysAAAAPAxIAAAABAw4AAAALAxAAAAAC//8DCwAAAAD//xBBBgEAEQBBAEMAQwBVAE0AXwBQAEQAXwBTAFQAQQBSAFQAXwBEAFQGAgAABgP//wYE//8DCv////8IDBAWBgIACQBkAGEAdABlAHQAaQBtAGUAMgYDAAkAZABhAHQAZQB0AGkAbQBlADIDKwAAAA8DEgAAAAH//wMLAAAAAP//EEEGAQAPAEEAQwBDAFUATQBfAFAARABfAEUATgBEAF8ARABUBgIAAAYD//8GBP//Awr/////CAwQFgYCAAkAZABhAHQAZQB0AGkAbQBlADIGAwAJAGQAYQB0AGUAdABpAG0AZQAyAysAAAAPAxIAAAAB//8DCwAAAAD//xBBBgEAEgBQAFIARQBTAEUATgBUAF8AUwBVAE0ATQBBAFIAWQBfAEYARwYCAAAGA///BgT//wMK/////wgMEBsGAgAEAGMAaABhAHIGAwAHAGMAaABhAHIAKAAxACkDKwAAAA8DEgAAAAEEBQAAAAAAAAABBAQAAAAAAAAAAQETAf//AwsAAAAA//8QQQYBABAAUABSAEUAUwBFAE4AVABfAEUATwBCAF8ARgBMAEEARwYCAAAGA///BgT//wMK/////wgMEBsGAgAEAGMAaABhAHIGAwAHAGMAaABhAHIAKAAxACkDKwAAAA8DEgAAAAEEBQAAAAAAAAABBAQAAAAAAAAAAQETAf//AwsAAAAA//8QQQYBAAsAQwBSAEUAQQBUAEkATwBOAF8AVABTBgIAAAYD//8GBP//Awr/////CAwQFgYCAAkAZABhAHQAZQB0AGkAbQBlADIGAwAJAGQAYQB0AGUAdABpAG0AZQAyAysAAAAPAxIAAAAB//8DCwAAAAD//xBBBgEADQBMAEEAUwBUAF8ATQBBAEkATgBUAF8AVABTBgIAAAYD//8GBP//Awr/////CAwQFgYCAAkAZABhAHQAZQB0AGkAbQBlADIGAwAJAGQAYQB0AGUAdABpAG0AZQAyAysAAAAPAxIAAAAB//8DCwAAAAD//xBBBgEACwBPAFAARQBSAEEAVABPAFIAXwBJAEQGAgAABgP//wYE//8DCv////8IDBAbBgIABABjAGgAYQByBgMABwBjAGgAYQByACgAOAApAysAAAAPAxIAAAABBAUAAAAAAAAACAQEAAAAAAAAAAgBEwH//wMLAAAAAP//EEEGAQARAEYASwBfAEIARQBOAF8AQwBUAFIAXwBTAFIAQwBfAFMASQYCAAAGA///BgT//wMK/////wgMEBkGAgAGAGIAaQBnAGkAbgB0BgMABgBiAGkAZwBpAG4AdAMrAAAADwMSAAAAAQQHgAAAAAAAAAD//wMLAAAAAP////8JBgAAAAEQggMKAAAA0gMLAAABCgMMAAAAyAMNAAAAyP//CAMQcQMBAAAACwMCAAAAMgkDAAACJhB0AwYAAAAA//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAH//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAAv//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAD//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAT//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAABf//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAG//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAf//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAACP//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAJ//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAr//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2////////</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1594051226095</attribute>
+</metadata>

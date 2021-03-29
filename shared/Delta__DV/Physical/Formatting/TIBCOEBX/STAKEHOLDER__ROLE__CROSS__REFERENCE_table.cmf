@@ -1,0 +1,115 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="STAKEHOLDER_ROLE_CROSS_REFERENCE" path="/shared/Delta_DV/Physical/Formatting/TIBCOEBX/STAKEHOLDER_ROLE_CROSS_REFERENCE" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Stakeholder_Role_Cross_Reference_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Stakeholder_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Stakeholder_Role_ID" nullable="true">
+      <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Create_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Created_By_ID" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Last_Updated_By_ID" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Last_Update_DTM" nullable="true">
+      <datatype type="STRING"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Stakeholder_Role_Type_CD" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_GLOBAL_STAKEHOLDER_ROLE_XREF" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="T_LAST_USER_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATOR_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATION_DATE">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="T_LAST_WRITE">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="STAKEHOLDER_ROLE_XREF_SKEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="STAKEHOLDER_ROLE_ID">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="STAKEHOLDER_ROLE_TYPE_CD_">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="STAKEHOLDER_SKEY_">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="UNDERWRITING_COMPANY_ROLE_SKEY_">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="STAKEHOLDER_ROLE_ID00">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.STAKEHOLDER_ROLE_XREF_SKEY Stakeholder_Role_Cross_Reference_SKEY, 
+    EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.STAKEHOLDER_SKEY_ Stakeholder_SKEY, 
+    EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.STAKEHOLDER_ROLE_ID Stakeholder_Role_ID, 
+    EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.T_CREATION_DATE Create_DTM, 
+    EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.T_CREATOR_ID Created_By_ID, 
+    EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.T_LAST_USER_ID Last_Updated_By_ID, 
+    FROM_UNIXTIME(EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.T_LAST_WRITE / 1000) Last_Update_DTM, 
+    EBX_GLOBAL_STAKEHOLDER_ROLE_XREF.STAKEHOLDER_ROLE_TYPE_CD_ Stakeholder_Role_Type_CD
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_GLOBAL_STAKEHOLDER_ROLE_XREF EBX_GLOBAL_STAKEHOLDER_ROLE_XREF</attribute>
+  <attribute name="creationDate" type="LONG">1605564330639</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="BYTE_ARRAY">EIEJBAAAAAEQUQYBACAARQBCAFgAXwBHAEwATwBCAEEATABfAFMAVABBAEsARQBIAE8ATABEAEUAUgBfAFIATwBMAEUAXwBYAFIARQBGBgIAIABFAEIAWABfAEcATABPAEIAQQBMAF8AUwBUAEEASwBFAEgATwBMAEQARQBSAF8AUgBPAEwARQBfAFgAUgBFAEYDC/////8DCv////8DDP////8LEQAJAAYAcwBoAGEAcgBlAGQACABEAGUAbAB0AGEAXwBEAFYACABQAGgAeQBzAGkAYwBhAGwACABNAGUAdABhAGQAYQB0AGEACwBEAGEAdABhAFMAbwB1AHIAYwBlAHMAAwBJAEQAUwAIAHQAaQBiAGMAbwBlAGIAeAADAGQAYgBvACAARQBCAFgAXwBHAEwATwBCAEEATABfAFMAVABBAEsARQBIAE8ATABEAEUAUgBfAFIATwBMAEUAXwBYAFIARQBG//8DBQAAAAAIAhAxBgH//wECAQEGAAEDAAEEAAEFAAMHAAAAAAcJAAAAAQAAAAAJCgAAAAgQQQYBABoAUwBUAEEASwBFAEgATwBMAEQARQBSAF8AUgBPAEwARQBfAFgAUgBFAEYAXwBTAEsARQBZBgIAJQBTAHQAYQBrAGUAaABvAGwAZABlAHIAXwBSAG8AbABlAF8AQwByAG8AcwBzAF8AUgBlAGYAZQByAGUAbgBjAGUAXwBTAEsARQBZBgP//wYE//8DCv////8IDBAZBgIAAwBpAG4AdAYDAAMAaQBuAHQDKwAAAA8DEgAAAAEEB/////+AAAAABAYAAAAAf///////AwsAAAAA//8QQQYBABEAUwBUAEEASwBFAEgATwBMAEQARQBSAF8AUwBLAEUAWQBfBgIAEABTAHQAYQBrAGUAaABvAGwAZABlAHIAXwBTAEsARQBZBgP//wYE//8DCv////8IDBAZBgIAAwBpAG4AdAYDAAMAaQBuAHQDKwAAAA8DEgAAAAEEB/////+AAAAABAYAAAAAf///////AwsAAAAA//8QQQYBABMAUwBUAEEASwBFAEgATwBMAEQARQBSAF8AUgBPAEwARQBfAEkARAYCABMAUwB0AGEAawBlAGgAbwBsAGQAZQByAF8AUgBvAGwAZQBfAEkARAYD//8GBP//Awr/////CAwQFwYCAAcAZABlAGMAaQBtAGEAbAYDAA4AZABlAGMAaQBtAGEAbAAoADMAOAAsADIAMwApAysAAAAPAxIAAAABAw4AAAAmAxAAAAAX//8DCwAAAAD//xBBBgEADwBUAF8AQwBSAEUAQQBUAEkATwBOAF8ARABBAFQARQYCAAoAQwByAGUAYQB0AGUAXwBEAFQATQYD//8GBP//Awr/////CAwQFgYCAAkAZABhAHQAZQB0AGkAbQBlADIGAwAJAGQAYQB0AGUAdABpAG0AZQAyAysAAAAPAxIAAAAB//8DCwAAAAD//xBBBgEADABUAF8AQwBSAEUAQQBUAE8AUgBfAEkARAYCAA0AQwByAGUAYQB0AGUAZABfAEIAeQBfAEkARAYD//8GBP//Awr/////CAwQGwYCAAgAbgB2AGEAcgBjAGgAYQByBgMADABuAHYAYQByAGMAaABhAHIAKAA1ADAAKQMrAAAADwMSAAAAAQQEAAAAAAAAADIBEwH//wMLAAAAAP//EEEGAQAOAFQAXwBMAEEAUwBUAF8AVQBTAEUAUgBfAEkARAYCABIATABhAHMAdABfAFUAcABkAGEAdABlAGQAXwBCAHkAXwBJAEQGA///BgT//wMK/////wgMEBsGAgAIAG4AdgBhAHIAYwBoAGEAcgYDAAwAbgB2AGEAcgBjAGgAYQByACgANQAwACkDKwAAAA8DEgAAAAEEBAAAAAAAAAAyARMB//8DCwAAAAD//xBCBgEADQBGAFIATwBNAF8AVQBOAEkAWABUAEkATQBFBgIADwBMAGEAcwB0AF8AVQBwAGQAYQB0AGUAXwBEAFQATQEJAAESAAkNAAAAARBCBgEAAQAvBgIAAAEJAAESAAkNAAAAAhBBBgEADABUAF8ATABBAFMAVABfAFcAUgBJAFQARQYCAAAGA///BgT//wMK/////wgMEBkGAgAGAGIAaQBnAGkAbgB0BgMABgBiAGkAZwBpAG4AdAMrAAAADwMSAAAAAQQHgAAAAAAAAAD//wMLAAAAAP//EEMGAgAACg4QGQYCAAcASQBOAFQARQBHAEUAUgMSAAAAAQQHAAAAAAAAA+gEBgAAAAAAAAPo//8LA+j///////8QQQYBABkAUwBUAEEASwBFAEgATwBMAEQARQBSAF8AUgBPAEwARQBfAFQAWQBQAEUAXwBDAEQAXwYCABgAUwB0AGEAawBlAGgAbwBsAGQAZQByAF8AUgBvAGwAZQBfAFQAeQBwAGUAXwBDAEQGA///BgT//wMK/////wgMEBsGAgAIAG4AdgBhAHIAYwBoAGEAcgYDAAwAbgB2AGEAcgBjAGgAYQByACgAMQAwACkDKwAAAA8DEgAAAAEEBAAAAAAAAAAKARMB//8DCwAAAAD/////CQYAAAABEIIDCgAAAB4DCwAAAB4DDAAAAMgDDQAAAMj//wgDEHEDAQAAAAsDAgAAADIJAwAAAiYQdAMGAAAAAP//EHIGBAAlAFMAdABhAGsAZQBoAG8AbABkAGUAcgBfAFIAbwBsAGUAXwBDAHIAbwBzAHMAXwBSAGUAZgBlAHIAZQBuAGMAZQBfAFMASwBFAFn//xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAH//xByBgQAEABTAHQAYQBrAGUAaABvAGwAZABlAHIAXwBTAEsARQBZ//8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAC//8QcgYEABMAUwB0AGEAawBlAGgAbwBsAGQAZQByAF8AUgBvAGwAZQBfAEkARP//EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAA///EHIGBAAKAEMAcgBlAGEAdABlAF8ARABUAE3//xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAT//xByBgQADQBDAHIAZQBhAHQAZQBkAF8AQgB5AF8ASQBE//8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAF//8QcgYEABIATABhAHMAdABfAFUAcABkAGEAdABlAGQAXwBCAHkAXwBJAET//xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAb//xByBgQADwBMAGEAcwB0AF8AVQBwAGQAYQB0AGUAXwBEAFQATf//EHP//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAB///EHIGBAAYAFMAdABhAGsAZQBoAG8AbABkAGUAcgBfAFIAbwBsAGUAXwBUAHkAcABlAF8AQwBE//8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb///////8=</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1605564330639</attribute>
+</metadata>

@@ -1,0 +1,383 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getEnrolleeIncentiveLevel_SQLScript" path="/shared/Delta_DV/Application/Published/Benefit/getEnrolleeIncentiveLevel_SQLScript" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[API to get Incentive Level of the requested Enrollee.
+
+This API required the following input parameters:
+1. Effective Date (parameter)
+2. Enrollee ID (header)]]></annotation>
+  <parameters>
+    <parameter name="incentiveLevel" direction="OUT" nullable="true">
+      <datatype name="incentiveLevel" referenceDefinitionSet="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_EnrolleeIncentiveLevel" referenceType="incentiveLevel" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="incentiveLevel">
+        <schemaDatatype>
+          <datatype name="incentiveLevel" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="enrolleeId">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="personId">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="groupNumber">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="divisionNumber">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="benefitPackageId">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="incentive" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="level">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="lastUpdatedDate">
+                  <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="pEffectiveDate" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_EnrolleeIncentiveLevel" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetEnrolleeIncentiveLevel" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_EnrolleeIncentiveLevel_view" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1606276109757</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612290355460</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1606276109757</attribute>
+  <attribute name="transformModel" type="NULL"/>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare variable $pEffectiveDate external;
+
+&lt;root xmlns:ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+  let $nodes := (
+    let $inputs := (if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+    let $query := concat( &quot;select EnrolleeID,PersonID,GroupNBR,DivisionNBR,BenefitPkgID,GroupID,DivisionID,ContractID,MemberID from /shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetEnrolleeIncentiveLevel(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+    for $EnrolleeIncentive in composite:executeQuery($query)//result
+    return
+    element incentiveLevel {
+      element enrolleeId {$EnrolleeIncentive/EnrolleeID/text()},
+      element personId {$EnrolleeIncentive/PersonID/text()},
+      element groupNumber {$EnrolleeIncentive/GroupNBR/text()},
+      element divisionNumber {$EnrolleeIncentive/DivisionNBR/text()},
+      element benefitPackageId {$EnrolleeIncentive/BenefitPkgID/text()},
+      let $nodes := (
+        let $inputs := (if (empty($EnrolleeIncentive/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$EnrolleeIncentive/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($EnrolleeIncentive/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$EnrolleeIncentive/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($EnrolleeIncentive/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$EnrolleeIncentive/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($EnrolleeIncentive/ContractID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$EnrolleeIncentive/ContractID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($EnrolleeIncentive/PersonID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$EnrolleeIncentive/PersonID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($EnrolleeIncentive/MemberID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$EnrolleeIncentive/MemberID/text()), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select IncentiveLevel,LastUpdatedDate from /shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_EnrolleeIncentiveLevel_view(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        for $IncentiveLvl in composite:executeQuery($query)//result
+        return
+        element incentive {
+          element level {$IncentiveLvl/IncentiveLevel/text()},
+          element lastUpdatedDate {$IncentiveLvl/LastUpdatedDate/text()}
+        }
+      )
+      return
+      $nodes[1]
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/incentiveLevel</attribute>
+  <attribute name="xqueryModel" type="STRING">
+&lt;xqueryModel customized=&quot;false&quot; version=&quot;new&quot;&gt;
+  &lt;rootNode&gt;
+    &lt;nodeType&gt;COMPLEX&lt;/nodeType&gt;
+    &lt;element name=&quot;incentiveLevel&quot;&gt;
+      &lt;datatype name=&quot;incentiveLevel&quot; referenceDefinitionSet=&quot;/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_EnrolleeIncentiveLevel&quot; referenceType=&quot;incentiveLevel&quot; subType=&quot;ELEMENT_DECL&quot; type=&quot;XML&quot; contentConstraint=&quot;SEQUENCE&quot; schemaConstraint=&quot;ANY&quot; componentType=&quot;ELEMENT&quot; componentName=&quot;incentiveLevel&quot;&gt;
+        &lt;schemaDatatype&gt;
+          &lt;datatype name=&quot;incentiveLevel&quot; superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;ELEMENT_DECL&quot; anonymous=&quot;true&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+            &lt;element name=&quot;enrolleeId&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;personId&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;groupNumber&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;divisionNumber&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;benefitPackageId&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;incentive&quot; minOccurs=&quot;0&quot;&gt;
+              &lt;datatype superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;COMPLEX_TYPE&quot; type=&quot;TREE&quot; refId=&quot;2&quot;&gt;
+                &lt;element name=&quot;level&quot;&gt;
+                  &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;lastUpdatedDate&quot;&gt;
+                  &lt;datatype name=&quot;date&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;DATE&quot;/&gt;
+                &lt;/element&gt;
+              &lt;/datatype&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/schemaDatatype&gt;
+      &lt;/datatype&gt;
+    &lt;/element&gt;
+    &lt;sourcePath&gt;/shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetEnrolleeIncentiveLevel&lt;/sourcePath&gt;
+    &lt;sourceType&gt;PROCEDURE&lt;/sourceType&gt;
+    &lt;sourceSignature&gt;
+      &lt;datatype type=&quot;PROCEDURE&quot; refId=&quot;1&quot;&gt;
+        &lt;element name=&quot;inAsOfDate&quot; direction=&quot;IN&quot;&gt;
+          &lt;datatype type=&quot;DATE&quot;/&gt;
+        &lt;/element&gt;
+        &lt;element name=&quot;result&quot; direction=&quot;OUT&quot;&gt;
+          &lt;datatype type=&quot;TABLE&quot; refId=&quot;2&quot;&gt;
+            &lt;element name=&quot;EnrolleeID&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;27&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;PersonID&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;16&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;GroupID&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;12&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;DivisionID&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;12&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;GroupNBR&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;12&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;DivisionNBR&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;12&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;BenefitPkgID&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;8&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;ContractID&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;25&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;MemberID&quot;&gt;
+              &lt;datatype type=&quot;STRING&quot; maxLength=&quot;2&quot;/&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/element&gt;
+      &lt;/datatype&gt;
+    &lt;/sourceSignature&gt;
+    &lt;sourceAlias&gt;EnrolleeIncentive&lt;/sourceAlias&gt;
+    &lt;sourceJoin/&gt;
+    &lt;sourceFilter&gt;
+      &lt;text/&gt;
+    &lt;/sourceFilter&gt;
+    &lt;sourceSortOrder/&gt;
+    &lt;sourceGroupBy/&gt;
+    &lt;sourceInputs&gt;
+      &lt;type&gt;
+        &lt;datatype name=&quot;TREE&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+          &lt;element name=&quot;inAsOfDate&quot; direction=&quot;IN&quot;&gt;
+            &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+          &lt;/element&gt;
+        &lt;/datatype&gt;
+      &lt;/type&gt;
+      &lt;value&gt;
+        &lt;inAsOfDate&gt;$pEffectiveDate&lt;/inAsOfDate&gt;
+      &lt;/value&gt;
+    &lt;/sourceInputs&gt;
+    &lt;childNodes&gt;
+      &lt;childNode&gt;
+        &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+        &lt;element name=&quot;enrolleeId&quot;&gt;
+          &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+        &lt;/element&gt;
+        &lt;value&gt;$EnrolleeIncentive/EnrolleeID/text()&lt;/value&gt;
+      &lt;/childNode&gt;
+      &lt;childNode&gt;
+        &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+        &lt;element name=&quot;personId&quot;&gt;
+          &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+        &lt;/element&gt;
+        &lt;value&gt;$EnrolleeIncentive/PersonID/text()&lt;/value&gt;
+      &lt;/childNode&gt;
+      &lt;childNode&gt;
+        &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+        &lt;element name=&quot;groupNumber&quot;&gt;
+          &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+        &lt;/element&gt;
+        &lt;value&gt;$EnrolleeIncentive/GroupNBR/text()&lt;/value&gt;
+      &lt;/childNode&gt;
+      &lt;childNode&gt;
+        &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+        &lt;element name=&quot;divisionNumber&quot;&gt;
+          &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+        &lt;/element&gt;
+        &lt;value&gt;$EnrolleeIncentive/DivisionNBR/text()&lt;/value&gt;
+      &lt;/childNode&gt;
+      &lt;childNode&gt;
+        &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+        &lt;element name=&quot;benefitPackageId&quot;&gt;
+          &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+        &lt;/element&gt;
+        &lt;value&gt;$EnrolleeIncentive/BenefitPkgID/text()&lt;/value&gt;
+      &lt;/childNode&gt;
+      &lt;childNode&gt;
+        &lt;nodeType&gt;COMPLEX&lt;/nodeType&gt;
+        &lt;element name=&quot;incentive&quot; minOccurs=&quot;0&quot;&gt;
+          &lt;datatype superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;COMPLEX_TYPE&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+            &lt;element name=&quot;level&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;lastUpdatedDate&quot;&gt;
+              &lt;datatype name=&quot;date&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;DATE&quot;/&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/element&gt;
+        &lt;sourcePath&gt;/shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_EnrolleeIncentiveLevel_view&lt;/sourcePath&gt;
+        &lt;sourceType&gt;PROCEDURE&lt;/sourceType&gt;
+        &lt;sourceSignature&gt;
+          &lt;datatype type=&quot;PROCEDURE&quot; refId=&quot;1&quot;&gt;
+            &lt;element name=&quot;inBenefitPkgID&quot; direction=&quot;IN&quot;&gt;
+              &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;8&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;inGroupID&quot; direction=&quot;IN&quot;&gt;
+              &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;12&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;inDivisionID&quot; direction=&quot;IN&quot;&gt;
+              &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;12&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;inContractID&quot; direction=&quot;IN&quot;&gt;
+              &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;25&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;inPersonID&quot; direction=&quot;IN&quot;&gt;
+              &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;16&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;inMemberID&quot; direction=&quot;IN&quot;&gt;
+              &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;2&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;result&quot; direction=&quot;OUT&quot;&gt;
+              &lt;datatype name=&quot;result&quot; type=&quot;TABLE&quot; refId=&quot;2&quot;&gt;
+                &lt;element name=&quot;IncentiveLevel&quot;&gt;
+                  &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;2&quot;/&gt;
+                &lt;/element&gt;
+                &lt;element name=&quot;LastUpdatedDate&quot;&gt;
+                  &lt;datatype name=&quot;DATE&quot; type=&quot;DATE&quot;/&gt;
+                &lt;/element&gt;
+              &lt;/datatype&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/sourceSignature&gt;
+        &lt;sourceAlias&gt;IncentiveLvl&lt;/sourceAlias&gt;
+        &lt;sourceJoin&gt;
+          &lt;joinType&gt;CROSS&lt;/joinType&gt;
+          &lt;joinExpression/&gt;
+        &lt;/sourceJoin&gt;
+        &lt;sourceFilter&gt;
+          &lt;text/&gt;
+        &lt;/sourceFilter&gt;
+        &lt;sourceSortOrder/&gt;
+        &lt;sourceGroupBy/&gt;
+        &lt;sourceInputs&gt;
+          &lt;type&gt;
+            &lt;datatype name=&quot;TREE&quot; type=&quot;TREE&quot; refId=&quot;1&quot;&gt;
+              &lt;element name=&quot;inBenefitPkgID&quot; direction=&quot;IN&quot;&gt;
+                &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+              &lt;/element&gt;
+              &lt;element name=&quot;inGroupID&quot; direction=&quot;IN&quot;&gt;
+                &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+              &lt;/element&gt;
+              &lt;element name=&quot;inDivisionID&quot; direction=&quot;IN&quot;&gt;
+                &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+              &lt;/element&gt;
+              &lt;element name=&quot;inContractID&quot; direction=&quot;IN&quot;&gt;
+                &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+              &lt;/element&gt;
+              &lt;element name=&quot;inPersonID&quot; direction=&quot;IN&quot;&gt;
+                &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+              &lt;/element&gt;
+              &lt;element name=&quot;inMemberID&quot; direction=&quot;IN&quot;&gt;
+                &lt;datatype name=&quot;String&quot; type=&quot;STRING&quot;/&gt;
+              &lt;/element&gt;
+            &lt;/datatype&gt;
+          &lt;/type&gt;
+          &lt;value&gt;
+            &lt;inBenefitPkgID&gt;$EnrolleeIncentive/BenefitPkgID/text()&lt;/inBenefitPkgID&gt;
+            &lt;inGroupID&gt;$EnrolleeIncentive/GroupID/text()&lt;/inGroupID&gt;
+            &lt;inDivisionID&gt;$EnrolleeIncentive/DivisionID/text()&lt;/inDivisionID&gt;
+            &lt;inContractID&gt;$EnrolleeIncentive/ContractID/text()&lt;/inContractID&gt;
+            &lt;inPersonID&gt;$EnrolleeIncentive/PersonID/text()&lt;/inPersonID&gt;
+            &lt;inMemberID&gt;$EnrolleeIncentive/MemberID/text()&lt;/inMemberID&gt;
+          &lt;/value&gt;
+        &lt;/sourceInputs&gt;
+        &lt;childNodes&gt;
+          &lt;childNode&gt;
+            &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+            &lt;element name=&quot;level&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;value&gt;$IncentiveLvl/IncentiveLevel/text()&lt;/value&gt;
+          &lt;/childNode&gt;
+          &lt;childNode&gt;
+            &lt;nodeType&gt;SIMPLE&lt;/nodeType&gt;
+            &lt;element name=&quot;lastUpdatedDate&quot;&gt;
+              &lt;datatype name=&quot;date&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;DATE&quot;/&gt;
+            &lt;/element&gt;
+            &lt;value&gt;$IncentiveLvl/LastUpdatedDate/text()&lt;/value&gt;
+          &lt;/childNode&gt;
+        &lt;/childNodes&gt;
+      &lt;/childNode&gt;
+    &lt;/childNodes&gt;
+  &lt;/rootNode&gt;
+  &lt;inputSignature&gt;
+    &lt;datatype type=&quot;PROCEDURE&quot; refId=&quot;1&quot;&gt;
+      &lt;element name=&quot;pEffectiveDate&quot; direction=&quot;IN&quot;&gt;
+        &lt;datatype name=&quot;VARCHAR&quot; type=&quot;STRING&quot; maxLength=&quot;10&quot;/&gt;
+      &lt;/element&gt;
+    &lt;/datatype&gt;
+  &lt;/inputSignature&gt;
+  &lt;xquery&gt;declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;;
+declare variable $pEffectiveDate external;
+
+&amp;lt;root xmlns:ns1=&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;&amp;gt;{
+  let $nodes := (
+    let $inputs := (if (empty($pEffectiveDate)) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$pEffectiveDate), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string)
+    let $query := concat( &amp;quot;select EnrolleeID,PersonID,GroupNBR,DivisionNBR,BenefitPkgID,GroupID,DivisionID,ContractID,MemberID from /shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetEnrolleeIncentiveLevel(&amp;quot;, concat( string-join($inputs,&amp;quot;,&amp;quot;), &amp;quot;)&amp;quot;))
+    for $EnrolleeIncentive in composite:executeQuery($query)//result
+    return
+    element incentiveLevel {
+      element enrolleeId {$EnrolleeIncentive/EnrolleeID/text()},
+      element personId {$EnrolleeIncentive/PersonID/text()},
+      element groupNumber {$EnrolleeIncentive/GroupNBR/text()},
+      element divisionNumber {$EnrolleeIncentive/DivisionNBR/text()},
+      element benefitPackageId {$EnrolleeIncentive/BenefitPkgID/text()},
+      let $nodes := (
+        let $inputs := (if (empty($EnrolleeIncentive/BenefitPkgID/text())) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$EnrolleeIncentive/BenefitPkgID/text()), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string,if (empty($EnrolleeIncentive/GroupID/text())) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$EnrolleeIncentive/GroupID/text()), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string,if (empty($EnrolleeIncentive/DivisionID/text())) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$EnrolleeIncentive/DivisionID/text()), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string,if (empty($EnrolleeIncentive/ContractID/text())) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$EnrolleeIncentive/ContractID/text()), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string,if (empty($EnrolleeIncentive/PersonID/text())) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$EnrolleeIncentive/PersonID/text()), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string,if (empty($EnrolleeIncentive/MemberID/text())) then &amp;quot;NULL&amp;quot; else concat(concat(&amp;quot;&amp;apos;&amp;quot;,$EnrolleeIncentive/MemberID/text()), &amp;quot;&amp;apos;&amp;quot;) cast as xs:string)
+        let $query := concat( &amp;quot;select IncentiveLevel,LastUpdatedDate from /shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_EnrolleeIncentiveLevel_view(&amp;quot;, concat( string-join($inputs,&amp;quot;,&amp;quot;), &amp;quot;)&amp;quot;))
+        for $IncentiveLvl in composite:executeQuery($query)//result
+        return
+        element incentive {
+          element level {$IncentiveLvl/IncentiveLevel/text()},
+          element lastUpdatedDate {$IncentiveLvl/LastUpdatedDate/text()}
+        }
+      )
+      return
+      $nodes[1]
+    }
+  )
+  return
+  $nodes[1]
+}&amp;lt;/root&amp;gt;/incentiveLevel&lt;/xquery&gt;
+&lt;/xqueryModel&gt;</attribute>
+</metadata>

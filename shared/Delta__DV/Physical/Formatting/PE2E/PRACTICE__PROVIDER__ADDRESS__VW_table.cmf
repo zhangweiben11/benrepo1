@@ -1,0 +1,179 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="PRACTICE_PROVIDER_ADDRESS_VW" path="/shared/Delta_DV/Physical/Formatting/PE2E/PRACTICE_PROVIDER_ADDRESS_VW" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="ADDRESS_ID" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="ADDRESS_LINE1" nullable="true">
+      <datatype type="STRING" maxLength="55"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="ADDRESS_LINE2" nullable="true">
+      <datatype type="STRING" maxLength="55"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="ADDRESS_LINE3" nullable="true">
+      <datatype type="STRING" maxLength="55"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CITY" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="COUNTY" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="STATE" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="POSTAL_CODE" nullable="true">
+      <datatype type="STRING" maxLength="15"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="COUNTRY_CODE" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRACTICING_PROVIDER_ID" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="VOID_FLAG" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="OPERATOR_ID" nullable="true">
+      <datatype type="STRING" maxLength="8"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CREATED_DATE" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="LAST_MODIFIED_DATE" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CONTACT_ID" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/PE2E_VIEWS/LEAD_RECRUIT/PRACTICE_PROVIDER_ADDRESS_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="ADDRESS_ID" nullable="false">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="ADDRESS_LINE1">
+        <datatype type="STRING" maxLength="55"/>
+      </element>
+      <element name="ADDRESS_LINE2">
+        <datatype type="STRING" maxLength="55"/>
+      </element>
+      <element name="ADDRESS_LINE3">
+        <datatype type="STRING" maxLength="55"/>
+      </element>
+      <element name="CITY">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="COUNTY">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="STATE">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="POSTAL_CODE">
+        <datatype type="STRING" maxLength="15"/>
+      </element>
+      <element name="COUNTRY_CODE">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="PRACTICING_PROVIDER_ID" nullable="false">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="VOID_FLAG">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="OPERATOR_ID">
+        <datatype type="STRING" maxLength="8"/>
+      </element>
+      <element name="CREATED_DATE">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="LAST_MODIFIED_DATE">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="CONTACT_ID">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    PRACTICE_PROVIDER_ADDRESS_VW.ADDRESS_ID, 
+    PRACTICE_PROVIDER_ADDRESS_VW.ADDRESS_LINE1, 
+    PRACTICE_PROVIDER_ADDRESS_VW.ADDRESS_LINE2, 
+    PRACTICE_PROVIDER_ADDRESS_VW.ADDRESS_LINE3, 
+    PRACTICE_PROVIDER_ADDRESS_VW.CITY, 
+    PRACTICE_PROVIDER_ADDRESS_VW.COUNTY, 
+    PRACTICE_PROVIDER_ADDRESS_VW.STATE, 
+    PRACTICE_PROVIDER_ADDRESS_VW.POSTAL_CODE, 
+    PRACTICE_PROVIDER_ADDRESS_VW.COUNTRY_CODE, 
+    PRACTICE_PROVIDER_ADDRESS_VW.PRACTICING_PROVIDER_ID, 
+    PRACTICE_PROVIDER_ADDRESS_VW.VOID_FLAG, 
+    PRACTICE_PROVIDER_ADDRESS_VW.OPERATOR_ID, 
+    PRACTICE_PROVIDER_ADDRESS_VW.CREATED_DATE, 
+    PRACTICE_PROVIDER_ADDRESS_VW.LAST_MODIFIED_DATE, 
+    PRACTICE_PROVIDER_ADDRESS_VW.CONTACT_ID
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/PE2E_VIEWS/LEAD_RECRUIT/PRACTICE_PROVIDER_ADDRESS_VW PRACTICE_PROVIDER_ADDRESS_VW</attribute>
+  <attribute name="creationDate" type="LONG">1579788269017</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">1510103</attribute>
+  <attribute name="creatorUserName" type="STRING">dos88104</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">1510103</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="BYTE_ARRAY">EIEJBAAAAAEQUQYBABwAUABSAEEAQwBUAEkAQwBFAF8AUABSAE8AVgBJAEQARQBSAF8AQQBEAEQAUgBFAFMAUwBfAFYAVwYCABwAUABSAEEAQwBUAEkAQwBFAF8AUABSAE8AVgBJAEQARQBSAF8AQQBEAEQAUgBFAFMAUwBfAFYAVwML/////wMK/////wMM/////wsRAAkABgBzAGgAYQByAGUAZAAIAEQAZQBsAHQAYQBfAEQAVgAIAFAAaAB5AHMAaQBjAGEAbAAIAE0AZQB0AGEAZABhAHQAYQALAEQAYQB0AGEAUwBvAHUAcgBjAGUAcwADAEkARABTAAoAUABFADIARQBfAFYASQBFAFcAUwAMAEwARQBBAEQAXwBSAEUAQwBSAFUASQBUABwAUABSAEEAQwBUAEkAQwBFAF8AUABSAE8AVgBJAEQARQBSAF8AQQBEAEQAUgBFAFMAUwBfAFYAV///AwUAAAAACAIQMQYB//8BAgEBBgABAwABBAABBQADBwAAAAAHCQAAAAEAAAAACQoAAAAPEEEGAQAKAEEARABEAFIARQBTAFMAXwBJAEQGAgAABgP//wYE//8DCv////8IDBAXBgIABwBuAHUAbQBlAHIAaQBjBgMADQBuAHUAbQBlAHIAaQBjACgAMQAyACwAMAApAysAAAAPAxIAAAABAw4AAAAMAxAAAAAA//8DCwAAAAD//xBBBgEADQBBAEQARABSAEUAUwBTAF8ATABJAE4ARQAxBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAsAdgBhAHIAYwBoAGEAcgAoADUANQApAysAAAAPAxIAAAABBAQAAAAAAAAANwETAf//AwsAAAAA//8QQQYBAA0AQQBEAEQAUgBFAFMAUwBfAEwASQBOAEUAMgYCAAAGA///BgT//wMK/////wgMEBsGAgAHAHYAYQByAGMAaABhAHIGAwALAHYAYQByAGMAaABhAHIAKAA1ADUAKQMrAAAADwMSAAAAAQQEAAAAAAAAADcBEwH//wMLAAAAAP//EEEGAQANAEEARABEAFIARQBTAFMAXwBMAEkATgBFADMGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACwB2AGEAcgBjAGgAYQByACgANQA1ACkDKwAAAA8DEgAAAAEEBAAAAAAAAAA3ARMB//8DCwAAAAD//xBBBgEABABDAEkAVABZBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAsAdgBhAHIAYwBoAGEAcgAoADUAMAApAysAAAAPAxIAAAABBAQAAAAAAAAAMgETAf//AwsAAAAA//8QQQYBAAYAQwBPAFUATgBUAFkGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACwB2AGEAcgBjAGgAYQByACgANQAwACkDKwAAAA8DEgAAAAEEBAAAAAAAAAAyARMB//8DCwAAAAD//xBBBgEABQBTAFQAQQBUAEUGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACgB2AGEAcgBjAGgAYQByACgAMwApAysAAAAPAxIAAAABBAQAAAAAAAAAAwETAf//AwsAAAAA//8QQQYBAAsAUABPAFMAVABBAEwAXwBDAE8ARABFBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAsAdgBhAHIAYwBoAGEAcgAoADEANQApAysAAAAPAxIAAAABBAQAAAAAAAAADwETAf//AwsAAAAA//8QQQYBAAwAQwBPAFUATgBUAFIAWQBfAEMATwBEAEUGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACgB2AGEAcgBjAGgAYQByACgAMwApAysAAAAPAxIAAAABBAQAAAAAAAAAAwETAf//AwsAAAAA//8QQQYBABYAUABSAEEAQwBUAEkAQwBJAE4ARwBfAFAAUgBPAFYASQBEAEUAUgBfAEkARAYCAAAGA///BgT//wMK/////wgMEBcGAgAHAG4AdQBtAGUAcgBpAGMGAwANAG4AdQBtAGUAcgBpAGMAKAAxADIALAAwACkDKwAAAA8DEgAAAAEDDgAAAAwDEAAAAAD//wMLAAAAAP//EEEGAQAJAFYATwBJAEQAXwBGAEwAQQBHBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAoAdgBhAHIAYwBoAGEAcgAoADEAKQMrAAAADwMSAAAAAQQEAAAAAAAAAAEBEwH//wMLAAAAAP//EEEGAQALAE8AUABFAFIAQQBUAE8AUgBfAEkARAYCAAAGA///BgT//wMK/////wgMEBsGAgAHAHYAYQByAGMAaABhAHIGAwAKAHYAYQByAGMAaABhAHIAKAA4ACkDKwAAAA8DEgAAAAEEBAAAAAAAAAAIARMB//8DCwAAAAD//xBBBgEADABDAFIARQBBAFQARQBEAF8ARABBAFQARQYCAAAGA///BgT//wMK/////wgMEBYGAgAJAGQAYQB0AGUAdABpAG0AZQAyBgMACQBkAGEAdABlAHQAaQBtAGUAMgMrAAAADwMSAAAAAf//AwsAAAAA//8QQQYBABIATABBAFMAVABfAE0ATwBEAEkARgBJAEUARABfAEQAQQBUAEUGAgAABgP//wYE//8DCv////8IDBAWBgIACQBkAGEAdABlAHQAaQBtAGUAMgYDAAkAZABhAHQAZQB0AGkAbQBlADIDKwAAAA8DEgAAAAH//wMLAAAAAP//EEEGAQAKAEMATwBOAFQAQQBDAFQAXwBJAEQGAgAABgP//wYE//8DCv////8IDBAXBgIABwBuAHUAbQBlAHIAaQBjBgMADQBuAHUAbQBlAHIAaQBjACgAMQAyACwAMAApAysAAAAPAxIAAAABAw4AAAAMAxAAAAAA//8DCwAAAAD/////CQYAAAABEIIDCgAAAB4DCwAAAB4DDAAAAMgDDQAAAMj//wgDEHEDAQAAAAsDAgAAADIJAwAAAiYQdAMGAAAAAP//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAB//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAL//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAA///EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAE//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAX//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAABv//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAH//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAj//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAACf//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAK//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAv//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAADP//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAN//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAA7//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv///////w==</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1579788269017</attribute>
+</metadata>

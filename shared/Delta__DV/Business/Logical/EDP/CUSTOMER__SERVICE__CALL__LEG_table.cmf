@@ -1,0 +1,383 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="CUSTOMER_SERVICE_CALL_LEG" path="/shared/Delta_DV/Business/Logical/EDP/CUSTOMER_SERVICE_CALL_LEG" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <annotation><![CDATA[Comments saved during Model Generation 2020/12/02 15:53:08
+{OPTION CASE_SENSITIVE=&quot;false&quot;}
+--/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/CUSTOMER_SERVICE_CALL_LEG   
+]]></annotation>
+  <columns>
+    <column name="Customer_Service_Call_Leg_SKEY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Stakeholder_Event_SKEY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Leg_Sequence_NBR" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Answer_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Hangup_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Time_To_Answer_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Talk_Time_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_On_Hold_TM_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Duration_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_NM" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="IVR_Time_To_Answer_Seconds_Quanity" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="IVR_Call_Time_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Transfer_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Transfer_Same_Call_Center_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Transfer_Different_Call_Center_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Score_NBR" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Score_PCT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Evaluator_NM" nullable="true">
+      <datatype type="STRING" maxLength="200"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Correct_Classification_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Evaluation_Title_TXT" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Evaluation_DT" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Agent_Supervisor_NM" nullable="true">
+      <datatype type="STRING" maxLength="200"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Incorrect_Classification_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Incorrect_Classification_Form_ID" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Incorrect_Classification_Form_NM" nullable="true">
+      <datatype type="STRING" maxLength="200"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Queue_NM" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Abandened_IND" nullable="true">
+      <datatype type="STRING" maxLength="25"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Escalation_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_SKEY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Work_After_Call_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_User_ID" nullable="true">
+      <datatype type="STRING" maxLength="250"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Quality_Monitored_Medicare_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Supervisor_NM" nullable="true">
+      <datatype type="STRING" maxLength="200"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Call_Center_CD" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/EDP_CURATED/CUSTOMER_SERVICE_CALL_LEG" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Call_Leg_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Agent_Stakeholder_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Leg_Sequence_NBR">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Answer_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Agent_Call_Hangup_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Agent_Time_To_Answer_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Talk_Time_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_On_Hold_TM_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Duration_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_NM">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="IVR_Time_To_Answer_Seconds_Quanity">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IVR_Call_Time_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Transfer_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Agent_Call_Transfer_Same_Call_Center_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Agent_Call_Transfer_Different_Call_Center_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Score_NBR">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="Quality_Monitored_Score_PCT">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="Quality_Monitored_Evaluator_NM">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Quality_Monitored_Correct_Classification_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Evaluation_Title_TXT">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Quality_Monitored_Evaluation_DT">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Quality_Monitored_Agent_Supervisor_NM">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_Form_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_Form_NM">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Agent_Queue_NM">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Agent_Abandened_IND">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="Agent_Call_Escalation_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Agent_Work_After_Call_Seconds_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_User_ID">
+        <datatype type="STRING" maxLength="250"/>
+      </element>
+      <element name="Quality_Monitored_Medicare_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Agent_Supervisor_NM">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Customer_Call_Center_CD">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    CUSTOMER_SERVICE_CALL_LEG.Customer_Service_Call_Leg_SKEY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Stakeholder_Event_SKEY, 
+    CUSTOMER_SERVICE_CALL_LEG.Leg_Sequence_NBR, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Call_Answer_DTM, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Call_Hangup_DTM, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Time_To_Answer_Seconds_QTY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Talk_Time_Seconds_QTY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_On_Hold_TM_Seconds_QTY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Call_Duration_Seconds_QTY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_NM, 
+    CUSTOMER_SERVICE_CALL_LEG.IVR_Time_To_Answer_Seconds_Quanity, 
+    CUSTOMER_SERVICE_CALL_LEG.IVR_Call_Time_Seconds_QTY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Call_Transfer_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Call_Transfer_Same_Call_Center_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Call_Transfer_Different_Call_Center_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Score_NBR, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Score_PCT, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Evaluator_NM, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Correct_Classification_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Evaluation_Title_TXT, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Evaluation_DT, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Agent_Supervisor_NM, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Incorrect_Classification_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Incorrect_Classification_Form_ID, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Incorrect_Classification_Form_NM, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Queue_NM, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Abandened_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Call_Escalation_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Event_SKEY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Work_After_Call_Seconds_QTY, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_User_ID, 
+    CUSTOMER_SERVICE_CALL_LEG.Quality_Monitored_Medicare_IND, 
+    CUSTOMER_SERVICE_CALL_LEG.Agent_Supervisor_NM, 
+    CUSTOMER_SERVICE_CALL_LEG.Customer_Call_Center_CD
+FROM      
+    /shared/Delta_DV/Physical/Formatting/EDP_CURATED/CUSTOMER_SERVICE_CALL_LEG CUSTOMER_SERVICE_CALL_LEG</attribute>
+  <attribute name="creationDate" type="LONG">1602779608497</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5240201</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89821</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5240201</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="BYTE_ARRAY">EIEJBAAAAAEQUQYBABkAQwBVAFMAVABPAE0ARQBSAF8AUwBFAFIAVgBJAEMARQBfAEMAQQBMAEwAXwBMAEUARwYCABkAQwBVAFMAVABPAE0ARQBSAF8AUwBFAFIAVgBJAEMARQBfAEMAQQBMAEwAXwBMAEUARwML/////wMK/////wMM/////wsRAAYABgBzAGgAYQByAGUAZAAIAEQAZQBsAHQAYQBfAEQAVgAIAFAAaAB5AHMAaQBjAGEAbAAKAEYAbwByAG0AYQB0AHQAaQBuAGcACwBFAEQAUABfAEMAVQBSAEEAVABFAEQAGQBDAFUAUwBUAE8ATQBFAFIAXwBTAEUAUgBWAEkAQwBFAF8AQwBBAEwATABfAEwARQBH//8DBQAAAAAIAhAxBgH//wECAQEGAAEDAAEEAAEFAAMHAAAAAAcJAAAAAQAAAAAJCgAAACMQQQYBAB4AQwB1AHMAdABvAG0AZQByAF8AUwBlAHIAdgBpAGMAZQBfAEMAYQBsAGwAXwBMAGUAZwBfAFMASwBFAFkGAgAABgP//wYE//8DCv////8IDBAZAxIAAAABBAeAAAAAAAAAAP//AwsAAAAA//8QQQYBABwAQQBnAGUAbgB0AF8AUwB0AGEAawBlAGgAbwBsAGQAZQByAF8ARQB2AGUAbgB0AF8AUwBLAEUAWQYCAAAGA///BgT//wMK/////wgMEBkDEgAAAAEEB4AAAAAAAAAA//8DCwAAAAD//xBBBgEAEABMAGUAZwBfAFMAZQBxAHUAZQBuAGMAZQBfAE4AQgBSBgIAAAYD//8GBP//Awr/////CAwQGQMSAAAAAQQH/////4AAAAAEBgAAAAB///////8DCwAAAAD//xBBBgEAFQBBAGcAZQBuAHQAXwBDAGEAbABsAF8AQQBuAHMAdwBlAHIAXwBEAFQATQYCAAAGA///BgT//wMK/////wgMEBYDEgAAAAH//wMLAAAAAP//EEEGAQAVAEEAZwBlAG4AdABfAEMAYQBsAGwAXwBIAGEAbgBnAHUAcABfAEQAVABNBgIAAAYD//8GBP//Awr/////CAwQFgMSAAAAAf//AwsAAAAA//8QQQYBACAAQQBnAGUAbgB0AF8AVABpAG0AZQBfAFQAbwBfAEEAbgBzAHcAZQByAF8AUwBlAGMAbwBuAGQAcwBfAFEAVABZBgIAAAYD//8GBP//Awr/////CAwQGQMSAAAAAQQH/////4AAAAAEBgAAAAB///////8DCwAAAAD//xBBBgEAGwBBAGcAZQBuAHQAXwBUAGEAbABrAF8AVABpAG0AZQBfAFMAZQBjAG8AbgBkAHMAXwBRAFQAWQYCAAAGA///BgT//wMK/////wgMEBkDEgAAAAEEB/////+AAAAABAYAAAAAf///////AwsAAAAA//8QQQYBABwAQQBnAGUAbgB0AF8ATwBuAF8ASABvAGwAZABfAFQATQBfAFMAZQBjAG8AbgBkAHMAXwBRAFQAWQYCAAAGA///BgT//wMK/////wgMEBkDEgAAAAEEB/////+AAAAABAYAAAAAf///////AwsAAAAA//8QQQYBAB8AQQBnAGUAbgB0AF8AQwBhAGwAbABfAEQAdQByAGEAdABpAG8AbgBfAFMAZQBjAG8AbgBkAHMAXwBRAFQAWQYCAAAGA///BgT//wMK/////wgMEBkDEgAAAAEEB/////+AAAAABAYAAAAAf///////AwsAAAAA//8QQQYBAAgAQQBnAGUAbgB0AF8ATgBNBgIAAAYD//8GBP//Awr/////CAwQGwMSAAAAAQQEAAAAAAAAAP8BEwH//wMLAAAAAP//EEEGAQAiAEkAVgBSAF8AVABpAG0AZQBfAFQAbwBfAEEAbgBzAHcAZQByAF8AUwBlAGMAbwBuAGQAcwBfAFEAdQBhAG4AaQB0AHkGAgAABgP//wYE//8DCv////8IDBAZAxIAAAABBAf/////gAAAAAQGAAAAAH///////wMLAAAAAP//EEEGAQAZAEkAVgBSAF8AQwBhAGwAbABfAFQAaQBtAGUAXwBTAGUAYwBvAG4AZABzAF8AUQBUAFkGAgAABgP//wYE//8DCv////8IDBAZAxIAAAABBAf/////gAAAAAQGAAAAAH///////wMLAAAAAP//EEEGAQAXAEEAZwBlAG4AdABfAEMAYQBsAGwAXwBUAHIAYQBuAHMAZgBlAHIAXwBJAE4ARAYCAAAGA///BgT//wMK/////wgMEBsDEgAAAAEEBAAAAAAAAAABARMB//8DCwAAAAD//xBBBgEAKABBAGcAZQBuAHQAXwBDAGEAbABsAF8AVAByAGEAbgBzAGYAZQByAF8AUwBhAG0A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/wYE//8DCv////8IDBAbAxIAAAABBAQAAAAAAAAAGQETAf//AwsAAAAA//8QQQYBABkAQQBnAGUAbgB0AF8AQwBhAGwAbABfAEUAcwBjAGEAbABhAHQAaQBvAG4AXwBJAE4ARAYCAAAGA///BgT//wMK/////wgMEBsDEgAAAAEEBAAAAAAAAAABARMB//8DCwAAAAD//xBBBgEACgBFAHYAZQBuAHQAXwBTAEsARQBZBgIAAAYD//8GBP//Awr/////CAwQGQMSAAAAAQQHgAAAAAAAAAD//wMLAAAAAP//EEEGAQAhAEEAZwBlAG4AdABfAFcAbwByAGsAXwBBAGYAdABlAHIAXwBDAGEAbABsAF8AUwBlAGMAbwBuAGQAcwBfAFEAVABZBgIAAAYD//8GBP//Awr/////CAwQGQMSAAAAAQQH/////4AAAAAEBgAAAAB///////8DCwAAAAD//xBBBgEADQBBAGcAZQBuAHQAXwBVAHMAZQByAF8ASQBEBgIAAAYD//8GBP//Awr/////CAwQGwMSAAAAAQQEAAAAAAAAAPoBEwH//wMLAAAAAP//EEEGAQAeAFEAdQBhAGwAaQB0AHkAXwBNAG8AbgBpAHQAbwByAGUAZABfAE0AZQBkAGkAYwBhAHIAZQBfAEkATgBEBgIAAAYD//8GBP//Awr/////CAwQGwMSAAAAAQQEAAAAAAAAAAEBEwH//wMLAAAAAP//EEEGAQATAEEAZwBlAG4AdABfAFMAdQBwAGUAcgB2AGkAcwBvAHIAXwBOAE0GAgAABgP//wYE//8DCv////8IDBAbAxIAAAABBAQAAAAAAAAAyAETAf//AwsAAAAA//8QQQYBABcAQwB1AHMAdABvAG0AZQByAF8AQwBhAGwAbABfAEMAZQBuAHQAZQByAF8AQwBEBgIAAAYD//8GBP//Awr/////CAwQGwMSAAAAAQQEAAAAAAAAAAUBEwH//wMLAAAAAP////8JBgAAAAEQggMKAAAAHgMLAAAAHgMMAAAAyAMNAAAAyP//CAMQcQMBAAAACwMCAAAAMgkDAAACJhB0AwYAAAAA//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAH//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAAv//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAD//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAT//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAABf//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAG//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAf//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAACP//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAJ//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAr//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAC///EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAM//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAA3//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAADv//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAP//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAABD//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAEf//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAS//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAABP//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAFP//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAV//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAABb//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAF///EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAY//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAABn//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAGv//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAb//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAABz//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAHf//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAe//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAB///xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAIP//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAh//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAACL//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2////////</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1602779608497</attribute>
+</metadata>

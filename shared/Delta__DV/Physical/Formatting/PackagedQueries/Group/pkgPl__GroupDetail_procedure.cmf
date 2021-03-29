@@ -1,0 +1,83 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_GroupDetail" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_GroupDetail" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="GroupName">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+        </element>
+        <element name="GroupSurrogateID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="NetworkID">
+          <datatype name="VARCHAR" extendedName="VARCHAR2(4000)" subType="DATASOURCE_TYPE" type="STRING" maxLength="255"/>
+        </element>
+        <element name="DeltaCareIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT GRP.IDENTIFIER GroupID, 
+       RTRIM(GRP.UC_NAME) GroupName,
+       GRP.SURROGATE_ID GroupSurrogateID, 
+       BL.NETWORK_ID NetworkID, 
+       BL.DC_IND DeltaCareIND
+FROM   MVPPPRD.EMP_GRP_LVL_1 GRP
+JOIN   MVPPPRD.EMP_GRP_LEVEL_SPAN SPN
+ON     GRP.IDENTIFIER = SPN.EMPGRP_LEVEL_1_ID
+LEFT OUTER JOIN (SELECT AB.DC_IND, LISTAGG(AB.NETWORK_ID, &apos;, &apos;) WITHIN GROUP (ORDER BY AB.NETWORK_ID) OVER (PARTITION BY AB.EMPGRP_LEVEL_1_ID) NETWORK_ID
+                 FROM  (SELECT DISTINCT A.EMPGRP_LEVEL_1_ID, RTRIM(A.NETWORK_ID) NETWORK_ID,
+                               MAX(CASE
+                                      WHEN A.BUS_LEVEL_5_ID = &apos;DDIC DHMO&apos; THEN &apos;true&apos;
+                                      ELSE &apos;false&apos;
+                                   END
+                                  ) OVER (PARTITION BY A.EMPGRP_LEVEL_1_ID) DC_IND
+                        FROM   MVPPPRD.EMPGRP_LVL_BUS_LVL A
+                        JOIN   MVPPPRD.EMP_GRP_LEVEL_SPAN B
+                        ON     A.EMPGRP_LEVEL_1_ID = B.EMPGRP_LEVEL_1_ID
+                        AND    A.EMPGRP_LEVEL_2_ID = B.EMPGRP_LEVEL_2_ID
+                        WHERE  A.EMPGRP_LEVEL_1_ID = &apos;{0}&apos;
+                        AND    A.EMP_GRP_LEVEL = &apos;2&apos;
+                        AND    {1} BETWEEN A.EFFECTIVE_DATE AND A.END_DATE
+                        AND    A.AUDIT_FLAG = &apos;N&apos; AND A.VOID_FLAG = &apos;N&apos;
+                        AND    B.EMPGRP_LEVEL = &apos;2&apos;
+                        AND    {1} BETWEEN B.EFFECTIVE_DATE AND B.END_DATE
+                        AND    B.AUDIT_FLAG = &apos;N&apos; AND B.VOID_FLAG = &apos;N&apos;
+                       ) AB
+                ) BL
+ON     1 = 1
+WHERE  GRP.IDENTIFIER = &apos;{0}&apos;
+AND    GRP.AUDIT_FLAG = &apos;N&apos;
+AND    SPN.EMPGRP_LEVEL_1_ID = &apos;{0}&apos;
+AND    SPN.EMPGRP_LEVEL = &apos;1&apos;
+AND    {1} BETWEEN SPN.EFFECTIVE_DATE AND SPN.END_DATE
+AND    SPN.AUDIT_FLAG = &apos;N&apos; AND SPN.VOID_FLAG = &apos;N&apos;</attribute>
+  <attribute name="creationDate" type="LONG">1611084937785</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612820794885</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/MTV</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611084937785</attribute>
+</metadata>

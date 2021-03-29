@@ -1,0 +1,640 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getUsedResourcesDirectRecurseCursor" path="/shared/Delta_DV/_scripts/Utilities/repository/getUsedResourcesDirectRecurseCursor" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getUsedResourcesDirectRecurseCursor:
+
+&#x9;This procedure recursively retrieves a cursor of metadata describing what resources are &quot;directly&quot; &quot;used&quot; by 
+&#x9;the resource path provided.  It only returns &quot;direct&quot; descendents and not foriegn key descendents or cache
+&#x9;table or data source references.
+
+&#x9;For each child dependency resource found for the parent, retrieve its &quot;used&quot; dependencies until the entire 
+&#x9;lineage has been discovered.  The full resource path and resource type must be provided.   Use the resource 
+&#x9;type &quot;LINK&quot; for any published database or web service resources.
+
+&#x9;Input:
+&#x9;&#x9;resourcePath - Full resource path which includes the path and the resource name  
+&#x9;&#x9;&#x9;Values: e.g. /shared/ASAssets/Utilities/repository/examples/source/proc1
+&#x9;&#x9;resourceType - Type of CIS resource to be created
+&#x9;&#x9;&#x9;Values: see &quot;TYPES / SUBTYPES&quot; listing below.  e.g. PROCEDURE, TABLE, LINK
+&#x9;&#x9;&#x9;When the resourcePath points to a published database resource such as /services/databases/MYTEST/ViewSales2, use &quot;LINK&quot; for the resource type.
+&#x9;Output:
+&#x9;&#x9;getUsedResourcesResponseType  - response containing the resource metadata
+        &#x9;resourceName &#x9;&#x9;VARCHAR(255), 
+        &#x9;resourcePath &#x9;&#x9;TypeDefinitions.pathType, 
+        &#x9;resourceType &#x9;&#x9;VARCHAR(255), 
+        &#x9;subtype &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;enabled &#x9;&#x9;&#x9;BIT, 
+&#x9;&#x9;&#x9;id&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+        &#x9;tableType &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;explicitlyDesigned &#x9;BIT, 
+        &#x9;sqlText &#x9;&#x9;&#x9;VARCHAR(32768)
+&#x9;&#x9;);
+
+&#x9;Values: example: INPUT: resourcePath=/services/databases/MYTEST/CAT1/SCH1/ViewSales2,  resourceType=LINK
+&#x9;----------------
+&#x9;resourceName&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;enabled&#x9;id&#x9;&#x9;&#x9;tableType&#x9;explicitlyDesigned&#x9;sqlText
+&#x9;ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/services/databases/MYTEST/CAT1/SCH1/ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LINK&#x9;&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;138780107&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/_regression/Application/Views/ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;138781301&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT...
+&#x9;productCatalog_Transformation&#x9;/shared/_regression/Physical/Formatting/Transformations/productCatalog_Transformation&#x9;PROCEDURE&#x9;&#x9;XSLT_TRANSFORM_PROCEDURE&#x9;1&#x9;138783301&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;productCatalog.xml&#x9;&#x9;&#x9;&#x9;/shared/_regression/Physical/Metadata/XML/ds_XML/productCatalog.xml&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TREE&#x9;&#x9;&#x9;XML_FILE_TREE&#x9;&#x9;&#x9;&#x9;1&#x9;138782427&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;Order_Details&#x9;&#x9;&#x9;&#x9;&#x9;/shared/_regression/Physical/Formatting/ds_orders1/Order_Details&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;138783504&#x9;VIEW&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT...
+&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;/shared/_regression/Physical/Metadata/MysqlSource/ORDERS1/ds_orders1/orderdetails&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;138782599&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+
+&#x9;Values: example: INPUT: resourcePath=/services/webservices/TEST00/testWebService_bare/getCustomerById,  resourceType=LINK
+&#x9;resourceName&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;enabled&#x9;id&#x9;&#x9;&#x9;tableType&#x9;explicitlyDesigned&#x9;sqlText
+&#x9;getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;/services/webservices/TEST00/testWebService_bare/getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LINK&#x9;&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;137950129&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;/shared/test00/TestSecurity/getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PROCEDURE&#x9;&#x9;SQL_SCRIPT_PROCEDURE&#x9;&#x9;1&#x9;137952495&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;PROCEDURE getCustomerById(
+&#x9;customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/test00/DataSources/ds_orders/customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;137950739&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+
+&#x9;Values: example: INPUT: resourcePath=/shared/examples/CompositeView,  resourceType=TABLE
+&#x9;----------------
+&#x9;resourceName&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;enabled&#x9;id&#x9;&#x9;&#x9;tableType&#x9;explicitlyDesigned&#x9;sqlText
+&#x9;CompositeView&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/CompositeView&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;21874&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;ViewOrder&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewOrder&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;21981&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21963&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21901&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21928&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE&#x9;&#x9;RELATIONAL_DATA_SOURCE&#x9;1&#x9;21892&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;cache_status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/cache_status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21951&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;cache_tracking&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/cache_tracking&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21893&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;orders_cache&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orders_cache&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21911&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;22063&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21901&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;productCatalog_Transformation&#x9;&#x9;/shared/examples/productCatalog_Transformation&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PROCEDURE&#x9;&#x9;XSLT_TRANSFORM_PROCEDURE 1&#x9;22061&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;productCatalog.xml&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML/productCatalog.xml&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TREE&#x9;&#x9;&#x9;XML_FILE_TREE&#x9;&#x9;&#x9;1&#x9;1122649&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ViewSupplier&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSupplier&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;22050&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;inventorytransactions&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_inventory/inventorytransactions&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21991&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;purchaseorders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_inventory/purchaseorders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;22004&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;suppliers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_inventory/suppliers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;22029&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.3&#x9;&#x9;07/03/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2015.3&#x9;&#x9;06/10/2015&#x9;&#x9;Calvin Goodrich&#x9;&#x9;7.0.1&#x9;&#x9;&#x9;Updated to fix issue with BOOLEAN data type handling in 7.0.1.00.16
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Adapted from getUsedResourcesRecurseCursor but returns only direct descendants and not foreign key descedents.
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="resourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inParentID" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inLineageResourceIdList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="inIgnoreResourceDoesNotExist" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="getUsedResourcesResponseType" type="TABLE" refId="256">
+        <element name="resourceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resourcePath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="resourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="enabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="id">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="tableType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="explicitlyDesigned">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="sqlText">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getUsedResourcesDirectCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="usedResCursor" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getUsedResourcesDirectRecurseCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inParentID" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="inLineageResourceIdList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inIgnoreResourceDoesNotExist" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;getUsedResourcesDirectRecurseCursor:
+
+&#x9;This procedure recursively retrieves a cursor of metadata describing what resources are &quot;directly&quot; &quot;used&quot; by 
+&#x9;the resource path provided.  It only returns &quot;direct&quot; descendants and not foreign key descendants or cache
+&#x9;table or data source references.
+
+&#x9;For each child dependency resource found for the parent, retrieve its &quot;used&quot; dependencies until the entire 
+&#x9;lineage has been discovered.  The full resource path and resource type must be provided.   Use the resource 
+&#x9;type &quot;LINK&quot; for any published database or web service resources.
+ 
+&#x9;Input:
+&#x9;&#x9;IN resourcePath &#x9;&#x9;&#x9;&#x9;VARCHAR(4096), 
+&#x9;&#x9;IN resourceType &#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;IN inParentID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- null to start with
+&#x9;&#x9;IN inLineageResourceIdList&#x9;&#x9;LONGVARCHAR,&#x9;-- null to start with.  A list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;&#x9;-- Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;&#x9;IN inIgnoreResourceDoesNotExist&#x9;BIT, &#x9;&#x9;&#x9;-- Ignore any resources that do not exist
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 1 = Bypass the processing of that resource.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+&#x9;Output:
+&#x9;&#x9;getUsedResourcesResponseType  - response containing the resource metadata
+        &#x9;resourceName &#x9;&#x9;VARCHAR(255), 
+        &#x9;resourcePath &#x9;&#x9;TypeDefinitions.pathType, 
+        &#x9;resourceType &#x9;&#x9;VARCHAR(255), 
+        &#x9;subtype &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;enabled &#x9;&#x9;&#x9;BIT, 
+&#x9;&#x9;&#x9;id&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+        &#x9;tableType &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;explicitlyDesigned &#x9;BIT, 
+        &#x9;sqlText &#x9;&#x9;&#x9;VARCHAR(32768)
+&#x9;&#x9;);
+
+&#x9;Values: example: INPUT: resourcePath=/services/databases/MYTEST/CAT1/SCH1/ViewSales2,  resourceType=LINK
+&#x9;----------------
+&#x9;resourceName&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;enabled&#x9;id&#x9;&#x9;&#x9;tableType&#x9;explicitlyDesigned&#x9;sqlText
+&#x9;ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/services/databases/MYTEST/CAT1/SCH1/ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LINK&#x9;&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;138780107&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/_regression/Application/Views/ViewSales2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;138781301&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT...
+&#x9;productCatalog_Transformation&#x9;/shared/_regression/Physical/Formatting/Transformations/productCatalog_Transformation&#x9;PROCEDURE&#x9;&#x9;XSLT_TRANSFORM_PROCEDURE&#x9;1&#x9;138783301&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;productCatalog.xml&#x9;&#x9;&#x9;&#x9;/shared/_regression/Physical/Metadata/XML/ds_XML/productCatalog.xml&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TREE&#x9;&#x9;&#x9;XML_FILE_TREE&#x9;&#x9;&#x9;&#x9;1&#x9;138782427&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;Order_Details&#x9;&#x9;&#x9;&#x9;&#x9;/shared/_regression/Physical/Formatting/ds_orders1/Order_Details&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;138783504&#x9;VIEW&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT...
+&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;/shared/_regression/Physical/Metadata/MysqlSource/ORDERS1/ds_orders1/orderdetails&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;138782599&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+
+&#x9;Values: example: INPUT: resourcePath=/services/webservices/TEST00/testWebService_bare/getCustomerById,  resourceType=LINK
+&#x9;resourceName&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;enabled&#x9;id&#x9;&#x9;&#x9;tableType&#x9;explicitlyDesigned&#x9;sqlText
+&#x9;getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;/services/webservices/TEST00/testWebService_bare/getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LINK&#x9;&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;137950129&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;/shared/test00/TestSecurity/getCustomerById&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PROCEDURE&#x9;&#x9;SQL_SCRIPT_PROCEDURE&#x9;&#x9;1&#x9;137952495&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;PROCEDURE getCustomerById(
+&#x9;customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/test00/DataSources/ds_orders/customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;137950739&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+
+&#x9;Values: example: INPUT: resourcePath=/shared/examples/CompositeView,  resourceType=TABLE
+&#x9;----------------
+&#x9;resourceName&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;enabled&#x9;id&#x9;&#x9;&#x9;tableType&#x9;explicitlyDesigned&#x9;sqlText
+&#x9;CompositeView&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/CompositeView&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;21874&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;ViewOrder&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewOrder&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;21981&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/customers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21963&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21901&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21928&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE&#x9;&#x9;RELATIONAL_DATA_SOURCE&#x9;1&#x9;21892&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;cache_status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/cache_status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21951&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;cache_tracking&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/cache_tracking&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21893&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;orders_cache&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orders_cache&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21911&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;22063&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21901&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;productCatalog_Transformation&#x9;&#x9;/shared/examples/productCatalog_Transformation&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PROCEDURE&#x9;&#x9;XSLT_TRANSFORM_PROCEDURE 1&#x9;22061&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;productCatalog.xml&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML/productCatalog.xml&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TREE&#x9;&#x9;&#x9;XML_FILE_TREE&#x9;&#x9;&#x9;1&#x9;1122649&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;ViewSupplier&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSupplier&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;22050&#x9;&#x9;&#x9;UNKNOWN&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SELECT 
+&#x9;inventorytransactions&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_inventory/inventorytransactions&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;21991&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;purchaseorders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_inventory/purchaseorders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;22004&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+&#x9;suppliers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_inventory/suppliers&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;22029&#x9;&#x9;&#x9;TABLE&#x9;&#x9;0&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.3&#x9;&#x9;07/03/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2015.3&#x9;&#x9;06/10/2015&#x9;&#x9;Calvin Goodrich&#x9;&#x9;7.0.1&#x9;&#x9;&#x9;Updated to fix issue with BOOLEAN data type handling in 7.0.1.00.16
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Adapted from getUsedResourcesRecurseCursor but returns only direct descendants and not foreign key descedents.
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getUsedResourcesDirectRecurseCursor(
+    IN resourcePath &#x9;&#x9;&#x9;&#x9;VARCHAR(4096), 
+    IN resourceType &#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;IN inParentID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- null to start with
+&#x9;IN inLineageResourceIdList&#x9;&#x9;LONGVARCHAR,&#x9;-- null to start with.  A list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;&#x9;-- Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;IN inIgnoreResourceDoesNotExist&#x9;BIT, &#x9;&#x9;&#x9;-- Ignore any resources that do not exist
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 1 = Bypass the processing of that resource.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+    OUT result&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;PIPE /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.getUsedResourcesResponseType
+/*
+&#x9;DECLARE PUBLIC TYPE getUsedResourcesResponseType ROW (
+        &#x9;resourceName &#x9;&#x9;VARCHAR(255), 
+        &#x9;resourcePath &#x9;&#x9;/shared/ASAssets/Utilities/TypeDefinitions.pathType, 
+        &#x9;resourceType &#x9;&#x9;VARCHAR(255), 
+        &#x9;subtype &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;enabled &#x9;&#x9;&#x9;BIT, 
+&#x9;&#x9;&#x9;id&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+        &#x9;tableType &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;explicitlyDesigned &#x9;BIT, 
+        &#x9;sqlText &#x9;&#x9;&#x9;VARCHAR(32768)
+&#x9;);
+*/
+)
+BEGIN
+&#x9;DECLARE parentID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT inParentID;
+&#x9;DECLARE lineageResourceIdList &#x9;&#x9;LONGVARCHAR DEFAULT TRIM(NVL(inLineageResourceIdList, &apos; &apos;));
+&#x9;DECLARE ignoreResourceDoesNotExist&#x9;INTEGER DEFAULT NVL(inIgnoreResourceDoesNotExist,0);
+&#x9;DECLARE usedResourcesResponse &#x9;&#x9;XML;
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getUsedResourcesDirectRecurseCursor&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE warning&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.warning;
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.getUsedResourcesResponseType;
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE circularReferenceFound&#x9;&#x9;BOOLEAN DEFAULT FALSE;
+&#x9;DECLARE resourceExists &#x9;&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;call /lib/resource/ResourceExists(resourcePath, resourceType, null, resourceExists);
+&#x9;if (resourceExists) then
+&#x9;&#x9;-- Insert the parent resource into the pipe (first time only)
+&#x9;&#x9;FOR resource AS&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor(resourcePath, resourceType) DO
+
+&#x9;&#x9;&#x9;-- Check this parent resource id against the resource id lineage list to detec circular references.
+&#x9;&#x9;&#x9;&#x9;IF (POSITION(resource.id IN lineageResourceIdList) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET circularReferenceFound = true;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;-- Add the resource id to the list so that it gets passed into the next invocation and resources can be tracked through recursive calls.
+&#x9;&#x9;&#x9;&#x9;SET lineageResourceIdList = lineageResourceIdList || &apos; &apos; || resource.id;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN 
+&#x9;&#x9;&#x9;&#x9;set message = moduleName||&apos; : &apos;||&apos;resourceID=&apos;||resource.id||&apos;  parentID=&apos;||NVL(CAST(parentID AS VARCHAR),&apos;null&apos;) ||&apos; name=&apos;||resource.name || &apos; circularReferenceFound=&apos;||CAST(circularReferenceFound AS VARCHAR)||&apos; lineageResourceIdList=&apos;||lineageResourceIdList;
+&#x9;&#x9;&#x9;&#x9;call log  (message);
+&#x9;&#x9;&#x9;&#x9;call print(message);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Add the record to the output
+&#x9;&#x9;&#x9;INSERT INTO result VALUES (resource.name, resource.&quot;path&quot;, resource.&quot;type&quot;, resource.subType, resource.enabled, resource.id, resource.tableType, resource.explicitlyDesigned, NVL(resource.sqlText, resource.scriptText));
+&#x9;&#x9;&#x9;set parentID = resource.id;
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;-- Continue if the resource id has not been invoked previously within the context of these recursive calls. 
+&#x9;&#x9;-- Continue if no circular reference is detected.  Return with no action if a circular reference is found.
+&#x9;&#x9;IF (NOT circularReferenceFound) THEN
+&#x9;&#x9;&#x9;FOR r AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getUsedResourcesDirectCursor(resourcePath, resourceType)
+/*&#x9;DECLARE PUBLIC TYPE getUsedResourcesResponseType ROW (
+        &#x9;resourceName &#x9;&#x9;VARCHAR(255), 
+        &#x9;resourcePath &#x9;&#x9;/shared/ASAssets/Utilities/TypeDefinitions.pathType, 
+        &#x9;resourceType &#x9;&#x9;VARCHAR(255), 
+        &#x9;subtype &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;enabled &#x9;&#x9;&#x9;BIT, 
+&#x9;&#x9;&#x9;id&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+        &#x9;tableType &#x9;&#x9;&#x9;VARCHAR(255), 
+        &#x9;explicitlyDesigned &#x9;BIT, 
+        &#x9;sqlText &#x9;&#x9;&#x9;VARCHAR(32768) &#x9;);
+*/
+&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN 
+&#x9;&#x9;&#x9;&#x9;&#x9;set message = moduleName||&apos; : &apos;||&apos;resourceID=&apos;||r.id||&apos;  parentID=&apos;||NVL(CAST(parentID AS VARCHAR),&apos;null&apos;) ||&apos; name=&apos;||r.resourceName || &apos; circularReferenceFound=&apos;||CAST(circularReferenceFound AS VARCHAR);
+&#x9;&#x9;&#x9;&#x9;&#x9;call log  (message);
+&#x9;&#x9;&#x9;&#x9;&#x9;call print(message);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Recursively get the children used resources until all dependencies are found
+&#x9;&#x9;&#x9;&#x9;FOR s AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getUsedResourcesDirectRecurseCursor(r.resourcePath, r.resourceType, parentID, lineageResourceIdList, inIgnoreResourceDoesNotExist) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Add the record to the output
+&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES (s.resourceName, s.resourcePath, s.resourceType, s.subType, s.enabled, s.id, s.tableType, s.explicitlyDesigned, s.sqlText);
+&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;END IF;
+&#x9;ELSE
+&#x9;&#x9;IF (ignoreResourceDoesNotExist = 1) THEN
+&#x9;&#x9;&#x9;IF (warning = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;set message = moduleName||&apos; : &apos;||&apos;WARNING: Resource does not exist: type=&apos;||NVL(resourceType,&apos;null&apos;)||&apos;  path=&apos;||NVL(resourcePath,&apos;null&apos;);
+&#x9;&#x9;&#x9;&#x9;call log  (message);
+&#x9;&#x9;&#x9;&#x9;call print(message);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;raise ex value moduleName||&apos; : The resource type=&apos;||NVL(resourceType,&apos;null&apos;)||&apos; and path=&apos;||NVL(resourcePath,&apos;null&apos;)||&apos; does not exist.&apos;;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">1376679119329</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="impactLevel" type="INTEGER">0</attribute>
+  <attribute name="impactMessage" type="NULL"/>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">10/149</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/175</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/176</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/150</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/191</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/190</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

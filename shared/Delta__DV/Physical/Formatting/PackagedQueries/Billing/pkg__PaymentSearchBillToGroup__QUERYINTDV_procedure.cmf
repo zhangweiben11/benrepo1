@@ -1,0 +1,284 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkg_PaymentSearchBillToGroup_QUERYINTDV" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Billing/pkg_PaymentSearchBillToGroup_QUERYINTDV" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[Ebillpay:to extract only billtogroup payment details]]></annotation>
+  <parameters>
+    <parameter name="sortField" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="billToID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="5000"/>
+    </parameter>
+    <parameter name="parentGroupNumber" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+    </parameter>
+    <parameter name="paymentNumber" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+    <parameter name="maxReceiptAmount" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="minReceiptAmount" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="paymentStartDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="paymentEndDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="invoiceNumber" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+    <parameter name="invoiceStartDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="invoiceEndDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="paymentAmount" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="paymentTypes" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="paymentStatuses" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="maxAmountApplied" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="minAmountApplied" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="maxOriginalInvoiceAmount" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="minOriginalInvoiceAmount" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="maxOutstandingBalance" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="minOutstandingBalance" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="maxAdjustmentAmount" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="minAdjustmentAmount" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="maxCreditMemo" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="minCreditMemo" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="numberOfRowsPerPage" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="pageNumber" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="brand" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="cashReceiptId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="invoiceNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="paymentNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="invoiceDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="billToDiv">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="billToAccount">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="billToID">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="paymentInitiateDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="paymentDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="paymentType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="paymentStatus">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="originalInvoiceAmount">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="amountApplied">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="outstandBalance">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="adjustment">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="creditMemo">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="paymentAmount">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="paymentTotal">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="brand">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="cashReceiptId">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="rk">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="totalNumberOfRows">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/efs" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">&lt;version 2&gt;
+select * from
+(select  a.* ,row_number() over (order by {0} )rk,
+COUNT(*) OVER () totalnumberofrows
+from(
+SELECT /*+ parallel(16) */
+               arc.cons_billing_number       invoiceNumber, 
+               acr.receipt_number            paymentNumber, 
+               Max(rct.trx_date)             invoiceDate, 
+               hcsu.location                 billToDiv, 
+               hca.account_number            billToAccount, 
+               hca.account_number||&apos;00000&apos;   billToID, 
+               ara.apply_date                paymentInitiateDate, 
+               acr.receipt_date              paymentDate, 
+&#x9;&#x9;&#x9;   case when arm.attribute2=&apos;Checks&apos; then &apos;Check&apos; When arm.attribute2=&apos;Manual Entry&apos; then &apos;Offline&apos; 
+&#x9;&#x9;&#x9;   when arm.attribute2=&apos;Credit Card&apos; then &apos;CreditCard&apos; when arm.attribute2=&apos;Other&apos; then &apos;Offline&apos; 
+&#x9;&#x9;&#x9;   when arm.attribute2=&apos;Online ACH&apos; then &apos;Online&apos; else arm.attribute2 end paymentType, 
+               Case when l_state.meaning=&apos;REVERSED&apos; then &apos;Rejected&apos; else &apos;Successful&apos; end   paymentStatus, 
+               Sum(arp.amount_due_original)  originalInvoiceAmount, 
+               Sum(ara.amount_applied)       amountApplied, 
+               Sum(arp.amount_due_remaining) outstandBalance, 
+               CASE WHEN Sum(adj.amount) IS NULL THEN 0.0 
+                 ELSE Sum(adj.amount) END AS adjustment, 
+               CASE WHEN Sum(aracm.amount_applied) IS NULL THEN 0.0 
+                 ELSE Sum(aracm.amount_applied) END AS creditMemo, 
+               acr.amount                    paymentAmount, 
+               acr.amount                    paymentTotal,
+case when hcsu.ATTRIBUTE8||hcsu.ATTRIBUTE3 in(&apos;DNTGRAGXDDICDIC&apos;,&apos;DNTGRAGXDDICDICNE&apos;) then &apos;DDINS&apos;
+     when hcsu.ATTRIBUTE3 in(&apos;DIC&apos;,&apos;DICNE&apos;) then &apos;DENTEGRA&apos; else &apos;DDINS&apos; end BRAND,
+acr.cash_receipt_id cashReceiptId
+        FROM   apps.ar_receivable_applications_all ara 
+               INNER JOIN apps.ar_cash_receipts_all acr 
+               ON acr.cash_receipt_id = ara.cash_receipt_id 
+               AND acr.org_id = ara.org_id 
+               AND ara.application_type = &apos;CASH&apos; 
+               AND ara.display = &apos;Y&apos; 
+               AND acr.receipt_number = COALESCE(NULLIF(&apos;{3}&apos;,&apos;NULL&apos;),acr.receipt_number)
+AND (acr.cash_receipt_id IN {27} or q&apos;[{27}]&apos; =q&apos;[(&apos;x&apos;)]&apos;)               
+AND acr.Amount &lt;= COALESCE({4},acr.Amount) 
+               AND acr.Amount &gt;= COALESCE({5},acr.Amount) 
+&#x9;&#x9;&#x9;&#x9;AND acr.Amount = COALESCE({11},acr.Amount)
+               AND acr.receipt_date  &gt;= COALESCE({6},acr.receipt_date ) AND acr.receipt_date  &lt;= COALESCE({7},acr.receipt_date ) 
+              INNER JOIN apps.ra_customer_trx_all rct 
+               ON ara.applied_customer_trx_id = rct.customer_trx_id
+               INNER JOIN apps.hz_cust_accounts hca 
+               ON hca.cust_account_id = rct.bill_to_customer_id 
+               AND (hca.account_number||&apos;00000&apos; IN {1} or q&apos;[{1}]&apos; =q&apos;[(&apos;x&apos;)]&apos;) 
+               INNER JOIN apps.ar_receipt_methods arm 
+               ON acr.receipt_method_id = arm.receipt_method_id 
+               AND (UPPER(arm.attribute2) IN {12} or q&apos;[{12}]&apos; =q&apos;[(&apos;x&apos;)]&apos;)
+               INNER JOIN apps.ar_cons_inv_trx_all art 
+               ON rct.customer_trx_id = art.customer_trx_id 
+               INNER JOIN apps.ar_cons_inv_all arc 
+               ON art.cons_inv_id = arc.cons_inv_id
+               AND (arc.cons_billing_number != &apos;NULL&apos; and arc.cons_billing_number is not NULL 
+               AND arc.cons_billing_number = COALESCE(NULLIF(&apos;{8}&apos;,&apos;NULL&apos;),arc.cons_billing_number))
+               INNER JOIN apps.hz_cust_acct_sites_all hcas 
+               ON hca.cust_account_id = hcas.cust_account_id 
+               INNER JOIN apps.hz_cust_site_uses_all hcsu 
+               ON hcas.cust_acct_site_id = hcsu.cust_acct_site_id 
+               AND hcsu.site_use_id = rct.bill_to_site_use_id 
+               INNER JOIN apps.ar_payment_schedules_all arp 
+                       ON arp.customer_trx_id = rct.customer_trx_id 
+               INNER JOIN apps.hz_cust_site_uses_all hcsuship 
+                       ON hcsuship.site_use_id = rct.ship_to_site_use_id 
+               INNER JOIN apps.hz_cust_accounts hcaship 
+                       ON hcaship.cust_account_id = rct.ship_to_customer_id 
+               INNER JOIN apps.hz_cust_acct_sites_all hcasship 
+                       ON hcaship.cust_account_id = hcasship.cust_account_id 
+                          AND hcasship.cust_acct_site_id = 
+                              hcsuship.cust_acct_site_id 
+INNER JOIN  apps.ar_cash_receipt_history_all crh_current ON 
+    crh_current.cash_receipt_id = acr.cash_receipt_id
+    AND   crh_current.org_id = acr.org_id
+    AND   crh_current.current_record_flag = &apos;Y&apos;
+    AND crh_current.status IN (&apos;REVERSED&apos;,&apos;CLEARED&apos;,&apos;REMITTED&apos;)    
+INNER JOIN apps.ar_lookups l_state ON  
+    l_state.lookup_code = crh_current.status AND
+    l_state.lookup_type = &apos;RECEIPT_CREATION_STATUS&apos;
+&#x9;AND (UPPER(l_state.meaning) IN {13} or q&apos;[{13}]&apos; =q&apos;[(&apos;x&apos;)]&apos;)
+LEFT OUTER JOIN apps.ar_adjustments_all adj 
+    ON adj.customer_trx_id = rct.customer_trx_id 
+LEFT OUTER JOIN apps.ar_receivable_applications_all aracm 
+    ON aracm.applied_customer_trx_id = rct.customer_trx_id 
+    AND aracm.display = &apos;Y&apos; AND aracm.application_type = &apos;CM&apos; 
+ GROUP  BY acr.receipt_number,acr.receipt_date,arm.attribute2,acr.amount, 
+ hcsu.location,hca.account_number,arc.cons_billing_number,ara.apply_date,
+l_state.meaning,hcsu.ATTRIBUTE8,hcsu.ATTRIBUTE3,acr.cash_receipt_id 
+)a WHERE
+invoiceDate &gt;= COALESCE({9},invoiceDate) AND
+invoiceDate &lt;= COALESCE({10},invoiceDate) AND
+amountApplied &lt;= COALESCE({14},amountApplied) AND
+amountApplied &gt;= COALESCE({15},amountApplied) AND
+originalInvoiceAmount &lt;= COALESCE({16},originalInvoiceAmount) AND
+originalInvoiceAmount &gt;= COALESCE({17},originalInvoiceAmount) AND
+outstandBalance &lt;= COALESCE({18},outstandBalance) AND
+outstandBalance &gt;= COALESCE({19},outstandBalance) AND
+adjustment &lt;= COALESCE({20},adjustment) AND
+adjustment &gt;= COALESCE({21},adjustment) AND
+creditMemo &lt;= COALESCE({22},creditMemo) AND
+creditMemo &gt;= COALESCE({23},creditMemo) AND
+BRAND = COALESCE(NULLIF(&apos;{26}&apos;,&apos;NULL&apos;),BRAND)
+)where rk BETWEEN ({25} - 1) * {24} + 1 AND {25} * {24}
+--rk BETWEEN (pagenumber - 1) * pagesize + 1 AND pagenumber * pagesize
+
+
+
+
+</attribute>
+  <attribute name="creationDate" type="LONG">1596519415150</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2850169</attribute>
+  <attribute name="creatorUserName" type="STRING">dca32905</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611110488190</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2850169</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca32905</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/efs</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1596519415150</attribute>
+</metadata>

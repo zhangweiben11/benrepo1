@@ -1,0 +1,430 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="removeUserFromGroups" path="/shared/Delta_DV/_scripts/Utilities/repository/user/removeUserFromGroups" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="username" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="domainName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="groupNameAndDomainList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/Pause" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="timeInMilliSeconds" direction="IN">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/services/databases/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/user/operations/removeUserFromGroups" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="removeUserFromGroups" direction="IN">
+        <datatype name="removeUserFromGroups" extendedName="{http://www.compositesw.com/services/system/admin/user}removeUserFromGroups" namespace="http://www.compositesw.com/services/system/admin/user" referenceDefinitionSet="/services/webservices/system/admin/user/operations/UserSchema" referenceType="{http://www.compositesw.com/services/system/admin/user}removeUserFromGroups" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/user}removeUserFromGroups">
+          <schemaDatatype>
+            <datatype name="removeUserFromGroups" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="removeUserFromGroupsRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/user" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="domainName" namespace="http://www.compositesw.com/services/system/admin/user">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="userName" namespace="http://www.compositesw.com/services/system/admin/user">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="groupNames" namespace="http://www.compositesw.com/services/system/admin/user">
+                <datatype name="domainMemberReferenceList" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="entry" namespace="http://www.compositesw.com/services/system/admin/user" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="domainMemberReference" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/admin/user">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="domain" namespace="http://www.compositesw.com/services/system/admin/user" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="removeUserFromGroupsResponse" direction="OUT">
+        <datatype name="removeUserFromGroupsResponse" extendedName="{http://www.compositesw.com/services/system/admin/user}removeUserFromGroupsResponse" namespace="http://www.compositesw.com/services/system/admin/user" referenceDefinitionSet="/services/webservices/system/admin/user/operations/UserSchema" referenceType="{http://www.compositesw.com/services/system/admin/user}removeUserFromGroupsResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/user}removeUserFromGroupsResponse">
+          <schemaDatatype>
+            <datatype name="removeUserFromGroupsResponse" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="removeUserFromGroupsResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/user" subType="ELEMENT_DECL" type="TREE" refId="1025"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="1281">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/user/getUser" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="userName" direction="IN">
+        <datatype type="STRING" maxLength="8192"/>
+      </element>
+      <element name="userDomain" direction="IN">
+        <datatype type="STRING" maxLength="8192"/>
+      </element>
+      <element name="userExists" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="userExplicitRights" direction="OUT">
+        <datatype type="STRING" maxLength="8192"/>
+      </element>
+      <element name="userEffectiveRights" direction="OUT">
+        <datatype type="STRING" maxLength="8192"/>
+      </element>
+      <element name="userInheritedRights" direction="OUT">
+        <datatype type="STRING" maxLength="8192"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* removeUserFromGroups:
+
+&#x9;Remove an existing user from the groups identified in groupNameAndDomainList
+
+&#x9;Input:
+    &#x9;&#x9;debug - Y=debug on, N=debug off 
+&#x9;&#x9;&#x9;username - username for the account to remove from identified groups
+&#x9;&#x9;&#x9;domainName - domain which the user belongs to
+&#x9;&#x9;&#x9;groupNameAndDomainList - a space separate list of group|domain pairs where the pairs are separated by a pipe (|)
+&#x9;&#x9;&#x9;&#x9;&#x9;   groupName|groupDomain groupName|groupDomain groupName|groupDomain&#x9;&#x9;&#x9;     
+&#x9;&#x9;&#x9;&#x9;e.g.  comp_admin|composite    comp_dev|composite   comp_user|composite
+&#x9;Output:
+&#x9;&#x9;NONE
+
+&#x9;Exceptions:  Procedure throws exceptions if the identified user does not exist or if one of more of the groups identified does not belong to the composite domain (i.e. LDAP group). Additional system exceptions may be thrown
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2020.201&#x9;05/26/2020&#x9;&#x9;Matt Lee&#x9;&#x9;&#x9;8.2.0&#x9;&#x9;&#x9;Created new.
+
+
+&#x9;(c) 2020 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE removeUserFromGroups(
+&#x9;IN debug &#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- e.g. Y=debug on. or N=debug off.
+    IN username &#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+&#x9;IN domainName &#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+&#x9;IN groupNameAndDomainList &#x9;LONGVARCHAR&#x9;&#x9;-- a space separated list of group|domain pairs where the pairs are separated by a pipe (|)
+)
+BEGIN
+&#x9;DECLARE moduleName &#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;removeUserFromGroups&apos;;
+&#x9;DECLARE groupNameAndDomains&#x9;LONGVARCHAR DEFAULT TRIM(NVL(groupNameAndDomainList,&apos;   &apos;));
+&#x9;DECLARE request &#x9;&#x9;&#x9;VARCHAR(4096);
+&#x9;DECLARE response &#x9;&#x9;&#x9;XML;
+&#x9;DECLARE fault &#x9;&#x9;&#x9;&#x9;XML;
+
+&#x9;DECLARE groupName&#x9;&#x9;&#x9;VARCHAR(255);
+&#x9;DECLARE groupDomain&#x9;&#x9;&#x9;VARCHAR(255);
+&#x9;DECLARE tmp &#x9;&#x9;&#x9;&#x9;VARCHAR(8192) DEFAULT &apos;&apos;;
+
+&#x9;DECLARE userExists&#x9;&#x9;&#x9;BIT;
+&#x9;DECLARE userExplicitRights&#x9;VARCHAR(255);
+&#x9;DECLARE userEffectiveRights&#x9;VARCHAR(255);
+&#x9;DECLARE userInheritedRights&#x9;VARCHAR(255);
+
+&#x9;DECLARE pos&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE message &#x9;&#x9;&#x9;LONGVARCHAR;
+
+&#x9;DECLARE removeUserGroupsException EXCEPTION;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : Checking if user (&apos; || username || &apos;) exists&apos;);
+&#x9;END IF;
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;user&quot;/getUser(debug, username, domainName, userExists, userExplicitRights, userEffectiveRights, userInheritedRights);
+
+&#x9;-- If the user doesn&apos;t exist then return an error
+&#x9;IF userExists = 0 THEN
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : User (&apos; || username || &apos;) does not exist&apos;);
+&#x9;&#x9;&#x9;CALL pause(500);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;RAISE removeUserGroupsException VALUE &apos;User (&apos; || username || &apos;) in domain (&apos; || domainName || &apos;) does not exist&apos;;
+&#x9;ELSE
+&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+
+&#x9;&#x9;&#x9;--if at least one group is named then create a request
+&#x9;&#x9;&#x9;IF groupNameAndDomains IS NOT NULL THEN
+           &#x9;&#x9; --Remove white space around the pipe separator in the group domain list
+           &#x9;&#x9;SET pos = INSTR(groupNameAndDomains, &apos; |&apos;);
+           &#x9;&#x9;WHILE (pos &gt; 0) DO
+               &#x9;&#x9;SET groupNameAndDomains = REPLACE(groupNameAndDomains, &apos; |&apos;, &apos;|&apos;);
+               &#x9;&#x9;SET pos = INSTR(groupNameAndDomains, &apos; |&apos;);
+           &#x9;&#x9;END WHILE;
+
+            &#x9;SELECT { OPTION IGNORE_TRAILING_SPACES=&quot;FALSE&quot; } INSTR(groupNameAndDomains, &apos;| &apos;) 
+&#x9;&#x9;&#x9;&#x9;&#x9;INTO pos
+        &#x9;    &#x9;FROM /services/databases/system/DUAL;
+            
+&#x9;&#x9;&#x9;&#x9;WHILE (pos &gt; 0) DO
+               &#x9;&#x9;SET groupNameAndDomains = REPLACE(groupNameAndDomains, &apos;| &apos;, &apos;|&apos;);
+
+           &#x9;   &#x9;&#x9;SELECT { OPTION IGNORE_TRAILING_SPACES=&quot;FALSE&quot; } INSTR(groupNameAndDomains, &apos;| &apos;) 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTO pos
+    &#x9;            &#x9;FROM /services/databases/system/DUAL;
+       &#x9;    &#x9;END WHILE;
+
+&#x9;           &#x9;FOR pair AS 
+&#x9;&#x9;&#x9;&#x9;&#x9;SELECT object keyword
+    &#x9;            FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(groupNameAndDomains, &apos; &apos;, 0, 0, 0, 1, 0)
+       &#x9;&#x9;        WHERE object IS NOT NULL AND LENGTH(TRIM(object)) &gt; 0 DO
+           &#x9;&#x9;    SET pos = INSTR(pair.keyword, &apos;|&apos;);
+               &#x9;&#x9;IF (pos &gt; 0) THEN
+                   &#x9;&#x9;SET groupName = TRIM(SUBSTRING(pair.keyword, 1, pos - 1));
+&#x9;                   &#x9;SET groupDomain = TRIM(SUBSTRING(pair.keyword, pos + 1));
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--If the domain is not part of the composite domain, throw an exception, API can&apos;t remove user from LDAP domains
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF groupDomain != &apos;composite&apos; THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF debug = &apos;Y&apos; THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : Error cannot remove user from group &apos; || groupName || &apos; in domain &apos; || groupDomain);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL pause(500);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;RAISE removeUserGroupsException VALUE (&apos;Error cannot remove user from group &apos; || groupName || &apos; in domain &apos; || groupDomain);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+   &#x9;                &#x9;SET tmp = tmp ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;        &lt;user:entry&gt;&apos;||CHR(10)||
+            &#x9;            &#x9;&apos;           &lt;user:name&gt;&apos; || CAST(XMLTEXT(groupName) AS LONGVARCHAR) || &apos;&lt;/user:name&gt;&apos;||CHR(10)||
+      &#x9;    &#x9;&#x9;            &apos;           &lt;user:domain&gt;&apos; || CAST(XMLTEXT(groupDomain) AS LONGVARCHAR) || &apos;&lt;/user:domain&gt;&apos;||CHR(10)||
+        &#x9;        &#x9;       &#x9;&apos;        &lt;/user:entry&gt;&apos;||CHR(10);
+               &#x9;&#x9;END IF;
+           &#x9;&#x9;END FOR;
+       &#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;SET request = 
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&lt;user:removeUserFromGroups xmlns:user=&quot;http://www.compositesw.com/services/system/admin/user&quot;&gt;&apos;||CHR(10)||
+ &#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;user:domainName&gt;&apos; || CAST(XMLTEXT(domainName) AS LONGVARCHAR) || &apos;&lt;/user:domainName&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;user:userName&gt;&apos;|| CAST(XMLTEXT(username) AS LONGVARCHAR) || &apos;&lt;/user:userName&gt;&apos;||CHR(10)||
+  &#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;user:groupNames&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;tmp ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;/user:groupNames&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&lt;/user:removeUserFromGroups&gt;&apos;;
+
+&#x9;&#x9;&#x9;IF debug = &apos;Y&apos; THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos; : Remove User From Groups Request:&apos;||CHR(10) || NVL(request,&apos;null&apos;),1,63900));
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Invoke the web service API to remove groups
+&#x9;&#x9;&#x9;CALL /services/webservices/system/admin/&quot;user&quot;/operations/removeUserFromGroups(request, response, fault);
+
+&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;WHEN System.SOAPFaultException THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;RAISE;  
+&#x9;&#x9;END;
+&#x9;END IF;&#x9;
+
+EXCEPTION
+&#x9;ELSE
+&#x9;&#x9;SET message = CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR);
+&#x9;&#x9;CALL LOG(moduleName||&apos; : EXCEPTION: &apos;||message);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos; : EXCEPTION: &apos;||NVL(message,&apos;null&apos;), 1, 63900));
+&#x9;&#x9;&#x9;CALL pause(500); -- pause long enough for the debug statements to be able to print out before raising the exception.
+&#x9;&#x9;END IF;
+&#x9;&#x9;RAISE removeUserGroupsException VALUE message;&#x9;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1590579527958</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/155</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/147</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/157</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/158</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/73</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">14/114</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/74</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">14/115</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/140</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/66</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1590579527958</attribute>
+</metadata>

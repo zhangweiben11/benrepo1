@@ -1,0 +1,363 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getImpactedResources" path="/shared/Delta_DV/_scripts/Utilities/repository/getImpactedResources" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getImpactedResources:
+
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure walks the resource tree starting at the specified folder and
+    reports on any impacted resources
+
+&#x9;Input:
+&#x9;&#x9;startingFolder - The folder to traverse to look for impacted resources.  
+&#x9;&#x9;&#x9;Values: Any path to a folder
+&#x9;Output:
+&#x9;&#x9;result  - response containing the impacted resources (if any)
+    &#x9;&#x9;CURSOR (
+        &#x9;&#x9;ResourcePath  VARCHAR(4096), 
+        &#x9;&#x9;ResourceType  VARCHAR(40), 
+        &#x9;&#x9;ImpactLevel   VARCHAR(32768), 
+        &#x9;&#x9;ImpactMessage VARCHAR(32768)
+       &#x9;&#x9;)
+
+&#x9;Exceptions:
+        System.IllegalArgumentException - Thrown when the starting folder cannot be found.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.1&#x9;&#x9;11/15/2011&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+    2012.4&#x9;&#x9;10/25/2012      Calvin Goodrich&#x9;&#x9;5.2.0           Updated to pass resource type to getResourceListRecursive 
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="startingFolder" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="ResourcePath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="ResourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="Subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ImpactLevel">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="ImpactMessage">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getResourceListRecursive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getResourceImpactedXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getResource" direction="IN">
+        <datatype name="getResource" extendedName="{http://www.compositesw.com/services/system/admin/resource}getResource" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getResource" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getResource">
+          <schemaDatatype>
+            <datatype name="getResource" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getResourceRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT" nullable="false">
+        <datatype type="TABLE" refId="256">
+          <element name="impactLevel">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="impactMessage">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+    getImpactedResources:
+
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure walks the resource tree starting at the specified folder and
+    reports on any impacted resources
+
+&#x9;Input:
+&#x9;&#x9;startingFolder - The folder to traverse to look for impacted resources.  
+&#x9;&#x9;&#x9;Values: Any path to a folder
+&#x9;Output:
+&#x9;&#x9;result  - response containing the impacted resources (if any)
+    &#x9;&#x9;CURSOR (
+        &#x9;&#x9;ResourcePath  VARCHAR(4096), 
+        &#x9;&#x9;ResourceType  VARCHAR(40), 
+        &#x9;&#x9;ImpactLevel   VARCHAR(32768), 
+        &#x9;&#x9;ImpactMessage VARCHAR(32768)
+       &#x9;&#x9;)
+
+&#x9;Exceptions:
+        System.IllegalArgumentException - Thrown when the starting folder cannot be found.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.1&#x9;&#x9;11/15/2011&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+    2012.4&#x9;&#x9;10/25/2012      Calvin Goodrich&#x9;&#x9;5.2.0           Updated to pass resource type to getResourceListRecursive 
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getImpactedResources(
+    IN startingFolder &#x9;VARCHAR(4096),
+    OUT result PIPE (
+        ResourcePath &#x9;VARCHAR(4096),
+        ResourceType &#x9;VARCHAR,
+&#x9;&#x9;Subtype &#x9;&#x9;VARCHAR,
+        ImpactLevel &#x9;VARCHAR(32768),
+        ImpactMessage &#x9;VARCHAR(32768)
+    )
+)
+BEGIN
+    DECLARE PROC_NAME           CONSTANT VARCHAR DEFAULT &apos;repository/getImpactedResources&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+    DECLARE startingFolderExists BOOLEAN;
+    DECLARE myImpactLevel, myImpactMessage VARCHAR(32768);
+
+    -- sanity check the input folder
+    CALL /lib/resource/ResourceExists (startingFolder, &apos;CONTAINER&apos;, NULL, startingFolderExists);
+
+    IF (NOT startingFolderExists) THEN
+        RAISE System.IllegalArgumentException VALUE &apos;The folder &quot;&apos; || startingFolder || &apos;&quot; does not exist.&apos;;
+    END IF;
+
+    -- iterate through all the child resources of the starting folder
+    FOR r AS
+        SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getResourceListRecursive(startingFolder, &apos;CONTAINER&apos;)
+    DO
+        -- look up impacted state for the resource.
+        SELECT 
+            impactLevel,
+            impactMessage
+        INTO
+            myImpactLevel,
+            myImpactMessage
+        FROM      
+            /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getResourceImpactedXSLT(
+                &apos;&lt;ns1:getResource xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/resource&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;
+                    &lt;ns1:path&gt;&apos; || CAST(XMLTEXT(r.resPath) AS VARCHAR(2147483647)) || &apos;&lt;/ns1:path&gt;
+                    &lt;ns1:type&gt;&apos; || CAST(XMLTEXT(r.resType) AS VARCHAR(2147483647)) || &apos;&lt;/ns1:type&gt;
+                    &lt;ns1:detail&gt;SIMPLE&lt;/ns1:detail&gt;
+                &lt;/ns1:getResource&gt;&apos;
+            );
+
+        -- print out some debug info to the console
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+        &#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(PROC_NAME, debug, &apos;Resource path: &apos; || r.resPath || &apos;; type: &apos; || r.resType || &apos;; impact level: &apos; || myImpactLevel);
+&#x9;&#x9;END IF;
+
+        -- if the resource is impacted, include it in the output
+        IF (myImpactLevel &lt;&gt; &apos;NONE&apos;) THEN
+            INSERT INTO result VALUES (r.resPath, r.resType, r.subtype, myImpactLevel, myImpactMessage);
+        END IF;
+    END FOR;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">15/64</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

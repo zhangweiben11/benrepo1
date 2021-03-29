@@ -1,0 +1,70 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_MaxDedProcedureCD" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedProcedureCD" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[Removing the following input parameters
+   AND ProcedureCD.HIGHAGERANGE = &apos;{4}&apos;
+   AND COALESCE(ProcedureCD.SEXAGECODE, &apos;null1&apos;) = COALESCE(NULLIF(&apos;{5}&apos;, &apos;null&apos;), &apos;null1&apos;)
+   AND COALESCE(ProcedureCD.MAX_DED_NETWORKSALLOWED, &apos;null1&apos;) = COALESCE(NULLIF(&apos;{6}&apos;, &apos;null&apos;), &apos;null1&apos;)
+]]></annotation>
+  <parameters>
+    <parameter name="inBenefitPkgID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+    </parameter>
+    <parameter name="inMaxDedIND" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="3"/>
+    </parameter>
+    <parameter name="inCounterID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+    </parameter>
+    <parameter name="inTotalAMT" direction="IN" nullable="true">
+      <datatype name="DECIMAL" type="DECIMAL" maxDigits="27" maxFractionalDigits="2"/>
+    </parameter>
+    <parameter name="inTreatmentCD" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype type="TABLE" refId="256">
+        <element name="ProcedureCD">
+          <datatype name="VARCHAR" extendedName="varchar(11)" subType="DATASOURCE_TYPE" type="STRING" maxLength="11"/>
+        </element>
+        <element name="ProcedureCdDESC">
+          <datatype name="VARCHAR" extendedName="nvarchar(2000)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4000"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT DISTINCT 
+&#x9;   ProcedureCD.PROCEDURECODE ProcedureCD,
+&#x9;   ProcedureCD.PROCEDURECODEDESCRIPTION ProcedureCDDESC
+  FROM [BENEFITS_VIEWS].[dbo].[PBC_PKGDTL_CTRS_JSON_VW] ProcedureCD
+ WHERE ProcedureCD.BENEFITPACKAGEID = &apos;{0}&apos;
+   AND ProcedureCD.MAX_OR_DED = &apos;{1}&apos;
+   AND ProcedureCD.COUNTERID = &apos;{2}&apos;
+   AND ProcedureCD.TOTALAMOUNT = {3}
+   AND ProcedureCD.TREATMENTCODE = &apos;{4}&apos;
+   AND ProcedureCD.EFFDT &lt;= {5}
+   AND ProcedureCD.ENDDT &gt;= {5}
+   AND ProcedureCD.PROCEDURECODE IS NOT NULL
+ORDER BY ProcedureCD.PROCEDURECODE
+--OPTION (MAXDOP 16)</attribute>
+  <attribute name="creationDate" type="LONG">1594855410317</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1594855410317</attribute>
+</metadata>

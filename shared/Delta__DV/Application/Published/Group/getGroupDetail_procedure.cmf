@@ -1,0 +1,429 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getGroupDetail" path="/shared/Delta_DV/Application/Published/Group/getGroupDetail" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="group" direction="OUT" nullable="true">
+      <datatype name="group" referenceDefinitionSet="/shared/Delta_DV/Application/DefinitionSets/Group/defxAI_GroupDetail" referenceType="group" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="group">
+        <schemaDatatype>
+          <datatype name="group" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="groupNumber">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="groupName">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="groupSurrogateId">
+              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+            </element>
+            <element name="groupNetworkId" minOccurs="0">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="howEnabled">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="customerCareNumber" minOccurs="0">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="contact" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="code">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="title" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="firstName" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="middleName" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="lastName" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="nameSuffix" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="effectiveDate">
+                  <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                </element>
+                <element name="endDate">
+                  <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                </element>
+                <element name="whoTypeIndicator">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="role" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="categoryCd" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+              </datatype>
+            </element>
+            <element name="division" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                <element name="number">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="name">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="surrogateId">
+                  <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                </element>
+                <element name="prePaidGroup">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="programtype" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="selfFunded">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="basisOfPayment" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="assignmentOfBenefits">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="toaFlag">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="deltaCareOrthoMessageIndicator" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="businessLevel" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                    <element name="groupTypeIdentifier">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="healthCareContractHolderIdentifier">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="state">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="product">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="networkId">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="effectiveDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                    <element name="endDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="benefitPackage" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                    <element name="id">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="classCode" minOccurs="0">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="effectiveDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                    <element name="endDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="dependant" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                    <element name="child">
+                      <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                        <element name="coveredToAge">
+                          <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                        </element>
+                        <element name="terminationRule">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="effectiveDate">
+                          <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                        </element>
+                        <element name="endDate">
+                          <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                        </element>
+                      </datatype>
+                    </element>
+                    <element name="student">
+                      <reference refId="1793"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="internalDualCoverage" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                    <element name="excludedGroupId">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="excludeSubscriber">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="excludeSpouse">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="excludeDependant">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="audit" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                    <element name="code">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="effectiveDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                    <element name="endDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                    <element name="procedure" maxOccurs="2147483647" minOccurs="0">
+                      <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2561">
+                        <element name="code">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="suppressionIndicator">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                      </datatype>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="contact" maxOccurs="2147483647" minOccurs="0">
+                  <reference refId="513"/>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="pGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pEffectiveDate" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/DefinitionSets/Group/defxAI_GroupDetail" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/Group/Procedures/prcBl_GetGroupDetail" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Group/Procedures/prcBl_AllContactTypeByLevel" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Group/Procedures/prcBl_DivisionDependentAgeRule" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Group/Procedures/prcBl_DivisionDetail" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_CodeAuditOverride" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionBenefitPkg" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionBusinessLevel" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionCodeAudit" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionDualCoverageExcl" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1601596617924</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612913068320</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1601596617924</attribute>
+  <attribute name="transformModel" type="NULL"/>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare variable $pGroupID external;
+declare variable $pDivisionID external;
+declare variable $pEffectiveDate external;
+
+&lt;root xmlns:ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+  let $nodes := (
+    let $inputs := (if (empty($pGroupID)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pGroupID), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivisionID)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivisionID), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+    let $query := concat( &quot;select GroupNBR,GroupName,GroupSurrogateID,NetworkID,CustomerCareNumber,GroupSurrogateIDChar,GroupID,DivisionID from /shared/Delta_DV/Business/BusinessSemantic/&quot;&quot;Group&quot;&quot;/Procedures/prcBl_GetGroupDetail(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+    let $pGroup1 := composite:executeQuery($query)//result
+    for $pGroup in $pGroup1
+    return
+    element group {
+      element groupNumber {$pGroup/GroupNBR/text()},
+      element groupName {$pGroup/GroupName/text()},
+      element groupSurrogateId {$pGroup/GroupSurrogateID/text()},
+      element groupNetworkId {$pGroup/NetworkID/text()},
+      element howEnabled {},
+      element customerCareNumber {$pGroup/CustomerCareNumber/text()},
+      let $inputs := (if (empty($pGroup/GroupSurrogateIDChar/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pGroup/GroupSurrogateIDChar/text()), &quot;&apos;&quot;) cast as xs:string,&quot;&apos;GROUP&apos;&quot;,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+      let $query := concat( &quot;select ContactTypeCD,ContactTitle,FirstName,MiddleName,LastName,NameSuffix,EffDate,EndDate,ContactLevelIND,ContactRole,ContactCategoryCD from /shared/Delta_DV/Business/Logical/&quot;&quot;Group&quot;&quot;/Procedures/prcBl_AllContactTypeByLevel(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+      let $groupContact1 := composite:executeQuery($query)//result
+      for $groupContact in $groupContact1
+      return
+      element contact {
+        element code {$groupContact/ContactTypeCD/text()},
+        element title {$groupContact/ContactTitle/text()},
+        element firstName {$groupContact/FirstName/text()},
+        element middleName {$groupContact/MiddleName/text()},
+        element lastName {$groupContact/LastName/text()},
+        element nameSuffix {$groupContact/NameSuffix/text()},
+        element effectiveDate {$groupContact/EffDate/text()},
+        element endDate {$groupContact/EndDate/text()},
+        element whoTypeIndicator {$groupContact/ContactLevelIND/text()},
+        element role {$groupContact/ContactRole/text()},
+        element categoryCd {$groupContact/ContactCategoryCD/text()}
+      },
+      let $inputs := (if (empty($pGroup/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pGroup/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pGroup/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pGroup/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+      let $query := concat( &quot;select GroupSurrogateIDChar,GroupID,DivisionID,DivisionNBR,DivisionName,DivisionSurrogateID,PrePaidGroupIND,ProgramType,SelfFundedIND,BasisOfPayment,BenefitAssignmentIND,ToaIND,DeltaCareOrthoMsgIND,DivisionSurrogateIDChar from /shared/Delta_DV/Business/Logical/&quot;&quot;Group&quot;&quot;/Procedures/prcBl_DivisionDetail(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+      let $pDivision1 := composite:executeQuery($query)//result
+      for $pDivision in $pDivision1
+      return
+      element division {
+        element number {$pDivision/DivisionNBR/text()},
+        element name {$pDivision/DivisionName/text()},
+        element surrogateId {$pDivision/DivisionSurrogateID/text()},
+        element prePaidGroup {$pDivision/PrePaidGroupIND/text()},
+        element programtype {$pDivision/ProgramType/text()},
+        element selfFunded {$pDivision/SelfFundedIND/text()},
+        element basisOfPayment {$pDivision/BasisOfPayment/text()},
+        element assignmentOfBenefits {$pDivision/BenefitAssignmentIND/text()},
+        element toaFlag {$pDivision/ToaIND/text()},
+        element deltaCareOrthoMessageIndicator {$pDivision/DeltaCareOrthoMsgIND/text()},
+        let $inputs := (if (empty($pDivision/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivision/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select NetworkID,EffDate,EndDate,GroupID,DivisionID,GroupTypeID,ContractHolderID,State,Product from /shared/Delta_DV/Physical/Formatting/PackagedQueries/&quot;&quot;Group&quot;&quot;/pkgPl_DivisionBusinessLevel(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        let $pBusinessLevel1 := composite:executeQuery($query)//result
+        for $pBusinessLevel in $pBusinessLevel1
+        return
+        element businessLevel {
+          element groupTypeIdentifier {$pBusinessLevel/GroupTypeID/text()},
+          element healthCareContractHolderIdentifier {$pBusinessLevel/ContractHolderID/text()},
+          element state {$pBusinessLevel/State/text()},
+          element product {$pBusinessLevel/Product/text()},
+          element networkId {$pBusinessLevel/NetworkID/text()},
+          element effectiveDate {$pBusinessLevel/EffDate/text()},
+          element endDate {$pBusinessLevel/EndDate/text()}
+        },
+        let $inputs := (if (empty($pDivision/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivision/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select EffDate,EndDate,GroupID,DivisionID,BenefitPkgID,MBRClassCD from /shared/Delta_DV/Physical/Formatting/PackagedQueries/&quot;&quot;Group&quot;&quot;/pkgPl_DivisionBenefitPkg(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        let $pBenefitPkg1 := composite:executeQuery($query)//result
+        for $pBenefitPkg in $pBenefitPkg1
+        return
+        element benefitPackage {
+          element id {$pBenefitPkg/BenefitPkgID/text()},
+          element classCode {$pBenefitPkg/MBRClassCD/text()},
+          element effectiveDate {$pBenefitPkg/EffDate/text()},
+          element endDate {$pBenefitPkg/EndDate/text()}
+        },
+        let $nodes := (
+          let $inputs := (if (empty($pDivision/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivision/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivision/GroupSurrogateIDChar/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/GroupSurrogateIDChar/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivision/DivisionSurrogateIDChar/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/DivisionSurrogateIDChar/text()), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select EffDate,EndDate,GroupID,DivisionID,State,ChildAge,ChildTermRule,StudentAge,StudentTermRule from /shared/Delta_DV/Business/Logical/&quot;&quot;Group&quot;&quot;/Procedures/prcBl_DivisionDependentAgeRule(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          for $pDependantAge in composite:executeQuery($query)//result
+          return
+          element dependant {
+            let $nodes := (
+              element child {
+                element coveredToAge {$pDependantAge/ChildAge/text()},
+                element terminationRule {$pDependantAge/ChildTermRule/text()},
+                element effectiveDate {$pDependantAge/EffDate/text()},
+                element endDate {$pDependantAge/EndDate/text()}
+              }
+            )
+            return
+            $nodes[1],
+            let $nodes := (
+              element student {
+                element coveredToAge {$pDependantAge/StudentAge/text()},
+                element terminationRule {$pDependantAge/StudentTermRule/text()},
+                element effectiveDate {$pDependantAge/EffDate/text()},
+                element endDate {$pDependantAge/EndDate/text()}
+              }
+            )
+            return
+            $nodes[1]
+          }
+        )
+        return
+        $nodes[1],
+        let $nodes := (
+          let $inputs := (if (empty($pDivision/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivision/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select EffDate,EndDate,GroupID,DivisionID,ExcludedGroupID,ExcludedSubscriberIND,ExcludedSpouseIND,ExcludedDependantIND from /shared/Delta_DV/Physical/Formatting/PackagedQueries/&quot;&quot;Group&quot;&quot;/pkgPl_DivisionDualCoverageExcl(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          for $pDualCoverage in composite:executeQuery($query)//result
+          return
+          element internalDualCoverage {
+            element excludedGroupId {$pDualCoverage/ExcludedGroupID/text()},
+            element excludeSubscriber {$pDualCoverage/ExcludedSubscriberIND/text()},
+            element excludeSpouse {$pDualCoverage/ExcludedSpouseIND/text()},
+            element excludeDependant {$pDualCoverage/ExcludedDependantIND/text()}
+          }
+        )
+        return
+        $nodes[1],
+        let $inputs := (if (empty($pDivision/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivision/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select EffDate,EndDate,GroupID,DivisionID,CodeAuditCD from /shared/Delta_DV/Physical/Formatting/PackagedQueries/&quot;&quot;Group&quot;&quot;/pkgPl_DivisionCodeAudit(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        let $pCodeAudit1 := composite:executeQuery($query)//result
+        for $pCodeAudit in $pCodeAudit1
+        return
+        element audit {
+          element code {$pCodeAudit/CodeAuditCD/text()},
+          element effectiveDate {$pCodeAudit/EffDate/text()},
+          element endDate {$pCodeAudit/EndDate/text()},
+          let $inputs := (if (empty($pCodeAudit/CodeAuditCD/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pCodeAudit/CodeAuditCD/text()), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select CodeAuditCD,ProcedureCD,SuppressionIND from /shared/Delta_DV/Physical/Formatting/PackagedQueries/&quot;&quot;Group&quot;&quot;/pkgPl_CodeAuditOverride(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          let $CodeAuditOverride1 := composite:executeQuery($query)//result
+          for $CodeAuditOverride in $CodeAuditOverride1
+          return
+          element procedure {
+            element code {$CodeAuditOverride/ProcedureCD/text()},
+            element suppressionIndicator {$CodeAuditOverride/SuppressionIND/text()}
+          }
+        },
+        let $inputs := (if (empty($pDivision/DivisionSurrogateIDChar/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivision/DivisionSurrogateIDChar/text()), &quot;&apos;&quot;) cast as xs:string,&quot;&apos;DIVISION&apos;&quot;,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select ContactTypeCD,ContactTitle,FirstName,MiddleName,LastName,NameSuffix,EffDate,EndDate,ContactLevelIND,ContactRole,ContactCategoryCD from /shared/Delta_DV/Business/Logical/&quot;&quot;Group&quot;&quot;/Procedures/prcBl_AllContactTypeByLevel(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        let $DivisionContact1 := composite:executeQuery($query)//result
+        for $DivisionContact in $DivisionContact1
+        return
+        element contact {
+          element code {$DivisionContact/ContactTypeCD/text()},
+          element title {$DivisionContact/ContactTitle/text()},
+          element firstName {$DivisionContact/FirstName/text()},
+          element middleName {$DivisionContact/MiddleName/text()},
+          element lastName {$DivisionContact/LastName/text()},
+          element nameSuffix {$DivisionContact/NameSuffix/text()},
+          element effectiveDate {$DivisionContact/EffDate/text()},
+          element endDate {$DivisionContact/EndDate/text()},
+          element whoTypeIndicator {$DivisionContact/ContactLevelIND/text()},
+          element role {$DivisionContact/ContactRole/text()},
+          element categoryCd {$DivisionContact/ContactCategoryCD/text()}
+        }
+      }
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/group</attribute>
+  <attribute name="xqueryModel" type="BYTE_ARRAY">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</attribute>
+</metadata>

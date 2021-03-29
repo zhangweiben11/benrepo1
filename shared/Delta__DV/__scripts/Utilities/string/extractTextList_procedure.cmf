@@ -1,0 +1,752 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="extractTextList" path="/shared/Delta_DV/_scripts/Utilities/string/extractTextList" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[extractTextList:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;extractTextList - The extractTextList is used to extract a separated list of values containing
+&#x9;&#x9;embedded separators within double quotes, single quotes.  The result is returned as a cursor based on
+&#x9;&#x9;the boundaries of the the qualifiers: double quotes, single quotes or paired parenthesis.  The separator value
+&#x9;&#x9;is preserved within the qualifier if the flag for that qualifier is set to 1 (true).
+
+&#x9;Input:
+&#x9;&#x9;textList - a separated list of items which may or may not contain double quoted lists, single quoted lists or
+&#x9;&#x9;&#x9;&#x9;&#x9;lists containing left/right parenthesis lists that are to be separated based on the passed in separator.
+&#x9;&#x9;separator - The separator value (typically a comma) that will be used to define the boundary of text expressions.
+&#x9;&#x9;&#x9;&#x9;&#x9;Becuase this uses regex, any special separators need to be escaped with a \ character.  
+&#x9;&#x9;&#x9;&#x9;&#x9;It is not necessary to escape a comma separator in regex.
+&#x9;&#x9;&#x9;&#x9;&#x9;The following are potential use cases and are shown within brackets [] to better show the use of spaces:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[\ ] - this is used to split text on a space such as finding all the words in a sentence.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[\\] - this is a backslash separator escaped with a backslash
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[\^] - this is a caret separator escaped with a backslash
+&#x9;&#x9;preserveDoubleQuotes - 1 or 0/null (default).  Indicates whether to preserve the context of commas within the boundaries
+&#x9;&#x9;&#x9;&#x9;&#x9;of a double quoted qualifier string.
+&#x9;&#x9;preserveSingleQuotes - 1 or 0/null (default).  Indicates whether to preserve the context of commas within the boundaries
+&#x9;&#x9;&#x9;&#x9;&#x9;of a single quoted qualifier string.
+&#x9;&#x9;preserveParenthesis - 1 or 0/null (default).  Indicates whether to preserve the context of commas within the boundaries
+&#x9;&#x9;&#x9;&#x9;&#x9;of left and right parenthesis qualifier pairs.
+&#x9;&#x9;preserveQualifier - 1/null (default) or 0.  In this case, the default is to preserve the qualifer value on output.  
+&#x9;&#x9;&#x9;&#x9;&#x9;The qualifiers may be double quotes, single quotes or left and right parenthesis.
+&#x9;&#x9;&#x9;&#x9;&#x9;if set to 0 (do not preserve), the qualifiers are only remmoved if they exist as pairs in the first and last characters
+&#x9;&#x9;&#x9;&#x9;&#x9;   and the length of the text being returned is at least 2 characters.
+&#x9;&#x9;&#x9;&#x9;&#x9;Otherwise if the above conditions are not met, any attempt to remove embedded qualifiers will not be completed.  
+&#x9;&#x9;&#x9;&#x9;&#x9;The assumption is that qualifiers exist at the boundaries of the comma separator such as &quot;orders,customers&quot;, orders which would yield:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;orders,customers&quot;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;&#x9;This example would not remove the qualifier: text &quot;more text&quot; text,text
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;text &quot;more text&quot; text
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;text
+&#x9;&#x9;trimResults&#x9;- 1 or 0/null (default) - if set to 1, then trim the results of any white space otherwise do not.
+&#x9;Output:
+&#x9;&#x9;result - cursor of textExpression based on the passed in separator and how the preserve qualifier flags are set
+
+&#x9;Exceptions: ex - cannot have a null or empty separator
+
+&#x9;Examples:
+&#x9;&#x9;1. &#x9;preserveDoubleQuotes=1
+&#x9;&#x9;&#x9;preserveQualifier=null
+&#x9;&#x9;&#x9;trimResults=null
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;&quot;orders,customers&quot;,orders,customers
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;&quot;orders,customers&quot;
+&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;customers
+
+&#x9;&#x9;2. &#x9;preserveSingleQuotes=1
+&#x9;&#x9;&#x9;preserveQualifier=0
+&#x9;&#x9;&#x9;trimResults=0
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;&apos;orders,customers&apos;,orders,customers
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;orders,customers
+&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;customers
+
+&#x9;&#x9;3. &#x9;preserveParenthesiss=1
+&#x9;&#x9;&#x9;preserveQualifier=1
+&#x9;&#x9;&#x9;trimResults=1
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;(orders,customers),    orders,      (customers)
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;(orders,customers)
+&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;(customers)
+
+&#x9;&#x9;4. a more sophisticated example would be a list of derived columns from a sql statement:
+&#x9;&#x9;&#x9;preserveDoubleQuotes=1
+&#x9;&#x9;&#x9;preserveSingleQuotes=1
+&#x9;&#x9;&#x9;preserveParenthesiss=1
+&#x9;&#x9;&#x9;preserveQualifier=1
+&#x9;&#x9;&#x9;trimResults=0
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;Customers.*, 
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City,
+&#x9;&#x9;&#x9;&#x9;LOWER(ship_State) as shipState,
+&#x9;&#x9;&#x9;&#x9;SUBSTRING(ship_State,1,1) as stateChar1,
+&#x9;&#x9;&#x9;&#x9;RPAD(&apos; &apos;,ship_State ,4)||&apos;, &apos;||zip as shipStateZip,
+&#x9;&#x9;&#x9;&#x9;extract(year from INTERVAL &apos;499-11&apos; YEAR(3) TO MONTH) mon,
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City||&apos;&apos;, &apos;&apos;||RPAD(ship_State,&apos;&apos; &apos;&apos;,10)||&apos;&apos;, &apos;&apos;||Zip &quot;textWithEmbedded,Commas,&quot; 
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;Customers.*
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City
+&#x9;&#x9;&#x9;&#x9;LOWER(ship_State) as shipState
+&#x9;&#x9;&#x9;&#x9;SUBSTRING(ship_State,1,1) as stateChar1
+&#x9;&#x9;&#x9;&#x9;RPAD(&apos; &apos;,ship_State ,4)||&apos;, &apos;||zip as shipStateZip
+&#x9;&#x9;&#x9;&#x9;extract(year from INTERVAL &apos;499-11&apos; YEAR(3) TO MONTH) mon
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City||&apos;&apos;
+&#x9;&#x9;&#x9;&#x9;&apos;&apos;||RPAD(ship_State,&apos;&apos; &apos;&apos;,10)||&apos;&apos;
+&#x9;&#x9;&#x9;&#x9;&apos;&apos;||Zip &quot;textWithEmbedded,Commas,&quot; 
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.3&#x9;&#x9;05/22/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new for Best Practices 7.1
+&#x9;2017.400&#x9;05/24/2017&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Increased &quot;exprLen&quot; and &quot;lineLen&quot; for Regex from 32767 to 1000000 to handle larger strings.
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed the call to extractDelimitedText and put the code directly in-line to make it more efficient.
+&#x9;2019.300&#x9;07/26/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Made more efficient by checking the server attribute &quot;Ignore Trailing Spaces&quot; to determine if INSTR can be used or not.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="textList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="separator" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="preserveDoubleQuotes" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="preserveSingleQuotes" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="preserveParenthesis" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="preserveQualifier" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="trimResults" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="textExpression">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/databases/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/server/getServerAttribute" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="attributePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="keyValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/TextUtils/RegexReplace" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="Input Text" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="Regular Expression" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="Replacement Text" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="Occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*&#x9;extractTextList:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;extractTextList - The extractTextList is used to extract a separated list of values containing
+&#x9;&#x9;embedded separators within double quotes, single quotes.  The result is returned as a cursor based on
+&#x9;&#x9;the boundaries of the the qualifiers: double quotes, single quotes or paired parenthesis.  The separator value
+&#x9;&#x9;is preserved within the qualifier IF the flag for that qualifier is set to 1 (true).
+
+&#x9;Input:
+&#x9;&#x9;textList - a separated list of items which may or may not contain double quoted lists, single quoted lists or
+&#x9;&#x9;&#x9;&#x9;&#x9;lists containing left/right parenthesis lists that are to be separated based on the passed in separator.
+&#x9;&#x9;separator - The separator value (typically a comma) that will be used to define the boundary of text expressions.
+&#x9;&#x9;&#x9;&#x9;&#x9;Becuase this uses regex, any special separators need to be escaped with a \ character.  
+&#x9;&#x9;&#x9;&#x9;&#x9;It is not necessary to escape a comma separator in regex.
+&#x9;&#x9;&#x9;&#x9;&#x9;The following are potential use cases and are shown within brackets [] to better show the use of spaces:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[\ ] - this is used to split text on a space such as finding all the words in a sentence.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[\\] - this is a backslash separator escaped with a backslash
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[\^] - this is a caret separator escaped with a backslash
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[\|] - this is a pipe separator escaped with a backslash
+&#x9;&#x9;preserveDoubleQuotes - 1 or 0/null (default).  Indicates whether to preserve the context of commas within the boundaries
+&#x9;&#x9;&#x9;&#x9;&#x9;of a double quoted qualifier string.
+&#x9;&#x9;preserveSingleQuotes - 1 or 0/null (default).  Indicates whether to preserve the context of commas within the boundaries
+&#x9;&#x9;&#x9;&#x9;&#x9;of a single quoted qualifier string.
+&#x9;&#x9;preserveParenthesis - 1 or 0/null (default).  Indicates whether to preserve the context of commas within the boundaries
+&#x9;&#x9;&#x9;&#x9;&#x9;of left and right parenthesis qualifier pairs.
+&#x9;&#x9;preserveQualifier - 1/null (default) or 0.  In this case, the default is to preserve the qualifer value on output.  
+&#x9;&#x9;&#x9;&#x9;&#x9;The qualifiers may be double quotes, single quotes or left and right parenthesis.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF SET to 0 (do not preserve), the qualifiers are only remmoved IF they exist as pairs in the first and last characters
+&#x9;&#x9;&#x9;&#x9;&#x9;   and the length of the text being returned is at least 2 characters.
+&#x9;&#x9;&#x9;&#x9;&#x9;Otherwise IF the above conditions are not met, any attempt to remove embedded qualifiers will not be completed.  
+&#x9;&#x9;&#x9;&#x9;&#x9;The assumption is that qualifiers exist at the boundaries of the comma separator such as &quot;orders,customers&quot;, orders which would yield:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;orders,customers&quot;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;&#x9;This example would not remove the qualifier: text &quot;more text&quot; text,text
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;text &quot;more text&quot; text
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;text
+&#x9;&#x9;trimResults&#x9;- 1 or 0/null (default) - IF SET to 1, THEN trim the results of any white space otherwise do not.
+&#x9;Output:
+&#x9;&#x9;result - cursor of textExpression based on the passed in separator and how the preserve qualifier flags are set
+
+&#x9;Exceptions: ex - cannot have a null or empty separator
+
+&#x9;Examples:
+&#x9;&#x9;1. &#x9;preserveDoubleQuotes=1
+&#x9;&#x9;&#x9;preserveQualifier=null
+&#x9;&#x9;&#x9;trimResults=null
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;&quot;orders,customers&quot;,orders,customers
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;&quot;orders,customers&quot;
+&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;customers
+
+&#x9;&#x9;2. &#x9;preserveSingleQuotes=1
+&#x9;&#x9;&#x9;preserveQualifier=0
+&#x9;&#x9;&#x9;trimResults=0
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;&apos;orders,customers&apos;,orders,customers
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;orders,customers
+&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;customers
+
+&#x9;&#x9;3. &#x9;preserveParenthesiss=1
+&#x9;&#x9;&#x9;preserveQualifier=1
+&#x9;&#x9;&#x9;trimResults=1
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;(orders,customers),    orders,      (customers)
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;(orders,customers)
+&#x9;&#x9;&#x9;&#x9;orders
+&#x9;&#x9;&#x9;&#x9;(customers)
+
+&#x9;&#x9;4. a more sophisticated example would be a list of derived columns from a sql statement:
+&#x9;&#x9;&#x9;preserveDoubleQuotes=1
+&#x9;&#x9;&#x9;preserveSingleQuotes=1
+&#x9;&#x9;&#x9;preserveParenthesiss=1
+&#x9;&#x9;&#x9;preserveQualifier=1
+&#x9;&#x9;&#x9;trimResults=0
+&#x9;&#x9;&#x9;trimResults=1
+&#x9;&#x9;&#x9;textList:
+&#x9;&#x9;&#x9;&#x9;Customers.*, 
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City,
+&#x9;&#x9;&#x9;&#x9;LOWER(ship_State) as shipState,
+&#x9;&#x9;&#x9;&#x9;SUBSTRING(ship_State,1,1) as stateChar1,
+&#x9;&#x9;&#x9;&#x9;RPAD(&apos;&apos; &apos;&apos;,ship_State ,4)||&apos;&apos;, &apos;&apos;||zip as shipStateZip,
+&#x9;&#x9;&#x9;&#x9;extract(year from INTERVAL &apos;&apos;499-11&apos;&apos; YEAR(3) TO MONTH) mon,
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City||&apos;&apos;&apos;&apos;, &apos;&apos;&apos;&apos;||RPAD(ship_State,&apos;&apos; &apos;&apos;,10)||&apos;&apos;&apos;&apos;, &apos;&apos;&apos;&apos;||Zip &quot;textWithEmbedded,Commas,&quot;&apos;;
+&#x9;&#x9;&#x9;Result: --&gt;
+&#x9;&#x9;&#x9;&#x9;Customers.*
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City
+&#x9;&#x9;&#x9;&#x9;LOWER(ship_State) as shipState
+&#x9;&#x9;&#x9;&#x9;SUBSTRING(ship_State,1,1) as stateChar1
+&#x9;&#x9;&#x9;&#x9;RPAD(&apos; &apos;,ship_State ,4)||&apos;, &apos;||zip as shipStateZip
+&#x9;&#x9;&#x9;&#x9;extract(year from INTERVAL &apos;499-11&apos; YEAR(3) TO MONTH) mon
+&#x9;&#x9;&#x9;&#x9;Orders.Ship_City||&apos;&apos;
+&#x9;&#x9;&#x9;&#x9;&apos;&apos;||RPAD(ship_State,&apos; &apos;,10)||&apos;&apos;
+&#x9;&#x9;&#x9;&#x9;&apos;&apos;||Zip &quot;textWithEmbedded,Commas,&quot; 
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.3&#x9;&#x9;05/22/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new for Best Practices 7.1
+&#x9;2017.400&#x9;05/24/2017&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Increased &quot;exprLen&quot; and &quot;lineLen&quot; for Regex from 32767 to 1000000 to handle larger strings.
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed the call to extractDelimitedText and put the code directly in-line to make it more efficient.
+&#x9;2019.300&#x9;07/26/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Made more efficient by checking the server attribute &quot;Ignore Trailing Spaces&quot; to determine if INSTR can be used or not.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE extractTextList(
+&#x9;IN textList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN separator&#x9;&#x9;&#x9;VARCHAR,
+&#x9;IN preserveDoubleQuotes&#x9;BIT,
+&#x9;IN preserveSingleQuotes&#x9;BIT,
+&#x9;IN preserveParenthesis&#x9;BIT,
+&#x9;IN preserveQualifier&#x9;BIT,
+&#x9;IN trimResults&#x9;&#x9;&#x9;BIT,
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;PIPE(textExpression LONGVARCHAR)
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;extractTextList&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE debugPrintSize&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 63900;
+&#x9;DECLARE igrnoreTrailingSpaces&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE igrnoreTrailingSpacesAttribute&#x9;VARCHAR DEFAULT &apos;/server/sql/language/ignoreTrailingSpaces&apos;;
+&#x9;DECLARE resultAttr&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE exprLen&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1000000;
+&#x9;DECLARE lineLen&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1000000;
+&#x9;DECLARE parsedTextList &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT textList;
+&#x9;DECLARE preserveQualifier_&#x9;&#x9;&#x9;&#x9;BIT DEFAULT preserveQualifier;
+&#x9;DECLARE textExpression&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE delimiter &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT separator;
+&#x9;DECLARE delimiterRegex&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT separator;
+&#x9;DECLARE encodedSep&#x9; &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;_000sep&apos;;
+&#x9;DECLARE regexReplacePatternDoubleQuote &#x9;VARCHAR; 
+&#x9;DECLARE regexReplacePatternSingleQuote &#x9;VARCHAR; 
+&#x9;DECLARE regexReplacePatternParentheses&#x9;VARCHAR; 
+&#x9;DECLARE qualifier&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;&quot;&apos;&apos;()&apos;; -- left and right qualifying characters
+&#x9;DECLARE j&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pos1,pos2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE trailingSpaceInDelim&#x9;&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE moreToDo1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT true;
+&#x9;DECLARE object&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE objectList1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE expression1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE delimLen&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE start1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE lastpos1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE poslen&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE starttime&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Validate the separator
+&#x9;IF (delimiter is null or LENGTH(delimiter||&apos;*&apos;)-1 = 0) THEN
+&#x9;&#x9;raise ex value &apos;The separator cannot be null or empty.&apos;;
+&#x9;END IF;
+&#x9;IF (POSITION(&apos;&apos;&apos;&apos; IN delimiter) &gt; 0) THEN
+&#x9;&#x9;raise ex value &apos;The separator singe quote &apos;&apos; cannot be used.&apos;;
+&#x9;END IF;
+&#x9;IF (POSITION(&apos;&quot;&apos; IN delimiter) &gt; 0) THEN
+&#x9;&#x9;raise ex value &apos;The separator double quote &quot; cannot be used.&apos;;
+&#x9;END IF;
+&#x9;IF (POSITION(&apos;(&apos; IN delimiter) &gt; 0) THEN
+&#x9;&#x9;raise ex value &apos;The separator left parenthesis ( cannot be used.&apos;;
+&#x9;END IF;
+&#x9;IF (POSITION(&apos;)&apos; IN delimiter) &gt; 0) THEN
+&#x9;&#x9;raise ex value &apos;The separator right parenthesis ) cannot be used.&apos;;
+&#x9;END IF;
+
+&#x9;-- Set the default qualifier value
+&#x9;IF (preserveQualifier_ is null) THEN
+&#x9;&#x9;SET preserveQualifier_ = 1;
+&#x9;END IF;
+&#x9;-- Make sure there is an escape \ in front of the separator
+&#x9;IF (delimiterRegex &lt;&gt; &apos;\\&apos; OR SUBSTRING(delimiterRegex,1,1) &lt;&gt; &apos;\&apos;) THEN
+&#x9;&#x9;SET delimiterRegex = &apos;\&apos;||delimiterRegex;
+&#x9;END IF;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL print(moduleName||&apos; : ------------------- Begin Extracting Text List -------------------&apos;);
+&#x9;&#x9;CALL print(moduleName||&apos; : original parsedTextList=&apos;||SUBSTRING(NVL(parsedTextList,&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;CALL print(moduleName||&apos;&apos;);
+&#x9;&#x9;CALL print(moduleName||&apos; : delimiter=[&apos;||delimiter||&apos;]&apos;);
+&#x9;&#x9;CALL print(moduleName||&apos; : Regex delimiter=[&apos;||delimiterRegex||&apos;]&apos;);
+&#x9;END IF;
+
+&#x9;IF (preserveParenthesis is not null and preserveParenthesis = 1) THEN
+--&#x9;1) Replace commas inside left and right parentheses
+--&#x9;&#x9;Take into account that commas may appear inside functions delimited by () as RPAD(UPPER(SUBSTRING(Phone_Number,1,5)),7,&apos;&apos;_&apos;&apos;) AreaCode, col2
+--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   ORIGINAL=&apos;,(?=[^()]{0,1024}\))&apos;;
+&#x9;&#x9;SET regexReplacePatternParentheses = delimiterRegex||&apos;(?=[^()]{0,&apos;||exprLen||&apos;}\))&apos;;
+
+--&#x9;&#x9;&#x9;Regex: ,(?=[^()]{0,1024}\))
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/TextUtils/RegexReplace(parsedTextList, regexReplacePatternParentheses, encodedSep, 0, parsedTextList);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos; : regexReplacePatternParentheses=&apos;||regexReplacePatternParentheses);
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos; : parsedTextList=&apos;||SUBSTRING(NVL(parsedTextList,&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos;&apos;);
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;IF (preserveDoubleQuotes is not null and preserveDoubleQuotes = 1) THEN
+--&#x9;2) Replace commas inside double quotes
+--&#x9;&#x9;Take into account that commas may appear inside double quoted column names such as &quot;COL,UMN,NAME&quot;, col2
+--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   ORIGINAL=&apos;,(?=[^&quot;]{0,1024}&quot;(?:[^&quot;\r\n]{0,1024}&quot;[^&quot;]{0,1024}&quot;){0,2048}[^&quot;\r\n]{0,2048}$)&apos;;
+&#x9;&#x9;SET regexReplacePatternDoubleQuote = delimiterRegex||&apos;(?=[^&quot;]{0,&apos;||exprLen||&apos;}&quot;(?:[^&quot;\r\n]{0,&apos;||exprLen||&apos;}&quot;[^&quot;]{0,&apos;||exprLen||&apos;}&quot;){0,&apos;||lineLen||&apos;}[^&quot;\r\n]{0,&apos;||lineLen||&apos;}$)&apos;;
+
+--&#x9;&#x9;&#x9;Regex: ,(?=[^&quot;]{0,255}&quot;(?:[^&quot;\r\n]{0,255}&quot;[^&quot;]{0,255}&quot;){0,1024}[^&quot;\r\n]{0,1024}$)
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/TextUtils/RegexReplace(parsedTextList, regexReplacePatternDoubleQuote, encodedSep, 0, parsedTextList);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos; : regexReplacePatternDoubleQuote=&apos;||regexReplacePatternDoubleQuote);
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos; : parsedTextList=&apos;||SUBSTRING(NVL(parsedTextList,&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos;&apos;);
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;IF (preserveSingleQuotes is not null and preserveSingleQuotes = 1) THEN
+--&#x9;3) Replace commas inside single quotes
+--&#x9;&#x9;Take into account that commas may appear inside single quoted values such as CITY||&apos;, &apos;||STATE ADDRESS, col2
+--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   ORIGINAL=&apos;,(?=[^&apos;&apos;]{0,1024}&apos;&apos;(?:[^&apos;&apos;\r\n]{0,1024}&apos;&apos;[^&apos;&apos;]{0,1024}&apos;&apos;){0,2048}[^&apos;&apos;\r\n]{0,2048}$)&apos;;
+&#x9;&#x9;SET regexReplacePatternSingleQuote = delimiterRegex||&apos;(?=[^&apos;&apos;]{0,&apos;||exprLen||&apos;}&apos;&apos;(?:[^&apos;&apos;\r\n]{0,&apos;||exprLen||&apos;}&apos;&apos;[^&apos;&apos;]{0,&apos;||exprLen||&apos;}&apos;&apos;){0,&apos;||lineLen||&apos;}[^&apos;&apos;\r\n]{0,&apos;||lineLen||&apos;}$)&apos;;
+
+--&#x9;&#x9;&#x9;Regex: ,(?=[^&apos;&apos;]{0,255}&apos;&apos;(?:[^&apos;&apos;\r\n]{0,255}&apos;&apos;[^&apos;&apos;]{0,255}&apos;&apos;){0,1024}[^&apos;&apos;\r\n]{0,1024}$)
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/TextUtils/RegexReplace(parsedTextList, regexReplacePatternSingleQuote, encodedSep, 0, parsedTextList);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos; : regexReplacePatternSingleQuote=&apos;||regexReplacePatternSingleQuote);
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos; : parsedTextList=&apos;||SUBSTRING(NVL(parsedTextList,&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos;&apos;);
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+
+&#x9;-- Determine the server attribute trailing spaces setting
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/server/getServerAttribute(igrnoreTrailingSpacesAttribute, resultAttr);
+&#x9;IF (resultAttr IS NULL) THEN
+&#x9;&#x9;SET igrnoreTrailingSpaces = true;
+&#x9;END IF;
+&#x9;IF (LOWER(resultAttr) = &apos;true&apos; OR LOWER(resultAttr) = &apos;false&apos;) THEN
+&#x9;&#x9;SET igrnoreTrailingSpaces = CAST(resultAttr AS BOOLEAN);
+&#x9;ELSE
+&#x9;&#x9;SET igrnoreTrailingSpaces = &apos;true&apos;;
+&#x9;END IF;
+
+&#x9;-- The space character can be a problem if it is used as a delimiter, because the
+&#x9;-- Query Engine&apos;s &quot;Ignore Trailing Spaces&quot; setting can cause unexpected consequences with the LENGTH() function.
+&#x9;-- To work around this, we always append a character to the parameter used in LENGTH().
+&#x9;SET delimLen = length(delimiter||&apos;*&apos;)-1;
+&#x9;-- If the Query Engine&apos;s &quot;Ignore Trailing Spaces&quot; is &apos;true&apos; then it is vital to treat the trailing space differently in searches.
+&#x9;IF (igrnoreTrailingSpaces AND SUBSTRING(delimiter, delimLen, 1) = CHR(20)) THEN
+&#x9;&#x9;SET trailingSpaceInDelim = true;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL print(moduleName||&apos; : delimLen=&apos;||CAST(delimLen AS VARCHAR)||&apos;  delimiter=[&apos;||delimiter||&apos;]&apos;);
+&#x9;&#x9;CALL print(moduleName||&apos; : trailingSpaceInDelim=&apos;||CAST(trailingSpaceInDelim AS VARCHAR));
+&#x9;&#x9;CALL print(moduleName||&apos; : Server Attribute: igrnoreTrailingSpaces=&apos;||CAST(igrnoreTrailingSpaces AS VARCHAR));
+&#x9;END IF;
+
+--&#x9;4) Parse the text epxression for delimiter to extract a list of text items if applicable
+&#x9;IF (parsedTextList IS NOT NULL AND LENGTH(parsedTextList||&apos;*&apos;)-1 &gt; 0 AND delimiter IS NOT NULL AND delimLen &gt; 0) THEN
+&#x9;&#x9;-- Extract the object from the input string
+&#x9;&#x9;SET objectList1 = parsedTextList;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : objectList1 Len=[&apos;||CAST(LENGTH(objectList1||&apos;*&apos;)-1 AS VARCHAR)||&apos;]&apos;);
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET moreToDo1 = true;
+&#x9;&#x9;SET start1 = 1;
+&#x9;&#x9;SET lastpos1 = 0;
+&#x9;&#x9;SET j = 0;
+&#x9;&#x9;WHILE (moreToDo1) DO
+&#x9;&#x9;&#x9;SET j = j + 1;
+&#x9;&#x9;&#x9;SET object = null;
+&#x9;&#x9;&#x9;IF (j = 1) THEN
+&#x9;&#x9;&#x9;&#x9;IF (trailingSpaceInDelim) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SELECT {OPTION IGNORE_TRAILING_SPACES=&quot;FALSE&quot;} INSTR(objectList1, delimiter, start1) INTO pos1 FROM /services/databases/system/DUAL;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(objectList1, delimiter, start1);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET poslen = pos1-1;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (poslen &lt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET poslen = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(objectList1, 1, poslen);
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(TRIM(objectList1)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET object = objectList1;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET moreToDo1 = false;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET lastpos1 = pos1;
+&#x9;&#x9;&#x9;&#x9;SET start1 = lastpos1+delimLen;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;IF (trailingSpaceInDelim) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SELECT {OPTION IGNORE_TRAILING_SPACES=&quot;FALSE&quot;} INSTR(objectList1, delimiter, start1) INTO pos2 FROM /services/databases/system/DUAL;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(objectList1, delimiter, start1);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (lastpos1 &gt; 0 and pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET poslen = pos2-lastpos1-delimLen;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (poslen &lt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET poslen = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(objectList1, lastpos1+delimLen, poslen);
+&#x9;&#x9;&#x9;&#x9;ELSEIF (lastpos1 &gt; 0 and pos2 = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(objectList1, lastpos1+delimLen);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET moreToDo1 = false;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET lastpos1 = pos2;
+&#x9;&#x9;&#x9;&#x9;SET start1 = lastpos1+delimLen;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Replace the encoded separator with the real separator if applicable
+&#x9;&#x9;&#x9;IF (INSTR(object, encodedSep) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = REPLACE(object, encodedSep, delimiter);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Trim the results IF the flag is set
+&#x9;&#x9;&#x9;IF (trimResults is not null and trimResults = 1) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = TRIM(object);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Remove surrounding qualifier IF it exists in the first and last character are qualifiers
+&#x9;&#x9;&#x9;IF (preserveQualifier_ = 0 and LENGTH(object) &gt; 1) THEN
+&#x9;&#x9;&#x9;&#x9;IF (POSITION(SUBSTRING(object,1,1) IN qualifier) &gt; 0 and POSITION(SUBSTRING(object,LENGTH(object),1) IN qualifier) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(object,2,LENGTH(object));
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(object) &gt; 0 and POSITION(SUBSTRING(object,LENGTH(object),1) IN qualifier) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(object,1,LENGTH(object)-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : object=[&apos;||SUBSTRING(TRIM(NVL(object,&apos;  &apos;)),1,debugPrintSize)||&apos;]&apos;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (object IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;-- Insert the extracted expression into the result pipe
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(object);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END WHILE;
+&#x9;END IF;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL print(moduleName||&apos; : ------------------- End Extracting Text List -------------------&apos;);
+&#x9;&#x9;CALL print(moduleName||&apos; : Duration=[&apos;||CAST(CURRENT_TIMESTAMP - starttime AS VARCHAR)||&apos;]&apos;);
+&#x9;&#x9;CALL print(moduleName||&apos;&apos;);
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:1:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/241</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/240</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/210</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/242</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/212</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/211</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/277</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/225</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/198</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/197</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/358</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/269</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/357</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/268</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/356</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/267</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/227</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/226</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/196</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/195</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/346</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/194</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

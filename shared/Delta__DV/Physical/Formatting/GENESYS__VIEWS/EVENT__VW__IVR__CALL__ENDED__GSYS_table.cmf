@@ -1,0 +1,988 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="EVENT_VW_IVR_CALL_ENDED_GSYS" path="/shared/Delta_DV/Physical/Formatting/GENESYS_VIEWS/EVENT_VW_IVR_CALL_ENDED_GSYS" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Event_SKEY" nullable="true">
+      <datatype type="STRING" maxLength="36"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Start_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="End_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Duration_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="5" maxLength="5" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Sub_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="6" maxLength="6" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Source_key" nullable="true">
+      <datatype type="STRING" maxLength="36"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Call_Center_CD" nullable="true">
+      <datatype type="STRING" minLength="2" maxLength="2" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Contact_Center_Business_Unit_CD" nullable="true">
+      <datatype type="STRING" minLength="3" maxLength="10" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Channel_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="9" maxLength="9" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/DATE_TIME_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DATE_TIME_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_30MIN_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_HOUR_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_DAY_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_WEEK_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_MONTH_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_QUARTER_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_YEAR_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_30MIN_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_HOUR_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_DAY_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_WEEK_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_MONTH_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_QUARTER_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DATE_TIME_NEXT_YEAR_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CREATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="UPDATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="CAL_DATE" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="CAL_DAY_NAME" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="CAL_MONTH_NAME" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="CAL_DAY_NUM_IN_WEEK" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_DAY_NUM_IN_MONTH" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_DAY_NUM_IN_YEAR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_LAST_DAY_IN_WEEK" nullable="false">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="CAL_LAST_DAY_IN_MONTH" nullable="false">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="CAL_WEEK_NUM_IN_YEAR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="WEEK_YEAR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_WEEK_START_DATE" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="CAL_WEEK_END_DATE" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="CAL_MONTH_NUM_IN_YEAR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_QUARTER_NUM_IN_YEAR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_HALF_NUM_IN_YEAR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_YEAR_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_HOUR_NUM_IN_DAY" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_HOUR_24_NUM_IN_DAY" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_MINUTE_NUM_IN_HOUR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CAL_30MINUTE_NUM_IN_HOUR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="LABEL_YYYY" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_QQ" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_WE" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_WE_D" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH24" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH_30MI" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH24_30MI" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH_MI" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH24_MI" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH_15INT" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH24_15INT" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH_30INT" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_YYYY_MM_DD_HH24_30INT" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_QQ" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_MM" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_WE" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_DD" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_HH" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_HH24" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_30MI" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_MI" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="LABEL_TZ" nullable="false">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="AMPM_INDICATOR" nullable="false">
+        <datatype type="STRING" maxLength="4"/>
+      </element>
+      <element name="RUNNING_YEAR_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RUNNING_QUARTER_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RUNNING_MONTH_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RUNNING_WEEK_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RUNNING_DAY_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RUNNING_HOUR_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RUNNING_30MIN_NUM" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/INTERACTION_RESOURCE_FACT_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="INTERACTION_RESOURCE_ID" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="TENANT_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="INTERACTION_TYPE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIA_TYPE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TECHNICAL_DESCRIPTOR_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIA_RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RESOURCE_GROUP_COMBINATION_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="PLACE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="STRATEGY_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ROUTING_TARGET_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="REQUESTED_SKILL_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="INTERACTION_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="INTERACTION_ID" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="RES_PREVIOUS_SM_STATE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RES_PREV_SM_STATE_FACT_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RES_PREVIOUS_SM_STATE_FACT_KEY">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="LAST_RP_RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="LAST_QUEUE_RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="LAST_VQUEUE_RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="LAST_IVR_RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="PREV_IRF_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="PREV_IRF_ID">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="MEDIATION_SEGMENT_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIATION_SEGMENT_ID">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="MEDIATION_RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIATION_START_DATE_TIME_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="INTERACTION_RESOURCE_ORDINAL">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="IRF_ANCHOR">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="IRF_ANCHOR_TS">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ANCHOR_FLAGS_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="LAST_INTERACTION_RESOURCE">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="LAST_MEDIATION_SEGMENT_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="LAST_MEDIATION_SEGMENT_ID">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="RECEIVED_FROM_IXN_RES_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RECEIVED_FROM_IXN_RESOURCE_ID">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="PARTYGUID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="TARGET_ADDRESS">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="LEAD_CLIP_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TRAIL_CLIP_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ROUTING_POINT_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="QUEUE_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IVR_PORT_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="HANDLE_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CUSTOMER_HANDLE_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="PREVIOUS_MEDIATION_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIATION_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIATION_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="MET_SERVICE_OBJECTIVE_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="SHORT_ABANDONED_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="STOP_ACTION">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="DIAL_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="DIAL_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RING_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="RING_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TALK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="TALK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="HOLD_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="HOLD_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="AFTER_CALL_WORK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="AFTER_CALL_WORK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CUSTOMER_DIAL_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CUSTOMER_DIAL_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CUSTOMER_RING_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CUSTOMER_RING_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CUSTOMER_TALK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CUSTOMER_TALK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CUSTOMER_HOLD_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CUSTOMER_HOLD_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CUSTOMER_ACW_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CUSTOMER_ACW_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="POST_CONS_XFER_TALK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="POST_CONS_XFER_TALK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="POST_CONS_XFER_HOLD_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="POST_CONS_XFER_HOLD_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="POST_CONS_XFER_RING_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="POST_CONS_XFER_RING_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONF_INIT_TALK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONF_INIT_TALK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONF_INIT_HOLD_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONF_INIT_HOLD_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONF_JOIN_RING_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONF_JOIN_RING_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONF_JOIN_TALK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONF_JOIN_TALK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONF_JOIN_HOLD_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONF_JOIN_HOLD_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONFERENCE_INITIATED_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_INIT_DIAL_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_INIT_DIAL_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONS_INIT_TALK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_INIT_TALK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONS_INIT_HOLD_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_INIT_HOLD_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONS_RCV_RING_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_RCV_RING_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONS_RCV_TALK_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_RCV_TALK_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONS_RCV_HOLD_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_RCV_HOLD_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CONS_RCV_ACW_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="CONS_RCV_ACW_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="AGENT_TO_AGENT_CONS_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="AGENT_TO_AGENT_CONS_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="FOCUS_TIME_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="FOCUS_TIME_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ASM_COUNT">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="ASM_ENGAGE_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CREATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="UPDATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="START_DATE_TIME_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="END_DATE_TIME_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="START_TS">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="END_TS">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ACTIVE_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="PURGE_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="DURATION_BUCKET" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/IRF_USER_DATA_CUST_1_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="INTERACTION_RESOURCE_ID" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="START_DATE_TIME_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TENANT_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CREATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="UPDATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="CUSTOM_DATA_1">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_2">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_3">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_4">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_5">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_6">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_7">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_8">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_9">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_10">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_11">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_12">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_13">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_14">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_15">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_16">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/MEDIATION_SEGMENT_FACT_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="MEDIATION_SEGMENT_ID" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="TENANT_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="START_DATE_TIME_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="END_DATE_TIME_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="INTERACTION_TYPE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIA_TYPE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TECHNICAL_DESCRIPTOR_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RESOURCE_GROUP_COMBINATION_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="WORKBIN_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="INTERACTION_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="INTERACTION_ID">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="IXN_RESOURCE_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IXN_RESOURCE_ID">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="TARGET_IXN_RESOURCE_SDT_KEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TARGET_IXN_RESOURCE_ID">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="MEDIA_SERVER_IXN_GUID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="MEDIATION_GUID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="ENTRY_ORDINAL">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEDIATION_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ONLINE_DURATION">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ANSWER_THRESHOLD">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="SHORT_ABANDONED_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="MET_THRESHOLD_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="ACTIVE_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="USERDATA_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="START_TS">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="END_TS">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CREATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="UPDATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/RESOURCE_GI2_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="RESOURCE_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TENANT_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CREATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="UPDATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="SWITCH_DBID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="SWITCH_NAME">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="IVR_NAME">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="RESOURCE_TYPE">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="RESOURCE_TYPE_CODE">
+        <datatype type="STRING" maxLength="32"/>
+      </element>
+      <element name="RESOURCE_SUBTYPE">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="RESOURCE_NAME">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="AGENT_FIRST_NAME">
+        <datatype type="STRING" maxLength="64"/>
+      </element>
+      <element name="AGENT_LAST_NAME">
+        <datatype type="STRING" maxLength="64"/>
+      </element>
+      <element name="EMPLOYEE_ID">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="EXTERNAL_RESOURCE_ID">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="RESOURCE_CFG_DBID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RESOURCE_CFG_TYPE_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RESOURCE_ALIAS">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="NETWORK_RESOURCE_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="GMT_START_TIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="GMT_END_TIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="PURGE_FLAG">
+        <datatype type="DECIMAL" maxDigits="1" maxFractionalDigits="0"/>
+      </element>
+      <element name="AGENT_NAME">
+        <datatype type="STRING" maxLength="388"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/RECORDHEADER_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="RH_ID" nullable="false">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="SEQNO" nullable="false">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="0"/>
+      </element>
+      <element name="RECORDTYPE">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="RECORDDATETIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="STATENAME">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="DATATABLE">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="SESSIONINFO_SESSIONID" nullable="false">
+        <datatype type="STRING" maxLength="36"/>
+      </element>
+      <element name="TASK">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="TASKSTATUS">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="TASKENDRECORD">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/SESSIONINFO_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="CALLID" nullable="false">
+        <datatype type="STRING" maxLength="36"/>
+      </element>
+      <element name="NVPSESSIONID" nullable="false">
+        <datatype type="STRING" maxLength="36"/>
+      </element>
+      <element name="ANI">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="DNIS">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="APPLICATION">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+      <element name="TRANSFERNUMBER">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="IVRBUSINESSUNIT">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select {OPTION CASE_SENSITIVE=&quot;false&quot;}
+ distinct
+    SESSIONINFO_VW.NVPSESSIONID Event_SKEY,
+&#x9;min(RECORDHEADER_VW.RECORDDATETIME) over (partition by SESSIONINFO_VW.NVPSESSIONID )  Start_DTM ,
+&#x9;max(dateadd(&apos;second&apos;, irfv.END_TS - EDTV.DATE_TIME_KEY, EDTV.CAL_DATE))  over (partition by SESSIONINFO_VW.NVPSESSIONID )  End_DTM,
+&#x9;DATEDIFF(&apos;Second&apos;,min(RECORDHEADER_VW.RECORDDATETIME) over (partition by SESSIONINFO_VW.NVPSESSIONID ) ,max(dateadd(&apos;second&apos;, irfv.END_TS - EDTV.DATE_TIME_KEY, EDTV.CAL_DATE))  over (partition by SESSIONINFO_VW.NVPSESSIONID )) Event_Duration_Seconds_QTY,
+&#x9;&apos;CSEVT&apos;  Event_Type_CD,
+&#x9;&apos;CSCALL&apos; Event_Sub_Type_CD,
+&#x9;SESSIONINFO_VW.NVPSESSIONID Event_Source_key,
+&#x9; first_value(Case 
+ WHEN RESOURCE_A.RESOURCE_NAME Like &apos;ca%&apos; THEN &apos;CA&apos;  
+ WHEN RESOURCE_A.RESOURCE_NAME Like &apos;pa%&apos; THEN &apos;PA&apos;  
+ WHEN RESOURCE_A.RESOURCE_NAME Like &apos;ga%&apos; THEN &apos;GA&apos;  
+ WHEN RESOURCE_A.RESOURCE_NAME LIKE &apos;pr%&apos; THEN &apos;PR&apos;  
+ Else &apos;UN&apos;  End) over ( partition by SESSIONINFO_VW.NVPSESSIONID  order by irfv.INTERACTION_RESOURCE_ID desc) Customer_Call_Center_CD ,
+first_value(Case 
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;AARP_%&apos; THEN &apos;AARP&apos;  
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;CPP_%&apos; THEN &apos;CPP&apos;  
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;DCal_%&apos; THEN &apos;DENTICAL&apos;
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;DC_%&apos; THEN &apos;DELATACARE&apos; 
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;DDC_%&apos; THEN &apos;DDC&apos; 
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;DDIC_%&apos; THEN &apos;DDIC&apos; 
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;DDPR_%&apos; THEN &apos;DDPR&apos;  
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;DDP_%&apos; THEN &apos;DDP&apos;  
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;DENT_%&apos; THEN &apos;DENTEGRA&apos;
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;PROV_SRV_%&apos; THEN &apos;CONCIERGE&apos;
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;GnA_%&apos; THEN &apos;GNA&apos;  
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;D2C_DirectPay%&apos; THEN &apos;DDP&apos;
+ WHEN RESOURCE_Q.RESOURCE_NAME Like &apos;D2C_%&apos; THEN &apos;D2C&apos;
+ Else &apos;Default&apos;  End ) over ( partition by SESSIONINFO_VW.NVPSESSIONID  order by irfv.INTERACTION_RESOURCE_ID desc)  Contact_Center_Business_Unit_CD,
+&#x9;&apos;TELEPHONY&apos; Customer_Service_Channel_Type_CD
+&#x9;from /shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/SESSIONINFO_VW SESSIONINFO_VW inner join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/RECORDHEADER_VW RECORDHEADER_VW on 
+&#x9;SESSIONINFO_VW.NVPSESSIONID = RECORDHEADER_VW.SESSIONINFO_SESSIONID 
+&#x9;inner join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/IRF_USER_DATA_CUST_1_VW irf_udc on SESSIONINFO_VW.NVPSESSIONID=irf_udc.CUSTOM_DATA_7
+&#x9;inner join /shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/INTERACTION_RESOURCE_FACT_VW irfv  on irf_udc.INTERACTION_RESOURCE_ID=irfv.INTERACTION_RESOURCE_ID
+&#x9;--inner join [GENESYS_VIEWS].[dbo].[DATE_TIME_VW] SDTV ON SDTV.DATE_TIME_KEY = irfv.START_DATE_TIME_KEY
+&#x9;INNER JOIN /shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/DATE_TIME_VW EDTV ON EDTV.DATE_TIME_KEY = irfv.END_DATE_TIME_KEY
+&#x9;INNER JOIN /shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/MEDIATION_SEGMENT_FACT_VW MRF ON irfv.INTERACTION_RESOURCE_ID=MRF.IXN_RESOURCE_ID AND MRF.INTERACTION_TYPE_KEY=2
+&#x9;inner JOIN  /shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/RESOURCE_GI2_VW RESOURCE_A ON RESOURCE_A.RESOURCE_KEY = irfv.RESOURCE_KEY AND RESOURCE_A.RESOURCE_TYPE=&apos;Agent&apos;
+&#x9;INNER JOIN /shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/RESOURCE_GI2_VW RESOURCE_Q ON RESOURCE_Q.RESOURCE_KEY = MRF.RESOURCE_KEY 
+</attribute>
+  <attribute name="creationDate" type="LONG">1602200979875</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5240211</attribute>
+  <attribute name="creatorUserName" type="STRING">dca90042</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5240211</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1602200979875</attribute>
+</metadata>

@@ -1,0 +1,49 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Preferred_Communication_Method_Type" path="/shared/Delta_DV/Business/BusinessSemantic/EDP/Preferred_Communication_Method_Type" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Preferred_Communication_Method_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Preferred_Communication_Method_Type_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/Logical/EDP/PREFERRED_COMMUNICATION_METHOD_TYPE_REFERENCE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Preferred_Communication_Method_Type_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Preferred_Communication_Method_Type_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    PREFERRED_COMMUNICATION_METHOD_TYPE_REFERENCE.Preferred_Communication_Method_Type_CD Preferred_Communication_Method_Type_Code, 
+    PREFERRED_COMMUNICATION_METHOD_TYPE_REFERENCE.Preferred_Communication_Method_Type_NM Preferred_Communication_Method_Type_Name
+FROM      
+    /shared/Delta_DV/Business/Logical/EDP/PREFERRED_COMMUNICATION_METHOD_TYPE_REFERENCE PREFERRED_COMMUNICATION_METHOD_TYPE_REFERENCE</attribute>
+  <attribute name="creationDate" type="LONG">1603842112413</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1603842112413</attribute>
+</metadata>

@@ -1,0 +1,484 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="updateResourceCacheConfig" path="/shared/Delta_DV/_scripts/Utilities/repository/updateResourceCacheConfig" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[updateResourceCacheConfig:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure updates a resource&apos;s cache configuration setting.
+ 
+&#x9;Input:
+&#x9;&#x9;fullResourcePath - Full resource path which includes the path and the resource name  
+&#x9;&#x9;&#x9;Values: e.g. /shared/Utilities/repository/examples/source/proc1
+&#x9;&#x9;resourceType - Type of CIS resource to be created
+&#x9;&#x9;&#x9;Values: see &quot;TYPES / SUBTYPES&quot; listing below.  e.g. PROCEDURE
+    &#x9;&#x9;cacheConfigured - indicates whether the resource has a cache configured or not.
+&#x9;&#x9;&#x9;Values: &apos;true&apos;=cache configured, &apos;false&apos;=cache not configured
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;&#x9;createResponse - XML response representing what was created.
+&#x9;&#x9;&#x9;Values: Create Response XML value
+&#x9;&#x9;faultResponse - null if succesful otherwise contains a fault resposne.
+&#x9;&#x9;&#x9;Values: Fault Resposne XML value
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;8/2/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+
+
+&#x9;TYPES / SUBTYPES:
+&#x9;=================
+&#x9;The following resource types/subtypes are supported by this operation.  Resources
+&#x9;cannot be created under &quot;/services&quot; unless otherwise noted, and cannot be created
+&#x9;within a physical data source.  
+
+&#x9;(Basic CIS folder)
+&#x9;* CONTAINER / FOLDER_CONTAINER - A Composite folder.   Cannot be created anywhere under /services except in another FOLDER under /services/webservices.
+&#x9;* CONTAINER / DIRECTORY_CONTAINER - A Composite directory.
+&#x9;(Database)
+&#x9;* CONTAINER / CATALOG_CONTAINER - A Composite catalog folder under a data source.  Can only be created within a data source under /services/databases.
+&#x9;* CONTAINER / SCHEMA_CONTAINER - A Composite schema container.  Can only be created within a CATALOG that is under /services/databases.
+&#x9;(Web Services)
+&#x9;* CONTAINER / SERVICE_CONTAINER - A web service container for the service.  Can only be created within a Composite Web Services data source that is under /services/webservices.
+&#x9;* CONTAINER / OPERATIONS_CONTAINER - A web service container for the operations
+&#x9;* CONTAINER / PORT_CONTAINER - A Composite web service container for port.   Can only be created within a SERVICE under /services/webservices.
+&#x9;(Connectors)
+&#x9;* CONTAINER / CONNECTOR_CONTAINER - A Composite container for connectors.
+
+&#x9;* CONNECTOR / JMS - A Composite JMS Connector.  Created with no connection information
+&#x9;* CONNECTOR / HTTP - A Composite HTTP Connector.  Created with no connection information
+
+&#x9;* DATA_SOURCE / RELATIONAL_DATA_SOURCE - A relational database source.
+&#x9;* DATA_SOURCE / FILE_DATA_SOURCE - A comma separate file data source.
+&#x9;* DATA_SOURCE / XML_FILE_DATA_SOURCE - An XML file data source.
+&#x9;* DATA_SOURCE / WSDL_DATA_SOURCE - A Composite web service data source.
+&#x9;* DATA_SOURCE / XML_HTTP_DATA_SOURCE - An HTTP XML data source.
+&#x9;* DATA_SOURCE / NONE - A custom java procedure data source.
+
+&#x9;* DEFINITION_SET / SQL_DEFINITION_SET - A Composite SQL Definition set.
+&#x9;* DEFINITION_SET / XML_SCHEMA_DEFINITION_SET - A Composite XML Schema Defintion set.
+&#x9;* DEFINITION_SET / WSDL_DEFINITION_SET - A Composite WSDL Definition set.
+&#x9;* DEFINITION_SET / ABSTRACT_WSDL_DEFINITION_SET - A Composite Abstract WSDL Definition set such as the ones imported from Designer.
+&#x9;* DEFINITION_SET / SCDL_DEFINITION_SET - A Composite SCA composite Definition set imported from Designer.
+
+&#x9;* LINK / unknown at this time
+
+&#x9;(CIS procedures)
+&#x9;* PROCEDURE / SQL_SCRIPT_PROCEDURE - A Composite SQL Procedure.  Created with a simple default script body that is runnable.
+&#x9;(Custom procedures)
+&#x9;* PROCEDURE / JAVA_PROCEDURE - A Composite java data source procedure.  Created from a java data source (jar file).
+&#x9;(Database procedures)
+&#x9;* PROCEDURE / EXTERNAL_SQL_PROCEDURE - A Composite Packaged Query.  Created with no SQL text, so it is not runnable.  
+&#x9;* PROCEDURE / DATABASE_PROCEDURE - A database stored procedure.
+&#x9;(XML procedures)
+&#x9;* PROCEDURE / BASIC_TRANSFORM_PROCEDURE - A Composite Basic XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XSLT_TRANSFORM_PROCEDURE - A Composite XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / STREAM_TRANSFORM_PROCEDURE - A Composite XSLT Streaming Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XQUERY_TRANSFORM_PROCEDURE - A Composite XQUERY Transformation Procedure.  Created with no target schema and no model, so it is not runnable.
+&#x9;(Misc procedures)
+&#x9;* PROCEDURE / OPERATION_PROCEDURE - A Composite web service or HTTP procedure operation.
+
+&#x9;* TABLE / SQL_TABLE - A Composite View.  Created with no SQL text or model, so it is not runnable.  
+&#x9;* TABLE / DATABASE_TABLE - A Composite database table.
+&#x9;* TABLE / DELIMITED_FILE_TABLE - A Composite delimited file table
+&#x9;* TABLE / SYSTEM_TABLE - A Composite system table view.
+
+&#x9;* TREE / XML_FILE_TREE - The XML tree structure associated with a file-XML data source.
+
+&#x9;* TRIGGER / NONE - A Composite trigger.   Created disabled.]]></annotation>
+  <parameters>
+    <parameter name="fullResourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="cacheConfigured" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="createResponse" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="faultResponse" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/updateResourceCacheConfig" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="updateResourceCacheConfig" direction="IN">
+        <datatype name="updateResourceCacheConfig" extendedName="{http://www.compositesw.com/services/system/admin/resource}updateResourceCacheConfig" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}updateResourceCacheConfig" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}updateResourceCacheConfig">
+          <schemaDatatype>
+            <datatype name="updateResourceCacheConfig" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="updateResourceCacheConfigRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="cacheConfig" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="cacheConfig" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="allOrNothing" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="configured" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="enabled" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="incremental" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="storage" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                      <element name="useDefaultCacheStorage" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                      <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="storageMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="bucketMode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="bucketModeType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="bucketProperties" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="bucketPropertiesType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                          <element name="bucketCatalog" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="bucketSchema" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="bucketPrefix" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="numBuckets" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="dropCreateIdx" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                      <element name="storageDataSourcePath" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="storageTargets" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="targetPathTypePairList" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="entry" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                            <datatype name="targetPathTypePair" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                              <element name="targetName" namespace="http://www.compositesw.com/services/system/admin/resource">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                                <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                  <element name="refresh" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                      <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="refreshMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="schedule" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="schedule" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                          <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="scheduleMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="startTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                          </element>
+                          <element name="fromTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                          </element>
+                          <element name="endTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                          </element>
+                          <element name="recurringDay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="interval" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="period" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="calendarPeriod" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="count" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="isCluster" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                  <element name="expirationPeriod" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                  </element>
+                  <element name="firstRefreshCallback" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="secondRefreshCallback" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="clearRule" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="clearRule" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="updateResourceCacheConfigResponse" direction="OUT">
+        <datatype name="updateResourceCacheConfigResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}updateResourceCacheConfigResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}updateResourceCacheConfigResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}updateResourceCacheConfigResponse">
+          <schemaDatatype>
+            <datatype name="updateResourceCacheConfigResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="updateResourceCacheConfigResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="2305">
+              <element name="cacheConfig" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <reference refId="513"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="2561">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* updateResourceCacheConfig:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure updates a resource&apos;s cache configuration setting.
+ 
+&#x9;Input:
+&#x9;&#x9;fullResourcePath - Full resource path which includes the path and the resource name  
+&#x9;&#x9;&#x9;Values: e.g. /shared/Utilities/repository/examples/source/proc1
+&#x9;&#x9;resourceType - Type of CIS resource to be created
+&#x9;&#x9;&#x9;Values: see &quot;TYPES / SUBTYPES&quot; listing below.  e.g. PROCEDURE
+    &#x9;&#x9;cacheConfigured - indicates whether the resource has a cache configured or not.
+&#x9;&#x9;&#x9;Values: &apos;true&apos;=cache configured, &apos;false&apos;=cache not configured
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;&#x9;createResponse - XML response representing what was created.
+&#x9;&#x9;&#x9;Values: Create Response XML value
+&#x9;&#x9;faultResponse - null if succesful otherwise contains a fault resposne.
+&#x9;&#x9;&#x9;Values: Fault Resposne XML value
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;8/2/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+
+&#x9;TYPES / SUBTYPES:
+&#x9;=================
+&#x9;The following resource types/subtypes are supported by this operation.  Resources
+&#x9;cannot be created under &quot;/services&quot; unless otherwise noted, and cannot be created
+&#x9;within a physical data source.  
+
+&#x9;(Basic CIS folder)
+&#x9;* CONTAINER / FOLDER_CONTAINER - A Composite folder.   Cannot be created anywhere under /services except in another FOLDER under /services/webservices.
+&#x9;* CONTAINER / DIRECTORY_CONTAINER - A Composite directory.
+&#x9;(Database)
+&#x9;* CONTAINER / CATALOG_CONTAINER - A Composite catalog folder under a data source.  Can only be created within a data source under /services/databases.
+&#x9;* CONTAINER / SCHEMA_CONTAINER - A Composite schema container.  Can only be created within a CATALOG that is under /services/databases.
+&#x9;(Web Services)
+&#x9;* CONTAINER / SERVICE_CONTAINER - A web service container for the service.  Can only be created within a Composite Web Services data source that is under /services/webservices.
+&#x9;* CONTAINER / OPERATIONS_CONTAINER - A web service container for the operations
+&#x9;* CONTAINER / PORT_CONTAINER - A Composite web service container for port.   Can only be created within a SERVICE under /services/webservices.
+&#x9;(Connectors)
+&#x9;* CONTAINER / CONNECTOR_CONTAINER - A Composite container for connectors.
+
+&#x9;* CONNECTOR / JMS - A Composite JMS Connector.  Created with no connection information
+&#x9;* CONNECTOR / HTTP - A Composite HTTP Connector.  Created with no connection information
+
+&#x9;* DATA_SOURCE / RELATIONAL_DATA_SOURCE - A relational database source.
+&#x9;* DATA_SOURCE / FILE_DATA_SOURCE - A comma separate file data source.
+&#x9;* DATA_SOURCE / XML_FILE_DATA_SOURCE - An XML file data source.
+&#x9;* DATA_SOURCE / WSDL_DATA_SOURCE - A Composite web service data source.
+&#x9;* DATA_SOURCE / XML_HTTP_DATA_SOURCE - An HTTP XML data source.
+&#x9;* DATA_SOURCE / NONE - A custom java procedure data source.
+
+&#x9;* DEFINITION_SET / SQL_DEFINITION_SET - A Composite SQL Definition set.
+&#x9;* DEFINITION_SET / XML_SCHEMA_DEFINITION_SET - A Composite XML Schema Defintion set.
+&#x9;* DEFINITION_SET / WSDL_DEFINITION_SET - A Composite WSDL Definition set.
+&#x9;* DEFINITION_SET / ABSTRACT_WSDL_DEFINITION_SET - A Composite Abstract WSDL Definition set such as the ones imported from Designer.
+&#x9;* DEFINITION_SET / SCDL_DEFINITION_SET - A Composite SCA composite Definition set imported from Designer.
+
+&#x9;* LINK / unknown at this time
+
+&#x9;(CIS procedures)
+&#x9;* PROCEDURE / SQL_SCRIPT_PROCEDURE - A Composite SQL Procedure.  Created with a simple default script body that is runnable.
+&#x9;(Custom procedures)
+&#x9;* PROCEDURE / JAVA_PROCEDURE - A Composite java data source procedure.  Created from a java data source (jar file).
+&#x9;(Database procedures)
+&#x9;* PROCEDURE / EXTERNAL_SQL_PROCEDURE - A Composite Packaged Query.  Created with no SQL text, so it is not runnable.  
+&#x9;* PROCEDURE / DATABASE_PROCEDURE - A database stored procedure.
+&#x9;(XML procedures)
+&#x9;* PROCEDURE / BASIC_TRANSFORM_PROCEDURE - A Composite Basic XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XSLT_TRANSFORM_PROCEDURE - A Composite XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / STREAM_TRANSFORM_PROCEDURE - A Composite XSLT Streaming Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XQUERY_TRANSFORM_PROCEDURE - A Composite XQUERY Transformation Procedure.  Created with no target schema and no model, so it is not runnable.
+&#x9;(Misc procedures)
+&#x9;* PROCEDURE / OPERATION_PROCEDURE - A Composite web service or HTTP procedure operation.
+
+&#x9;* TABLE / SQL_TABLE - A Composite View.  Created with no SQL text or model, so it is not runnable.  
+&#x9;* TABLE / DATABASE_TABLE - A Composite database table.
+&#x9;* TABLE / DELIMITED_FILE_TABLE - A Composite delimited file table
+&#x9;* TABLE / SYSTEM_TABLE - A Composite system table view.
+
+&#x9;* TREE / XML_FILE_TREE - The XML tree structure associated with a file-XML data source.
+
+&#x9;* TRIGGER / NONE - A Composite trigger.   Created disabled.
+*/
+PROCEDURE updateResourceCacheConfig(
+    IN fullResourcePath &#x9;VARCHAR(4096), 
+&#x9;IN resourceType&#x9;&#x9;&#x9;VARCHAR(255),
+    IN cacheConfigured &#x9;&#x9;VARCHAR(255), -- true or false string
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;BIT, -- true(1), false(0)
+&#x9;OUT createResponse &#x9;&#x9;XML,
+&#x9;OUT faultResponse&#x9;&#x9;XML
+    )
+BEGIN
+&#x9;DECLARE moduleName&#x9;VARCHAR DEFAULT &apos;repository/updateResourceCacheConfig&apos;;
+&#x9;DECLARE debug&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE createInput LONGVARCHAR;
+
+&#x9;set success = 1;
+        set createInput =
+&#x9;&apos;&lt;resource:updateResourceCacheConfig &apos;||CHR(10)||
+&#x9;&apos;    xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; &apos;||CHR(10)||
+    &apos;    xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; &apos;||CHR(10)||
+    &apos;    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&apos;||CHR(10)||
+    &apos;    &lt;resource:path&gt;&apos; || CAST(XMLTEXT(fullResourcePath) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+    &apos;    &lt;resource:type&gt;&apos; || CAST(XMLTEXT(resourceType) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;&apos;||CHR(10)||
+    &apos;    &lt;resource:detail&gt;FULL&lt;/resource:detail&gt;&apos;||CHR(10)||
+    &apos;    &lt;resource:cacheConfig xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&gt;&apos;||CHR(10)||
+    &apos;        &lt;resource:configured&gt;&apos;||cacheConfigured||&apos;&lt;/resource:configured&gt;&apos;||CHR(10)||
+    &apos;    &lt;/resource:cacheConfig&gt;&apos;||CHR(10)||
+    &apos;&lt;/resource:updateResourceCacheConfig&gt;&apos;;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : createInput=&apos;||CHR(10)||NVL(createInput,&apos;null&apos;));
+&#x9;END IF;
+
+&#x9;-----------------------------
+&#x9;-- Invoke Web Service API
+&#x9;-----------------------------
+&#x9;CALL /services/webservices/system/admin/resource/operations/updateResourceCacheConfig(createInput, createResponse, faultResponse);
+&#x9;if (faultResponse is not null) then
+&#x9;&#x9;set success = 0;
+&#x9;end if;
+    END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:4:Customized" type="STRING">datatype.changed;datatype.changed</attribute>
+  <attribute name="p:5:Customized" type="STRING">datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/129</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

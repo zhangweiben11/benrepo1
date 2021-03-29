@@ -1,0 +1,145 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getOrthoBenefit" path="/shared/Delta_DV/Application/Published/Benefit/getOrthoBenefit" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[Ortho Benefit Service:  API to provide Delta Care Ortho Benefit Package for Enrollee or Group/Division
+1. Get Benefit Package Id for Group/Division as of Effective Date or for Enrollee Id as of Effective Date
+2. Get Ortho benefit configuration info for the Benefit Package Id]]></annotation>
+  <parameters>
+    <parameter name="orthoBenefit" direction="OUT" nullable="true">
+      <datatype name="orthoBenefit" referenceDefinitionSet="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_OrthoBenefit" referenceType="orthoBenefit" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="orthoBenefit">
+        <schemaDatatype>
+          <datatype name="orthoBenefit" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="orthoBenefitPackageId">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="groupNumber">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="divisionNumber">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="effectiveDate">
+              <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+            </element>
+            <element name="endDate">
+              <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+            </element>
+            <element name="orthoExtraction">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="treatment" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="sequenceNumber">
+                  <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                </element>
+                <element name="name">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="networkCode">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="amountType">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="amount">
+                  <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                </element>
+                <element name="procedure" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                    <element name="code">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="description">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="pGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pEffectiveDate" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_OrthoBenefit" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetOrthoBenefit" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/BENEFITS/vwPI_OrthoBenefitSVCProc" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_OrthoBenefitTreatment" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1600803058158</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612397615902</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1600803058158</attribute>
+  <attribute name="transformModel" type="NULL"/>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare variable $pGroupID external;
+declare variable $pDivisionID external;
+declare variable $pEffectiveDate external;
+
+&lt;root xmlns:ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+  let $nodes := (
+    let $inputs := (if (empty($pGroupID)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pGroupID), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivisionID)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivisionID), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+    let $query := concat( &quot;select BenefitPkgID,GroupID,DivisionID,EffDate,EndDate,OrthoExtractIND from /shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetOrthoBenefit(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+    let $BenefitPkg1 := composite:executeQuery($query)//result
+    for $BenefitPkg in $BenefitPkg1
+    return
+    element orthoBenefit {
+      element orthoBenefitPackageId {$BenefitPkg/BenefitPkgID/text()},
+      element groupNumber {$BenefitPkg/GroupID/text()},
+      element divisionNumber {$BenefitPkg/DivisionID/text()},
+      element effectiveDate {$BenefitPkg/EffDate/text()},
+      element endDate {$BenefitPkg/EndDate/text()},
+      element orthoExtraction {$BenefitPkg/OrthoExtractIND/text()},
+      let $inputs := (if (empty($BenefitPkg/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+      let $query := concat( &quot;select ServiceID,ServiceName,NetworkCD,AMTType,AMT from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_OrthoBenefitTreatment(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+      let $BenefitTreatment1 := composite:executeQuery($query)//result
+      for $BenefitTreatment in $BenefitTreatment1
+      return
+      element treatment {
+        element sequenceNumber {$BenefitTreatment/ServiceID/text()},
+        element name {$BenefitTreatment/ServiceName/text()},
+        element networkCode {$BenefitTreatment/NetworkCD/text()},
+        element amountType {$BenefitTreatment/AMTType/text()},
+        element amount {$BenefitTreatment/AMT/text()},
+        let $query := &quot;select ServiceID,ProcedureCD,ProcedureDESC from /shared/Delta_DV/Physical/Formatting/BENEFITS/vwPI_OrthoBenefitSVCProc&quot;
+        let $BenefitProc1 := composite:executeQuery($query)//result[ServiceID = $BenefitTreatment/ServiceID]
+        for $BenefitProc in $BenefitProc1[ServiceID = $BenefitTreatment/ServiceID]
+        return
+        element procedure {
+          element code {$BenefitProc/ProcedureCD/text()},
+          element description {$BenefitProc/ProcedureDESC/text()}
+        }
+      }
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/orthoBenefit</attribute>
+  <attribute name="xqueryModel" type="BYTE_ARRAY">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</attribute>
+</metadata>

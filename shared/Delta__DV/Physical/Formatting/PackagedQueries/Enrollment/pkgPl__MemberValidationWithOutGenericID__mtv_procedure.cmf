@@ -1,0 +1,155 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_MemberValidationWithOutGenericID_mtv" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Enrollment/pkgPl_MemberValidationWithOutGenericID_mtv" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="UCFirstName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="UCLastName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="DateOfBirth" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="NetworkId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="NetworkFlag" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="SSN" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="EnrolContractID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="EnrolMemberID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="ContractId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="PersonID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="AltID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="AltIDFlag" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="PersonID">
+          <datatype name="VARCHAR" type="STRING" maxLength="16"/>
+        </element>
+        <element name="FirstName">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="LastName">
+          <datatype name="VARCHAR" type="STRING" maxLength="35"/>
+        </element>
+        <element name="MiddleName">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="NameSuffix">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="PersonTitle">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="BirthDate">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="Information">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="EthnicityCode">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="RaceCode">
+          <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+        </element>
+        <element name="SSN">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="SpokenLanguage">
+          <datatype name="VARCHAR" type="STRING" maxLength="80"/>
+        </element>
+        <element name="WrittenLanguage">
+          <datatype name="VARCHAR" type="STRING" maxLength="80"/>
+        </element>
+        <element name="GenericIDFieldIND">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT   DISTINCT
+               p.IDENTIFIER AS PersonID,
+               RTRIM(p.FIRST_NAME) AS FirstName,
+               RTRIM(p.LAST_NAME) AS LastName,
+               RTRIM(p.MIDDLE_NAME) AS MiddleName,
+               p.NAME_SUFFIX AS NameSuffix,
+               p.PERSON_TITLE AS PersonTitle,
+               TO_CHAR(p.BIRTH_DATE,&apos;MM/DD/YYYY&apos;) AS BirthDate,
+               m.INFORMATION AS Information,
+               p.ETHNICITY_CODE AS EthnicityCode ,
+               p.RACE_CODE AS RaceCode,
+               p.SSN AS SSN,
+               SPKN_LANG.REPORT_DESC AS SpokenLanguage,
+               WRTN_LANG.REPORT_DESC AS WrittenLanguage,
+               0  AS GenericIDFieldIND
+          
+FROM MVPPPRD.PERSON p
+INNER JOIN MVPPPRD.MEMBER m  
+                                            ON p.IDENTIFIER = m.PERSON_ID  AND m.AUDIT_FLAG = &apos;N&apos;  AND p.VOID_FLAG = &apos;N&apos;   
+                                            AND p.AUDIT_FLAG = &apos;N&apos;  
+INNER JOIN MVPPPRD.member_eligibility me 
+                                             ON m.contract_id=me.contract_id and m.member_id=me.member_id  
+                                             and me.audit_flag=&apos;N&apos; and me.void_flag=&apos;N&apos;
+LEFT OUTER JOIN MVPPPRD.mbr_alternate_id alt
+                                            on m.contract_id=alt.cvg_contract_id and m.member_id= alt.member_id
+                                            and alt.audit_flag=&apos;N&apos;   and alt.void_flag=&apos;N&apos;
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE SPKN_LANG
+                                              ON SPKN_LANG.FK_CODE_CATG_ID=&apos;LA&apos; 
+                                             AND  p.LANGUAGE_CODE=SPKN_LANG.CODE_VALUE_ID
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE WRTN_LANG
+                                              ON WRTN_LANG.FK_CODE_CATG_ID=&apos;LA&apos; 
+                                             AND p.LANGUAGE_CODE_2=WRTN_LANG.CODE_VALUE_ID
+             
+WHERE
+(trim(UC_first_name) like &apos;{0}&apos; or &apos;{0}&apos;=&apos;NULL&apos;)---Firstname
+AND (trim(UC_last_name) like &apos;{1}&apos; OR &apos;{1}&apos;=&apos;NULL&apos;)--Lastname
+AND birth_date=NVL({2},birth_date)---DOB
+and SSN=NVL({5},SSN) --SSN
+AND ((me.CONTRACT_ID=&apos;{6}&apos; OR &apos;{6}&apos;=&apos;NULL&apos;) and (me.MEMBER_ID=&apos;{7}&apos; OR &apos;{7}&apos;=&apos;NULL&apos;)) --EnrolleeId
+AND (me.CONTRACT_ID=&apos;{8}&apos; OR &apos;{8}&apos;=&apos;NULL&apos;) --ContractID
+AND (m.PERSON_ID=&apos;{9}&apos; OR &apos;{9}&apos;=&apos;NULL&apos;)--PersonID
+AND ((alt.ALTERNATE_ID=&apos;{10}&apos; or &apos;{10}&apos;=&apos;NULL&apos;) and (alt.ALTERNAT_ID_TYP_CD=&apos;{11}&apos; OR &apos;{11}&apos;=&apos;NULL&apos;))----All AltID(SUPP,ASN,CASE,RFC)
+AND
+( ({4}=1 AND (me.BUS_LEVEL_7_ID like &apos;{3}&apos; OR &apos;{3}&apos; = &apos;XX&apos; ))---DCUSA , DI AND null Condition
+      OR
+  ({4}=2 AND me.BUS_LEVEL_7_ID NOT like &apos;%D%CARE%&apos; AND me.BUS_LEVEL_7_ID NOT LIKE &apos;%DNTG%&apos;)--DD condition
+)
+--OPTION (MAXDOP 16)
+--OPTION(USE HINT(&apos;ENABLE_PARALLEL_PLAN_PREFERENCE&apos;))
+</attribute>
+  <attribute name="creationDate" type="LONG">1611115477826</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3980101</attribute>
+  <attribute name="creatorUserName" type="STRING">dos59246</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612176012717</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3980101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dos59246</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/MTV</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611115477826</attribute>
+</metadata>

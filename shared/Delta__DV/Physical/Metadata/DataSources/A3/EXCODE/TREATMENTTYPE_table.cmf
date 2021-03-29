@@ -1,0 +1,57 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="TREATMENTTYPE" path="/shared/Delta_DV/Physical/Metadata/DataSources/A3/EXCODE/TREATMENTTYPE" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="TREATMENTTYPECODE" nullable="false">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TREATMENTTYPEDESC" nullable="false">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(40)" subType="DATASOURCE_TYPE" type="STRING" maxLength="40"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TREATMENTTYPEBUSINESSTEXT" nullable="true">
+      <datatype name="VARCHAR2" extendedName="VARCHAR2(255)" subType="DATASOURCE_TYPE" type="STRING" maxLength="255"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="XAK1TREATMENTTYPE" type="OTHER" unique="true">
+      <indexColumn name="TREATMENTTYPECODE" sortOrder="ASCENDING"/>
+      <indexColumn name="TREATMENTTYPEDESC" sortOrder="ASCENDING"/>
+      <indexColumn name="TREATMENTTYPEBUSINESSTEXT" sortOrder="ASCENDING"/>
+      <attribute name="indexSchema" type="STRING">EXCODE</attribute>
+    </index>
+    <index name="XPKTREATMENTTYPE" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="TREATMENTTYPECODE" sortOrder="ASCENDING"/>
+      <attribute name="indexSchema" type="STRING">EXCODE</attribute>
+    </index>
+  </indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1604446705899</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="i:0:indexSchema" type="STRING">EXCODE</attribute>
+  <attribute name="i:1:indexSchema" type="STRING">EXCODE</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1604446705899</attribute>
+</metadata>

@@ -1,0 +1,67 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Complaint_Grievance_Event" path="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Grievance_Event" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Grievance_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Database_Partition_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Unique_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="128"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/Logical/EDP/COMPLAINT_GRIEVANCE_EVENT" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Database_Partition_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Source_System_Unique_ID">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_NM">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select&#x9;Event_SKEY Grievance_Event_Key,
+&#x9;&#x9;Database_Partition_DTM Database_Partition_DTM,
+&#x9;&#x9;Source_System_Unique_ID Source_System_Unique_Identifier,
+&#x9;&#x9;Source_System_NM Source_System_Name
+from /shared/Delta_DV/Business/Logical/EDP/COMPLAINT_GRIEVANCE_EVENT</attribute>
+  <attribute name="creationDate" type="LONG">1608772234184</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608772234184</attribute>
+</metadata>

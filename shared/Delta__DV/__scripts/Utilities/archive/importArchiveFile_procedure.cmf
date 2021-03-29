@@ -1,0 +1,1333 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="importArchiveFile" path="/shared/Delta_DV/_scripts/Utilities/archive/importArchiveFile" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[importArchiveFile:
+&#x9;
+&#x9;This procedure performs an import of an archive CAR file in the Data Virtualization (DV) server.  
+&#x9;It gets the archive CAR file from the local DV file system where the DV server is running.
+
+&#x9;Examples of usage: /shared/ASAssets/Utilities/examples/archive/test_importArchiveFile
+
+    Input:
+&#x9;&#x9;debug - Y=debug is turned on,  N=debug is turned off
+&#x9;&#x9;car_file_os_full_path - The full path to the archive car file in the Data Virtualization file system.
+
+&#x9;&#x9;excludeResources&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A list resources that should not be imported.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;relocateResources&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A mapping of resources from their location in the archive to where they should be imported.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourceType VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourceType VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;rebindResources&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A mapping of resources references within the archive to where they should refer to.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;All resources containing the fromResourcePath and fromResourceType are rebound to the toResourcePath and toResourceType.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourceType VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourceType VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;rebindUsers&#x9;&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A mapping of users within the archive to whom they should be.   (change ownership)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;All resources with the current ownership in fromDomain and fromUser and changed to the owner toDomain and toUser.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromDomain VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromUser VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toDomain VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toUser VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;remapAttributes&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A list of resource attribute settings that should be applied on import.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attributes VECTOR(/shared/ASAssets/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteType) 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attrName&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;-- mandatory
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attrType&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;-- mandatory
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attrValue&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;&#x9;&#x9;-- optional (1 of attrValue, valueList, valueMap or valueArray must be supplied)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;valueList&#x9;&#x9;&#x9;VECTOR(itemType),&#x9;&#x9;-- optional
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;valueMap&#x9;&#x9;&#x9;VECTOR(entryType),&#x9;&#x9;-- optional
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;key&quot;&#x9;&#x9;&#x9;&#x9;VECTOR(itemType),&#x9;-- this vector always only contains 1 key
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;VECTOR(itemType)&#x9;-- this vector always only contains 1 value
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;valueArray&#x9;&#x9;&#x9;VECTOR(LONGVARCHAR),&#x9;-- optional
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;unset&#x9;&#x9;&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - 1 is unset, 0 is set or null to ignore
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;importOptions&#x9;&#x9;&#x9;&#x9;VECTOR(LONGVARCHAR),&#x9;&#x9;&#x9;&#x9;-- optional - A list of archive options indicating what additional features should be imported.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  By default, the same options used for export will be used for import.
+&#x9;&#x9;&#x9;OVERWRITE: Overwrite the existing resources if they exist.
+&#x9;&#x9;&#x9;INCLUDE_CACHING: Include caching configurations for resources.
+&#x9;&#x9;&#x9;INCLUDE_CUSTOM_JAVA_JARS: Include custom Java JARs in the export. (ADMIN ONLY)
+&#x9;&#x9;&#x9;INCLUDE_STATISTICS: Include any resources statistics known about the table boundaries, and column boundaries. 
+&#x9;&#x9;&#x9;INCLUDE_DEPENDENCY: Gather and include all dependent resources for the resources you choose to export. 
+&#x9;&#x9;&#x9;INCLUDE_PHYSICAL_SOURCE_INFO: Include sensitive connection information for included physical sources. (OWNER ONLY)
+&#x9;&#x9;&#x9;INCLUDE_REQUIRED_USERS: Include the information about the required users in the export file.
+&#x9;&#x9;&#x9;INCLUDE_SECURITY: Include resource privilege settings. (OWNER ONLY)
+
+    Output:
+        success - 1=success, 0=failure
+&#x9;&#x9;message - success or failure message.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2015.2&#x9;&#x9;12/22/2017     &#x9;Mike Tinius     &#x9;7.0.1           Created new to be able to import an archive CAR file into the Data Virtualization Server.
+&#x9;2019.200&#x9;03/15/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Added additional input parameters to allow setting various input import archive options including: 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;excludeResources, relocateResources, rebindResources, rebindUsers, remapAttributes and importOptions.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="car_file_os_full_path" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludeResources" direction="IN" nullable="true">
+      <datatype name="excludeResources" type="ARRAY">
+        <itemDatatype>
+          <datatype name="excludeResources" type="TREE" refId="257">
+            <element name="resourcePath">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="resourceType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="relocateResources" direction="IN" nullable="true">
+      <datatype name="relocateResources" type="ARRAY">
+        <itemDatatype>
+          <datatype name="relocateResources" type="TREE" refId="257">
+            <element name="fromResourcePath">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="fromResourceType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="toResourcePath">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="toResourceType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="rebindResources" direction="IN" nullable="true">
+      <datatype name="rebindResources" type="ARRAY">
+        <itemDatatype>
+          <datatype name="rebindResources" type="TREE" refId="257">
+            <element name="fromResourcePath">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="fromResourceType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="toResourcePath">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="toResourceType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="rebindUsers" direction="IN" nullable="true">
+      <datatype name="rebindUsers" type="ARRAY">
+        <itemDatatype>
+          <datatype name="rebindUsers" type="TREE" refId="257">
+            <element name="fromDomain">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="fromUser">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="toDomain">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="toUser">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="remapAttributes" direction="IN" nullable="true">
+      <datatype name="remapAttributes" type="ARRAY">
+        <itemDatatype>
+          <datatype name="remapAttributes" type="TREE" refId="257">
+            <element name="resourcePath">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="resourceType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="attributes">
+              <datatype name="attributes" type="ARRAY">
+                <itemDatatype>
+                  <datatype name="AttributeCompleteType" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions" referenceType="AttributeCompleteType" type="TREE" refId="513">
+                    <element name="attrName">
+                      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                    </element>
+                    <element name="attrType">
+                      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                    </element>
+                    <element name="attrValue">
+                      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="valueList">
+                      <datatype name="valueList" type="ARRAY">
+                        <itemDatatype>
+                          <datatype name="itemType" type="TREE" refId="769">
+                            <element name="type">
+                              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                            </element>
+                            <element name="value">
+                              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                            </element>
+                          </datatype>
+                        </itemDatatype>
+                      </datatype>
+                    </element>
+                    <element name="valueMap">
+                      <datatype name="valueMap" type="ARRAY">
+                        <itemDatatype>
+                          <datatype name="entryType" type="TREE" refId="1025">
+                            <element name="key">
+                              <datatype name="key" type="ARRAY">
+                                <itemDatatype>
+                                  <reference refId="769"/>
+                                </itemDatatype>
+                              </datatype>
+                            </element>
+                            <element name="value">
+                              <datatype name="value" type="ARRAY">
+                                <itemDatatype>
+                                  <reference refId="769"/>
+                                </itemDatatype>
+                              </datatype>
+                            </element>
+                          </datatype>
+                        </itemDatatype>
+                      </datatype>
+                    </element>
+                    <element name="valueArray">
+                      <datatype name="valueArray" type="ARRAY">
+                        <itemDatatype>
+                          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+                        </itemDatatype>
+                      </datatype>
+                    </element>
+                    <element name="unset">
+                      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+                    </element>
+                  </datatype>
+                </itemDatatype>
+              </datatype>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="importOptions" direction="IN" nullable="true">
+      <datatype name="importOptions" type="ARRAY">
+        <itemDatatype>
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="message" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/Pause" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="timeInMilliSeconds" direction="IN">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/archive/operations/ArchiveSchema" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/archive/operations/createImportArchive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="createImportArchive" direction="IN">
+        <datatype name="createImportArchive" extendedName="{http://www.compositesw.com/services/system/admin/archive}createImportArchive" namespace="http://www.compositesw.com/services/system/admin/archive" referenceDefinitionSet="/services/webservices/system/admin/archive/operations/ArchiveSchema" referenceType="{http://www.compositesw.com/services/system/admin/archive}createImportArchive" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/archive}createImportArchive">
+          <schemaDatatype>
+            <datatype name="createImportArchive" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="createImportArchiveRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/archive" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="data" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="base64Binary" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="BINARY"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="createImportArchiveResponse" direction="OUT">
+        <datatype name="createImportArchiveResponse" extendedName="{http://www.compositesw.com/services/system/admin/archive}createImportArchiveResponse" namespace="http://www.compositesw.com/services/system/admin/archive" referenceDefinitionSet="/services/webservices/system/admin/archive/operations/ArchiveSchema" referenceType="{http://www.compositesw.com/services/system/admin/archive}createImportArchiveResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/archive}createImportArchiveResponse">
+          <schemaDatatype>
+            <datatype name="createImportArchiveResponse" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="createImportArchiveResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/archive" subType="ELEMENT_DECL" type="TREE" refId="513">
+              <element name="archiveId" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="importArchiveId" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="769">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/archive/operations/performArchiveImport" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="performArchiveImport" direction="IN">
+        <datatype name="performArchiveImport" extendedName="{http://www.compositesw.com/services/system/admin/archive}performArchiveImport" namespace="http://www.compositesw.com/services/system/admin/archive" referenceDefinitionSet="/services/webservices/system/admin/archive/operations/ArchiveSchema" referenceType="{http://www.compositesw.com/services/system/admin/archive}performArchiveImport" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/archive}performArchiveImport">
+          <schemaDatatype>
+            <datatype name="performArchiveImport" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="performArchiveImportRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/archive" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="archiveId" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="importArchiveId" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="isBlocking" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="performArchiveImportResponse" direction="OUT">
+        <datatype name="performArchiveImportResponse" extendedName="{http://www.compositesw.com/services/system/admin/archive}performArchiveImportResponse" namespace="http://www.compositesw.com/services/system/admin/archive" referenceDefinitionSet="/services/webservices/system/admin/archive/operations/ArchiveSchema" referenceType="{http://www.compositesw.com/services/system/admin/archive}performArchiveImportResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/archive}performArchiveImportResponse">
+          <schemaDatatype>
+            <datatype name="performArchiveImportResponse" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="performArchiveImportResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/archive" subType="ELEMENT_DECL" type="TREE" refId="513">
+              <element name="status" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="operationStatus" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="archiveReport" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                <datatype name="messageEntryList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="1281">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <reference refId="1025"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/archive/operations/updateArchiveImportSettings" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="updateArchiveImportSettings" direction="IN">
+        <datatype name="updateArchiveImportSettings" extendedName="{http://www.compositesw.com/services/system/admin/archive}updateArchiveImportSettings" namespace="http://www.compositesw.com/services/system/admin/archive" referenceDefinitionSet="/services/webservices/system/admin/archive/operations/ArchiveSchema" referenceType="{http://www.compositesw.com/services/system/admin/archive}updateArchiveImportSettings" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/archive}updateArchiveImportSettings">
+          <schemaDatatype>
+            <datatype name="updateArchiveImportSettings" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="updateArchiveImportSettingsRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/archive" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="archiveId" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="importArchiveId" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="settings" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="importSettings" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="excludeResources" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <datatype name="pathTypePairList" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                      <element name="entry" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="pathTypePair" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                          <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                  <element name="relocateResources" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <datatype name="pathTypeMapList" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                      <element name="map" namespace="http://www.compositesw.com/services/system/admin/archive" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="pathTypeMap" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                          <element name="from" namespace="http://www.compositesw.com/services/system/admin/archive">
+                            <reference refId="1025"/>
+                          </element>
+                          <element name="to" namespace="http://www.compositesw.com/services/system/admin/archive">
+                            <reference refId="1025"/>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                  <element name="rebindResources" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <reference refId="1281"/>
+                  </element>
+                  <element name="rebindUsers" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <datatype name="userMapList" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                      <element name="map" namespace="http://www.compositesw.com/services/system/admin/archive" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="userMap" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                          <element name="from" namespace="http://www.compositesw.com/services/system/admin/archive">
+                            <datatype name="domainUserPair" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                              <element name="domainName" namespace="http://www.compositesw.com/services/system/admin/archive">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="userName" namespace="http://www.compositesw.com/services/system/admin/archive">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </element>
+                          <element name="to" namespace="http://www.compositesw.com/services/system/admin/archive">
+                            <reference refId="2305"/>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                  <element name="remapAttributes" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <datatype name="resourceAttributeList" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2561">
+                      <element name="map" namespace="http://www.compositesw.com/services/system/admin/archive" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="resourceAttribute" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                          <element name="resource" namespace="http://www.compositesw.com/services/system/admin/archive">
+                            <reference refId="1025"/>
+                          </element>
+                          <element name="attribute" namespace="http://www.compositesw.com/services/system/admin/archive">
+                            <datatype name="attribute" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3073">
+                              <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeTypeValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="3329">
+                                  <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype name="attributeTypeValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3585">
+                                      <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                      </element>
+                                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                      </element>
+                                      <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <reference refId="3329"/>
+                                      </element>
+                                      <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <datatype name="attributeTypeValueMap" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="3841">
+                                          <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                            <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="4097">
+                                              <element name="key" namespace="http://www.compositesw.com/services/system/util/common">
+                                                <reference refId="3585"/>
+                                              </element>
+                                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common">
+                                                <reference refId="3585"/>
+                                              </element>
+                                            </datatype>
+                                          </element>
+                                        </datatype>
+                                      </element>
+                                      <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="4353">
+                                          <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                            <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                          </element>
+                                        </datatype>
+                                      </element>
+                                    </datatype>
+                                  </element>
+                                </datatype>
+                              </element>
+                              <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="3841"/>
+                              </element>
+                              <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="4353"/>
+                              </element>
+                              <element name="unset" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                  <element name="importOptions" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <datatype name="nameList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="4609">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </element>
+                  <element name="encryptionPassword" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="ignoreEncryption" namespace="http://www.compositesw.com/services/system/admin/archive" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="updateArchiveImportSettingsResponse" direction="OUT">
+        <datatype name="updateArchiveImportSettingsResponse" extendedName="{http://www.compositesw.com/services/system/admin/archive}updateArchiveImportSettingsResponse" namespace="http://www.compositesw.com/services/system/admin/archive" referenceDefinitionSet="/services/webservices/system/admin/archive/operations/ArchiveSchema" referenceType="{http://www.compositesw.com/services/system/admin/archive}updateArchiveImportSettingsResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/archive}updateArchiveImportSettingsResponse">
+          <schemaDatatype>
+            <datatype name="updateArchiveImportSettingsResponse" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="updateArchiveImportSettingsResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/archive" subType="ELEMENT_DECL" type="TREE" refId="4865"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="5121">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="5377">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/archive/lowerLevelProcedures/createImportArchiveXQuery" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="createImportArchive" direction="OUT">
+        <datatype name="createImportArchive" namespace="http://www.compositesw.com/services/system/admin/archive" referenceDefinitionSet="/services/webservices/system/admin/archive/operations/ArchiveSchema" referenceType="{http://www.compositesw.com/services/system/admin/archive}createImportArchive" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/archive}createImportArchive">
+          <schemaDatatype>
+            <datatype name="createImportArchive" namespace="http://www.compositesw.com/services/system/admin/archive" superTypeName="createImportArchiveRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/archive" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="data" namespace="http://www.compositesw.com/services/system/admin/archive">
+                <datatype name="base64Binary" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="BINARY"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="car_file_os_full_path" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/existsFile" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="filePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/xml/getValueFromXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="namespaces" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inXpath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inXml" direction="IN">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;importArchiveFile:
+&#x9;
+&#x9;This procedure performs an import of an archive CAR file in the Data Virtualization (DV) server.  
+&#x9;It gets the archive CAR file from the local DV file system where the DV server is running.
+
+&#x9;Examples of usage: /shared/ASAssets/Utilities/examples/archive/test_importArchiveFile
+
+    Input:
+&#x9;&#x9;debug - Y=debug is turned on,  N=debug is turned off
+&#x9;&#x9;car_file_os_full_path - The full path to the archive car file in the Data Virtualization file system.
+
+&#x9;&#x9;excludeResources&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A list resources that should not be imported.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;relocateResources&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A mapping of resources from their location in the archive to where they should be imported.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourceType VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourceType VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;rebindResources&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A mapping of resources references within the archive to where they should refer to.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;All resources containing the fromResourcePath and fromResourceType are rebound to the toResourcePath and toResourceType.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromResourceType VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toResourceType VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;rebindUsers&#x9;&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A mapping of users within the archive to whom they should be.   (change ownership)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;All resources with the current ownership in fromDomain and fromUser and changed to the owner toDomain and toUser.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromDomain VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;fromUser VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toDomain VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;toUser VARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;remapAttributes&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - A list of resource attribute settings that should be applied on import.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath LONGVARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType VARCHAR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attributes VECTOR(/shared/ASAssets/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteType) 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attrName&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;-- mandatory
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attrType&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;-- mandatory
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;attrValue&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;&#x9;&#x9;-- optional (1 of attrValue, valueList, valueMap or valueArray must be supplied)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;valueList&#x9;&#x9;&#x9;VECTOR(itemType),&#x9;&#x9;-- optional
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;valueMap&#x9;&#x9;&#x9;VECTOR(entryType),&#x9;&#x9;-- optional
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;key&quot;&#x9;&#x9;&#x9;&#x9;VECTOR(itemType),&#x9;-- this vector always only contains 1 key
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;VECTOR(itemType)&#x9;-- this vector always only contains 1 value
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&quot;value&quot;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;valueArray&#x9;&#x9;&#x9;VECTOR(LONGVARCHAR),&#x9;-- optional
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;unset&#x9;&#x9;&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- optional - 1 is unset, 0 is set or null to ignore
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;))
+&#x9;&#x9;importOptions&#x9;&#x9;&#x9;&#x9;VECTOR(LONGVARCHAR),&#x9;&#x9;&#x9;&#x9;-- optional - A list of archive options indicating what additional features should be imported.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  By default, the same options used for export will be used for import.
+&#x9;&#x9;&#x9;OVERWRITE: Overwrite the existing resources if they exist.
+&#x9;&#x9;&#x9;INCLUDE_CACHING: Include caching configurations for resources.
+&#x9;&#x9;&#x9;INCLUDE_CUSTOM_JAVA_JARS: Include custom Java JARs in the export. (ADMIN ONLY)
+&#x9;&#x9;&#x9;INCLUDE_STATISTICS: Include any resources statistics known about the table boundaries, and column boundaries. 
+&#x9;&#x9;&#x9;INCLUDE_DEPENDENCY: Gather and include all dependent resources for the resources you choose to export. 
+&#x9;&#x9;&#x9;INCLUDE_PHYSICAL_SOURCE_INFO: Include sensitive connection information for included physical sources. (OWNER ONLY)
+&#x9;&#x9;&#x9;INCLUDE_REQUIRED_USERS: Include the information about the required users in the export file.
+&#x9;&#x9;&#x9;INCLUDE_SECURITY: Include resource privilege settings. (OWNER ONLY)
+
+    Output:
+        success - 1=success, 0=failure
+&#x9;&#x9;message - success or failure message.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2015.2&#x9;&#x9;12/22/2017     &#x9;Mike Tinius     &#x9;7.0.1           Created new to be able to import an archive CAR file into the Data Virtualization Server.
+&#x9;2019.200&#x9;03/15/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Added additional input parameters to allow setting various input import archive options including: 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;excludeResources, relocateResources, rebindResources, rebindUsers, remapAttributes and importOptions.
+&#x9;2020.400&#x9;10/15/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added XML escape characters for path and name variables.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE importArchiveFile(
+&#x9;IN  debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off
+&#x9;IN  car_file_os_full_path&#x9;&#x9;LONGVARCHAR,&#x9;-- Full path to the car file archive in the DV server OS file system
+&#x9;IN&#x9;excludeResources&#x9;&#x9;&#x9;VECTOR(ROW(resourcePath LONGVARCHAR, resourceType VARCHAR)),
+&#x9;IN&#x9;relocateResources&#x9;&#x9;&#x9;VECTOR(ROW(fromResourcePath LONGVARCHAR, fromResourceType VARCHAR, toResourcePath LONGVARCHAR, toResourceType VARCHAR)),
+&#x9;IN&#x9;rebindResources&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(fromResourcePath LONGVARCHAR, fromResourceType VARCHAR, toResourcePath LONGVARCHAR, toResourceType VARCHAR)),
+&#x9;IN&#x9;rebindUsers&#x9;&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(fromDomain VARCHAR, fromUser VARCHAR, toDomain VARCHAR, toUser VARCHAR)),
+&#x9;IN&#x9;remapAttributes&#x9;&#x9;&#x9;&#x9;VECTOR(ROW(resourcePath LONGVARCHAR, resourceType VARCHAR, attributes VECTOR(/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.AttributeCompleteType) )),
+&#x9;IN  importOptions&#x9;&#x9;&#x9;&#x9;VECTOR(LONGVARCHAR),
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;OUT message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;importArchiveFile&apos;;
+&#x9;DECLARE debugPrintSize&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 63000;
+&#x9;DECLARE createRequest&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE createResponse &#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE faultResponse&#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE updateRequest&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE updateResponse &#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE LF&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT CHR(10);
+&#x9;DECLARE excludeResourcesAttr&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE excludeResourcesDefined&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE relocateResourcesAttr&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE relocateResourcesDefined&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE rebindResourcesAttr&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE rebindResourcesDefined&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE rebindUsersAttr&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE rebindUsersDefined&#x9;&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE remapAttributesAttr&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE remapAttributesDefined&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE importOptionsAttr&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE importOptionsDefined&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE attributeValueAdded&#x9;&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE namespaces&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE xpath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE archiveidstr&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE archiveid&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT;
+&#x9;DECLARE carfile_archive&#x9;&#x9;&#x9;&#x9;VARBINARY;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE importRequest&#x9;&#x9;&#x9;&#x9;/services/webservices/system/admin/archive/operations/ArchiveSchema.&quot;{http://www.compositesw.com/services/system/admin/archive}createImportArchive&quot;;
+&#x9;DECLARE fileExists&#x9;&#x9;&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE i, j, k&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE dummyForceReadFile&#x9;&#x9;&#x9;LONGVARCHAR;
+
+&#x9;BEGIN INDEPENDENT TRANSACTION
+
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/existsFile(car_file_os_full_path, fileExists);
+&#x9;&#x9;IF (NOT fileExists) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The archive CAR file does not exist:  &apos;||NVL(car_file_os_full_path,&apos;null&apos;);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/archive/lowerLevelProcedures/createImportArchiveXQuery(importRequest, car_file_os_full_path);
+&#x9;&#x9;-- Convert to generic XML [It fails without this step.]
+&#x9;&#x9;SET createRequest = CAST(importRequest AS LONGVARCHAR);
+&#x9;&#x9;-- This causes the binary stream file to be completely read before moving on the next step.  [It fails without this step.]
+&#x9;&#x9;SET dummyForceReadFile = CAST(createRequest AS LONGVARCHAR);
+
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : createRequest=&apos;||CHR(10)||SUBSTRING(NVL(CAST(createRequest AS LONGVARCHAR),&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Create the import archive process within the data virtualization server.
+&#x9;&#x9;CALL /services/webservices/system/admin/archive/operations/createImportArchive(CAST(createRequest AS XML), createResponse, faultResponse);
+
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : createImportArchive:  createResponse=&apos;||SUBSTRING(NVL(CAST(createResponse AS LONGVARCHAR),&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;END IF;
+
+/*&#x9;IN debug&#x9;&#x9;&#x9;CHAR(1),
+&#x9;IN namespaces&#x9;&#x9;LONGVARCHAR,
+&#x9;IN inXpath&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN inXml&#x9;&#x9;&#x9;XML,
+createResponse=
+&lt;archive:createImportArchiveResponse xmlns:archive=&quot;http://www.compositesw.com/services/system/admin/archive&quot;&gt;
+&#x9;&lt;archive:archiveId xmlns:NS1=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; NS1:type=&quot;archive:importArchiveId&quot;&gt;9&lt;/archive:archiveId&gt;
+&lt;/archive:createImportArchiveResponse&gt;
+&#x9;OUT outValue&#x9;&#x9;LONGVARCHAR
+*/
+&#x9;&#x9;set namespaces = &apos;xmlns:archive=&quot;http://www.compositesw.com/services/system/admin/archive&quot;&apos;;
+&#x9;&#x9;set xpath = &apos;/archive:createImportArchiveResponse/archive:archiveId&apos;;
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;xml&quot;/getValueFromXML(debug, namespaces, xpath, createResponse, archiveidstr);
+
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : archiveid=&apos;||NVL(archiveidstr,&apos;null&apos;));
+&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (archiveidstr IS NOT NULL) THEN
+&#x9;&#x9;&#x9;SET archiveid = CAST(archiveidstr AS BIGINT);
+
+&#x9;&#x9;&#x9;/* Set the update attributes */
+&#x9;&#x9;&#x9;SET updateRequest = null;
+&#x9;&#x9;&#x9;/* Set the Exclude Resources XML */
+&#x9;&#x9;&#x9;IF (excludeResources IS NOT NULL AND CARDINALITY(excludeResources) &gt; 0) THEN
+/*
+    &lt;archive:excludeResources&gt;
+      &lt;resource:entry&gt;
+        &lt;resource:path&gt;?&lt;/resource:path&gt;
+        &lt;resource:type&gt;?&lt;/resource:type&gt;
+      &lt;/resource:entry&gt;
+    &lt;/archive:excludeResources&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;SET excludeResourcesAttr = &apos;    &lt;archive:excludeResources&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;SET i = 1;
+&#x9;&#x9;&#x9;&#x9;WHILE (i &lt;= CARDINALITY(excludeResources)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (excludeResources[i].resourcePath IS NOT NULL AND LENGTH(TRIM(excludeResources[i].resourcePath)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;excludeResources[i].resourceType IS NOT NULL AND LENGTH(TRIM(excludeResources[i].resourceType)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET excludeResourcesDefined = true;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET excludeResourcesAttr = excludeResourcesAttr || &apos;      &lt;resource:entry&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET excludeResourcesAttr = excludeResourcesAttr || &apos;        &lt;resource:path&gt;&apos;||CAST(XMLTEXT(excludeResources[i].resourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET excludeResourcesAttr = excludeResourcesAttr || &apos;        &lt;resource:type&gt;&apos;||TRIM(excludeResources[i].resourceType)||&apos;&lt;/resource:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET excludeResourcesAttr = excludeResourcesAttr || &apos;      &lt;/resource:entry&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;SET excludeResourcesAttr = excludeResourcesAttr || &apos;    &lt;/archive:excludeResources&gt;&apos;||LF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/* Set the Relocate Resources XML */
+&#x9;&#x9;&#x9;IF (relocateResources IS NOT NULL AND CARDINALITY(relocateResources) &gt; 0) THEN
+/*
+    &lt;archive:relocateResources&gt;
+      &lt;archive:map&gt;
+        &lt;archive:from&gt;
+          &lt;resource:path&gt;?&lt;/resource:path&gt;
+          &lt;resource:type&gt;?&lt;/resource:type&gt;
+        &lt;/archive:from&gt;
+        &lt;archive:to&gt;
+          &lt;resource:path&gt;?&lt;/resource:path&gt;
+          &lt;resource:type&gt;?&lt;/resource:type&gt;
+        &lt;/archive:to&gt;
+      &lt;/archive:map&gt;
+    &lt;/archive:relocateResources&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = &apos;    &lt;archive:relocateResources&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;SET i = 1;
+&#x9;&#x9;&#x9;&#x9;WHILE (i &lt;= CARDINALITY(relocateResources)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (relocateResources[i].fromResourcePath IS NOT NULL AND LENGTH(TRIM(relocateResources[i].fromResourcePath)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;relocateResources[i].fromResourceType IS NOT NULL AND LENGTH(TRIM(relocateResources[i].fromResourceType)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;relocateResources[i].toResourcePath IS NOT NULL AND LENGTH(TRIM(relocateResources[i].toResourcePath)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;relocateResources[i].toResourceType IS NOT NULL AND LENGTH(TRIM(relocateResources[i].toResourceType)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesDefined = true;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;      &lt;archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;        &lt;archive:from&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;          &lt;resource:path&gt;&apos;||CAST(XMLTEXT(relocateResources[i].fromResourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;          &lt;resource:type&gt;&apos;||TRIM(relocateResources[i].fromResourceType)||&apos;&lt;/resource:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;        &lt;/archive:from&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;        &lt;archive:to&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;          &lt;resource:path&gt;&apos;||CAST(XMLTEXT(relocateResources[i].toResourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;          &lt;resource:type&gt;&apos;||TRIM(relocateResources[i].toResourceType)||&apos;&lt;/resource:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;        &lt;/archive:to&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;      &lt;/archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;SET relocateResourcesAttr = relocateResourcesAttr || &apos;    &lt;/archive:relocateResources&gt;&apos;||LF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/* Set the Rebind Resources XML */
+&#x9;&#x9;&#x9;IF (rebindResources IS NOT NULL AND CARDINALITY(rebindResources) &gt; 0) THEN
+/*
+    &lt;archive:rebindResources&gt;
+      &lt;archive:map&gt;
+        &lt;archive:from&gt;
+          &lt;resource:path&gt;?&lt;/resource:path&gt;
+          &lt;resource:type&gt;?&lt;/resource:type&gt;
+        &lt;/archive:from&gt;
+        &lt;archive:to&gt;
+          &lt;resource:path&gt;?&lt;/resource:path&gt;
+          &lt;resource:type&gt;?&lt;/resource:type&gt;
+        &lt;/archive:to&gt;
+      &lt;/archive:map&gt;
+    &lt;/archive:rebindResources&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = &apos;    &lt;archive:rebindResources&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;SET i = 1;
+&#x9;&#x9;&#x9;&#x9;WHILE (i &lt;= CARDINALITY(rebindResources)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (rebindResources[i].fromResourcePath IS NOT NULL AND LENGTH(TRIM(rebindResources[i].fromResourcePath)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;rebindResources[i].fromResourceType IS NOT NULL AND LENGTH(TRIM(rebindResources[i].fromResourceType)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;rebindResources[i].toResourcePath IS NOT NULL AND LENGTH(TRIM(rebindResources[i].toResourcePath)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;rebindResources[i].toResourceType IS NOT NULL AND LENGTH(TRIM(rebindResources[i].toResourceType)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesDefined = true;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;      &lt;archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;        &lt;archive:from&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;          &lt;resource:path&gt;&apos;||CAST(XMLTEXT(rebindResources[i].fromResourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;          &lt;resource:type&gt;&apos;||TRIM(rebindResources[i].fromResourceType)||&apos;&lt;/resource:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;        &lt;/archive:from&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;        &lt;archive:to&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;          &lt;resource:path&gt;&apos;||CAST(XMLTEXT(rebindResources[i].toResourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;          &lt;resource:type&gt;&apos;||TRIM(rebindResources[i].toResourceType)||&apos;&lt;/resource:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;        &lt;/archive:to&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;      &lt;/archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;SET rebindResourcesAttr = rebindResourcesAttr || &apos;    &lt;/archive:rebindResources&gt;&apos;||LF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/* Set the Rebind Users XML */
+&#x9;&#x9;&#x9;IF (rebindUsers IS NOT NULL AND CARDINALITY(rebindUsers) &gt; 0) THEN
+/*
+    &lt;archive:rebindUsers&gt;
+      &lt;archive:map&gt;
+        &lt;archive:from&gt;
+          &lt;archive:domainName&gt;?&lt;/archive:domainName&gt;
+          &lt;archive:userName&gt;?&lt;/archive:userName&gt;
+        &lt;/archive:from&gt;
+        &lt;archive:to&gt;
+          &lt;archive:domainName&gt;?&lt;/archive:domainName&gt;
+          &lt;archive:userName&gt;?&lt;/archive:userName&gt;
+        &lt;/archive:to&gt;
+      &lt;/archive:map&gt;
+    &lt;/archive:rebindUsers&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = &apos;    &lt;archive:rebindUsers&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;SET i = 1;
+&#x9;&#x9;&#x9;&#x9;WHILE (i &lt;= CARDINALITY(rebindUsers)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (rebindUsers[i].fromDomain IS NOT NULL AND LENGTH(TRIM(rebindUsers[i].fromDomain)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;rebindUsers[i].fromUser IS NOT NULL AND LENGTH(TRIM(rebindUsers[i].fromUser)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;rebindUsers[i].toDomain IS NOT NULL AND LENGTH(TRIM(rebindUsers[i].toDomain)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;rebindUsers[i].toUser IS NOT NULL AND LENGTH(TRIM(rebindUsers[i].toUser)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersDefined = true;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;      &lt;archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;        &lt;archive:from&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;          &lt;archive:domainName&gt;&apos;||TRIM(rebindUsers[i].fromDomain)||&apos;&lt;/archive:domainName&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;          &lt;archive:userName&gt;&apos;||TRIM(rebindUsers[i].fromUser)||&apos;&lt;/archive:userName&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;        &lt;/archive:from&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;        &lt;archive:to&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;          &lt;archive:domainName&gt;&apos;||TRIM(rebindUsers[i].toDomain)||&apos;&lt;/archive:domainName&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;          &lt;archive:userName&gt;&apos;||TRIM(rebindUsers[i].toUser)||&apos;&lt;/archive:userName&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;        &lt;/archive:to&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;      &lt;/archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;SET rebindUsersAttr = rebindUsersAttr || &apos;    &lt;/archive:rebindUsers&gt;&apos;||LF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/* Set the Remap Attributes XML */
+&#x9;&#x9;&#x9;IF (remapAttributes IS NOT NULL AND CARDINALITY(remapAttributes) &gt; 0) THEN
+/*
+    &lt;archive:remapAttributes&gt;
+      &lt;archive:map&gt;
+        &lt;archive:resource&gt;
+          &lt;resource:path&gt;?&lt;/resource:path&gt;
+          &lt;resource:type&gt;?&lt;/resource:type&gt;
+        &lt;/archive:resource&gt;
+        &lt;archive:attribute&gt;
+          &lt;common:name&gt;?&lt;/common:name&gt;
+          &lt;common:type&gt;?&lt;/common:type&gt;
+
+          &lt;common:value&gt;?&lt;/common:value&gt;
+
+          &lt;common:valueList&gt;
+            &lt;common:item&gt;
+              &lt;common:type&gt;?&lt;/common:type&gt;
+              &lt;common:value&gt;?&lt;/common:value&gt;
+            &lt;/common:item&gt;
+          &lt;/common:valueList&gt;
+
+          &lt;common:valueMap&gt;
+            &lt;common:entry&gt;
+              &lt;common:key&gt;
+                &lt;common:type&gt;?&lt;/common:type&gt;
+                &lt;common:value&gt;?&lt;/common:value&gt;
+              &lt;/common:key&gt;
+              &lt;common:value&gt;
+                &lt;common:type&gt;?&lt;/common:type&gt;
+                &lt;common:value&gt;?&lt;/common:value&gt;
+              &lt;/common:value&gt;
+            &lt;/common:entry&gt;
+          &lt;/common:valueMap&gt;
+
+          &lt;common:valueArray&gt;
+            &lt;common:item&gt;?&lt;/common:item&gt;
+          &lt;/common:valueArray&gt;
+
+          &lt;common:unset&gt;?&lt;/common:unset&gt;
+        &lt;/archive:attribute&gt;
+      &lt;/archive:map&gt;
+    &lt;/archive:remapAttributes&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = &apos;    &lt;archive:remapAttributes&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;SET i = 1;
+&#x9;&#x9;&#x9;&#x9;WHILE (i &lt;= CARDINALITY(remapAttributes)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (remapAttributes[i].resourcePath IS NOT NULL AND LENGTH(TRIM(remapAttributes[i].resourcePath)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;remapAttributes[i].resourceType IS NOT NULL AND LENGTH(TRIM(remapAttributes[i].resourceType)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesDefined = true;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;      &lt;archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;        &lt;archive:resource&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;resource:path&gt;&apos;||CAST(XMLTEXT(remapAttributes[i].resourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;resource:type&gt;&apos;||TRIM(remapAttributes[i].resourceType)||&apos;&lt;/resource:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;        &lt;/archive:resource&gt;&apos;||LF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Process the attributes vector
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET j = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHILE (j &lt;= CARDINALITY(remapAttributes[i].attributes)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (remapAttributes[i].attributes[j].attrName IS NOT NULL AND LENGTH(TRIM(remapAttributes[i].attributes[j].attrName)) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;remapAttributes[i].attributes[j].attrType IS NOT NULL AND LENGTH(TRIM(remapAttributes[i].attributes[j].attrType)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;        &lt;archive:attribute&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:name&gt;&apos;||CAST(XMLTEXT(remapAttributes[i].attributes[j].attrName) AS LONGVARCHAR)||&apos;&lt;/common:name&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:type&gt;&apos;||TRIM(remapAttributes[i].attributes[j].attrType)||&apos;&lt;/common:type&gt;&apos;||LF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Process 1 of attrValue, valueList, valueMap or valueArray must be supplied
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Attribute Value (single value)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (remapAttributes[i].attributes[j].attrValue IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(remapAttributes[i].attributes[j].attrValue) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET attributeValueAdded = true;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Value List
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSEIF (remapAttributes[i].attributes[j].valueList IS NOT NULL AND CARDINALITY(remapAttributes[i].attributes[j].valueList) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:valueList&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET k = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHILE (k &lt;= CARDINALITY(remapAttributes[i].attributes[j].valueList)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (remapAttributes[i].attributes[j].valueList[k].&quot;type&quot; IS NOT NULL AND LENGTH(remapAttributes[i].attributes[j].valueList[k].&quot;type&quot;) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;remapAttributes[i].attributes[j].valueList[k].&quot;value&quot; IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;            &lt;common:item&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;              &lt;common:type&gt;&apos;||remapAttributes[i].attributes[j].valueList[k].&quot;type&quot;||&apos;&lt;/common:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;              &lt;common:value&gt;&apos;||CAST(XMLTEXT(remapAttributes[i].attributes[j].valueList[k].&quot;value&quot;) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;            &lt;/common:item&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET k = k + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;/common:valueList&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET attributeValueAdded = true;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Value Map
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSEIF (remapAttributes[i].attributes[j].valueMap IS NOT NULL AND CARDINALITY(remapAttributes[i].attributes[j].valueMap) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:valueMap&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET k = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHILE (k &lt;= CARDINALITY(remapAttributes[i].attributes[j].valueMap)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (CARDINALITY(remapAttributes[i].attributes[j].valueMap[k].&quot;key&quot;) &gt; 0 AND CARDINALITY(remapAttributes[i].attributes[j].valueMap[k].&quot;value&quot;) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;remapAttributes[i].attributes[j].valueMap[k].&quot;key&quot;[1].&quot;type&quot; IS NOT NULL AND LENGTH(remapAttributes[i].attributes[j].valueMap[k].&quot;key&quot;[1].&quot;type&quot;) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;remapAttributes[i].attributes[j].valueMap[k].&quot;key&quot;[1].&quot;value&quot; IS NOT NULL AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;remapAttributes[i].attributes[j].valueMap[k].&quot;value&quot;[1].&quot;type&quot; IS NOT NULL AND LENGTH(remapAttributes[i].attributes[j].valueMap[k].&quot;value&quot;[1].&quot;type&quot;) &gt; 0 AND
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;remapAttributes[i].attributes[j].valueMap[k].&quot;value&quot;[1].&quot;value&quot; IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;            &lt;common:entry&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;              &lt;common:key&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;                &lt;common:type&gt;&apos;||remapAttributes[i].attributes[j].valueMap[k].&quot;key&quot;[1].&quot;type&quot;||&apos;&lt;/common:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;                &lt;common:value&gt;&apos;||CAST(XMLTEXT(remapAttributes[i].attributes[j].valueMap[k].&quot;key&quot;[1].&quot;value&quot;) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;              &lt;/common:key&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;              &lt;common:value&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;                &lt;common:type&gt;&apos;||remapAttributes[i].attributes[j].valueMap[k].&quot;value&quot;[1].&quot;type&quot;||&apos;&lt;/common:type&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;                &lt;common:value&gt;&apos;||CAST(XMLTEXT(remapAttributes[i].attributes[j].valueMap[k].&quot;value&quot;[1].&quot;value&quot;) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;              &lt;/common:value&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;            &lt;/common:entry&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET k = k + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;/common:valueMap&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET attributeValueAdded = true;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Value Array
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSEIF (remapAttributes[i].attributes[j].valueArray IS NOT NULL AND CARDINALITY(remapAttributes[i].attributes[j].valueArray) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:valueArray&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET k = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHILE (k &lt;= CARDINALITY(remapAttributes[i].attributes[j].valueArray)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (remapAttributes[i].attributes[j].valueArray[k] IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;            &lt;common:item&gt;&apos;||CAST(XMLTEXT(remapAttributes[i].attributes[j].valueArray[k]) AS LONGVARCHAR)||&apos;&lt;/common:item&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET k = k + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;/common:valueArray&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET attributeValueAdded = true;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If no values were provided then set a default null closed value tag.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/*        &lt;common:attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;          &lt;common:name&gt;references&lt;/common:name&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;          &lt;common:type&gt;NULL&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;          &lt;common:value/&gt;  &lt;---- value is unset
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;        &lt;/common:attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;*/
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (NOT attributeValueAdded) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:value/&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Check the unset flag
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (remapAttributes[i].attributes[j].unset IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;          &lt;common:unset&gt;&apos;||CAST(remapAttributes[i].attributes[j].unset AS VARCHAR)||&apos;&lt;/common:unset&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;        &lt;/archive:attribute&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET j = j + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;      &lt;/archive:map&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;SET remapAttributesAttr = remapAttributesAttr || &apos;    &lt;/archive:remapAttributes&gt;&apos;||LF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/* Set the Import Options XML */
+&#x9;&#x9;&#x9;IF (importOptions IS NOT NULL AND CARDINALITY(importOptions) &gt; 0) THEN
+/*
+    &lt;archive:importOptions&gt;
+      &lt;common:name&gt;?&lt;/common:name&gt;
+    &lt;/archive:importOptions&gt;
+*/
+&#x9;&#x9;&#x9;&#x9;SET importOptionsAttr = &apos;    &lt;archive:importOptions&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;SET i = 1;
+&#x9;&#x9;&#x9;&#x9;WHILE (i &lt;= CARDINALITY(importOptions)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (importOptions[i] IS NOT NULL AND LENGTH(TRIM(importOptions[i])) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET importOptionsDefined = true;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET importOptionsAttr = importOptionsAttr || &apos;      &lt;common:name&gt;&apos;||TRIM(importOptions[i])||&apos;&lt;/common:name&gt;&apos;||LF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;SET importOptionsAttr = importOptionsAttr || &apos;    &lt;/archive:importOptions&gt;&apos;||LF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Put all the attributes together in the request
+&#x9;&#x9;&#x9;IF (excludeResourcesDefined OR relocateResourcesDefined OR rebindResourcesDefined OR rebindUsersDefined OR remapAttributesDefined OR importOptionsDefined) THEN
+&#x9;&#x9;&#x9;&#x9;SET updateRequest = 
+&apos;&lt;archive:updateArchiveImportSettings xmlns:archive=&quot;http://www.compositesw.com/services/system/admin/archive&quot; 
+xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; 
+xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+  &lt;archive:archiveId&gt;&apos;||CAST(archiveid AS VARCHAR)||&apos;&lt;/archive:archiveId&gt;
+  &lt;archive:settings&gt;
+&apos;||
+&#x9;excludeResourcesAttr ||
+&#x9;relocateResourcesAttr ||
+&#x9;rebindResourcesAttr ||
+&#x9;rebindUsersAttr ||
+&#x9;remapAttributesAttr ||
+&#x9;importOptionsAttr || 
+&apos;  &lt;/archive:settings&gt;
+&lt;/archive:updateArchiveImportSettings&gt;
+&apos;;
+&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : updateArchiveImportSettings:  updateRequest=&apos;||CHR(10)||SUBSTRING(NVL(CAST(updateRequest AS LONGVARCHAR),&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PAUSE(500); -- If an exception is thrown often times, the console window does not show unless there is a pause.
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;CALL /services/webservices/system/admin/archive/operations/updateArchiveImportSettings(CAST(updateRequest AS XML), updateResponse, faultResponse);
+&#x9;&#x9;&#x9;&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE CAST(faultResponse AS LONGVARCHAR);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/* Set the perform archive import request */
+&#x9;&#x9;&#x9;SET createRequest = 
+&apos;&lt;archive:performArchiveImport xmlns:archive=&quot;http://www.compositesw.com/services/system/admin/archive&quot;&gt;
+  &lt;archive:archiveId&gt;&apos;||CAST(archiveid AS VARCHAR)||&apos;&lt;/archive:archiveId&gt;
+  &lt;archive:isBlocking&gt;true&lt;/archive:isBlocking&gt;
+&lt;/archive:performArchiveImport&gt;
+&apos;;
+&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : performArchiveImport:  createRequest=&apos;||CHR(10)||SUBSTRING(NVL(CAST(createRequest AS LONGVARCHAR),&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;CALL PAUSE(500); -- If an exception is thrown often times, the console window does not show unless there is a pause.
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Complete the archive import
+&#x9;&#x9;&#x9;CALL /services/webservices/system/admin/archive/operations/performArchiveImport(CAST(createRequest AS XML), createResponse, faultResponse);
+&#x9;&#x9;&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE CAST(faultResponse AS LONGVARCHAR);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;&#x9;set message = &apos;Successfully imported archive file.&apos;;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;set success = 0;
+&#x9;&#x9;&#x9;set message = &apos;Unable to import archive.  The &quot;archiveId&quot; could not be retrieved.&apos;;
+&#x9;&#x9;END IF;
+&#x9;END;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1506374997929</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:2:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:3:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:4:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:5:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:6:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:7:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/163</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/155</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/531</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/549</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/154</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/532</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/530</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/550</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/551</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/182</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/181</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/162</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1506374997929</attribute>
+</metadata>

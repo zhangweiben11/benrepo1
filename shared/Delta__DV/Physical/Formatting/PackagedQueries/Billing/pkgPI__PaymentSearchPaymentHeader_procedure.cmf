@@ -1,0 +1,63 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPI_PaymentSearchPaymentHeader" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Billing/pkgPI_PaymentSearchPaymentHeader" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="paymentNumber" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="cashReceiptId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="500"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="cashReceiptId">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="paymentNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="paymentTotal">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="userInitiatePayment">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="paymentInitiateDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="confirmationEmailSent">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/efs" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">&lt;version 2&gt;
+SELECT /*+ parallel(16) */ acr.cash_receipt_id cashReceiptId
+           ,acr.receipt_number paymentNumber
+           ,acr.amount paymentTotal
+           ,&apos;Offline&apos; userInitiatePayment      
+           ,acr.receipt_date paymentInitiateDate
+           ,&apos; &apos;confirmationEmailSent
+      FROM apps.ar_cash_receipts_all acr,
+           apps.ar_receipt_methods arm
+    WHERE  acr.receipt_method_id = arm.receipt_method_id 
+AND acr.receipt_number =  COALESCE(NULLIF(&apos;{0}&apos;,&apos;NULL&apos;),acr.receipt_number)
+AND (acr.cash_receipt_id IN {1} or q&apos;[{1}]&apos; =q&apos;[(&apos;x&apos;)]&apos;)</attribute>
+  <attribute name="creationDate" type="LONG">1608666783954</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2850169</attribute>
+  <attribute name="creatorUserName" type="STRING">dca32905</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609961361102</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2850169</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca32905</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/efs</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608666783954</attribute>
+</metadata>

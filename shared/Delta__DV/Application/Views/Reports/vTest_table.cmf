@@ -1,0 +1,191 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="vTest" path="/shared/Delta_DV/Application/Views/Reports/vTest" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Agent_Director_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Full_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Manager_Full_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Supervisor_Full_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_User_Id" nullable="true">
+      <datatype type="STRING" maxLength="25"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Call_Handle_Time" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Call_Reason" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Callback_Successful_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Contact_Center_Routing_Unit_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Survey_Event_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Finished_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="First_Call_Resolution_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Recording_Location_URL" nullable="true">
+      <datatype type="STRING" maxLength="2048"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Site" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Unique_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="128"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Start_Date" nullable="true">
+      <datatype type="DATE"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Survey_Name" nullable="true">
+      <datatype type="STRING" maxLength="128"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Survey_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Total_Agent_Time" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Total_IVR_Call_Time" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Total_Onhold_Call_Time" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Total_Score_Value" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/CCTA/Customer_Service_Survey_Event_Fact" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Agent_Director_Name&quot; AS &quot;Agent_Director_Name&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Agent_Full_Name&quot; AS &quot;Agent_Full_Name&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Agent_Manager_Full_Name&quot; AS &quot;Agent_Manager_Full_Name&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Agent_Supervisor_Full_Name&quot; AS &quot;Agent_Supervisor_Full_Name&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Agent_User_Id&quot; AS &quot;Agent_User_Id&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Call_Handle_Time&quot; AS &quot;Call_Handle_Time&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Call_Reason&quot; AS &quot;Call_Reason&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Callback_Successful_Indicator&quot; AS &quot;Callback_Successful_Indicator&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Contact_Center_Routing_Unit_Code&quot; AS &quot;Contact_Center_Routing_Unit_Code&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Customer_Service_Survey_Event_Key&quot; AS &quot;Customer_Service_Survey_Event_Key&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Finished_Indicator&quot; AS &quot;Finished_Indicator&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;First_Call_Resolution_Indicator&quot; AS &quot;First_Call_Resolution_Indicator&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Recording_Location_URL&quot; AS &quot;Recording_Location_URL&quot;,
+    CAST(&quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Site&quot; AS VARCHAR(100)) AS &quot;Site&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Source_System_Name&quot; AS &quot;Source_System_Name&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Source_System_Unique_Identifier&quot; AS &quot;Source_System_Unique_Identifier&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Start_Date&quot; AS &quot;Start_Date&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Survey_Name&quot; AS &quot;Survey_Name&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Survey_Type_Code&quot; AS &quot;Survey_Type_Code&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Total_Agent_Time&quot; AS &quot;Total_Agent_Time&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Total_IVR_Call_Time&quot; AS &quot;Total_IVR_Call_Time&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Total_Onhold_Call_Time&quot; AS &quot;Total_Onhold_Call_Time&quot;,
+    &quot;Customer_Service_Survey_Event_Fact&quot;.&quot;Total_Score_Value&quot; AS &quot;Total_Score_Value&quot;
+FROM 
+/shared/Delta_DV/Application/Views/Reports/CCTA/Customer_Service_Survey_Event_Fact &quot;Customer_Service_Survey_Event_Fact&quot;</attribute>
+  <attribute name="creationDate" type="LONG">1606338689546</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5470202</attribute>
+  <attribute name="creatorUserName" type="STRING">dos90127</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="impactLevel" type="INTEGER">32</attribute>
+  <attribute name="impactMessage" type="STRING">Invalid column name &apos;Site&apos;.  On line 15, column 10.  [parser-2900650]</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5470202</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1606338689546</attribute>
+</metadata>

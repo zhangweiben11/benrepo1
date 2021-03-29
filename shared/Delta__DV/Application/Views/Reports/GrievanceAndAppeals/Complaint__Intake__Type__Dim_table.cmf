@@ -1,0 +1,47 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Complaint_Intake_Type_Dim" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Intake_Type_Dim" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Complaint_Intake_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Intake_Type_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Intake_Type" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Intake_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Intake_Type_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select&#x9;Complaint_Intake_Type_Code Complaint_Intake_Type_Code,
+&#x9;&#x9;Complaint_Intake_Type_Name Complaint_Intake_Type_Name
+from /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Intake_Type</attribute>
+  <attribute name="creationDate" type="LONG">1608773811371</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608773811371</attribute>
+</metadata>

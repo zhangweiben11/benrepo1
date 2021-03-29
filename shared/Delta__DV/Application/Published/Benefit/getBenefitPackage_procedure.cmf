@@ -1,0 +1,338 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getBenefitPackage" path="/shared/Delta_DV/Application/Published/Benefit/getBenefitPackage" type="PROCEDURE" subtype="TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[Benefit Package Service:  API to provide Standard Benefit Package for Enrollee or Group/Division
+1. Get Benefit Package Id for Group/Division as of Effective Date or for Enrollee Id as of Effective Date
+2. Get static benefit configuration info for the Benefit Package Id]]></annotation>
+  <parameters>
+    <parameter name="pGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pEffectiveDate" direction="IN" nullable="false">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="benefit" direction="OUT" nullable="false">
+      <datatype name="benefit" referenceDefinitionSet="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_BenefitPackage" referenceType="benefit" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="benefit">
+        <schemaDatatype>
+          <datatype name="benefit" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="benefitPackageId">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="cppPackage">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="healthSpringPackage">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="homeTownPackage">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="peoplesHealthPackage">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="deltaCarePackage">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="incentivePackage">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="accNetwork">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="missingToothIndicator">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="networksAllowed" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="code">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="description">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+              </datatype>
+            </element>
+            <element name="treatment" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                <element name="treatmentCode">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="treatmentDescription">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="treatmentBusinessDescription" minOccurs="0">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="summaryValues" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                    <element name="maximumCoverage" minOccurs="0">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="minimumCoverage" minOccurs="0">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="networkCode">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="amountType" minOccurs="0">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="outOfNetworkMessage" minOccurs="0">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="procedureClass" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                    <element name="summaryCategoryCode">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="summaryCategoryDescription">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="classificationCode">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="classificationDescription">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="procedure" maxOccurs="2147483647" minOccurs="0">
+                      <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                        <element name="code">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="description">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="suppressionIndicator">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="iVRSuppressionIndicator">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="preApprovalRequired">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="incentiveCounterKeyword" minOccurs="0">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="incentiveProcedure" minOccurs="0">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="defaultNetwork" minOccurs="0">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                        <element name="network" maxOccurs="2147483647" minOccurs="0">
+                          <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                            <element name="code">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="description">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="benefitCoverageLevel" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="copayAmount" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="deductibleExempted">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="individualRelationshipCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="incentiveNetwork" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="maximumExempted">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="outOfPocketMaximumApplies" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="amountType" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="outOfNetworkMessage" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="sexAgeCodeDescription" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="sexAgeCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="minAge" minOccurs="0">
+                              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                            </element>
+                            <element name="maxAge" minOccurs="0">
+                              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                            </element>
+                            <element name="ageLimit">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="adult">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="cmsnpNetworkExists" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="incentiveLevel" maxOccurs="2147483647" minOccurs="0">
+                              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                <element name="incentiveCoverageLevel">
+                                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                                </element>
+                                <element name="incentiveLevel">
+                                  <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                                </element>
+                              </datatype>
+                            </element>
+                            <element name="groupToothCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="groupTooth" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="toothNumberCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                          </datatype>
+                        </element>
+                        <element name="limitation" maxOccurs="2147483647" minOccurs="0">
+                          <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                            <element name="networksApplicable" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="benefitQuantity" minOccurs="0">
+                              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                            </element>
+                            <element name="benefitCounterIdentifier" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="allLimitedToCounterIdentifier" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="frequencyLimitationQualifierCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="frequencyLimitationText">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="individualRelationshipCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="periodTypeCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="limitationSequenceNumberForProgram" minOccurs="0">
+                              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                            </element>
+                            <element name="limitationKeywordSequenceNumber" minOccurs="0">
+                              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                            </element>
+                            <element name="intervalUnitCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="intervalNumber" minOccurs="0">
+                              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+                            </element>
+                            <element name="groupToothCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="limitedToKeywordIdentifier" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="groupTooth" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="toothLimitation" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                            <element name="toothNumberCode" minOccurs="0">
+                              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                            </element>
+                          </datatype>
+                        </element>
+                      </datatype>
+                    </element>
+                  </datatype>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_BenefitPackage" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetBenefitPackage" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Benefit/Procedures/xqrBl_ParseBenefitPkgXML" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1600976292242</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612397594793</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1600976292242</attribute>
+  <attribute name="transformModel" type="BYTE_ARRAY">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</attribute>
+  <attribute name="transformSource" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace xquery =  &quot;http://compositesw.com/transform/xquery&quot;;
+declare namespace custom =  &quot;http://compositesw.com/transform/custom&quot;;
+declare namespace xs =  &quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare namespace ext2 =  &quot;http://www.compositesw.com/extensions2&quot;;
+declare namespace sql =  &quot;http://compositesw.com/transform/sql&quot;;
+
+declare variable $pGroupID external;
+declare variable $pDivisionID external;
+declare variable $pEffectiveDate external;
+declare function local:parseBenefitXML( $benefitXML)
+{
+  (:invoke resource /shared/Delta_DV/Business/Logical/Benefit/Procedures/xqrBl_ParseBenefitPkgXML :)
+  let $query := &quot;/shared/Delta_DV/Business/Logical/Benefit/Procedures/xqrBl_ParseBenefitPkgXML&quot;
+  let $var1 := composite:executeProcedure($query, ($benefitXML))
+  return
+    $var1
+};
+
+declare function local:pGetBenefit_xml( $inGroupID,  $inDivisionID,  $inAsOfDate)
+{
+  (:invoke resource /shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetBenefitPackage :)
+  let $query := &quot;/shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetBenefitPackage&quot;
+  let $var3 := composite:executeProcedure($query, ($inGroupID,  $inDivisionID,  $inAsOfDate))
+  return
+    $var3
+};
+
+let $nodes := 
+(
+  let $var4 := element inGroupID{$pGroupID}
+  let $var5 := element inDivisionID{$pDivisionID}
+  let $var6 := element inAsOfDate{$pEffectiveDate}
+  let $var3:= local:pGetBenefit_xml($var4,$var5,$var6)
+  return
+  let $var2 := element benefitXML{$var3/self::result}
+  let $var1:= local:parseBenefitXML($var2)
+  return
+  element benefit
+  {
+    $var1/self::benefit/*
+  }
+)
+return
+$nodes</attribute>
+</metadata>

@@ -1,0 +1,665 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="createUnionView" path="/shared/Delta_DV/_scripts/Utilities/repository/createUnionView" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[createUnionView:
+
+    This procedure creates a union view composed of the columns of two other views.
+    The two views do not necessarily need to have the same columns (though logically,
+    there should at least be one column in common.) The procedure will substitute NULLs
+    for columns that don&apos;t exist in a particular view (cast to the data type of the other
+    view&apos;s column.) If a column is common across both views but either the case of the
+    column or the data types differ, a flag is used to indicate which view&apos;s column
+    definition to give preference to.
+
+
+&#x9;Input:
+        UnionViewPath              - The path to the union view to be created.  
+            Values: Any resource path value
+
+        View1Path                  - The path of the view providing data for the left side of the union.
+            Values: Any resource path value
+
+        View2Path                  - The path of the view providing data for the right side of the union.
+            Values: Any resource path value
+
+        NameTypeConflictPreference - if both views have the same column but different name case or data types, this specifies which of the two view&apos;s data types to use
+            Values: 1 or 2
+
+        AllIndicator               - Indicates whether the new union should be union all (1) or not (0)
+            Values: 1 or 0
+
+
+    Output:
+&#x9;&#x9;success&#x9;                   - Indicates whether the creation of the union view succeeded or not.
+&#x9;&#x9;&#x9;Values: 1 or 0
+&#x9;&#x9;responseXML                - XML response representing what was updated.
+&#x9;&#x9;&#x9;Values: Update Response XML value
+&#x9;&#x9;faultResponse              - Contains a fault response if an error occurred (NULL if otherwise.)
+&#x9;&#x9;&#x9;Values: Fault Response XML value
+
+
+    Exceptions:
+        /lib/util/System.IllegalArgumentException - Thrown when arguments can&apos;t be validated.
+
+        /lib/util/System.IllegalStateException    - Thrown when resources exist when they shouldn&apos;t or vice versa.
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.4&#x9;&#x9;09/17/2012&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2015.4&#x9;&#x9;09/15/2015&#x9;&#x9;Matt Lee    &#x9;&#x9;7.0.1&#x9;&#x9;&#x9;Fixed issue where hard coded paths still pointed to /shared/Utilities.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="UnionViewPath" direction="IN" nullable="true">
+      <datatype name="ResourcePath" referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="View1Path" direction="IN" nullable="true">
+      <datatype name="ResourcePath" referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="View2Path" direction="IN" nullable="true">
+      <datatype name="ResourcePath" referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="NameTypeConflictPreference" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="AllIndicator" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="responseXML" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="faultXML" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/resource" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceDefs" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/createResource" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="pathType" type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceSubType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="createResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateSqlTable" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="inScripttext" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="createResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/basename" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceName" type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/dirname" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+  createUnionView:
+
+    This procedure creates a union view composed of the columns of two other views.
+    The two views do not necessarily need to have the same columns (though logically,
+    there should at least be one column in common.) The procedure will substitute NULLs
+    for columns that don&apos;t exist in a particular view (cast to the data type of the other
+    view&apos;s column.) If a column is common across both views but either the case of the
+    column or the data types differ, a flag is used to indicate which view&apos;s column
+    definition to give preference to.
+
+
+&#x9;Input:
+        UnionViewPath              - The path to the union view to be created.  
+            Values: Any resource path value
+
+        View1Path                  - The path of the view providing data for the left side of the union.
+            Values: Any resource path value
+
+        View2Path                  - The path of the view providing data for the right side of the union.
+            Values: Any resource path value
+
+        NameTypeConflictPreference - if both views have the same column but different name case or data types, this specifies which of the two view&apos;s data types to use
+            Values: 1 or 2
+
+        AllIndicator               - Indicates whether the new union should be union all (1) or not (0)
+            Values: 1 or 0
+
+
+    Output:
+&#x9;&#x9;success&#x9;                   - Indicates whether the creation of the union view succeeded or not.
+&#x9;&#x9;&#x9;Values: 1 or 0
+&#x9;&#x9;responseXML                - XML response representing what was updated.
+&#x9;&#x9;&#x9;Values: Update Response XML value
+&#x9;&#x9;faultResponse              - Contains a fault response if an error occurred (NULL if otherwise.)
+&#x9;&#x9;&#x9;Values: Fault Response XML value
+
+
+    Exceptions:
+        /lib/util/System.IllegalArgumentException - Thrown when arguments can&apos;t be validated.
+
+        /lib/util/System.IllegalStateException    - Thrown when resources exist when they shouldn&apos;t or vice versa.
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.4&#x9;&#x9;09/17/2012&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2015.4&#x9;&#x9;09/15/2015&#x9;&#x9;Matt Lee    &#x9;&#x9;7.0.1&#x9;&#x9;&#x9;Fixed issue where hard coded paths still pointed to /shared/Utilities.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE createUnionView(
+    IN UnionViewPath              /lib/resource/ResourceDefs.ResourcePath, -- folder that will contain the union view
+    IN View1Path                  /lib/resource/ResourceDefs.ResourcePath, -- name of the view providing data for the left side of the union
+    IN View2Path                  /lib/resource/ResourceDefs.ResourcePath, -- name of the view providing data for the right side of the union
+    IN NameTypeConflictPreference INTEGER,                                 -- if both views have the same column but different name case or data types, this specifies which of the two view&apos;s data types to use
+    IN AllIndicator               BIT,                                     -- indicates whether union should be union all (1) or not (0)
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;      BIT,
+&#x9;OUT responseXML               XML,
+&#x9;OUT faultXML                  XML
+)
+BEGIN
+    PATH /lib/resource;
+
+    DECLARE PUBLIC TYPE ColumnDefsRow ROW (
+        V1ColumnName VARCHAR(255), 
+        V1ColumnType VARCHAR(40),
+        V2ColumnName VARCHAR(255), 
+        V2ColumnType VARCHAR(40),
+        ColumnName   VARCHAR(255), 
+        ColumnType   VARCHAR(40)
+    );
+
+    DECLARE PROC_NAME                                       CONSTANT VARCHAR DEFAULT &apos;createUnionView&apos;;
+    DECLARE NL                                              CONSTANT CHAR(1) DEFAULT &apos;
+&apos;;
+
+    DECLARE resourceExists                                  BOOLEAN;
+    DECLARE columnDefsSQL                                   LONGVARCHAR;
+    DECLARE columnDefsCursor                                CURSOR ColumnDefsRow;
+    DECLARE columnDefsRow                                   ColumnDefsRow;
+    DECLARE i                                               INTEGER;
+    DECLARE unionLeftSelect, unionRightSelect, unionFullSQL LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE baseName, dirName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+
+    -- sanity check inputs
+    --
+    IF (UnionViewPath IS NULL) THEN
+        RAISE System.IllegalArgumentException VALUE PROC_NAME || &apos;: Input UnionViewPath may not be null.&apos;;
+    END IF;
+    IF (View1Path IS NULL) THEN
+        RAISE System.IllegalArgumentException VALUE PROC_NAME || &apos;: Input View1Path may not be null.&apos;;
+    END IF;
+    IF (View2Path IS NULL) THEN
+        RAISE System.IllegalArgumentException VALUE PROC_NAME || &apos;: Input View2Path may not be null.&apos;;
+    END IF;
+    IF (NameTypeConflictPreference IS NULL OR NameTypeConflictPreference NOT IN (1,2)) THEN
+        RAISE System.IllegalArgumentException VALUE PROC_NAME || &apos;: Input NameTypeConflictPreference may not be null and must have the value of 1 or 2.&apos;;
+    END IF;
+    IF (AllIndicator IS NULL) THEN
+        RAISE System.IllegalArgumentException VALUE PROC_NAME || &apos;: Input AllIndicator may not be null.&apos;;
+    END IF;
+
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/dirname(UnionViewPath, dirName);
+    CALL ResourceExists (
+        dirName,
+        ResourceDefs.RESOURCE_TYPE_CONTAINER,
+        NULL,
+        resourceExists
+    );
+    IF (NOT resourceExists) THEN
+        RAISE System.IllegalStateException VALUE PROC_NAME || &apos;: Parent folder of input UnionViewPath, &quot;&apos; || dirName || &apos;&quot;, does not exist.&apos;;
+    END IF;
+
+    CALL ResourceExists (
+        UnionViewPath,
+        ResourceDefs.RESOURCE_TYPE_TABLE,
+        NULL,
+        resourceExists
+    );
+    IF (resourceExists) THEN
+        RAISE System.IllegalStateException VALUE PROC_NAME || &apos;: Input UnionViewPath, &quot;&apos; || UnionViewPath || &apos;&quot;, already exists.&apos;;
+    END IF;
+
+    CALL ResourceExists (
+        View1Path,
+        ResourceDefs.RESOURCE_TYPE_TABLE,
+        NULL,
+        resourceExists
+    );
+    IF (NOT resourceExists) THEN
+        RAISE System.IllegalStateException VALUE PROC_NAME || &apos;: Input View1Path, &quot;&apos; || View1Path || &apos;&quot;, does not exist.&apos;;
+    END IF;
+
+    CALL ResourceExists (
+        View2Path,
+        ResourceDefs.RESOURCE_TYPE_TABLE,
+        NULL,
+        resourceExists
+    );
+    IF (NOT resourceExists) THEN
+        RAISE System.IllegalStateException VALUE PROC_NAME || &apos;: Input View2Path, &quot;&apos; || View2Path || &apos;&quot;, does not exist.&apos;;
+    END IF;
+
+    -- get column definitions
+    --
+    SET columnDefsSQL =
+&apos;SELECT {OPTION CASE_SENSITIVE=&quot;FALSE&quot;}
+    v1.ColumnName V1ColumnName,
+    v1.ColumnType V1ColumnType,
+    v2.ColumnName V2ColumnName,
+    v2.ColumnType V2ColumnType,
+    CASE
+        WHEN (v1.ColumnName IS NOT NULL AND v2.ColumnName IS NOT NULL) THEN v&apos; || NameTypeConflictPreference || &apos;.ColumnName
+        ELSE COALESCE (v1.ColumnName, v2.ColumnName) 
+    END ColumnName,
+    CASE
+        WHEN (v1.ColumnType IS NOT NULL AND v2.ColumnType IS NOT NULL) THEN v&apos; || NameTypeConflictPreference || &apos;.ColumnType
+        ELSE COALESCE (v1.ColumnType, v2.ColumnType) 
+    END ColumnType
+FROM
+    /shared/ASAssets/Utilities/repository/getBasicResourceCursor_SQL_TABLE(&apos;&apos;&apos; || View1Path || &apos;&apos;&apos;, &apos;&apos;&apos; || ResourceDefs.RESOURCE_TYPE_TABLE || &apos;&apos;&apos;) v1 FULL OUTER JOIN 
+        /shared/ASAssets/Utilities/repository/getBasicResourceCursor_SQL_TABLE(&apos;&apos;&apos; || View2Path || &apos;&apos;&apos;, &apos;&apos;&apos; || ResourceDefs.RESOURCE_TYPE_TABLE || &apos;&apos;&apos;) v2 
+    ON v1.ColumnName = v2.ColumnName
+WHERE
+       v1.ColumnName IS NOT NULL OR
+       v2.ColumnName IS NOT NULL
+&apos;;
+
+    OPEN columnDefsCursor FOR columnDefsSQL;
+
+    FETCH columnDefsCursor INTO columnDefsRow;
+    SET i = 0;
+    WHILE (columnDefsCursor.FOUND) DO
+
+        IF (i &gt; 0) THEN
+            SET unionLeftSelect = unionLeftSelect || &apos;,&apos; || NL;
+            SET unionRightSelect = unionRightSelect || &apos;,&apos; || NL;
+        END IF;
+
+        SET unionLeftSelect = unionLeftSelect || &apos;    CAST(&apos; || COALESCE(columnDefsRow.V1ColumnName, &apos;NULL&apos;) || &apos; AS &apos; || columnDefsRow.ColumnType || &apos;) &apos; || columnDefsRow.ColumnName;
+        SET unionRightSelect = unionRightSelect || &apos;    CAST(&apos; || COALESCE(columnDefsRow.V2ColumnName, &apos;NULL&apos;) || &apos; AS &apos; || columnDefsRow.ColumnType || &apos;) &apos; || columnDefsRow.ColumnName;
+
+        FETCH columnDefsCursor INTO columnDefsRow;
+        SET i = i + 1;
+    END WHILE;
+
+    SET unionFullSQL =
+&apos;SELECT 
+&apos; || unionLeftSelect || &apos;
+FROM
+    &apos; || View1Path || &apos;
+
+UNION &apos; || CASE WHEN (AllIndicator = 1) THEN &apos;ALL&apos; ELSE &apos;&apos; END || &apos;
+
+SELECT
+&apos; || unionRightSelect || &apos;
+FROM
+    &apos; || View2Path;
+
+    -- create an empty view
+    --
+    BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/dirname(UnionViewPath, dirName);
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/basename(UnionViewPath, baseName);
+        CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/createResource(
+            dirName,
+            baseName,
+            ResourceDefs.RESOURCE_TYPE_TABLE,
+            ResourceDefs.RESOURCE_SUBTYPE_SQL_TABLE,
+            success,
+            responseXML,
+            faultXML
+        );
+    END;
+
+    IF (faultXML IS NOT NULL) THEN
+        RAISE System.SOAPFaultException VALUE &apos;A SOAP fault occurred during creation of the view.&apos;;
+    END IF;
+
+    -- populate the view with the constructed SQL
+    --
+    BEGIN INDEPENDENT TRANSACTION
+        CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateSqlTable(
+            UnionViewPath,
+            unionFullSQL,
+            success,
+            responseXML,
+            faultXML
+        ); 
+    END;
+
+    IF (faultXML IS NOT NULL) THEN
+        RAISE System.SOAPFaultException VALUE &apos;A SOAP fault occurred during updating of the view.&apos;;
+    END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:6:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:7:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="public_types" type="MAP">
+    <item>
+      <key type="STRING">ColumnDefsRow</key>
+      <value type="BYTE_ARRAY">EB8GAgANAEMAbwBsAHUAbQBuAEQAZQBmAHMAUgBvAHcGKQBAAC8AcwBoAGEAcgBlAGQALwBEAGUAbAB0AGEAXwBEAFYALwAiAF8AcwBjAHIAaQBwAHQAcwAiAC8AVQB0AGkAbABpAHQAaQBlAHMALwByAGUAcABvAHMAaQB0AG8AcgB5AC8AYwByAGUAYQB0AGUAVQBuAGkAbwBuAFYAaQBlAHcGKgANAEMAbwBsAHUAbQBuAEQAZQBmAHMAUgBvAHcDEgAAAAEDEgAAAAEBEwEJFAAAAAYQIQYVAAwAVgAxAEMAbwBsAHUAbQBuAE4AYQBtAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAAIGRAbBgIABwBWAEEAUgBDAEgAQQBSAxIAAAACBAQAAAAAAAAA/wETAf////8QIQYVAAwAVgAxAEMAbwBsAHUAbQBuAFQAeQBwAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAAIGRAbBgIABwBWAEEAUgBDAEgAQQBSAxIAAAADBAQAAAAAAAAAKAETAf////8QIQYVAAwAVgAyAEMAbwBsAHUAbQBuAE4AYQBtAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAL//xAhBhUADABWADIAQwBvAGwAdQBtAG4AVAB5AHAAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAA///ECEGFQAKAEMAbwBsAHUAbQBuAE4AYQBtAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAL//xAhBhUACgBDAG8AbAB1AG0AbgBUAHkAcABlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD/////w==</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/142</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/152</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/122</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/132</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">13/224</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/120</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceExists</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/130</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceExists</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/140</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceExists</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">13/225</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/150</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceExists</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">112/178</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/249</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/107</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/104</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/137</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/116</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/127</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/113</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/157</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/147</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/233</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/110</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">108/177</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>resource</item>
+        <item>ResourceDefs</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

@@ -1,0 +1,521 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getSpecifiedServerAttributes" path="/shared/Delta_DV/_scripts/Utilities/repository/server/getSpecifiedServerAttributes" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="environmentName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="csvFilePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="changedAttrValues" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="attributeName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="overrideAttributeNameList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="additionalAttributeNameList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="environment">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="displayName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="attrValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="unitName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="defaultValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="attrType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="locallyDefined">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="updateRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="annotation">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/Pause" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="timeInMilliSeconds" direction="IN">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/createFileAscii" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="filePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="append" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="fileContent" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttributeDefs" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="startingAttribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="categoryName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="updateRule">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="required">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="defaultValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="pattern">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="minValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="maxValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="displayName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="unitName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="parentName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="visible">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="editorHint">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="dependencyExpression">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="locallyDefined">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractTextList" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="preserveDoubleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveSingleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveParenthesis" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveQualifier" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="trimResults" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="textExpression">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    getSpecifiedServerAttributes:
+
+&#x9;This procedure returns the specified server attribute values as a PIPE.  Optionally, the invoker may have the attributes
+&#x9;&#x9;written out to a CSV file which can be modified and used as an EXCEL datasource for updating server attributes.
+&#x9;&#x9;&#x9;For updating server attributes see /shared/ASAssets/Utilities/repository/server/updateServerConfiguration
+&#x9;Only attributes that are visible=1 and updateRule=READ_WRITE are retrieved.
+&#x9;If the attrType=MAP, the attrValue contains the following format [key=value]: mapKeyValue=mapValueValue
+&#x9;&#x9;The output will require parsing on the &apos;=&apos; sign to extract the key and value pair.
+&#x9;&#x9;Example: /server/config/security/authentication/WindowsDomainMapping
+&#x9;&#x9;&#x9;&#x9;MYDOMAIN=domain@mycompany.com
+
+&#x9;The following optional capabilities are available and are shown in their order of precedence:
+&#x9;&#x9;If none of the optional inputs are provided, this procedure simply returns the default &quot;commonly used&quot; attribute name/paths.
+&#x9;&#x9;1. Option 1 - Retrieve all changed attributes.  The attribute value is different than the default value.
+&#x9;&#x9;2. Option 2 - Retrieve attributes for the given attribute path or partial path.
+&#x9;&#x9;3. Option 3 - Override attribute name list.  The invoker can specify their own list of attributes to retrieve.
+&#x9;&#x9;4. Option 4 - Additional attributes with default list.  The invoker can specify an additional attribute name list in addition to the default name/paths found in this procedure.
+
+    Server values may be single scalar or may be a list, a map, or an array.
+
+    Users calling this procedure must have the ACCESS_TOOLS right and, depending on whether
+    the attribute is public or not, may need the READ_ALL_CONFIG right as well.
+
+&#x9;Input:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;&#x9;environmentName&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The input environment name that is being configured.  Example: DEV, UAT, PROD
+&#x9;&#x9;csvFilePath&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- [optional-0] If null then no file is output otherwise provide the full file system path to a CSV file for comma-separate attributes.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Regardless of this option, the results are still returned by this procedure as a PIPE output.
+
+&#x9;&#x9;-- Order of precedence is shown in [optional-#] for the following mutually exclusive input parameters:
+&#x9;&#x9;changedAttrValues&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- [optional-1] Display all attributes that are different from their default values. 1=look for changed attribute values. 0/null=ignore.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from attributeName, overrideAttributeNameList, and additionalAttributeNameList.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;If set to 1, then ignore attributeName, attributeNameList and defaultAttributeNameList.
+&#x9;&#x9;attributeName&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- [optional-2] The attribute name/path or partial name/path to return the server configuration attributes.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Example: / - return all server attributes.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; /server - returns all attributes that start with /server.   
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; /studio/data/cursorFetchLimit - return a specific attribute.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from changedAttrValues, overrideAttributeNameList, and additionalAttributeNameList.
+&#x9;&#x9;overrideAttributeNameList LONGVARCHAR,&#x9;-- [optional-3] If null then use the default attribute list (defaultAttributeNameList) within this procedure is used.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Otherwise the user provides a comma-separate list of attribute name paths to retrieve.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from changedAttrValues, attributeName, and additionalAttributeNameList.
+&#x9;&#x9;additionalAttributeNameList LONGVARCHAR,-- [optional-4] Add these attribute names onto the defaultAttributeNameList.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;The user provides a comma-separate list of attribute name paths to retrieve in addition to the default attribute list.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from changedAttrValues, attributeName, and overrideAttributeNameList.
+
+&#x9;Output:
+ &#x9;&#x9;result CURSOR (
+&#x9;&#x9;&#x9;environment&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- the environment that is being configured.  Example: DEV, UAT, PROD
+&#x9;&#x9;&#x9;displayName &#x9;VARCHAR(32768), -- the attribute&apos;s name as displayed in the Studio Configuration panel
+&#x9;&#x9;&#x9;attrValue &#x9;&#x9;VARCHAR(32768), -- the scalar value (NULL if the value type is LIST, MAP, or STRING_ARRAY)
+&#x9;&#x9;&#x9;unitName &#x9;&#x9;VARCHAR(32768), -- the attribute&apos;s value&apos;s unit name
+&#x9;&#x9;&#x9;defaultValue &#x9;VARCHAR(32768), -- indicates the default value (NULL if there is none.)
+&#x9;&#x9;&#x9;attrName &#x9;&#x9;VARCHAR(32768), -- the attribute name path.
+&#x9;&#x9;&#x9;attrType &#x9;&#x9;VARCHAR(32768), -- the value type. if not LIST, MAP, or STRING_ARRAY, then the scalar value&apos;s type
+&#x9;&#x9;&#x9;locallyDefined &#x9;BIT, &#x9;&#x9;&#x9;-- indicates whether this attribute is locally defined or not
+&#x9;&#x9;&#x9;updateRule&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- indicates whether the attribute is READ_WRITE or READ_ONLY
+&#x9;&#x9;&#x9;annotation &#x9;&#x9;VARCHAR(32768)&#x9;-- a description of the attribute
+&#x9;&#x9;)
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Jeremy Akers&#x9;&#x9;7.0&#x9;&#x9;&#x9;&#x9;Created new.
+&#x9;2019.400&#x9;10/14/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified from the original view created by Jeremy Akers.
+&#x9;2020.201&#x9;04/24/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added {OPTION FORCE_DISK} in the join for: getServerAttributeDefs INNER PROCEDURE {OPTION FORCE_DISK} JOIN
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getSpecifiedServerAttributes(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;IN environmentName&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The input environment name that is being configured.  Example: DEV, UAT, PROD
+&#x9;IN csvFilePath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- [optional-0] If null then no file is output otherwise provide the full file system path to a CSV file for comma-separate attributes.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Regardless of this option, the results are still returned by this procedure as a PIPE output.
+&#x9;-- Order of precedence is shown in [optional-#] for the following mutually exclusive input parameters:
+&#x9;IN changedAttrValues&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- [optional-1] Display all attributes that are different from their default values. 1=look for changed attribute values. 0/null=ignore.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from attributeName, overrideAttributeNameList, and additionalAttributeNameList.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;If set to 1, then ignore attributeName, attributeNameList and defaultAttributeNameList.
+&#x9;IN attributeName&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- [optional-2] The attribute name/path or partial name/path to return the server configuration attributes.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Example: / - return all server attributes.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; /server - returns all attributes that start with /server.   
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; /studio/data/cursorFetchLimit - return a specific attribute.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from changedAttrValues, overrideAttributeNameList, and additionalAttributeNameList.
+&#x9;IN overrideAttributeNameList &#x9;LONGVARCHAR,&#x9;-- [optional-3] If null then use the default attribute list (defaultAttributeNameList) within this procedure is used.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Otherwise the user provides a comma-separate list of attribute name paths to retrieve.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from changedAttrValues, attributeName, and additionalAttributeNameList.
+&#x9;IN additionalAttributeNameList &#x9;LONGVARCHAR,&#x9;-- [optional-4] Add these attribute names onto the defaultAttributeNameList.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;The user provides a comma-separate list of attribute name paths to retrieve in addition to the default attribute list.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Mutually exclusive from changedAttrValues, attributeName, and overrideAttributeNameList.
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;PIPE(
+&#x9;&#x9;environment&#x9;&#x9;VARCHAR,
+&#x9;&#x9;displayName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;attrValue&#x9;&#x9;VARCHAR(32768),
+&#x9;&#x9;unitName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;defaultValue&#x9;VARCHAR(32768),
+&#x9;&#x9;attrName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;attrType&#x9;&#x9;VARCHAR,&#x9;&#x9;&#x9;&#x9;&#x9;-- Attribute Type.  When 
+&#x9;&#x9;locallyDefined&#x9;BIT,
+&#x9;&#x9;updateRule&#x9;&#x9;VARCHAR,
+&#x9;&#x9;annotation&#x9;&#x9;VARCHAR(32768)
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE defaultAttributeNameList&#x9;LONGVARCHAR;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE fileContents&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE curs&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(
+&#x9;&#x9;environment&#x9;&#x9;VARCHAR,
+&#x9;&#x9;displayName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;attrValue&#x9;&#x9;VARCHAR(32768),
+&#x9;&#x9;unitName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;defaultValue&#x9;VARCHAR(32768),
+&#x9;&#x9;attrName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;attrType&#x9;&#x9;VARCHAR,
+&#x9;&#x9;locallyDefined&#x9;BIT,
+&#x9;&#x9;updateRule&#x9;&#x9;VARCHAR,
+&#x9;&#x9;annotation&#x9;&#x9;VARCHAR(32768)
+&#x9;);
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Validate input
+&#x9;IF (environmentName IS NULL OR LENGTH(TRIM(environmentName)) = 0) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The input parameter &quot;environmentName&quot; cannot be null or empty.&apos;;
+&#x9;END IF;
+
+&#x9;SET defaultAttributeNameList = 
+&apos;        &apos;&apos;/discovery/index/maximumConcurrentTasks&apos;&apos;,
+        &apos;&apos;/discovery/index/samplingIsEnabled&apos;&apos;,
+        &apos;&apos;/discovery/index/samplingSize&apos;&apos;,
+        &apos;&apos;/monitor/collector/enabled&apos;&apos;,
+        &apos;&apos;/monitor/server/enabled&apos;&apos;,
+        &apos;&apos;/monitor/server/connection/host&apos;&apos;,
+        &apos;&apos;/monitor/server/connection/port&apos;&apos;,
+        &apos;&apos;/server/config/cache/failoverToOriginalDatasource&apos;&apos;,
+        &apos;&apos;/server/config/cache/loading/enableNativeLoading&apos;&apos;,
+        &apos;&apos;/server/config/cache/loading/enableParallelLoading&apos;&apos;,
+        &apos;&apos;/server/config/cache/loading/resumeIncrementalRefreshOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/config/cache/statusSyncMaxInterval&apos;&apos;,
+        &apos;&apos;/server/config/debug/enableBulkDataLoading&apos;&apos;,
+        &apos;&apos;/server/config/debug/enableDetailedProfiling&apos;&apos;,
+        &apos;&apos;/server/config/metadata/privilegeCacheSizeOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/config/metadata/relationshipCacheSizeOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/config/metadata/resourceCacheSizeOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/config/metadata/userCacheSizeOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/config/security/enableColumnPermissionDenyException&apos;&apos;,
+        &apos;&apos;/server/config/security/enablePrivilegeLogging&apos;&apos;,
+        &apos;&apos;/server/config/transactions/maxRequestDepth&apos;&apos;,
+        &apos;&apos;/server/event/logging/snmp/enableSnmp&apos;&apos;,
+        &apos;&apos;/server/event/logging/snmp/trapHostList&apos;&apos;,
+        &apos;&apos;/server/jdbc/data/defaultFetchByteSize&apos;&apos;,
+        &apos;&apos;/server/jdbc/data/defaultFetchRows&apos;&apos;,
+        &apos;&apos;/server/jdbc/performance/dbchannelQueueSize&apos;&apos;,
+        &apos;&apos;/server/jdbc/request/defaultRequestTimeout&apos;&apos;,
+        &apos;&apos;/server/jdbc/request/maxRequests&apos;&apos;,
+        &apos;&apos;/server/jdbc/session/defaultSessionTimeout&apos;&apos;,
+        &apos;&apos;/server/jdbc/session/maxSessions&apos;&apos;,
+        &apos;&apos;/server/jdbc/session/ignoreClientDriverSessionTimeout&apos;&apos;,
+        &apos;&apos;/server/memory/heap/javaHeapMaxOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/memory/managed/requestQuotaPercent&apos;&apos;,
+        &apos;&apos;/server/memory/managed/unmanagedBaseOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/processing/io/maxSamples&apos;&apos;,
+        &apos;&apos;/server/processing/requests/maxRequestsTrackedOnServerRestart&apos;&apos;,
+        &apos;&apos;/server/processing/requests/requestPurgePeriod&apos;&apos;,
+        &apos;&apos;/server/processing/sessions/maxSessionsTracked&apos;&apos;,
+        &apos;&apos;/server/processing/sessions/sessionPurgePeriod&apos;&apos;,
+        &apos;&apos;/server/processing/storage/maxSamples&apos;&apos;,
+        &apos;&apos;/server/sql/language/caseSensitive&apos;&apos;,
+        &apos;&apos;/server/sql/language/ignoreTrailingSpaces&apos;&apos;,
+        &apos;&apos;/server/sql/optimizations/parallelUnions&apos;&apos;,
+        &apos;&apos;/server/sql/optimizations/semijoin/maxSourceCardinality&apos;&apos;,
+        &apos;&apos;/server/sql/overrides/ignoreCaseSensitivityMismatch&apos;&apos;,
+        &apos;&apos;/server/sql/overrides/ignoreIgnoreTrailingSpacesMismatch&apos;&apos;,
+        &apos;&apos;/sources/oracle/introspectAllObjects&apos;&apos;,
+        &apos;&apos;/sources/oracle/pushOracleQueryHints&apos;&apos;,
+        &apos;&apos;/sources/oracle/setSessionTimeZone&apos;&apos;,
+        &apos;&apos;/sources/sqlserver/datashipBcpPath&apos;&apos;,
+        &apos;&apos;/sources/netezza/disableConcurrentRequestsPerConnection&apos;&apos;,
+        &apos;&apos;/sources/netezza/ignoreImpermissibleResources&apos;&apos;,
+        &apos;&apos;/sources/sybase/ignoreMicroseconds&apos;&apos;,
+        &apos;&apos;/studio/data/cursorFetchLimit&apos;&apos;,
+        &apos;&apos;/studio/data/rowFetchSize&apos;&apos;,
+        &apos;&apos;/studio/data/xmlTextLimit&apos;&apos;&apos;;
+
+&#x9;-- attributeName takes precedence over overrideAttributeNameList which takes precedence over additionalAttributeNameList
+&#x9;IF (attributeName IS NOT NULL AND LENGTH(TRIM(attributeName)) &gt; 0) THEN
+&#x9;&#x9;-- Construct the attribute name list from the attribute definitions based on the full or partial path of &quot;attributeName&quot;.
+&#x9;&#x9;-- The attribute definition must not be a FOLDER.  Must be READ_WRITE and must be visible.
+&#x9;&#x9;-- &#x9;Example Paths: 
+&#x9;&#x9;--&#x9;&#x9;/ - return all server attributes
+&#x9;&#x9;--&#x9;&#x9;/server/config/security/ - return the configuration security attributes only
+&#x9;&#x9;SET defaultAttributeNameList = &apos;&apos;;
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT attrName FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttributeDefs(attributeName) 
+&#x9;&#x9;&#x9;&#x9;WHERE attrType &lt;&gt; &apos;FOLDER&apos; AND updateRule = &apos;READ_WRITE&apos; AND visible = 1
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;IF (defaultAttributeNameList IS NOT NULL AND LENGTH(TRIM(defaultAttributeNameList)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET defaultAttributeNameList = defaultAttributeNameList || &apos;,&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET defaultAttributeNameList = defaultAttributeNameList ||&apos;        &apos;|| &apos;&apos;&apos;&apos;||r.attrName||&apos;&apos;&apos;&apos;;
+&#x9;&#x9;END FOR;
+&#x9;ELSEIF (overrideAttributeNameList IS NOT NULL AND LENGTH(TRIM(overrideAttributeNameList)) &gt; 0) THEN
+&#x9;&#x9;-- Construct the override list.  First blank out the existing default list.  Build up the new list from the input 
+&#x9;&#x9;SET defaultAttributeNameList = &apos;&apos;;
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(REPLACE(REPLACE(overrideAttributeNameList,&apos;&apos;&apos;&apos;, &apos;&apos;), CHR(10), &apos;&apos;), &apos;,&apos;, 0,0,0,0,1)
+&#x9;&#x9;&#x9;WHERE textExpression IS NOT NULL AND LENGTH(TRIM(textExpression)) &gt; 0
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;IF (defaultAttributeNameList IS NOT NULL AND LENGTH(TRIM(defaultAttributeNameList)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET defaultAttributeNameList = defaultAttributeNameList || &apos;,&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET defaultAttributeNameList = defaultAttributeNameList ||&apos;        &apos;|| &apos;&apos;&apos;&apos;||r.textExpression||&apos;&apos;&apos;&apos;;
+&#x9;&#x9;END FOR;
+&#x9;ELSEIF (additionalAttributeNameList IS NOT NULL AND LENGTH(TRIM(additionalAttributeNameList)) &gt; 0) THEN
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(REPLACE(REPLACE(additionalAttributeNameList,&apos;&apos;&apos;&apos;, &apos;&apos;), CHR(10), &apos;&apos;), &apos;,&apos;, 0,0,0,0,1)
+&#x9;&#x9;&#x9;WHERE textExpression IS NOT NULL AND LENGTH(TRIM(textExpression)) &gt; 0
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;IF (defaultAttributeNameList IS NOT NULL AND LENGTH(TRIM(defaultAttributeNameList)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET defaultAttributeNameList = defaultAttributeNameList || &apos;,&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET defaultAttributeNameList = defaultAttributeNameList ||&apos;        &apos;|| &apos;&apos;&apos;&apos;||r.textExpression||&apos;&apos;&apos;&apos;;
+&#x9;&#x9;END FOR;
+&#x9;END IF;
+
+&#x9;SET sqlStatement = 
+&#x9;&#x9;&apos;SELECT DISTINCT&apos;||CHR(10)||
+&#x9;&#x9;&apos;    &apos;&apos;&apos;||NVL(environmentName,&apos;null&apos;)|| &apos;&apos;&apos; environment,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.displayName,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    CAST(&apos;||CHR(10)||
+&#x9;&#x9;&apos;        CASE WHEN getServerAttributeDefs.attrType = &apos;&apos;STRING_ARRAY&apos;&apos; THEN getServerAttribute.arrayItem &apos;||CHR(10)||
+&#x9;&#x9;&apos;           WHEN getServerAttributeDefs.attrType = &apos;&apos;LIST&apos;&apos; THEN getServerAttribute.listEntryValue&apos;||CHR(10)||
+&#x9;&#x9;&apos;           WHEN getServerAttributeDefs.attrType = &apos;&apos;MAP&apos;&apos; THEN getServerAttribute.mapKeyValue || &apos;&apos;=&apos;&apos;|| getServerAttribute.mapValueValue&apos;||CHR(10)||
+&#x9;&#x9;&apos;           ELSE getServerAttribute.attrValue&apos;||CHR(10)||
+&#x9;&#x9;&apos;        END AS LONGVARCHAR) attrValue,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.unitName,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.defaultValue,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.attrName,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.attrType,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.locallyDefined,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.updateRule,&apos;||CHR(10)||
+&#x9;&#x9;&apos;    getServerAttributeDefs.annotation&apos;||CHR(10)||
+&#x9;&#x9;&apos;FROM&apos;||CHR(10)||
+&#x9;&#x9;&apos;(SELECT * &apos;||CHR(10)||
+&#x9;&#x9;&apos;    FROM /shared/ASAssets/Utilities/repository/getServerAttributeDefs(&apos;&apos;/&apos;&apos;) getServerAttributeDefs&apos;||CHR(10)||
+&#x9;&#x9;&apos;    WHERE visible = 1&apos;||CHR(10)||
+&#x9;&#x9;&apos;      AND updateRule = &apos;&apos;READ_WRITE&apos;&apos;&apos;||CHR(10)||
+&#x9;&#x9;&apos;) getServerAttributeDefs INNER PROCEDURE {OPTION FORCE_DISK} JOIN &apos;||CHR(10)||
+&#x9;&#x9;&apos;        /shared/ASAssets/Utilities/repository/getServerAttribute(getServerAttributeDefs.attrName) getServerAttribute&apos;||CHR(10)||
+&#x9;&#x9;&apos;    ON getServerAttributeDefs.attrName = getServerAttribute.attrName&apos;||CHR(10);
+
+&#x9;-- changedAttrValues takes precedence over any name list
+&#x9;IF (changedAttrValues IS NOT NULL AND changedAttrValues = 1) THEN
+&#x9;&#x9;SET sqlStatement = sqlStatement || &apos;WHERE attrValue &lt;&gt; defaultValue OR (attrValue IS NULL AND defaultValue IS NOT NULL) OR (attrValue IS NOT NULL AND defaultValue IS NULL)&apos;||CHR(10);
+&#x9;ELSE
+&#x9;&#x9;SET sqlStatement = sqlStatement || &apos;WHERE getServerAttribute.attrName IN (&apos;||CHR(10)||defaultAttributeNameList||&apos;)&apos;||CHR(10);
+&#x9;END IF;
+
+&#x9;SET sqlStatement = sqlStatement || &apos;ORDER BY attrName&apos;;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;sqlStatement:&apos;||CHR(10)||NVL(sqlStatement,&apos;null&apos;));
+&#x9;&#x9;CALL PAUSE(500);
+&#x9;END IF;
+
+&#x9;SET fileContents = &apos;&quot;environment&quot;,&quot;displayName&quot;,&quot;attrValue&quot;,&quot;unitName&quot;,&quot;defaultValue&quot;,&quot;attrName&quot;,&quot;attrType&quot;,&quot;locallyDefined&quot;,&quot;updateRule&quot;,&quot;annotation&quot;&apos;||CHR(10);
+
+&#x9;-- Open the SQL Statement and execute it
+&#x9;OPEN curs FOR sqlStatement;
+&#x9;FOR r AS curs DO
+&#x9;&#x9;-- Capture the row for the CSV file if requested.
+&#x9;&#x9;IF (csvFilePath IS NOT NULL AND LENGTH(TRIM(csvFilePath)) &gt; 0) THEN
+&#x9;&#x9;&#x9;SET fileContents = fileContents || 
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||NVL(r.environment,&apos;null&apos;)&#x9;&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||NVL(r.displayName,&apos;null&apos;)&#x9;&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||REPLACE(NVL(r.attrValue,&apos;null&apos;),&apos;&quot;&apos;,&apos;&quot;&quot;&apos;)&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||NVL(r.unitName,&apos;null&apos;)&#x9;&#x9;&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||REPLACE(NVL(r.defaultValue,&apos;null&apos;),&apos;&quot;&apos;,&apos;&quot;&quot;&apos;)&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||NVL(r.attrName,&apos;null&apos;)&#x9;&#x9;&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||NVL(r.attrType,&apos;null&apos;)&#x9;&#x9;&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||NVL(CAST(r.locallyDefined AS VARCHAR),&apos;null&apos;)&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||NVL(r.updateRule,&apos;null&apos;)&#x9;&#x9;|| &apos;&quot;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&apos;&quot;&apos;||REPLACE(REPLACE(NVL(r.annotation,&apos;null&apos;),&apos;&quot;&apos;,&apos;&apos;&apos;&apos;), CHR(10), &apos; &apos;)&#x9;|| &apos;&quot;,&apos;||CHR(10);
+&#x9;&#x9;END IF;
+&#x9;&#x9;INSERT INTO result VALUES(r);
+&#x9;END FOR;
+
+&#x9;-- Write out the file
+&#x9;IF (csvFilePath IS NOT NULL AND LENGTH(TRIM(csvFilePath)) &gt; 0) THEN
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(csvFilePath, 0, fileContents);
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1568031461630</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/277</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/276</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1568031461630</attribute>
+</metadata>

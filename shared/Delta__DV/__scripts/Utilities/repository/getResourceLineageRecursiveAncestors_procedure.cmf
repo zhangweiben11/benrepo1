@@ -1,0 +1,817 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getResourceLineageRecursiveAncestors" path="/shared/Delta_DV/_scripts/Utilities/repository/getResourceLineageRecursiveAncestors" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getResourceLineageRecursiveAncestors:
+
+&#x9;This procedure recursively walks the resource lineage dependency tree to discover child resources for a given input resource and their ancestor containers.  
+&#x9;This procedure can optionally return the entire list of all resources and ancestors as they are discovered or a unique list of resources and ancestors given
+&#x9;the variable returnUniqueRows=[1,0].
+
+&#x9;This procedure was built as a building block with the intention to mimic the Composite Manager capability to show &quot;Dependency Privileges&quot;.  To emulate CIS Manager&apos;s
+&#x9;capability, a unique list of resources and ancestors associated with the parent resource must be produce using this procedure. &#x9;The reason for the ancestor folders 
+&#x9;is that privileges need to be assigned to each folder of the ancestry tree.  This procedure provides the listing of those folders.   The &quot;driver&quot; procedure 
+&#x9;&quot;getResourcePrivilegeDependencies&quot; invokes this procedure and will be responsible for retrieving privileges.  
+&#x9;
+&#x9;Input:
+&#x9;&#x9;inSeqNum - sequence number starting with 1.  
+&#x9;&#x9;&#x9;Null to start with.
+&#x9;&#x9;&#x9;Value: integer value
+&#x9;&#x9;inParentID - the id of the parent.  
+&#x9;&#x9;&#x9;Null on the first invocation.
+&#x9;&#x9;&#x9;Value: integer value
+&#x9;&#x9;inResourceDepth - the depth of the parent (number of levels which recursion has occurred). 
+&#x9;&#x9;&#x9;Null on the first invocation.
+&#x9;&#x9;&#x9;Value: integer value
+&#x9;&#x9;inLineageResourceIdList&#x9;- a list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;&#x9;&#x9;Null on the first invocation.
+&#x9;&#x9;&#x9;Value: a list of space separated resource ids
+   &#x9;&#x9;resourcePath - CIS source path to an actual resource
+&#x9;&#x9;&#x9;Values: e.g. /shared/examples/CompositeView [this is a SQL VIEW.]
+&#x9;&#x9;resourceType - Type of CIS resource to be created.  It is null on the first invocation.
+&#x9;&#x9;&#x9;Values: see &quot;TYPES / SUBTYPES&quot; listing below.  e.g. TABLE
+&#x9;&#x9;returnUniqueRows - determines whether to return unique rows or all rows for the return set.
+&#x9;&#x9;&#x9;Values: 1 = (default) return a unique set of rows.  No duplicate resource paths are returned.
+&#x9;&#x9;&#x9;&#x9;&#x9;0 = return all rows as selected regardless of their uniqueness or not.
+&#x9;&#x9;excludePathsList&#x9;- comma separate list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;Values: /shared/Utilities,/lib
+&#x9;&#x9;datasourceAncestor&#x9;- flag to get the data source ancestor 
+&#x9;&#x9;&#x9;Values: 1=yes, 0=no
+&#x9;&#x9;ignoreResourceDoesNotExist - Ignore any resources that do not exist
+&#x9;&#x9;&#x9;Values: 1 = Bypass the processing of that resource.  0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+
+&#x9;Output:
+&#x9;resourceTreeList &#x9;&#x9;&#x9;PIPE /shared/Utilities/repository/definitions/RepositoryDefinitionsRecursive.lineageTreeType
+&#x9;&#x9;DECLARE PUBLIC TYPE lineageTreeType ROW (
+&#x9;&#x9;&#x9;seqNum&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- A sequential number representing a parent or child resource.  Ancestor resources will use the same sequence as the parent or child.
+&#x9;&#x9;&#x9;resourceID&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- A unique number assigned by CIS that identifies the resource in the CIS repository.
+&#x9;&#x9;&#x9;parentID&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- An association of a resource ID with its parent resource ID.
+&#x9;&#x9;&#x9;resDepth&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The recursive depth of invocations starting at 0 for the initial parent resource.
+&#x9;&#x9;&#x9;treeType&#x9;&#x9;&#x9;&#x9;VARCHAR(255), &#x9;-- Parent, Child, Ancestor.
+&#x9;&#x9;&#x9;resName &#x9;&#x9;&#x9;&#x9;VARCHAR(255), &#x9;-- The name of the resource.
+&#x9;&#x9;&#x9;resPath &#x9;&#x9;&#x9;&#x9;TypeDefinitions.pathType, -- The path of the resource.
+&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The type of the resource.  For example: CONTAINER, LINK, TABLE, TREE, PROCEDURE, DATA_SOURCE, DEFINITION_SET, TRIGGER and etc.
+&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The subtype of the resource which qualifies what type of resource it is.
+&#x9;&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- Determines if the resource is enabled or not. 1=enabled, 0=disabled.
+&#x9;&#x9;&#x9;dsID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The associated datasource (resource) ID.
+&#x9;&#x9;&#x9;dsResName&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The datasource name.
+&#x9;&#x9;&#x9;dsResPath&#x9;&#x9;&#x9;&#x9;TypeDefinitions.pathType, -- The path of the datasource.
+&#x9;&#x9;&#x9;dsResType &#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The datasource type - DATA_SOURCE.
+&#x9;&#x9;&#x9;dsResSubType&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The datasource subtype which qualifies what type the datasource it is.
+&#x9;&#x9;&#x9;dsEnabled&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- Determines if the resource is enabled or not. 1=enabled, 0=disabled.
+&#x9;&#x9;&#x9;dsChildCount&#x9;&#x9;&#x9;INTEGER&#x9;&#x9;&#x9;-- Provides a count of how many child tables the datasource has.
+&#x9;&#x9;)
+
+Values example: 
+&#x9;The first row is the parent resource which was passed into this procedure.  
+&#x9;The next set of results show the ancestory of the input resource.  The ancestory are the folders starting at root and working down to the ancestor folder of the resource itself.
+&#x9;The next set of resources displayed are the resources in the downstream lineage such as orderdetails.  These are also known as child resources.  
+&#x9;For each child resource in the lineage, the ancestor folders are displayed.   There will be duplicates unless the input variable returnUniqueRows=1 was specified to return 
+&#x9;only unique rows.  Typically, the invoker of the this method will invoke it with returnUniqueRows=1 so that repeating resource paths are trimmed out.
+
+Input: resourcePath=/shared/examples/ViewSales
+       resourceType=TABLE
+       returnUniqueRows=1 &lt;-- return non-duplicate rows only
+       datasourceAncestor=1
+Output:
+seqNum&#x9;resourceID&#x9;parentID resDepth&#x9;treeType&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;enabled&#x9;dsID&#x9;dsResName&#x9;dsResPath&#x9;&#x9;&#x9;&#x9;&#x9;dsResType&#x9;&#x9;dsResSubType &#x9;&#x9;&#x9;dsEnabled&#x9;dsChildCount
+1,&#x9;&#x9;22063,&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Parent,&#x9;&#x9;ViewSales,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSales,&#x9;&#x9;&#x9;&#x9;&#x9;TABLE,&#x9;&#x9;&#x9;SQL_TABLE,&#x9;&#x9;&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+1,&#x9;&#x9;1,&#x9;&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Ancestor,&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER,&#x9;&#x9;NONE,&#x9;&#x9;&#x9;&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+1,&#x9;&#x9;10104,&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Ancestor,&#x9;shared,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER,&#x9;&#x9;FOLDER_CONTAINER,&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+1,&#x9;&#x9;21871,&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Ancestor,&#x9;examples,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER,&#x9;&#x9;FOLDER_CONTAINER,&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+2,&#x9;&#x9;21901,&#x9;&#x9;22063,&#x9;1,&#x9;&#x9;&#x9;Child,&#x9;&#x9;orderdetails,&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails,&#x9;TABLE,&#x9;&#x9;&#x9;DATABASE_TABLE,&#x9;&#x9;&#x9;1,&#x9;21892,&#x9;ds_orders,&#x9;/shared/examples/ds_orders,&#x9;DATA_SOURCE,&#x9;RELATIONAL_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;7
+2,&#x9;&#x9;21892,&#x9;&#x9;22063,&#x9;1,&#x9;&#x9;&#x9;Ancestor,&#x9;ds_orders,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders,&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE,&#x9;RELATIONAL_DATA_SOURCE,&#x9;1,&#x9;21892,&#x9;ds_orders,&#x9;/shared/examples/ds_orders,&#x9;DATA_SOURCE,&#x9;RELATIONAL_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;7
+3,&#x9;&#x9;22061,&#x9;&#x9;22063,&#x9;1,&#x9;&#x9;&#x9;Child,&#x9;&#x9;productCatalog_Transformation,&#x9;/shared/examples/productCatalog_Transformation,PROCEDURE,&#x9;XSLT_TRANSFORM_PROCEDURE,1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+4,&#x9;&#x9;22044,&#x9;&#x9;22061,&#x9;2,&#x9;&#x9;&#x9;Child,&#x9;&#x9;productCatalog.xml,&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML/productCatalog.xml,&#x9;TREE,&#x9;&#x9;&#x9;XML_FILE_TREE,&#x9;&#x9;&#x9;1,&#x9;22043,&#x9;ds_XML,&#x9;&#x9;/shared/examples/ds_XML,&#x9;DATA_SOURCE,&#x9;XML_FILE_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;1
+4,&#x9;&#x9;22043,&#x9;&#x9;22061,&#x9;2,&#x9;&#x9;&#x9;Ancestor,&#x9;ds_XML,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML,&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE,&#x9;XML_FILE_DATA_SOURCE,&#x9;1,&#x9;22043,&#x9;ds_XML,&#x9;&#x9;/shared/examples/ds_XML,&#x9;DATA_SOURCE,&#x9;XML_FILE_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;1
+
+Input: resourcePath=/shared/examples/ViewSales
+       resourceType=TABLE
+       returnUniqueRows=0 &lt;-- return all rows including duplicates
+       datasourceAncestor=0
+Output:
+seqNum&#x9;resourceID&#x9;parentID resDepth&#x9;treeType&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;enabled&#x9;dsID&#x9;dsResName&#x9;dsResPath&#x9;&#x9;&#x9;&#x9;&#x9;dsResType&#x9;&#x9;dsResSubType &#x9;&#x9;&#x9;dsEnabled&#x9;dsChildCount
+1&#x9;&#x9;22063&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Parent&#x9;&#x9;ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+1&#x9;&#x9;1&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+1&#x9;&#x9;10104&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+1&#x9;&#x9;21871&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;21901&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Child&#x9;&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;1&#x9;&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;10104&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;21871&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;21892&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE&#x9;&#x9;RELATIONAL_DATA_SOURCE&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;22061&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Child&#x9;&#x9;productCatalog_Transformation&#x9;/shared/examples/productCatalog_Transformation PROCEDURE&#x9;XSLT_TRANSFORM_PROCEDURE 1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;1&#x9;&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;10104&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;21871&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;1122649&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Child&#x9;&#x9;productCatalog.xml&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML/productCatalog.xml&#x9;TREE&#x9;&#x9;&#x9;XML_FILE_TREE&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;1&#x9;&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;10104&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;21871&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;1122648&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;ds_XML&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE&#x9;&#x9;XML_FILE_DATA_SOURCE&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.3&#x9;&#x9;05/22/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2018.400&#x9;11/13/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added dataSourceType to lineageTreeType.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inSeqNum" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inParentID" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inResourceDepth" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inLineageResourceIdList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="resourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="returnUniqueRows" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="excludePathsList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="datasourceAncestor" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="ignoreResourceDoesNotExist" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="resourceTreeList" direction="OUT" nullable="true">
+      <datatype name="lineageTreeType" type="TABLE" refId="256">
+        <element name="seqNum">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="resourceID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="parentID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="resDepth">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="treeType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resPath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="resType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="subType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="enabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="dsID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="dsResName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="dsResPath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="dsResType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="dsResSubType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="dsEnabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="dsChildCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="dataSourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="creationDate">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="creationDateBigint">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="creatorUserDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="creatorUserId">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="creatorUserName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedDate">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedDateBigint">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="lastModifiedUserDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedUserId">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedUserName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitionsRecursive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getAncestorResources" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getResourceLineageRecursive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inSeqNum" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="inParentID" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="inResourceDepth" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="inLineageResourceIdList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="excludePathsList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="datasourceAncestor" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="inIgnoreResourceDoesNotExist" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="resourceTreeList" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="seqNum">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="resourceID">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="parentID">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="resDepth">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="treeType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="dsID">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dsResName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="dsResPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="dsResType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="dsResSubType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="dsEnabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="dsChildCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getResourceLineageRecursiveAncestors:
+
+&#x9;This procedure recursively walks the resource lineage dependency tree to discover child resources for a given input resource and their ancestor containers.  
+&#x9;This procedure can optionally return the entire list of all resources and ancestors as they are discovered or a unique list of resources and ancestors given
+&#x9;the variable returnUniqueRows=[1,0].
+
+&#x9;This procedure was built as a building block with the intention to mimic the Composite Manager capability to show &quot;Dependency Privileges&quot;.  To emulate CIS Manager&apos;s
+&#x9;capability, a unique list of resources and ancestors associated with the parent resource must be produce using this procedure. &#x9;The reason for the ancestor folders 
+&#x9;is that privileges need to be assigned to each folder of the ancestry tree.  This procedure provides the listing of those folders.   The &quot;driver&quot; procedure 
+&#x9;&quot;getResourcePrivilegeDependencies&quot; invokes this procedure and will be responsible for retrieving privileges.  
+&#x9;
+&#x9;Input:
+&#x9;&#x9;inSeqNum - sequence number starting with 1.  
+&#x9;&#x9;&#x9;Null to start with.
+&#x9;&#x9;&#x9;Value: integer value
+&#x9;&#x9;inParentID - the id of the parent.  
+&#x9;&#x9;&#x9;Null on the first invocation.
+&#x9;&#x9;&#x9;Value: integer value
+&#x9;&#x9;inResourceDepth - the depth of the parent (number of levels which recursion has occurred). 
+&#x9;&#x9;&#x9;Null on the first invocation.
+&#x9;&#x9;&#x9;Value: integer value
+&#x9;&#x9;inLineageResourceIdList&#x9;- a list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;&#x9;&#x9;Null on the first invocation.
+&#x9;&#x9;&#x9;Value: a list of space separated resource ids
+   &#x9;&#x9;resourcePath - CIS source path to an actual resource
+&#x9;&#x9;&#x9;Values: e.g. /shared/examples/CompositeView [this is a SQL VIEW.]
+&#x9;&#x9;resourceType - Type of CIS resource to be created.  It is null on the first invocation.
+&#x9;&#x9;&#x9;Values: see &quot;TYPES / SUBTYPES&quot; listing below.  e.g. TABLE
+&#x9;&#x9;returnUniqueRows - determines whether to return unique rows or all rows for the return set.
+&#x9;&#x9;&#x9;Values: 1 = (default) return a unique set of rows.  No duplicate resource paths are returned.
+&#x9;&#x9;&#x9;&#x9;&#x9;0 = return all rows as selected regardless of their uniqueness or not.
+&#x9;&#x9;excludePathsList&#x9;- comma separate list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;Values: /shared/Utilities,/lib
+&#x9;&#x9;datasourceAncestor&#x9;- flag to get the data source ancestor 
+&#x9;&#x9;&#x9;Values: 1=yes, 0=no
+&#x9;&#x9;ignoreResourceDoesNotExist - Ignore any resources that do not exist
+&#x9;&#x9;&#x9;Values: 1 = Bypass the processing of that r.  0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+
+&#x9;Output:
+&#x9;resourceTreeList &#x9;&#x9;&#x9;PIPE /shared/Utilities/repository/definitions/RepositoryDefinitionsRecursive.lineageTreeType
+&#x9;&#x9;DECLARE PUBLIC TYPE lineageTreeType ROW (
+&#x9;&#x9;&#x9;seqNum&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- A sequential number representing a parent or child r.  Ancestor resources will use the same sequence as the parent or child.
+&#x9;&#x9;&#x9;resourceID&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- A unique number assigned by CIS that identifies the resource in the CIS repository.
+&#x9;&#x9;&#x9;parentID&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- An association of a resource ID with its parent resource ID.
+&#x9;&#x9;&#x9;resDepth&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The recursive depth of invocations starting at 0 for the initial parent r.
+&#x9;&#x9;&#x9;treeType&#x9;&#x9;&#x9;&#x9;VARCHAR(255), &#x9;-- Parent, Child, Ancestor.
+&#x9;&#x9;&#x9;resName &#x9;&#x9;&#x9;&#x9;VARCHAR(255), &#x9;-- The name of the r.
+&#x9;&#x9;&#x9;resPath &#x9;&#x9;&#x9;&#x9;TypeDefinitions.pathType, -- The path of the r.
+&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The type of the r.  For example: CONTAINER, LINK, TABLE, TREE, PROCEDURE, DATA_SOURCE, DEFINITION_SET, TRIGGER and etc.
+&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The subtype of the resource which qualifies what type of resource it is.
+&#x9;&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- Determines if the resource is enabled or not. 1=enabled, 0=disabled.
+&#x9;&#x9;&#x9;dsID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The associated datasource (resource) ID.
+&#x9;&#x9;&#x9;dsResName&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The datasource name.
+&#x9;&#x9;&#x9;dsResPath&#x9;&#x9;&#x9;&#x9;TypeDefinitions.pathType, -- The path of the datasource.
+&#x9;&#x9;&#x9;dsResType &#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The datasource type - DATA_SOURCE.
+&#x9;&#x9;&#x9;dsResSubType&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The datasource subtype which qualifies what type the datasource it is.
+&#x9;&#x9;&#x9;dsEnabled&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- Determines if the resource is enabled or not. 1=enabled, 0=disabled.
+&#x9;&#x9;&#x9;dsChildCount&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Provides a count of how many child tables the datasource has.
+&#x9;&#x9;&#x9;dataSourceType&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- Provides the type of data source.
+&#x9;&#x9;&#x9;creationDate&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;creationDateBigint&#x9;&#x9;BIGINT,
+&#x9;&#x9;&#x9;creatorUserDomain&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;creatorUserId&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;lastModifiedDate&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;lastModifiedDateBigint&#x9;BIGINT,
+&#x9;&#x9;&#x9;lastModifiedUserDomain&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;lastModifiedUserId&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;lastModifiedUserName&#x9;VARCHAR(255)
+&#x9;&#x9;)
+
+Values example: 
+&#x9;The first row is the parent resource which was passed into this procedure.  
+&#x9;The next set of results show the ancestory of the input r.  The ancestory are the folders starting at root and working down to the ancestor folder of the resource itself.
+&#x9;The next set of resources displayed are the resources in the downstream lineage such as orderdetails.  These are also known as child resources.  
+&#x9;For each child resource in the lineage, the ancestor folders are displayed.   There will be duplicates unless the input variable returnUniqueRows=1 was specified to return 
+&#x9;only unique rows.  Typically, the invoker of the this method will invoke it with returnUniqueRows=1 so that repeating resource paths are trimmed out.
+
+Input: resourcePath=/shared/examples/ViewSales
+       resourceType=TABLE
+       returnUniqueRows=1 &lt;-- return non-duplicate rows only
+       datasourceAncestor=1
+Output:
+seqNum&#x9;resourceID&#x9;parentID resDepth&#x9;treeType&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;enabled&#x9;dsID&#x9;dsResName&#x9;dsResPath&#x9;&#x9;&#x9;&#x9;&#x9;dsResType&#x9;&#x9;dsResSubType &#x9;&#x9;&#x9;dsEnabled&#x9;dsChildCount
+1,&#x9;&#x9;22063,&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Parent,&#x9;&#x9;ViewSales,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSales,&#x9;&#x9;&#x9;&#x9;&#x9;TABLE,&#x9;&#x9;&#x9;SQL_TABLE,&#x9;&#x9;&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+1,&#x9;&#x9;1,&#x9;&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Ancestor,&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER,&#x9;&#x9;NONE,&#x9;&#x9;&#x9;&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+1,&#x9;&#x9;10104,&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Ancestor,&#x9;shared,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER,&#x9;&#x9;FOLDER_CONTAINER,&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+1,&#x9;&#x9;21871,&#x9;&#x9;[NULL],&#x9;0,&#x9;&#x9;&#x9;Ancestor,&#x9;examples,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER,&#x9;&#x9;FOLDER_CONTAINER,&#x9;&#x9;1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+2,&#x9;&#x9;21901,&#x9;&#x9;22063,&#x9;1,&#x9;&#x9;&#x9;Child,&#x9;&#x9;orderdetails,&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails,&#x9;TABLE,&#x9;&#x9;&#x9;DATABASE_TABLE,&#x9;&#x9;&#x9;1,&#x9;21892,&#x9;ds_orders,&#x9;/shared/examples/ds_orders,&#x9;DATA_SOURCE,&#x9;RELATIONAL_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;7
+2,&#x9;&#x9;21892,&#x9;&#x9;22063,&#x9;1,&#x9;&#x9;&#x9;Ancestor,&#x9;ds_orders,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders,&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE,&#x9;RELATIONAL_DATA_SOURCE,&#x9;1,&#x9;21892,&#x9;ds_orders,&#x9;/shared/examples/ds_orders,&#x9;DATA_SOURCE,&#x9;RELATIONAL_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;7
+3,&#x9;&#x9;22061,&#x9;&#x9;22063,&#x9;1,&#x9;&#x9;&#x9;Child,&#x9;&#x9;productCatalog_Transformation,&#x9;/shared/examples/productCatalog_Transformation,PROCEDURE,&#x9;XSLT_TRANSFORM_PROCEDURE,1,&#x9;[NULL],&#x9;[NULL],&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;&#x9;&#x9;&#x9;[NULL],&#x9;&#x9;[NULL]
+4,&#x9;&#x9;22044,&#x9;&#x9;22061,&#x9;2,&#x9;&#x9;&#x9;Child,&#x9;&#x9;productCatalog.xml,&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML/productCatalog.xml,&#x9;TREE,&#x9;&#x9;&#x9;XML_FILE_TREE,&#x9;&#x9;&#x9;1,&#x9;22043,&#x9;ds_XML,&#x9;&#x9;/shared/examples/ds_XML,&#x9;DATA_SOURCE,&#x9;XML_FILE_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;1
+4,&#x9;&#x9;22043,&#x9;&#x9;22061,&#x9;2,&#x9;&#x9;&#x9;Ancestor,&#x9;ds_XML,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML,&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE,&#x9;XML_FILE_DATA_SOURCE,&#x9;1,&#x9;22043,&#x9;ds_XML,&#x9;&#x9;/shared/examples/ds_XML,&#x9;DATA_SOURCE,&#x9;XML_FILE_DATA_SOURCE,&#x9;1,&#x9;&#x9;&#x9;1
+
+Input: resourcePath=/shared/examples/ViewSales
+       resourceType=TABLE
+       returnUniqueRows=0 &lt;-- return all rows including duplicates
+       datasourceAncestor=0
+Output:
+seqNum&#x9;resourceID&#x9;parentID resDepth&#x9;treeType&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;enabled&#x9;dsID&#x9;dsResName&#x9;dsResPath&#x9;&#x9;&#x9;&#x9;&#x9;dsResType&#x9;&#x9;dsResSubType &#x9;&#x9;&#x9;dsEnabled&#x9;dsChildCount
+1&#x9;&#x9;22063&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Parent&#x9;&#x9;ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ViewSales&#x9;&#x9;&#x9;&#x9;&#x9;TABLE&#x9;&#x9;&#x9;SQL_TABLE&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+1&#x9;&#x9;1&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+1&#x9;&#x9;10104&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+1&#x9;&#x9;21871&#x9;&#x9;[NULL]&#x9;&#x9;0&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;21901&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Child&#x9;&#x9;orderdetails&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders/orderdetails&#x9;&#x9;TABLE&#x9;&#x9;&#x9;DATABASE_TABLE&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;1&#x9;&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;10104&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;21871&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+2&#x9;&#x9;21892&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_orders&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE&#x9;&#x9;RELATIONAL_DATA_SOURCE&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;22061&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Child&#x9;&#x9;productCatalog_Transformation&#x9;/shared/examples/productCatalog_Transformation PROCEDURE&#x9;XSLT_TRANSFORM_PROCEDURE 1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;1&#x9;&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;10104&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+3&#x9;&#x9;21871&#x9;&#x9;22063&#x9;&#x9;1&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;1122649&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Child&#x9;&#x9;productCatalog.xml&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML/productCatalog.xml&#x9;TREE&#x9;&#x9;&#x9;XML_FILE_TREE&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;1&#x9;&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;NONE&#x9;&#x9;&#x9;&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;10104&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;21871&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONTAINER&#x9;&#x9;FOLDER_CONTAINER&#x9;&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+4&#x9;&#x9;1122648&#x9;&#x9;22061&#x9;&#x9;2&#x9;&#x9;Ancestor&#x9;ds_XML&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/examples/ds_XML&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DATA_SOURCE&#x9;&#x9;XML_FILE_DATA_SOURCE&#x9;1&#x9;[NULL]&#x9;[NULL]&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;&#x9;&#x9;&#x9;[NULL]&#x9;&#x9;[NULL]
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.3&#x9;&#x9;05/22/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2018.400&#x9;11/13/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added dataSourceType to lineageTreeType.
+&#x9;2020.201&#x9;05/18/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Fixed call to getAncestorResources.
+&#x9;2020.300&#x9;08/18/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added creation and modification attributes to the result set.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getResourceLineageRecursiveAncestors(
+&#x9;IN inSeqNum&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- null to start with
+&#x9;IN inParentID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- null to start with
+&#x9;IN inResourceDepth&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- null to start with
+&#x9;IN inLineageResourceIdList&#x9;&#x9;LONGVARCHAR,&#x9;-- null to start with.  A list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;&#x9;-- Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;IN resourcePath &#x9;&#x9;&#x9;&#x9;VARCHAR(4096),  -- actual resource path and not a folder path
+&#x9;IN resourceType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR, &#x9;&#x9;-- The resource type
+&#x9;IN returnUniqueRows&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1 = (default) return a unique set of rows.  No duplicate resource paths are returned.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = return all rows as selected regardless of their uniqueness or not.
+&#x9;IN excludePathsList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- comma separate list of resource paths or partials paths to exclude
+&#x9;IN datasourceAncestor&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- flag to get the data source ancestory (1=yes, 0=no)
+&#x9;IN ignoreResourceDoesNotExist&#x9;INTEGER, &#x9;&#x9;-- Ignore any resources that do not exist
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 1 = Bypass the processing of that r.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+&#x9;OUT resourceTreeList &#x9;&#x9;&#x9;PIPE /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitionsRecursive.lineageTreeType
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getResourceLineageRecursiveAncestors&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE returnUniqueRows_&#x9;&#x9;&#x9;BIT DEFAULT NVL(returnUniqueRows, 1);
+&#x9;DECLARE seqNum&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT inSeqNum;
+&#x9;DECLARE parentID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT inParentID;
+&#x9;DECLARE lineageResourceIdList&#x9;&#x9;LONGVARCHAR DEFAULT inLineageResourceIdList;
+&#x9;DECLARE&#x9;resDepth&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE resourceID&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE resourceList1&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE resourceList2&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE resRec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitionsRecursive.lineageTreeType;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+
+&#x9;FOR r AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getResourceLineageRecursive(
+&#x9;&#x9;inSeqNum,&#x9;&#x9;&#x9;&#x9;-- null to start with
+&#x9;&#x9;inParentID, &#x9;&#x9;&#x9;-- null to start with
+&#x9;&#x9;inResourceDepth, &#x9;&#x9;-- null to start with
+&#x9;&#x9;inLineageResourceIdList,-- null to start with.  A list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;&#x9;resourcePath, &#x9;&#x9;&#x9;-- actual resource path and not a folder path
+&#x9;&#x9;resourceType, &#x9;&#x9;&#x9;-- The resource type
+&#x9;&#x9;excludePathsList, &#x9;&#x9;-- comma separate list of resource paths or partials paths to exclude
+&#x9;&#x9;datasourceAncestor, &#x9;-- flag to get the data source ancestory (1=yes, 0=no)
+&#x9;&#x9;NVL(ignoreResourceDoesNotExist,0) -- Ignore any resources that does not exist
+&#x9;) DO
+&#x9;&#x9;-- Determine if all rows should be returned or only unique rows
+&#x9;&#x9;IF (returnUniqueRows_ = 0) THEN
+&#x9;&#x9;&#x9;INSERT INTO resourceTreeList VALUES (r);
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;-- Insert into the list a unique resource that has not been previously selected
+&#x9;&#x9;&#x9;SET resourceID = r.resourceID||&apos;_&apos;;
+&#x9;&#x9;&#x9;IF (POSITION(resourceID IN resourceList1) = 0 AND POSITION(resourceID IN resourceList2) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;-- Use 2 LONGVARCHAR lists in case the number of resources exceeds the first list.
+&#x9;&#x9;&#x9;&#x9;IF (LENGTH(resourceID) + LENGTH(resourceList1) &lt; 2147483647) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resourceList1 = resourceList1 || resourceID;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resourceList2 = resourceList2 || resourceID;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;INSERT INTO resourceTreeList VALUES (r);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;FOR a AS 
+&#x9;&#x9;&#x9;SELECT
+&#x9;&#x9;&#x9;&#x9;resourceName,
+&#x9;&#x9;&#x9;&#x9;resourcePath,
+&#x9;&#x9;&#x9;&#x9;resourceType,
+&#x9;&#x9;&#x9;&#x9;subtype,
+&#x9;&#x9;&#x9;&#x9;enabled,
+&#x9;&#x9;&#x9;&#x9;id,
+&#x9;&#x9;&#x9;&#x9;changeid,
+&#x9;&#x9;&#x9;&#x9;ownerDomain,
+&#x9;&#x9;&#x9;&#x9;ownerName,
+&#x9;&#x9;&#x9;&#x9;impactLevel,
+&#x9;&#x9;&#x9;&#x9;childCount,
+&#x9;&#x9;&#x9;&#x9;dataSourceType,
+&#x9;&#x9;&#x9;&#x9;creationDate,
+&#x9;&#x9;&#x9;&#x9;creationDateBigint,
+&#x9;&#x9;&#x9;&#x9;creatorUserDomain,
+&#x9;&#x9;&#x9;&#x9;creatorUserId,
+&#x9;&#x9;&#x9;&#x9;creatorUserName,
+&#x9;&#x9;&#x9;&#x9;lastModifiedDate,
+&#x9;&#x9;&#x9;&#x9;lastModifiedDateBigint,
+&#x9;&#x9;&#x9;&#x9;lastModifiedUserDomain,
+&#x9;&#x9;&#x9;&#x9;lastModifiedUserId,
+&#x9;&#x9;&#x9;&#x9;lastModifiedUserName
+&#x9;&#x9;&#x9;FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getAncestorResources(r.resPath, r.resType) 
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;-- Determine if all rows should be returned or only unique rows
+&#x9;&#x9;&#x9;IF (returnUniqueRows_ = 0) THEN
+&#x9;&#x9;&#x9;&#x9;-- Setup the output resource record
+&#x9;&#x9;&#x9;&#x9;SET resRec.seqNum = r.seqNum;
+&#x9;&#x9;&#x9;&#x9;SET resRec.resourceID = a.id;
+&#x9;&#x9;&#x9;&#x9;SET resRec.parentID = r.parentID;
+&#x9;&#x9;&#x9;&#x9;SET resRec.resDepth = r.resDepth;
+&#x9;&#x9;&#x9;&#x9;SET resRec.treeType = &apos;Ancestor&apos;;
+&#x9;&#x9;&#x9;&#x9;SET resRec.resName = a.resourceName;
+&#x9;&#x9;&#x9;&#x9;SET resRec.resPath = a.resourcePath;
+&#x9;&#x9;&#x9;&#x9;SET resRec.resType = a.resourceType;
+&#x9;&#x9;&#x9;&#x9;SET resRec.subType = a.subType;
+&#x9;&#x9;&#x9;&#x9;SET resRec.enabled = a.enabled;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dsID = r.dsID;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dsResName = r.dsResName;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dsResPath = r.dsResPath;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dsResType = r.dsResType;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dsResSubType = r.dsResSubType;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dsEnabled = r.dsEnabled;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dsChildCount = r.dsChildCount;
+&#x9;&#x9;&#x9;&#x9;SET resRec.dataSourceType = r.dataSourceType;
+&#x9;&#x9;&#x9;&#x9;SET resRec.creationDate = a.creationDate;
+&#x9;&#x9;&#x9;&#x9;SET resRec.creationDateBigint = a.creationDateBigint;
+&#x9;&#x9;&#x9;&#x9;SET resRec.creatorUserDomain = a.creatorUserDomain;
+&#x9;&#x9;&#x9;&#x9;SET resRec.creatorUserId = a.creatorUserId;
+&#x9;&#x9;&#x9;&#x9;SET resRec.creatorUserName = a.creatorUserName;
+&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedDate = a.lastModifiedDate;
+&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedDateBigint = a.lastModifiedDateBigint;
+&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedUserDomain = a.lastModifiedUserDomain;
+&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedUserId = a.lastModifiedUserId;
+&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedUserName = a.lastModifiedUserName;
+
+&#x9;&#x9;&#x9;&#x9;-- Add the record to the output
+&#x9;&#x9;&#x9;&#x9;INSERT INTO resourceTreeList VALUES (resRec);
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;-- Insert into the list a unique resource that has not been previously selected
+&#x9;&#x9;&#x9;&#x9;SET resourceID = a.id || &apos;_&apos;;
+&#x9;&#x9;&#x9;&#x9;IF (POSITION(resourceID IN resourceList1) = 0 AND POSITION(resourceID IN resourceList2) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Use 2 LONGVARCHAR lists in case the number of resources exceeds the first list.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(resourceID) + LENGTH(resourceList1) &lt; 2147483647) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resourceList1 = resourceList1 || resourceID;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resourceList2 = resourceList2 || resourceID;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;&#x9;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Setup the output resource record
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.seqNum = r.seqNum;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.resourceID = a.id;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.parentID = r.parentID;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.resDepth = r.resDepth;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.treeType = &apos;Ancestor&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.resName = a.resourceName;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.resPath = a.resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.resType = a.resourceType;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.subType = a.subType;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.enabled = a.enabled;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dsID = r.dsID;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dsResName = r.dsResName;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dsResPath = r.dsResPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dsResType = r.dsResType;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dsResSubType = r.dsResSubType;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dsEnabled = r.dsEnabled;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dsChildCount = r.dsChildCount;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.dataSourceType = r.dataSourceType;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.creationDate = a.creationDate;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.creationDateBigint = a.creationDateBigint;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.creatorUserDomain = a.creatorUserDomain;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.creatorUserId = a.creatorUserId;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.creatorUserName = a.creatorUserName;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedDate = a.lastModifiedDate;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedDateBigint = a.lastModifiedDateBigint;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedUserDomain = a.lastModifiedUserDomain;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedUserId = a.lastModifiedUserId;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resRec.lastModifiedUserName = a.lastModifiedUserName;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Add the record to the output
+&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO resourceTreeList VALUES (resRec);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+&#x9;END FOR;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

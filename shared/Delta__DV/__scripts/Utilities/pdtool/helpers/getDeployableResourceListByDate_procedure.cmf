@@ -1,0 +1,768 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getDeployableResourceListByDate" path="/shared/Delta_DV/_scripts/Utilities/pdtool/helpers/getDeployableResourceListByDate" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getDeployableResourceListByDate:
+&#x9;-- CIS Repository Helper Procedure --
+
+&#x9;&#x9;This procedure provides the logic for retrieving a complete list of paths based on the creation date or last modified date.  
+&#x9;&#x9;If either the creation date or the last modified date is not null and is greater than the passed in resource timestamp then 
+&#x9;&#x9;it appears in the result.  Any resource paths found in the exclude paths list &quot;excludePathsList&quot; will be excluded from the 
+&#x9;&#x9;result.   Any resources that are not inclusive of the include base paths &quot;includeBasePath&quot; will be excluded from the result.
+
+&#x9;&#x9;PDTool (Promotion and Deployment Tool) is used to execute generated plan files.  If 
+&#x9;&#x9;you do not have PDTool on site, you may obtain it through a Professional Services engagement.
+
+&#x9;Input:
+&#x9;&#x9;resourcePathList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths to generate a plan for based on the lineage of all resources found.
+&#x9;&#x9;resourceTimestamp&#x9;&#x9;&#x9;TIMESTAMP,&#x9; &#x9;- resource timestamp value to compare with either the creation date or modified date of a resource with CIS 6.2.2 or higher
+&#x9;&#x9;includeBasePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- If present, then include any resources found in this comma separated list of base paths and exclude all others.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   It is intended to allow the user to specify a base path for published resources and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   /shared project folder resources that are related project level resources but exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   any other resources not associated with those base paths.
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9; &#x9;- Y or N
+&#x9;Output:
+&#x9;&#x9;resourceTreeList &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- A list of resources
+&#x9;&#x9;&#x9;PIPE /shared/ASAssets/Utilities/repository/definitions/RepositoryDefinitionsRecursive.resourceTreeType
+&#x9;&#x9;&#x9;&#x9;DECLARE PUBLIC TYPE resourceTreeType ROW (
+&#x9;&#x9;&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;&#x9;name of the CIS resource
+&#x9;&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;TypeDefinitions.pathType,&#x9;full path of the CIS resource
+&#x9;&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;&#x9;resource type
+&#x9;&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;&#x9;resource sub type
+&#x9;&#x9;&#x9;&#x9;creationDate&#x9;&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;&#x9;&#x9;creationDateBigint&#x9;&#x9;BIGINT,
+&#x9;&#x9;&#x9;&#x9;creatorUserDomain&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;lastModifiedDate&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;&#x9;&#x9;lastModifiedDateBigint&#x9;BIGINT,
+&#x9;&#x9;&#x9;&#x9;lastModifiedUserDomain&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;lastModifiedUserName&#x9;VARCHAR(255)
+&#x9;&#x9;&#x9;&#x9;);
+
+&#x9;Exceptions: none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.301&#x9;07/30/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2014.3&#x9;&#x9;07/07/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Modified to use optionType to provide a choice of using Creation Date or Modified Date but not both at the same time.
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="resourcePathList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="resourceTimestamp" direction="IN" nullable="true">
+      <datatype name="TIMESTAMP" type="DATETIME"/>
+    </parameter>
+    <parameter name="optionType" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="includeBasePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludePathsList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="resourceTreeList" direction="OUT" nullable="true">
+      <datatype name="resourceTreeList" type="TABLE" refId="256">
+        <element name="name">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resPath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="resType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="subType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="creationDate">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="creationDateBigint">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="creatorUserDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="creatorUserName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedDate">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="lastModifiedDateBigint">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="lastModifiedUserDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedUserName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getAncestorResources" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getResourcesByDate" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="optionType" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceNum" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="resourceDate" direction="IN">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="excludePaths" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getBasicResourceXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="pathType" type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/time/DateUtils/TimestampToBigint" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inTimestamp" direction="IN">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/xml/getValueFromXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="namespaces" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inXpath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inXml" direction="IN">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*&#x9;getDeployableResourceListByDate:
+&#x9;-- CIS Repository Helper Procedure --
+
+&#x9;&#x9;This procedure provides the logic for retrieving a complete list of paths based on the creation date or last modified date.  
+&#x9;&#x9;If either the creation date or the last modified date is not null and is greater than the passed in resource timestamp then 
+&#x9;&#x9;it appears in the result.  Any resource paths found in the exclude paths list &quot;excludePathsList&quot; will be excluded from the 
+&#x9;&#x9;result.   Any resources that are not inclusive of the include base paths &quot;includeBasePath&quot; will be excluded from the result.
+
+&#x9;&#x9;PDTool (Promotion and Deployment Tool) is used to execute generated plan files.  If 
+&#x9;&#x9;you do not have PDTool on site, you may obtain it through a Professional Services engagement.
+
+&#x9;Input:
+&#x9;&#x9;resourcePathList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths to generate a plan for based on the lineage of all resources found.
+&#x9;&#x9;resourceTimestamp&#x9;&#x9;&#x9;TIMESTAMP,&#x9; &#x9;- resource timestamp value to compare with either the creation date or modified date of a resource with CIS 6.2.2 or higher
+&#x9;&#x9;optionType&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;-- 3=Compare with Modified Date, 5=Compare with Creation Date
+&#x9;&#x9;&#x9;-- 1: Find the n most recent modified resources in the path (default of n is 1).  results are not ordered
+&#x9;&#x9;&#x9;-- 2: Find the n least recent modified resources in the path (default of n is 1). results are not ordered
+&#x9;&#x9;&#x9;-- 3: Find all resources modified after the passed in resource date
+&#x9;&#x9;&#x9;-- 4: Find all resources modifed before the passed in resource date
+&#x9;&#x9;&#x9;-- 5: Find all resources created after the passed in resource date
+&#x9;&#x9;&#x9;-- 6: Find all resources created before the passed in resource date
+&#x9;&#x9;includeBasePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- If present, then include any resources found in this comma separated list of base paths and exclude all others.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   It is intended to allow the user to specify a base path for published resources and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   /shared project folder resources that are related project level resources but exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-   any other resources not associated with those base paths.
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9; &#x9;- Y or N
+&#x9;Output:
+&#x9;&#x9;resourceTreeList &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- A list of resources
+&#x9;&#x9;&#x9;PIPE /shared/ASAssets/Utilities/repository/definitions/RepositoryDefinitionsRecursive.resourceTreeType
+&#x9;&#x9;&#x9;&#x9;DECLARE PUBLIC TYPE resourceTreeType ROW (
+&#x9;&#x9;&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;&#x9;name of the CIS resource
+&#x9;&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;TypeDefinitions.pathType,&#x9;full path of the CIS resource
+&#x9;&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;&#x9;resource type
+&#x9;&#x9;&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;&#x9;&#x9;&#x9;resource sub type
+&#x9;&#x9;&#x9;&#x9;creationDate&#x9;&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;&#x9;&#x9;creationDateBigint&#x9;&#x9;BIGINT,
+&#x9;&#x9;&#x9;&#x9;creatorUserDomain&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;lastModifiedDate&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;&#x9;&#x9;lastModifiedDateBigint&#x9;BIGINT,
+&#x9;&#x9;&#x9;&#x9;lastModifiedUserDomain&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;lastModifiedUserName&#x9;VARCHAR(255)
+&#x9;&#x9;&#x9;&#x9;);
+
+&#x9;Exceptions: none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.301&#x9;07/30/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2014.3&#x9;&#x9;07/07/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Modified to use optionType to provide a choice of using Creation Date or Modified Date but not both at the same time.
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2020.201&#x9;05/18/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Resolved insert into rec due to changes to getResourcesByDate.  Call to getBasicResourceCursor_ResourceAttributes no longer needed.
+&#x9;2020.300&#x9;08/27/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added an additional parameter to the invocation of getResourceByDate.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getDeployableResourceListByDate(
+&#x9;IN resourcePathList&#x9;&#x9;&#x9;LONGVARCHAR,-- a comma separated list of resource paths
+&#x9;IN resourceTimestamp&#x9;&#x9;TIMESTAMP,&#x9;-- resource timestamp value to compare with either the creation date or modified date of a resource
+&#x9;IN optionType&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;-- 3=Compare with Modified Date, 5=Compare with Creation Date
+&#x9;&#x9;&#x9;-- 1: Find the n most recent modified resources in the path (default of n is 1).  results are not ordered
+&#x9;&#x9;&#x9;-- 2: Find the n least recent modified resources in the path (default of n is 1). results are not ordered
+&#x9;&#x9;&#x9;-- 3: Find all resources modified after the passed in resource date
+&#x9;&#x9;&#x9;-- 4: Find all resources modifed before the passed in resource date
+&#x9;&#x9;&#x9;-- 5: Find all resources created after the passed in resource date
+&#x9;&#x9;&#x9;-- 6: Find all resources created before the passed in resource date
+&#x9;IN includeBasePath&#x9;&#x9;&#x9;LONGVARCHAR,-- If present, then include any resources found in this comma separated list of base paths and exclude all others.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--   It is intended to allow the user to specify a base path for published resources and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--   /shared project folder resources that are related project level resources but exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--   any other resources not associated with those base paths.
+&#x9;IN excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR,-- a comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;-- all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y or N
+&#x9;OUT resourceTreeList &#x9;&#x9;PIPE (
+&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),
+&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creationDate&#x9;&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;creationDateBigint&#x9;&#x9;BIGINT,
+&#x9;&#x9;creatorUserDomain&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedDate&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;lastModifiedDateBigint&#x9;BIGINT,
+&#x9;&#x9;lastModifiedUserDomain&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedUserName&#x9;VARCHAR(255)
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getDeployableResourceListByDate&apos;;
+&#x9;DECLARE excludePathsList_&#x9;&#x9;LONGVARCHAR DEFAULT excludePathsList;
+&#x9;DECLARE includeBasePath_&#x9;&#x9;LONGVARCHAR DEFAULT includeBasePath;
+&#x9;DECLARE excludePath &#x9;&#x9;&#x9;VARCHAR(4096);
+&#x9;DECLARE includePath &#x9;&#x9;&#x9;VARCHAR(4096);
+&#x9;DECLARE resourcePath &#x9;&#x9;&#x9;VARCHAR(4096); -- actual resource path and not a folder path
+&#x9;DECLARE resourceType&#x9;&#x9;&#x9;VARCHAR DEFAULT null; -- The resource type
+&#x9;DECLARE processPath&#x9;&#x9;&#x9;&#x9;boolean;
+&#x9;DECLARE processIncludePath&#x9;&#x9;boolean;
+&#x9;DECLARE xmlOut&#x9;&#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE xmlTemp&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE namespaces&#x9;&#x9;&#x9;&#x9;VARCHAR(255) DEFAULT &apos;xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&apos;;
+&#x9;DECLARE xpath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024);
+&#x9;DECLARE compareDateBigint&#x9;&#x9;BIGINT;
+&#x9;DECLARE TYPE recType&#x9;&#x9;&#x9;ROW (
+&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),
+&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creationDate&#x9;&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;creationDateBigint&#x9;&#x9;BIGINT,
+&#x9;&#x9;creatorUserDomain&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedDate&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;lastModifiedDateBigint&#x9;BIGINT,
+&#x9;&#x9;lastModifiedUserDomain&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedUserName&#x9;VARCHAR(255)
+&#x9;);
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;recType;
+
+&#x9;-- Convert timestamp to bigint
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;time&quot;/DateUtils/TimestampToBigint(resourceTimestamp, compareDateBigint);
+&#x9;if (upper(debug) = &apos;Y&apos;) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;resourceTimestamp=[&apos;||NVL(CAST(resourceTimestamp AS VARCHAR),&apos;null&apos;)||&apos;]  compareDateBigint=[&apos;||NVL(CAST(compareDateBigint AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;end if;
+
+&#x9;-- If the excludePathsList is empty make it null
+&#x9;if (excludePathsList_ IS NOT NULL AND LENGTH(TRIM(excludePathsList_)) = 0) then
+&#x9;&#x9;set excludePathsList_ = null;
+&#x9;end if;
+&#x9;-- If the excludePathsList is empty make it null
+&#x9;if (includeBasePath_ IS NOT NULL AND LENGTH(TRIM(includeBasePath_)) = 0) then
+&#x9;&#x9;set includeBasePath_ = null;
+&#x9;end if;
+
+&#x9;if (upper(debug) = &apos;Y&apos;) then
+&#x9;&#x9;-- Log the exclude path list
+&#x9;&#x9;for p as 
+&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(excludePathsList_, &apos;,&apos;,0,0,0,1,0) 
+&#x9;&#x9;&#x9;&#x9;where object is not null and length(object) &gt; 0
+&#x9;&#x9;do
+&#x9;&#x9;&#x9;-- Log a single resourcePath from the list
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Exclude path=[&apos;||NVL(p.object,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;end for;
+&#x9;&#x9;-- Log the exclude non-base path list
+&#x9;&#x9;for p as 
+&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(includeBasePath_, &apos;,&apos;,0,0,0,1,0) 
+&#x9;&#x9;&#x9;&#x9;where object is not null and length(object) &gt; 0
+&#x9;&#x9;do
+&#x9;&#x9;&#x9;-- Log a single resourcePath from the list
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Include base path=[&apos;||NVL(p.object,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;end for;
+&#x9;end if;
+
+&#x9;-- Extract the resource path list one-by-one and find the lineage for each
+&#x9;for p as  
+&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(resourcePathList, &apos;,&apos;,0,0,0,1,0) 
+&#x9;&#x9;&#x9;where object is not null and length(object) &gt; 0
+&#x9;do
+&#x9;&#x9;-- Get a single resourcePath from the list
+&#x9;&#x9;set resourcePath = p.object;
+
+&#x9;&#x9;if (resourcePath is not null and LENGTH(resourcePath) &gt; 0) then
+&#x9;&#x9;&#x9;-- Retrieve the resource XML
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getBasicResourceXML(resourcePath, null, xmlOut);
+&#x9;&#x9;&#x9;set xmlTemp = CAST(xmlOut as LONGVARCHAR);
+&#x9;&#x9;&#x9;set xpath = &apos;/resource:getResourceResponse/resource:resources/resource:resource/resource:type&apos;;
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;xml&quot;/getValueFromXML(&apos;N&apos;, namespaces, xpath, xmlTemp, resourceType);
+&#x9;&#x9;&#x9;if (upper(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Starting Search Path=[&apos;||NVL(resourcePath,&apos;null&apos;)||&apos;]  type=[&apos;||NVL(resourceType,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Get all the resources in that DATA_SOURCE or CONTAINER that are greater than or equal to the &quot;compare modified timestamp&quot;
+&#x9;&#x9;&#x9;for list as 
+&#x9;&#x9;&#x9;&#x9;select DISTINCT * FROM (
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Get all resources where the &quot;lastModifiedDate&quot; attribute &gt;= resourceTimestamp
+&#x9;&#x9;&#x9;&#x9;&#x9;select
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;name,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resPath,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;subType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creationDate,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creationDateBigint,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creatorUserDomain,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creatorUserName,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedDate,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedDateBigint,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedUserDomain,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedUserName
+&#x9;&#x9;&#x9;&#x9;&#x9;from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getResourcesByDate(debug, optionType, resourcePath, resourceType, null, resourceTimestamp, null) 
+&#x9;&#x9;&#x9;&#x9;) getResourcesByDateUnion
+&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;set rec = list;
+
+&#x9;&#x9;&#x9;&#x9;-- If the resource path is in the exclude list then don&apos;t process it
+&#x9;&#x9;&#x9;&#x9;set processPath = true;
+&#x9;&#x9;&#x9;&#x9;excludeLoop:
+&#x9;&#x9;&#x9;&#x9;for p as 
+&#x9;&#x9;&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(excludePathsList_, &apos;,&apos;,0,0,0,1,0) 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;where object is not null and length(object) &gt; 0
+&#x9;&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;&#x9;set excludePath = REPLACE(p.object||&apos;/&apos;,&apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Check the resource path against the exclude list
+&#x9;&#x9;&#x9;&#x9;&#x9;if (REPLACE(list.resPath||&apos;/&apos;,&apos;//&apos;,&apos;/&apos;) = excludePath) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set processPath = false;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;leave excludeLoop;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;end for;
+
+&#x9;&#x9;&#x9;&#x9;-- If the resource path is in the include base path list then process it otherwise ignore it
+&#x9;&#x9;&#x9;&#x9;if (processPath and includeBasePath_ is not null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set processIncludePath = false;
+&#x9;&#x9;&#x9;&#x9;&#x9;includeLoop:
+&#x9;&#x9;&#x9;&#x9;&#x9;for p as 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(includeBasePath_, &apos;,&apos;,0,0,0,1,0) 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;where object is not null and length(object) &gt; 0
+&#x9;&#x9;&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set includePath = REPLACE(p.object||&apos;/&apos;,&apos;//&apos;,&apos;/&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Check the resource path against the exclude list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;if (POSITION(includePath IN list.resPath) = 1) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set processIncludePath = true;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;leave includeLoop;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;end for;
+&#x9;&#x9;&#x9;&#x9;&#x9;set processPath = processIncludePath;
+&#x9;&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;&#x9;if (processPath) then
+
+&#x9;&#x9;&#x9;&#x9;&#x9;/*  When non-folder &quot;CONTAINER&quot; resource is found, then determine its closest ancestor that is a folder &quot;CONTAINER&quot;.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The purpose of this is to insure that a deployed resource will have a folder created on the target so a container
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resource mus be generated here.
+&#x9;&#x9;&#x9;&#x9;&#x9;*/
+&#x9;&#x9;&#x9;&#x9;&#x9;if (list.resType != &apos;CONTAINER&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Get the ancestory of the resource to determine the lowest level folder container of the resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;for ancestor as 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;select 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceName,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourceType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;subType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creationDate,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creationDateBigint,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creatorUserDomain,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;creatorUserName,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedDate,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedDateBigint,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedUserDomain,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lastModifiedUserName
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getAncestorResources(list.resPath, list.resType) 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;if (ancestor.resourceType = &apos;CONTAINER&apos; and ancestor.subtype = &apos;FOLDER_CONTAINER&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.name = ancestor.resourceName;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.resPath = ancestor.resourcePath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.resType = ancestor.resourceType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.subtype = ancestor.subtype;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.creationDateBigint = ancestor.creationDateBigint;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.creationDate = ancestor.creationDate;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.creatorUserDomain = ancestor.creatorUserDomain;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.creatorUserName = ancestor.creatorUserName;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.lastModifiedDateBigint = ancestor.lastModifiedDateBigint;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.lastModifiedDate = ancestor.lastModifiedDate;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.lastModifiedUserDomain = ancestor.lastModifiedUserDomain;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set rec.lastModifiedUserName = ancestor.lastModifiedUserName;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;end for;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Log the folder it and insert it into the pipe
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;if (upper(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;    Container resource path=[&apos;||NVL(rec.resPath,&apos;null&apos;)||&apos;]  type=[&apos;||NVL(rec.resType,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The folder container resource is required to insure that all folders are created on the target system
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO resourceTreeList values(rec);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;if (upper(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Resource path=[&apos;||NVL(list.resPath,&apos;null&apos;)||&apos;]  type=[&apos;||NVL(list.resType,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO resourceTreeList values(rec);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end for;
+&#x9;&#x9;end if;
+&#x9;end for;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

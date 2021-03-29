@@ -1,0 +1,101 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_EnrolleeWaitingPeriodInfo" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_EnrolleeWaitingPeriodInfo" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inContractID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inMemberID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="ContractID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="MemberID">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ConditionCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="4"/>
+        </element>
+        <element name="ConditionDESC">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="ConditionType">
+          <datatype name="VARCHAR" type="STRING" maxLength="1"/>
+        </element>
+        <element name="ExplanationCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="4"/>
+        </element>
+        <element name="ExplanationDESC">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="EffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="WaitingPeriodMonths">
+          <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+        </element>
+        <element name="ClaimByPassIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="InvestigationTypeIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="MemberEligibilityRdctnIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="PersonCoverageRdctnIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT TRIM(WP.CONTRACT_ID) ContractID,
+       WP.MEMBER_ID MemberID,
+       TRIM(WP.CONDITION_CODE) ConditionCD,
+       TRIM(WP_CODES.REPORT_DESC) ConditionCDDesc,
+       WP.CONDITION_TYPE ConditionType,
+       TRIM(WP.EXPLANATION_CODE) ExplanationCD,
+       TRIM(EX.REPORT_DESC) ExplanationDesc,
+       WP.EFFECTIVE_DATE EffDate,
+       WP.END_DATE EndDate,
+       CEIL(MONTHS_BETWEEN(WP.END_DATE + 1, WP.EFFECTIVE_DATE)) WaitingPeriodMonths,
+       DECODE(WP.ACCDNT_CLM_BYPS_FG, &apos;Y&apos;, &apos;true&apos;, &apos;false&apos;) ClaimByPassIND,
+       DECODE(WP.INVSTIGATN_TYP_IND, &apos;Y&apos;, &apos;true&apos;, &apos;false&apos;)  InvestigationTypeIND,
+       DECODE(WP.MBR_ELIG_RDCTN_IND, &apos;Y&apos;, &apos;true&apos;, &apos;false&apos;) MemberEligibilityRdctnIND,
+       DECODE(WP.PSRN_CVG_RDCTN_IND, &apos;Y&apos;, &apos;true&apos;, &apos;false&apos;) PersonCoverageRdctnIND
+FROM   MVPPPRD.PRE_COND_WAIT_PD WP
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE WP_CODES
+ON     WP.CONDITION_CODE = WP_CODES.CODE_VALUE_ID
+AND    WP_CODES.FK_CODE_CATG_ID = &apos;CD&apos;
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE EX
+ON     WP.EXPLANATION_CODE = EX.CODE_VALUE_ID
+AND    EX.FK_CODE_CATG_ID = &apos;EX&apos;
+WHERE  WP.CONTRACT_ID = &apos;{0}&apos;
+AND    WP.MEMBER_ID = &apos;{1}&apos;
+AND    WP.END_DATE &lt; TO_DATE(&apos;9999-12-31&apos;, &apos;YYYY-MM-DD&apos;)
+AND    WP.AUDIT_FLAG = &apos;N&apos; AND WP.VOID_FLAG = &apos;N&apos;
+ORDER BY WP.CONTRACT_ID, WP.MEMBER_ID, WP.CONDITION_CODE,WP.EFFECTIVE_DATE, WP.END_DATE</attribute>
+  <attribute name="creationDate" type="LONG">1608675816355</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1610389725769</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/MTV</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608675816355</attribute>
+</metadata>

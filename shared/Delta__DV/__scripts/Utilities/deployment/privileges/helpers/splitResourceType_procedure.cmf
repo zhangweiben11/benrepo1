@@ -1,0 +1,235 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="splitResourceType" path="/shared/Delta_DV/_scripts/Utilities/deployment/privileges/helpers/splitResourceType" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[splitResourceType
+
+&#x9;This resource splits out the owner, domain, resource path and resource type into a cursor of 4 variables.
+
+&#x9;Input:
+&#x9;&#x9;ownerPathList&#x9;&#x9;LONGVARCHAR - the format of the string is shown below
+&#x9;&#x9;&#x9;owner: &#x9;&#x9;&#x9;What the resource ownership should be set to.  If null then no resource owner is set and the path is bypassed.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Ownership is explicitly declared here.  It is not determined by how the resourcePath is currently set.
+&#x9;&#x9;&#x9;domain: &#x9;&#x9;The domain of the owner.  Ignored if owner is null.  Required if owner is not null.
+&#x9;&#x9;&#x9;resourcePath:&#x9;The path from which to read (derive) the privileges for the given DV environment.
+&#x9;&#x9;&#x9;resourceType:&#x9;The resource type for the given resourcePath.  i.e. CONTAINER, DATA_SOURCE, TABLE, PROCEDURE, TRIGGER, DEFINITION_SET, etc.
+&#x9;&#x9;&#x9;Row Format:&#x9;&#x9;&apos;owner:domain:resourcePath:resourceType,&apos;
+&#x9;&#x9;&#x9;------------------ Shared -------------------
+&#x9;&#x9;&#x9;||&apos;admin:composite:/shared/ASAssets/BestPractices_v81:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;metrics_app_id:composite:/shared/ASAssets/KPImetrics:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/shared/ASAssets/Utilities:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/shared/Tools:CONTAINER,&apos;
+&#x9;&#x9;&#x9;------------------ Data Bases -------------------
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets:DATA_SOURCE,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ADMIN:DATA_SOURCE,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets/BestPractices_v81:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets/KPImetrics:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets_Test:DATA_SOURCE,&apos;
+&#x9;&#x9;&#x9;------------------ Web Services -------------------&#x9;
+
+&#x9;Output:
+&#x9;&#x9;outPipe &#x9;PIPE (
+&#x9;&#x9;&#x9;ownerName &#x9;VARCHAR, &#x9;&#x9;What the resource ownership should be set to.  If null then no resource owner is set and the path is bypassed.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Ownership is explicitly declared here.  It is not determined by how the resourcePath is currently set.
+&#x9;&#x9;&#x9;ownerDomain VARCHAR, &#x9;&#x9;The domain of the owner.  Ignored if owner is null.  Required if owner is not null.
+&#x9;&#x9;&#x9;rPath &#x9;&#x9;LONGVARCHAR, &#x9;The path from which to read (derive) the privileges for the given DV environment.
+&#x9;&#x9;&#x9;rType &#x9;&#x9;LONGVARCHAR&#x9;&#x9;The resource type for the given resourcePath.  i.e. CONTAINER, DATA_SOURCE, TABLE, PROCEDURE, TRIGGER, DEFINITION_SET, etc.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/16/2014      Jeremy Akers        6.2.6           Created new
+&#x9;2019.200&#x9;05/30/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="ownerPathList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="outPipe" direction="OUT" nullable="true">
+      <datatype name="outPipe" type="TABLE" refId="256">
+        <element name="ownerName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ownerDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="rPath">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="rType">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractTextList" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="preserveDoubleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveSingleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveParenthesis" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveQualifier" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="trimResults" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="textExpression">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/getDelimitedOccurrence" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="mode" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inOccurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="inTrimText" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;splitResourceType
+
+&#x9;This resource splits out the owner, domain, resource path and resource type into a cursor of 4 variables.
+
+&#x9;Input:
+&#x9;&#x9;ownerPathList&#x9;&#x9;LONGVARCHAR - the format of the string is shown below
+&#x9;&#x9;&#x9;owner: &#x9;&#x9;&#x9;What the resource ownership should be set to.  If null then no resource owner is set and the path is bypassed.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Ownership is explicitly declared here.  It is not determined by how the resourcePath is currently set.
+&#x9;&#x9;&#x9;domain: &#x9;&#x9;The domain of the owner.  Ignored if owner is null.  Required if owner is not null.
+&#x9;&#x9;&#x9;resourcePath:&#x9;The path from which to read (derive) the privileges for the given DV environment.
+&#x9;&#x9;&#x9;resourceType:&#x9;The resource type for the given resourcePath.  i.e. CONTAINER, DATA_SOURCE, TABLE, PROCEDURE, TRIGGER, DEFINITION_SET, etc.
+&#x9;&#x9;&#x9;Row Format:&#x9;&#x9;&apos;owner:domain:resourcePath:resourceType,&apos;
+&#x9;&#x9;&#x9;------------------ Shared -------------------
+&#x9;&#x9;&#x9;||&apos;admin:composite:/shared/ASAssets/BestPractices_v81:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;metrics_app_id:composite:/shared/ASAssets/KPImetrics:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/shared/ASAssets/Utilities:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/shared/Tools:CONTAINER,&apos;
+&#x9;&#x9;&#x9;------------------ Data Bases -------------------
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets:DATA_SOURCE,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ADMIN:DATA_SOURCE,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets/BestPractices_v81:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets/KPImetrics:CONTAINER,&apos;
+&#x9;&#x9;&#x9;||&apos;admin:composite:/services/databases/ASAssets_Test:DATA_SOURCE,&apos;
+&#x9;&#x9;&#x9;------------------ Web Services -------------------&#x9;
+
+&#x9;Output:
+&#x9;&#x9;outPipe &#x9;PIPE (
+&#x9;&#x9;&#x9;ownerName &#x9;VARCHAR, &#x9;&#x9;What the resource ownership should be set to.  If null then no resource owner is set and the path is bypassed.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Ownership is explicitly declared here.  It is not determined by how the resourcePath is currently set.
+&#x9;&#x9;&#x9;ownerDomain VARCHAR, &#x9;&#x9;The domain of the owner.  Ignored if owner is null.  Required if owner is not null.
+&#x9;&#x9;&#x9;rPath &#x9;&#x9;LONGVARCHAR, &#x9;The path from which to read (derive) the privileges for the given DV environment.
+&#x9;&#x9;&#x9;rType &#x9;&#x9;LONGVARCHAR&#x9;&#x9;The resource type for the given resourcePath.  i.e. CONTAINER, DATA_SOURCE, TABLE, PROCEDURE, TRIGGER, DEFINITION_SET, etc.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/16/2014      Jeremy Akers        6.2.6           Created new
+&#x9;2019.200&#x9;05/30/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE splitResourceType(
+&#x9;IN ownerPathList LONGVARCHAR, 
+&#x9;OUT outPipe &#x9;PIPE (
+&#x9;&#x9;ownerName &#x9;VARCHAR, 
+&#x9;&#x9;ownerDomain VARCHAR, 
+&#x9;&#x9;rPath &#x9;&#x9;LONGVARCHAR, 
+&#x9;&#x9;rType &#x9;&#x9;LONGVARCHAR
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE ownerName&#x9;VARCHAR;
+&#x9;DECLARE ownerDomain&#x9;VARCHAR;
+&#x9;DECLARE resPath&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE resType&#x9;&#x9;VARCHAR;
+
+&#x9;FOR r AS
+&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(ownerPathList, &apos;,&apos;, 1, 0, 0, 0, 1)
+&#x9;&#x9;WHERE textExpression IS NOT NULL AND LENGTH(TRIM(textExpression)) &gt; 0
+&#x9;DO
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getDelimitedOccurrence(r.textExpression, &apos;F&apos;, &apos;:&apos;, 1, 1, ownerName);
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getDelimitedOccurrence(r.textExpression, &apos;F&apos;, &apos;:&apos;, 2, 1, ownerDomain);
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getDelimitedOccurrence(r.textExpression, &apos;F&apos;, &apos;:&apos;, 3, 1, resPath);
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getDelimitedOccurrence(r.textExpression, &apos;F&apos;, &apos;:&apos;, 4, 1, resType);
+&#x9;&#x9;-- Remove any surrounding double quotes
+&#x9;&#x9;IF (INSTR(resPath, &apos;&quot;&apos;) = 1 AND INSTR(REVERSE(resPath), &apos;&quot;&apos;) = 1) THEN
+&#x9;&#x9;&#x9;SET resPath = SUBSTRING(resPath, 2, LENGTH(resPath)-2);
+&#x9;&#x9;END IF;
+ &#x9;&#x9;-- Insert into the pipe
+&#x9;&#x9;INSERT INTO outPipe VALUES (ownerName, ownerDomain, resPath, resType);
+&#x9;END FOR;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1559248614721</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1559248614721</attribute>
+</metadata>

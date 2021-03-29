@@ -1,0 +1,450 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="GetAnsi2NativeMapping" path="/shared/Delta_DV/_scripts/Utilities/repository/GetAnsi2NativeMapping" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[PLEASE USE THIS PROCEDURE AND DO NOT CALL THE CJP DIRECTLY. Due to a change in the repository API in 6.2, a separate version of this CJP was made. 
+Please use this wrapper script that determines which version of the CJP to use.
+
+
+ * &#x9;Custom procedure that returns a data source native data type mapping between a given CIS ANSI type and a given data source.
+ *
+ *&#x9;For example, in 6.1.0.00.34 (hotfix) Composite maps a DOUBLE is to a BINARY_DOUBLE for oracle 
+ *&#x9;whereas it used to map to DOUBLE.  Therefore, it is necessary then to retrieve the CIS ANSI type mappings for specific data sources.
+ *&#x9;
+ *&#x9;How this procedure works&#x9;
+ *&#x9;1.&#x9;Starting with the execution environment, cast that to ExecutionEnvironmentImpl and call getParentRequest().getTransactionContext()
+ *&#x9;2.&#x9;With the tcontext object, retrieve the repository connection tcontext.getRepositoryConnection()
+ *&#x9;3.&#x9;With repoConn, look up the id of the data source. repoConn.getResource(new Path(/shared/path/to/my/ds&apos;), Metadata.TYPE_DATA_SOURCE).getId()
+ *&#x9;4.&#x9;Now get the DataSource object, initializing it if it is not initialized yet. DataSourceManager.getInstance().getDataSource(id,repoConn)
+ *&#x9;5.&#x9;Get a Capabilities object from the DataSource. Ds.getMetaInfo(tcontxt)
+ *&#x9;6.  Use the hashmap created in the CJP to lookup the internal DataType for the incoming CIS type
+ *&#x9;7.&#x9;Determine whether the incoming type is a plain data type or has scale or precision
+ *
+ *&#x9;&#x9;&#x9;a. For a plain data type you can do this directlyÖ
+ *&#x9;&#x9;&#x9;&#x9;i. Use the internal type and the capabilities object to look up the external type from the composite.datatype keys in the capabilities files. 
+ *&#x9;&#x9;&#x9;&#x9;&#x9;String nativeType = capabilities.getCompatibleNativeDataType(DataType.DATA_TYPE_INTEGER);
+ *&#x9;
+ *&#x9;&#x9;&#x9;b. For scale only:  There is a little more you can do when a length or precision is availableÖ
+ *&#x9;&#x9;&#x9;&#x9;i. Use DataTypeFactory to get an object of the internal type: dt = DataTypeFactory.createDataType(&apos;VARCHAR&apos;,DataType.DATA_TYPE_STRING)
+ *&#x9;&#x9;&#x9;&#x9;&#x9;PrimitiveDataType dt = (PrimitiveDataType)DataTypeFactory.createDataType(&quot;CHAR(40)&quot;,DataType.DATA_TYPE_STRING);
+ *
+ *&#x9;&#x9;&#x9;&#x9;ii.  Set the scale and precision
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMaxLength(40);
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMinLength(40);
+ *&#x9;&#x9;&#x9;
+ *&#x9;&#x9;&#x9;&#x9;iii. Use the internal type and the capabilities object to look up the external type from the composite.datatype keys in the capabilities files. 
+ *&#x9;&#x9;&#x9;&#x9;&#x9;String nativeType = capabilities.getCompatibleNativeDataType(dt);
+ *
+ *&#x9;&#x9;&#x9;c. For scale and precision:  Or you can do something like thisÖ
+ *&#x9;&#x9;&#x9;&#x9;i. Use DataTypeFactory to get an object of the internal type: dt = DataTypeFactory.createDataType(&apos;VARCHAR&apos;,DataType.DATA_TYPE_STRING)
+ *&#x9;&#x9;&#x9;&#x9;&#x9;PrimitiveDataType dt = (PrimitiveDataType)DataTypeFactory.createDataType(&quot;DEICMAL(12,2)&quot;,DataType.DATA_TYPE_DECIMAL);
+ *
+ *&#x9;&#x9;&#x9;&#x9;ii.  Set the scale and precision
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMaxDigits(12);
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMaxFractionalDigits(2);
+ *
+ *&#x9;&#x9;&#x9;&#x9;iii. Use the internal type and the capabilities object to look up the external type from the composite.datatype keys in the capabilities files. 
+ *&#x9;&#x9;&#x9;&#x9;&#x9;String nativeType = capabilities.getCompatibleNativeDataType(dt);
+ *&#x9;
+ *&#x9;Inputs:
+ *&#x9;&#x9;datasourcePath - The CIS full path to the data source resource
+ *&#x9;&#x9;&#x9;e.g. /shared/examples/ds_inventory
+ *&#x9;&#x9;cisType - The CIS variable type
+ *&#x9;&#x9;&#x9;e.g. VARCHAR(40), DECIMAL(32,2), INTEGER, LONGVARCHAR, etc.
+ *&#x9;&#x9;
+ *&#x9;Outputs:
+ *&#x9;  result (&#x9;- A cursor containing the CIS types and native data source types
+ *&#x9;   &#x9;cisType,  VARCHAR - This is the same as the input CIS variable type.
+ *&#x9;   &#x9;&#x9;e.g. /shared/examples/ds_inventory
+ *&#x9;  &#x9;cisNormalizedType,  VARCHAR - This applies upper case and normalizes any CIS types that are not in JdbcDataType definition.
+ *&#x9;  &#x9;&#x9;e.g. int --&gt; INTEGER, varchar --&gt; VARCHAR
+ *&#x9;   &#x9;cisBaseType,  VARCHAR - Extracts the base type from the incoming cisType after it has been normalized
+ *&#x9;   &#x9;&#x9;e.g. varchar(40) --&gt; VARCHAR, DECIMAL(32,2) --&gt; DECIMAL
+ *&#x9;  &#x9;cisScale,  INTEGER - The scale for the cisType input parameter.  A -1 is returned if there is no scale.
+ *&#x9;   &#x9;&#x9;e.g. The scale of VARCHAR(40) is 40, The scale of DECIMAL(32,2) is 32, The scale of INTEGER is -1.
+ *&#x9;   &#x9;cisPrecision,  INTEGER - The precision for the cisType input parameter.  A -1 is returned if there is no precision.
+ *&#x9;   &#x9;&#x9;e.g. The precision of VARCHAR(40) is -1, The precision of DECIMAL(32,2) is 2
+ *&#x9;   &#x9;dataTypeId,  INTEGER - A CIS internal JdbcDataType identifier.
+ *&#x9;    &#x9;e.g. -1000 represents INTEGER
+ *&#x9;   &#x9;dataTypeName,  VARCHAR - A CIS internal JdbcDataType name.
+ *&#x9;   &#x9;&#x9;e.g. INTEGER
+ *&#x9;   &#x9;nativeType,  VARCHAR - The native data type associated with the passed in cisType
+ *&#x9;  &#x9;&#x9;e.g. For Oracle...INTEGER --&gt; number(10,0),
+ *&#x9;   &#x9;nativeBaseType,  VARCHAR - Extracts the base type from the native data type.
+ *&#x9;   &#x9;&#x9;e.g. number(10,0) --&gt; number
+ *&#x9;   &#x9;nativeScale,  INTEGER - The scale of the native data type
+ *&#x9;   &#x9;&#x9;e.g. number(10,0) --&gt; The scale is 10.  The scale is -1 if there is no scale.
+ *&#x9;   &#x9;nativePrecision,  INTEGER - The precision of the native data type
+ *&#x9;       &#x9;e.g. number(10,0) --&gt; The precision is 0.  The precision is -1 if there is not precision.
+ *&#x9;&#x9;)
+ *
+ *&#x9;Exceptions:
+ *&#x9;   Throws a custom JDBC exception if input parameters are missing or it cannot find the data type.
+ *&#x9;
+ *&#x9;&#x9;&#x9;
+ * --------------------------------------------
+ * JdbcDataType as shown below:
+ * --------------------------------------------
+ * For CIS 6.1, this is a complete listing of the CIS internal JDBC Data Types.
+ * 
+ * An hashmap variable &quot;cisDataTypes&quot; has been created within this CJP that maps to these CIS ANSI types.  A lookup is performed
+ * by this CJP against this hashmap which will return the DataType value.  This value is used to invoke the native capabilities
+ * using &quot;capabilities.getCompatibleNativeDataType(dt)&quot;. 
+ * 
+ * If in the future, additional CIS ANSI types are added, this CJP will need to be updated to reflect that enhancement.
+ * 
+  private static final Map &lt;String, DataType&gt; cisDataTypes = new HashMap();
+  
+  public static final DataType TINYINT   = createIntegerType(&quot;TINYINT&quot;,-998,Byte.MIN_VALUE,Byte.MAX_VALUE);
+  public static final DataType SMALLINT  = createIntegerType(&quot;SMALLINT&quot;,-999,Short.MIN_VALUE,Short.MAX_VALUE);
+  public static final DataType INTEGER   = createIntegerType(&quot;INTEGER&quot;,-1000,Integer.MIN_VALUE,Integer.MAX_VALUE);
+  public static final DataType BIGINT    = createIntegerType(&quot;BIGINT&quot;,-997,Long.MIN_VALUE,Long.MAX_VALUE);
+  public static final DataType FLOAT     = createDataType(&quot;FLOAT&quot;,-996,Value.VALUE_TYPE_FLOAT);
+  public static final DataType REAL      = createDataType(&quot;REAL&quot;,-995,Value.VALUE_TYPE_FLOAT);
+  public static final DataType DOUBLE    = createDataType(&quot;DOUBLE&quot;,-994,Value.VALUE_TYPE_FLOAT);
+  public static final DataType DECIMAL   = createDecimalType(&quot;DECIMAL&quot;,-993, DEFAULT_DECIMAL_MAX_DIGITS, DEFAULT_DECIMAL_MAX_FRACTIONAL_DIGITS);
+  public static final DataType NUMERIC   = createDecimalType(&quot;NUMERIC&quot;,-987, DEFAULT_NUMERIC_MAX_DIGITS, DEFAULT_NUMERIC_MAX_FRACTIONAL_DIGITS);
+  public static final DataType CHAR        = createDataType(&quot;CHAR&quot;,-992,Value.VALUE_TYPE_STRING, DEFAULT_STRING_LENGTH, DEFAULT_STRING_LENGTH);
+  public static final DataType VARCHAR     = createDataType(&quot;VARCHAR&quot;,-991,Value.VALUE_TYPE_STRING, 0, DEFAULT_STRING_LENGTH);
+  public static final DataType LONGVARCHAR = createDataType(&quot;LONGVARCHAR&quot;,-983,Value.VALUE_TYPE_STRING, 0, Integer.MAX_VALUE);
+  public static final DataType DATE      = createDataType(&quot;DATE&quot;,-990,Value.VALUE_TYPE_DATE);
+  public static final DataType TIME      = createDataType(&quot;TIME&quot;,-979,Value.VALUE_TYPE_TIME, 2);
+  public static final DataType TIMESTAMP = createDataType(&quot;TIMESTAMP&quot;,-989,Value.VALUE_TYPE_DATETIME, 2);
+  public static final DataType BINARY    = createDataType(&quot;BINARY&quot;,-985,Value.VALUE_TYPE_BINARY, DEFAULT_BINARY_LENGTH, DEFAULT_BINARY_LENGTH);
+  public static final DataType VARBINARY = createDataType(&quot;VARBINARY&quot;,-988,Value.VALUE_TYPE_BINARY, 0, DEFAULT_BINARY_LENGTH);
+  public static final DataType LONGVARBINARY = createDataType(&quot;LONGVARBINARY&quot;,-1003,Value.VALUE_TYPE_BINARY, 0, DEFAULT_BINARY_LENGTH);
+  public static final DataType OTHER     = createDataType(&quot;OTHER&quot;,-981,Value.VALUE_TYPE_OTHER);
+  public static final DataType BIT       = createIntegerType(&quot;BIT&quot;,-977,0,1);
+  public static final DataType BOOLEAN   = createDataType(&quot;BOOLEAN&quot;,-986,Value.VALUE_TYPE_BOOLEAN);
+  public static final DataType BLOB      = createDataType(&quot;BLOB&quot;,-984,Value.VALUE_TYPE_BLOB, 0, DEFAULT_BLOB_LENGTH);
+  public static final DataType CLOB     = createDataType(&quot;CLOB&quot;,-982,Value.VALUE_TYPE_CLOB, 0, DEFAULT_CLOB_LENGTH);
+  public static final DataType ARRAY     = createDataType(&quot;ARRAY&quot;,-1002,Value.VALUE_TYPE_ARRAY);
+  public static final DataType NULL      = createDataType(&quot;NULL&quot;,-980,Value.VALUE_TYPE_NULL);
+  public static final DataType XML = createDataType(&quot;XML&quot;,-974,Value.VALUE_TYPE_XML);
+  public static final DataType INTERVAL_DAY = createIntervalDayDataType(&quot;INTERVAL DAY&quot;, -973, DataType.INTERVAL_DAY);
+  public static final DataType INTERVAL_YEAR = createIntervalYearDataType(&quot;INTERVAL YEAR&quot;, -972, DataType.INTERVAL_YEAR);
+  public static final DataType INTERVAL_YEAR_TO_MONTH = createIntervalYearDataType(&quot;INTERVAL YEAR TO MONTH&quot;,-971,DataType.INTERVAL_YEAR_TO_MONTH);
+  public static final DataType INTERVAL_MONTH = createIntervalYearDataType(&quot;INTERVAL MONTH&quot;,-970,DataType.INTERVAL_MONTH);
+  public static final DataType INTERVAL_YEAR_TO_MONTH = createIntervalYearDataType(&quot;INTERVAL YEAR TO MONTH&quot;,-971,DataType.INTERVAL_YEAR_TO_MONTH);
+  public static final DataType INTERVAL_MONTH = createIntervalYearDataType(&quot;INTERVAL MONTH&quot;,-970,DataType.INTERVAL_MONTH);
+  public static final DataType INTERVAL_DAY_TO_SECOND = createIntervalDayDataType(&quot;INTERVAL DAY TO SECOND&quot;,-969,DataType.INTERVAL_DAY_TO_SECOND);
+  public static final DataType INTERVAL_DAY_TO_MINUTE = createIntervalDayDataType(&quot;INTERVAL DAY TO MINUTE&quot;,-968,DataType.INTERVAL_DAY_TO_MINUTE);
+  public static final DataType INTERVAL_DAY_TO_HOUR = createIntervalDayDataType(&quot;INTERVAL DAY TO HOUR&quot;,-967,DataType.INTERVAL_DAY_TO_HOUR);
+  public static final DataType INTERVAL_HOUR = createIntervalDayDataType(&quot;INTERVAL HOUR&quot;,-966,DataType.INTERVAL_HOUR);
+  public static final DataType INTERVAL_HOUR_TO_SECOND = createIntervalDayDataType(&quot;INTERVAL HOUR TO SECOND&quot;,-965,DataType.INTERVAL_HOUR_TO_SECOND);
+  public static final DataType INTERVAL_HOUR_TO_MINUTE = createIntervalDayDataType(&quot;INTERVAL HOUR TO MINUTE&quot;,-964,DataType.INTERVAL_HOUR_TO_MINUTE);
+  public static final DataType INTERVAL_MINUTE = createIntervalDayDataType(&quot;INTERVAL MINUTE&quot;,-963,DataType.INTERVAL_MINUTE);
+  public static final DataType INTERVAL_MINUTE_TO_SECOND = createIntervalDayDataType(&quot;INTERVAL MINUTE TO SECOND&quot;,-962,DataType.INTERVAL_MINUTE_TO_SECOND);
+  public static final DataType INTERVAL_SECOND = createIntervalDayDataType(&quot;INTERVAL SECOND&quot;,-961,DataType.INTERVAL_SECOND);
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;5/2/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="datasourcePath" direction="IN" nullable="true">
+      <datatype name="ResourcePath" referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="cisType" direction="IN" nullable="true">
+      <datatype name="ResourceType" referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="cisType">
+          <datatype name="VARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="cisNormalizedType">
+          <datatype name="VARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="cisBaseType">
+          <datatype name="VARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="cisScale">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="cisPrecision">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="dataTypeId">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="dataTypeName">
+          <datatype name="VARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="nativeType">
+          <datatype name="VARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="nativeBaseType">
+          <datatype name="VARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="nativeScale">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="nativePrecision">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/resource/ResourceDefs" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/RepoUtils/GetAnsi2NativeMapping" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="datasourcePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="cisType" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="cisType">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="cisNormalizedType">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="cisBaseType">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="cisScale">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="cisPrecision">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataTypeId">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataTypeName">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="nativeType">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="nativeBaseType">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="nativeScale">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="nativePrecision">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+PLEASE USE THIS PROCEDURE AND DO NOT CALL THE CJP DIRECTLY. Due to a change in the repository API in 6.2, a separate version of this CJP was made. 
+Please use this wrapper script that determines which version of the CJP to use.
+
+
+ * &#x9;Custom procedure that returns a data source native data type mapping between a given CIS ANSI type and a given data source.
+ *
+ *&#x9;For example, in 6.1.0.00.34 (hotfix) Composite maps a DOUBLE is to a BINARY_DOUBLE for oracle 
+ *&#x9;whereas it used to map to DOUBLE.  Therefore, it is necessary then to retrieve the CIS ANSI type mappings for specific data sources.
+ *&#x9;
+ *&#x9;How this procedure works&#x9;
+ *&#x9;1.&#x9;Starting with the execution environment, cast that to ExecutionEnvironmentImpl and call getParentRequest().getTransactionContext()
+ *&#x9;2.&#x9;With the tcontext object, retrieve the repository connection tcontext.getRepositoryConnection()
+ *&#x9;3.&#x9;With repoConn, look up the id of the data source. repoConn.getResource(new Path(/shared/path/to/my/ds&apos;), Metadata.TYPE_DATA_SOURCE).getId()
+ *&#x9;4.&#x9;Now get the DataSource object, initializing it if it is not initialized yet. DataSourceManager.getInstance().getDataSource(id,repoConn)
+ *&#x9;5.&#x9;Get a Capabilities object from the DataSource. Ds.getMetaInfo(tcontxt)
+ *&#x9;6.  Use the hashmap created in the CJP to lookup the internal DataType for the incoming CIS type
+ *&#x9;7.&#x9;Determine whether the incoming type is a plain data type or has scale or precision
+ *
+ *&#x9;&#x9;&#x9;a. For a plain data type you can do this directlyÖ
+ *&#x9;&#x9;&#x9;&#x9;i. Use the internal type and the capabilities object to look up the external type from the composite.datatype keys in the capabilities files. 
+ *&#x9;&#x9;&#x9;&#x9;&#x9;String nativeType = capabilities.getCompatibleNativeDataType(DataType.DATA_TYPE_INTEGER);
+ *&#x9;
+ *&#x9;&#x9;&#x9;b. For scale only:  There is a little more you can do when a length or precision is availableÖ
+ *&#x9;&#x9;&#x9;&#x9;i. Use DataTypeFactory to get an object of the internal type: dt = DataTypeFactory.createDataType(&apos;VARCHAR&apos;,DataType.DATA_TYPE_STRING)
+ *&#x9;&#x9;&#x9;&#x9;&#x9;PrimitiveDataType dt = (PrimitiveDataType)DataTypeFactory.createDataType(&quot;CHAR(40)&quot;,DataType.DATA_TYPE_STRING);
+ *
+ *&#x9;&#x9;&#x9;&#x9;ii.  Set the scale and precision
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMaxLength(40);
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMinLength(40);
+ *&#x9;&#x9;&#x9;
+ *&#x9;&#x9;&#x9;&#x9;iii. Use the internal type and the capabilities object to look up the external type from the composite.datatype keys in the capabilities files. 
+ *&#x9;&#x9;&#x9;&#x9;&#x9;String nativeType = capabilities.getCompatibleNativeDataType(dt);
+ *
+ *&#x9;&#x9;&#x9;c. For scale and precision:  Or you can do something like thisÖ
+ *&#x9;&#x9;&#x9;&#x9;i. Use DataTypeFactory to get an object of the internal type: dt = DataTypeFactory.createDataType(&apos;VARCHAR&apos;,DataType.DATA_TYPE_STRING)
+ *&#x9;&#x9;&#x9;&#x9;&#x9;PrimitiveDataType dt = (PrimitiveDataType)DataTypeFactory.createDataType(&quot;DEICMAL(12,2)&quot;,DataType.DATA_TYPE_DECIMAL);
+ *
+ *&#x9;&#x9;&#x9;&#x9;ii.  Set the scale and precision
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMaxDigits(12);
+ *&#x9;&#x9;&#x9;&#x9;&#x9;dt.setMaxFractionalDigits(2);
+ *
+ *&#x9;&#x9;&#x9;&#x9;iii. Use the internal type and the capabilities object to look up the external type from the composite.datatype keys in the capabilities files. 
+ *&#x9;&#x9;&#x9;&#x9;&#x9;String nativeType = capabilities.getCompatibleNativeDataType(dt);
+ *&#x9;
+ *&#x9;Inputs:
+ *&#x9;&#x9;datasourcePath - The CIS full path to the data source resource
+ *&#x9;&#x9;&#x9;e.g. /shared/examples/ds_inventory
+ *&#x9;&#x9;cisType - The CIS variable type
+ *&#x9;&#x9;&#x9;e.g. VARCHAR(40), DECIMAL(32,2), INTEGER, LONGVARCHAR, etc.
+ *&#x9;&#x9;
+ *&#x9;Outputs:
+ *&#x9;  result (&#x9;- A cursor containing the CIS types and native data source types
+ *&#x9;   &#x9;cisType,  VARCHAR - This is the same as the input CIS variable type.
+ *&#x9;   &#x9;&#x9;e.g. /shared/examples/ds_inventory
+ *&#x9;  &#x9;cisNormalizedType,  VARCHAR - This applies upper case and normalizes any CIS types that are not in JdbcDataType definition.
+ *&#x9;  &#x9;&#x9;e.g. int --&gt; INTEGER, varchar --&gt; VARCHAR
+ *&#x9;   &#x9;cisBaseType,  VARCHAR - Extracts the base type from the incoming cisType after it has been normalized
+ *&#x9;   &#x9;&#x9;e.g. varchar(40) --&gt; VARCHAR, DECIMAL(32,2) --&gt; DECIMAL
+ *&#x9;  &#x9;cisScale,  INTEGER - The scale for the cisType input parameter.  A -1 is returned if there is no scale.
+ *&#x9;   &#x9;&#x9;e.g. The scale of VARCHAR(40) is 40, The scale of DECIMAL(32,2) is 32, The scale of INTEGER is -1.
+ *&#x9;   &#x9;cisPrecision,  INTEGER - The precision for the cisType input parameter.  A -1 is returned if there is no precision.
+ *&#x9;   &#x9;&#x9;e.g. The precision of VARCHAR(40) is -1, The precision of DECIMAL(32,2) is 2
+ *&#x9;   &#x9;dataTypeId,  INTEGER - A CIS internal JdbcDataType identifier.
+ *&#x9;    &#x9;e.g. -1000 represents INTEGER
+ *&#x9;   &#x9;dataTypeName,  VARCHAR - A CIS internal JdbcDataType name.
+ *&#x9;   &#x9;&#x9;e.g. INTEGER
+ *&#x9;   &#x9;nativeType,  VARCHAR - The native data type associated with the passed in cisType
+ *&#x9;  &#x9;&#x9;e.g. For Oracle...INTEGER --&gt; number(10,0),
+ *&#x9;   &#x9;nativeBaseType,  VARCHAR - Extracts the base type from the native data type.
+ *&#x9;   &#x9;&#x9;e.g. number(10,0) --&gt; number
+ *&#x9;   &#x9;nativeScale,  INTEGER - The scale of the native data type
+ *&#x9;   &#x9;&#x9;e.g. number(10,0) --&gt; The scale is 10.  The scale is -1 if there is no scale.
+ *&#x9;   &#x9;nativePrecision,  INTEGER - The precision of the native data type
+ *&#x9;       &#x9;e.g. number(10,0) --&gt; The precision is 0.  The precision is -1 if there is not precision.
+ *&#x9;&#x9;)
+ *
+ *&#x9;Exceptions:
+ *&#x9;   Throws a custom JDBC exception if input parameters are missing or it cannot find the data type.
+ *&#x9;
+ *&#x9;&#x9;&#x9;
+ * --------------------------------------------
+ * JdbcDataType as shown below:
+ * --------------------------------------------
+ * For CIS 6.1, this is a complete listing of the CIS internal JDBC Data Types.
+ * 
+ * An hashmap variable &quot;cisDataTypes&quot; has been created within this CJP that maps to these CIS ANSI types.  A lookup is performed
+ * by this CJP against this hashmap which will return the DataType value.  This value is used to invoke the native capabilities
+ * using &quot;capabilities.getCompatibleNativeDataType(dt)&quot;. 
+ * 
+ * If in the future, additional CIS ANSI types are added, this CJP will need to be updated to reflect that enhancement.
+ * 
+  private static final Map &lt;String, DataType&gt; cisDataTypes = new HashMap();
+  
+  public static final DataType TINYINT   = createIntegerType(&quot;TINYINT&quot;,-998,Byte.MIN_VALUE,Byte.MAX_VALUE);
+  public static final DataType SMALLINT  = createIntegerType(&quot;SMALLINT&quot;,-999,Short.MIN_VALUE,Short.MAX_VALUE);
+  public static final DataType INTEGER   = createIntegerType(&quot;INTEGER&quot;,-1000,Integer.MIN_VALUE,Integer.MAX_VALUE);
+  public static final DataType BIGINT    = createIntegerType(&quot;BIGINT&quot;,-997,Long.MIN_VALUE,Long.MAX_VALUE);
+  public static final DataType FLOAT     = createDataType(&quot;FLOAT&quot;,-996,Value.VALUE_TYPE_FLOAT);
+  public static final DataType REAL      = createDataType(&quot;REAL&quot;,-995,Value.VALUE_TYPE_FLOAT);
+  public static final DataType DOUBLE    = createDataType(&quot;DOUBLE&quot;,-994,Value.VALUE_TYPE_FLOAT);
+  public static final DataType DECIMAL   = createDecimalType(&quot;DECIMAL&quot;,-993, DEFAULT_DECIMAL_MAX_DIGITS, DEFAULT_DECIMAL_MAX_FRACTIONAL_DIGITS);
+  public static final DataType NUMERIC   = createDecimalType(&quot;NUMERIC&quot;,-987, DEFAULT_NUMERIC_MAX_DIGITS, DEFAULT_NUMERIC_MAX_FRACTIONAL_DIGITS);
+  public static final DataType CHAR        = createDataType(&quot;CHAR&quot;,-992,Value.VALUE_TYPE_STRING, DEFAULT_STRING_LENGTH, DEFAULT_STRING_LENGTH);
+  public static final DataType VARCHAR     = createDataType(&quot;VARCHAR&quot;,-991,Value.VALUE_TYPE_STRING, 0, DEFAULT_STRING_LENGTH);
+  public static final DataType LONGVARCHAR = createDataType(&quot;LONGVARCHAR&quot;,-983,Value.VALUE_TYPE_STRING, 0, Integer.MAX_VALUE);
+  public static final DataType DATE      = createDataType(&quot;DATE&quot;,-990,Value.VALUE_TYPE_DATE);
+  public static final DataType TIME      = createDataType(&quot;TIME&quot;,-979,Value.VALUE_TYPE_TIME, 2);
+  public static final DataType TIMESTAMP = createDataType(&quot;TIMESTAMP&quot;,-989,Value.VALUE_TYPE_DATETIME, 2);
+  public static final DataType BINARY    = createDataType(&quot;BINARY&quot;,-985,Value.VALUE_TYPE_BINARY, DEFAULT_BINARY_LENGTH, DEFAULT_BINARY_LENGTH);
+  public static final DataType VARBINARY = createDataType(&quot;VARBINARY&quot;,-988,Value.VALUE_TYPE_BINARY, 0, DEFAULT_BINARY_LENGTH);
+  public static final DataType LONGVARBINARY = createDataType(&quot;LONGVARBINARY&quot;,-1003,Value.VALUE_TYPE_BINARY, 0, DEFAULT_BINARY_LENGTH);
+  public static final DataType OTHER     = createDataType(&quot;OTHER&quot;,-981,Value.VALUE_TYPE_OTHER);
+  public static final DataType BIT       = createIntegerType(&quot;BIT&quot;,-977,0,1);
+  public static final DataType BOOLEAN   = createDataType(&quot;BOOLEAN&quot;,-986,Value.VALUE_TYPE_BOOLEAN);
+  public static final DataType BLOB      = createDataType(&quot;BLOB&quot;,-984,Value.VALUE_TYPE_BLOB, 0, DEFAULT_BLOB_LENGTH);
+  public static final DataType CLOB     = createDataType(&quot;CLOB&quot;,-982,Value.VALUE_TYPE_CLOB, 0, DEFAULT_CLOB_LENGTH);
+  public static final DataType ARRAY     = createDataType(&quot;ARRAY&quot;,-1002,Value.VALUE_TYPE_ARRAY);
+  public static final DataType NULL      = createDataType(&quot;NULL&quot;,-980,Value.VALUE_TYPE_NULL);
+  public static final DataType XML = createDataType(&quot;XML&quot;,-974,Value.VALUE_TYPE_XML);
+  public static final DataType INTERVAL_DAY = createIntervalDayDataType(&quot;INTERVAL DAY&quot;, -973, DataType.INTERVAL_DAY);
+  public static final DataType INTERVAL_YEAR = createIntervalYearDataType(&quot;INTERVAL YEAR&quot;, -972, DataType.INTERVAL_YEAR);
+  public static final DataType INTERVAL_YEAR_TO_MONTH = createIntervalYearDataType(&quot;INTERVAL YEAR TO MONTH&quot;,-971,DataType.INTERVAL_YEAR_TO_MONTH);
+  public static final DataType INTERVAL_MONTH = createIntervalYearDataType(&quot;INTERVAL MONTH&quot;,-970,DataType.INTERVAL_MONTH);
+  public static final DataType INTERVAL_YEAR_TO_MONTH = createIntervalYearDataType(&quot;INTERVAL YEAR TO MONTH&quot;,-971,DataType.INTERVAL_YEAR_TO_MONTH);
+  public static final DataType INTERVAL_MONTH = createIntervalYearDataType(&quot;INTERVAL MONTH&quot;,-970,DataType.INTERVAL_MONTH);
+  public static final DataType INTERVAL_DAY_TO_SECOND = createIntervalDayDataType(&quot;INTERVAL DAY TO SECOND&quot;,-969,DataType.INTERVAL_DAY_TO_SECOND);
+  public static final DataType INTERVAL_DAY_TO_MINUTE = createIntervalDayDataType(&quot;INTERVAL DAY TO MINUTE&quot;,-968,DataType.INTERVAL_DAY_TO_MINUTE);
+  public static final DataType INTERVAL_DAY_TO_HOUR = createIntervalDayDataType(&quot;INTERVAL DAY TO HOUR&quot;,-967,DataType.INTERVAL_DAY_TO_HOUR);
+  public static final DataType INTERVAL_HOUR = createIntervalDayDataType(&quot;INTERVAL HOUR&quot;,-966,DataType.INTERVAL_HOUR);
+  public static final DataType INTERVAL_HOUR_TO_SECOND = createIntervalDayDataType(&quot;INTERVAL HOUR TO SECOND&quot;,-965,DataType.INTERVAL_HOUR_TO_SECOND);
+  public static final DataType INTERVAL_HOUR_TO_MINUTE = createIntervalDayDataType(&quot;INTERVAL HOUR TO MINUTE&quot;,-964,DataType.INTERVAL_HOUR_TO_MINUTE);
+  public static final DataType INTERVAL_MINUTE = createIntervalDayDataType(&quot;INTERVAL MINUTE&quot;,-963,DataType.INTERVAL_MINUTE);
+  public static final DataType INTERVAL_MINUTE_TO_SECOND = createIntervalDayDataType(&quot;INTERVAL MINUTE TO SECOND&quot;,-962,DataType.INTERVAL_MINUTE_TO_SECOND);
+  public static final DataType INTERVAL_SECOND = createIntervalDayDataType(&quot;INTERVAL SECOND&quot;,-961,DataType.INTERVAL_SECOND);
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;5/2/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+
+*/
+PROCEDURE GetAnsi2NativeMapping(
+    IN datasourcePath /lib/resource/ResourceDefs.ResourcePath,
+    IN cisType        /lib/resource/ResourceDefs.ResourceType,
+    OUT result        CURSOR ResultRowType
+)
+BEGIN
+    DECLARE PUBLIC TYPE ResultRowType ROW (
+        cisType VARCHAR(2147483647), 
+        cisNormalizedType VARCHAR(2147483647), 
+        cisBaseType VARCHAR(2147483647), 
+        cisScale INTEGER, 
+        cisPrecision INTEGER, 
+        dataTypeId INTEGER, 
+        dataTypeName VARCHAR(2147483647), 
+        nativeType VARCHAR(2147483647), 
+        nativeBaseType VARCHAR(2147483647), 
+        nativeScale INTEGER, 
+        nativePrecision INTEGER
+    );
+
+    CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/GetAnsi2NativeMapping(datasourcePath, cisType, result);
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_types" type="MAP">
+    <item>
+      <key type="STRING">ResultRowType</key>
+      <value type="BYTE_ARRAY">EB8GAgANAFIAZQBzAHUAbAB0AFIAbwB3AFQAeQBwAGUGKQBGAC8AcwBoAGEAcgBlAGQALwBEAGUAbAB0AGEAXwBEAFYALwAiAF8AcwBjAHIAaQBwAHQAcwAiAC8AVQB0AGkAbABpAHQAaQBlAHMALwByAGUAcABvAHMAaQB0AG8AcgB5AC8ARwBlAHQAQQBuAHMAaQAyAE4AYQB0AGkAdgBlAE0AYQBwAHAAaQBuAGcGKgANAFIAZQBzAHUAbAB0AFIAbwB3AFQAeQBwAGUDEgAAAAEDEgAAAAEBEwEJFAAAAAsQIQYVAAcAYwBpAHMAVAB5AHAAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAgZEBsGAgAHAFYAQQBSAEMASABBAFIDEgAAAAIEBAAAAAB/////ARMB/////xAhBhUAEQBjAGkAcwBOAG8AcgBtAGEAbABpAHoAZQBkAFQAeQBwAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAL//xAhBhUACwBjAGkAcwBCAGEAcwBlAFQAeQBwAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAL//xAhBhUACABjAGkAcwBTAGMAYQBsAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAAIGRAZBgIABwBJAE4AVABFAEcARQBSAxIAAAADBAf/////gAAAAAQGAAAAAH//////////ECEGFQAMAGMAaQBzAFAAcgBlAGMAaQBzAGkAbwBuAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVAAoAZABhAHQAYQBUAHkAcABlAEkAZAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAA///ECEGFQAMAGQAYQB0AGEAVAB5AHAAZQBOAGEAbQBlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAC//8QIQYVAAoAbgBhAHQAaQB2AGUAVAB5AHAAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAAv//ECEGFQAOAG4AYQB0AGkAdgBlAEIAYQBzAGUAVAB5AHAAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAAv//ECEGFQALAG4AYQB0AGkAdgBlAFMAYwBhAGwAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAA///ECEGFQAPAG4AYQB0AGkAdgBlAFAAcgBlAGMAaQBzAGkAbwBuAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD/////w==</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

@@ -1,0 +1,1705 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="generateViews" path="/shared/Delta_DV/_scripts/Utilities/generate/generateViews" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[generateViews:
+
+&#x9;This script is used to provide a framework for introspection of a relational datasource and generating views to the various
+&#x9;&#x9;Data Abstraction Best Practices layers. It provides a simple view generation into the four main layers described by the 
+&#x9;&#x9;Data Abstraction Best Practices.  This procedure copies privileges from the parent folder so it is important that 
+&#x9;&#x9;proper privileges be assigned ahead of time on the project level folders and recursively pushed down to the layer folders.
+&#x9;&#x9;This script will also copy both table and column annotations if they exist at the data source level.  This script will copy
+&#x9;&#x9;SQL indexes and foreign keys from the data source to the layers.  The published layer will inherit indexes and foreign keys
+&#x9;&#x9;directly from the view/table it was published from.  Published views will have their own annotation but they will inherit
+&#x9;&#x9;column annotations from the view they were published from.  The physical, metadata layer containing the datasource is
+&#x9;&#x9;mandatory as is the published database layer.  The other three layers are optional and may be included or bypassed based
+&#x9;&#x9;on the presence or absence of folder information.  The folder naming conventions are guidelines put forth according to the 
+&#x9;&#x9;Data Abstraction Best Practices.  However, the invoker has full flexibility to name the folders whatever they wish since
+&#x9;&#x9;all information is passed into this procedure regarding folder path names. 
+
+&#x9;A key differentiator between this procedure and the open source project &quot;ASAssets Data Abstraction Best Practices&quot; is that
+&#x9;&#x9;this procedure does not provide the ability to rename logical table and column names using a spreadsheet.  Additionally,
+&#x9;&#x9;there are several advanced generation capabilities that are not implemented in this procedure including:
+&#x9;&#x9;&#x9;generate/ignore CASE rules, generate/ignore ALIAS rule lookup, generate/ignore CAST statements, and 
+&#x9;&#x9;&#x9;generate/ignore unsupported columns of type OTHER
+
+&#x9;The text below describes the Data Abstraction Best Practices folder structure.  Each layer path becomes an input parameter
+&#x9;&#x9;for this procedure.
+
+&#x9;&#x9;Published
+&#x9;&#x9;&#x9;/services/databases/Published_Database/[Catalog]/Schema - mandatory
+&#x9;&#x9;Application
+&#x9;&#x9;&#x9;/Application/Views/folder &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- optional layer generation [parameter null if not to be generated]
+&#x9;&#x9;Business
+&#x9;&#x9;&#x9;/Business/Logical/folder &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- optional layer generation [parameter null if not to be generated]
+&#x9;&#x9;Physical
+&#x9;&#x9;&#x9;/Physical/Formatting/folder &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- optional layer generation [parameter null if not to be generated]
+&#x9;&#x9;&#x9;/Physical/Metadata/[catalog]/schema &#x9;&#x9;&#x9;&#x9;&#x9;- mandatory
+
+&#x9;The top [published] and bottom [metadata] layers are mandatory.  The middle layers are optional and the input can be left null
+&#x9;&#x9;to indicate that no generation is required in those layers.  Below is a representation of the Data Abstraction Layers and
+&#x9;&#x9;how the input variables map to those layers.
+
+&#x9;&#x9;&#x9;&#x9;&#x9;/services/databases
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/TEST&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;-- exists&#x9;----^
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/CAT1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;----^
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/SCH1&#x9;&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;----^ = publishedDBLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/V_T1&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;----^
+&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/TEST&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Application&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Views/SCH1&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;^ = applicationLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Business&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Logical/SCH1&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;^ = businessLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Physical&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Formatting/SCH1&#x9;&#x9;&lt;-- create&#x9;&#x9;^ = formattingLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&#x9;&lt;-- create&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Metadata/Oracle/DS1&#x9;&#x9;&#x9;&#x9;&#x9;| = datasourcePath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  /SCH1&#x9;&lt;-- exists      | = [Schema Path] and just the schemaName
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&lt;-- exists     -| [Table exists]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T2 
+
+&#x9;Input:
+&#x9;&#x9;IN  datasourcePath &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- mandatory.   Full path to datasource
+&#x9;&#x9;IN  &#x9;catalogName &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- optional (null) - Database catalog Name if applicable
+&#x9;&#x9;IN  &#x9;schemaName &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- mandatory.  Database schema name
+&#x9;&#x9;IN  &#x9;schemaTablePatterns&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new tables starting with D, E and F
+&#x9;&#x9;IN  &#x9;tableNames &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional.  NULL=no specified table list OR one or more separated tables to introspect.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;There cannot be any spaces between the separator and the table name.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;When NULL, all tables for the schema are introspected.
+&#x9;&#x9;IN      schemaProcedurePatterns&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new procedures starting with D, E and F.
+&#x9;&#x9;IN      procedureNames &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- NULL=no specified procedure list OR 1 or more separated procedures to introspect.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;There cannot be any spaces between the separator and the procedure name.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;When NULL, all procedures are introspected.
+&#x9;&#x9;IN&#x9;&#x9;separator&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Default=,  The separator used to separate lists for the input parameters: tableNames and procedureNames
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;The separator value should not exist within the table or procedure names.
+&#x9;&#x9;IN&#x9;formattingLayerPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Formatting layer views.  Missing folders are automatically created.
+&#x9;&#x9;IN&#x9;businessLayerPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Business layer views.  Missing folders are automatically created.
+&#x9;&#x9;IN&#x9;applicationLayerPath&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Application layer views.  Missing folders are automatically created.
+&#x9;&#x9;IN&#x9;publishedDBLayerPath&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Published Database Schema layer views.  Datasource and schema &quot;must&quot; exist already
+&#x9;&#x9;IN  prefix &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- prefix for views.  It is recommended that no prefix be added even though the option exists.  Example: V_
+&#x9;&#x9;IN  overwrite&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=overwrite existing views, 0=do not overwrite existing views (throws exception if views exist)
+&#x9;&#x9;IN  copyAnnotation&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy table and column annotations. 0=do not copy
+&#x9;&#x9;IN  copySqlIndexes&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy SQL indexes from source to target.  0=do not copy 
+&#x9;&#x9;IN  copyForeignKeys&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy foreign keys from source to target.  0=do not copy
+&#x9;&#x9;IN  debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off, null=defaultValues.EnableDebugging1
+
+&#x9;Output:
+&#x9;&#x9;OUT errStatus &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SUCCESS or FAILED
+&#x9;&#x9;OUT errMessage &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Error message if errStatus=FAILED, otherwise null
+&#x9;&#x9;OUT introspectionResult &#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;&#x9;OUT dataSourceType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;&#x9;OUT dataSourceSubtype&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype of data source that was introspected.
+&#x9;&#x9;OUT numResourcesIntrospectAdd&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of resources added during introspection.  Includes catalogs and schemas in the count.
+&#x9;&#x9;OUT numTablesIntrospectAdd&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of tables added during introspection.  Only tables are counted.
+&#x9;&#x9;OUT tablesIntrospectAdd&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- List of tables added during introspection.  Excludes catalogs and schemas.
+&#x9;&#x9;OUT numResourcesIntrospectSkip&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of resources skipped during introspection.  Includes catalogs and schemas in the count.
+&#x9;&#x9;OUT numTablesIntrospectSkip&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of tables skipped during introspection.  Only tables are counted.
+&#x9;&#x9;OUT tablesIntrospectSkip&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- List of tables skipped during introspection.  Excludes catalogs and schemas.
+&#x9;&#x9;OUT generatedViewsCursor&#x9;&#x9;&#x9;PIPE (&#x9;&#x9;&#x9;-- A cursor of results for each row created or updated&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;actionType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The action taken for this resource:  CREATED, OVERWRITTEN, SKIPPED [EXISTS].
+&#x9;&#x9;&#x9;layerType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The layer type that the view is being generated in:  METADATA, FORMATTING, BUSINESS, APPLICATION, PUBLISHED.
+&#x9;&#x9;&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The name of the resource.
+&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path to the resource.
+&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of the resource.
+&#x9;&#x9;&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype of the resource.
+&#x9;&#x9;&#x9;parentLineageLayerType&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The layer type of the parent resource according to the lineage.
+&#x9;&#x9;&#x9;parentLineagePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path of the parent resource according to the lineage.
+&#x9;&#x9;&#x9;metadataLineageName&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Placeholder for generateViews - always null.
+&#x9;&#x9;&#x9;metadataLineagePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- Placeholder for generateViews - always null.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="datasourcePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="catalogName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="schemaName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="schemaTablePatterns" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="tableNames" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="schemaProcedurePatterns" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="procedureNames" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="separator" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="formattingLayerPath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="businessLayerPath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="applicationLayerPath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="publishedDBLayerPath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="prefix" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="overwrite" direction="IN" nullable="true">
+      <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+    </parameter>
+    <parameter name="copyAnnotation" direction="IN" nullable="true">
+      <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+    </parameter>
+    <parameter name="copySqlIndexes" direction="IN" nullable="true">
+      <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+    </parameter>
+    <parameter name="copyForeignKeys" direction="IN" nullable="true">
+      <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+    </parameter>
+    <parameter name="inDebug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="errStatus" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="errMessage" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="introspectionResult" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="dataSourceType" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="dataSourceSubtype" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="numResourcesIntrospectAdd" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="numTablesIntrospectAdd" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="tablesIntrospectAdd" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="numResourcesIntrospectSkip" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="numTablesIntrospectSkip" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="tablesIntrospectSkip" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="generatedViewsCursor" direction="OUT" nullable="true">
+      <datatype name="generatedViewsCursor" type="TABLE" refId="256">
+        <element name="actionType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="layerType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resPath">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="resType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="parentLineageLayerType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="parentLineagePath">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="metadataLineageName">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="metadataLineagePath">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/databases/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/generate/helpers/createResourceProcess" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="parentLayerType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="layerType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="sourcePathIn" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="sourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="targetPathIn" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="tableNames" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="tablePrefix" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="tableQualifier" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="overwrite" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="copyAnnotation" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="copySqlIndexes" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="copyForeignKeys" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="inDebug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="numCreated" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numUpdated" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="actionType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="layerType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="parentLineageLayerType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="parentLineagePath">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="metadataLineageName">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="metadataLineagePath">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/introspectResources" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="dsPath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="catalogName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="schemaNames" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="schemaTablePatterns" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="tableNames" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="schemaProcedurePatterns" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="procedureNames" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inDebug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="errStatus" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="errMessage" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="introspectionResult" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="dataSourceType" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="dataSourceSubtype" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/introspectResourcesResultCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="introspectionResult" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="status">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="introspectorVersion">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="startTime">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="endTime">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="addedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="removedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="updatedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="skippedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="totalCompletedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="toBeAddedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="toBeRemovedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="toBeUpdatedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="totalToBeCompletedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="warningCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="errorCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="action">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="durationMs">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="entryStatus">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="code">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="name">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="message">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="detail">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="severity">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;generateViews:
+
+&#x9;This script is used to provide a framework for introspection of a relational datasource and generating views to the various
+&#x9;&#x9;Data Abstraction Best Practices layers. It provides a simple view generation into the four main layers described by the 
+&#x9;&#x9;Data Abstraction Best Practices.  This procedure copies privileges from the parent folder so it is important that 
+&#x9;&#x9;proper privileges be assigned ahead of time on the project level folders and recursively pushed down to the layer folders.
+&#x9;&#x9;This script will also copy both table and column annotations if they exist at the data source level.  This script will copy
+&#x9;&#x9;SQL indexes and foreign keys from the data source to the layers.  The published layer will inherit indexes and foreign keys
+&#x9;&#x9;directly from the view/table it was published from.  Published views will have their own annotation but they will inherit
+&#x9;&#x9;column annotations from the view they were published from.  The physical, metadata layer containing the datasource is
+&#x9;&#x9;mandatory as is the published database layer.  The other three layers are optional and may be included or bypassed based
+&#x9;&#x9;on the presence or absence of folder information.  The folder naming conventions are guidelines put forth according to the 
+&#x9;&#x9;Data Abstraction Best Practices.  However, the invoker has full flexibility to name the folders whatever they wish since
+&#x9;&#x9;all information is passed into this procedure regarding folder path names. 
+
+&#x9;A key differentiator between this procedure and the open source project &quot;ASAssets Data Abstraction Best Practices&quot; is that
+&#x9;&#x9;this procedure does not provide the ability to rename logical table and column names using a spreadsheet.  Additionally,
+&#x9;&#x9;there are several advanced generation capabilities that are not implemented in this procedure including:
+&#x9;&#x9;&#x9;generate/ignore CASE rules, generate/ignore ALIAS rule lookup, generate/ignore CAST statements, and 
+&#x9;&#x9;&#x9;generate/ignore unsupported columns of type OTHER
+
+&#x9;The text below describes the Data Abstraction Best Practices folder structure.  Each layer path becomes an input parameter
+&#x9;&#x9;for this procedure.
+
+&#x9;&#x9;Published
+&#x9;&#x9;&#x9;/services/databases/Published_Database/[Catalog]/Schema - mandatory
+&#x9;&#x9;Application
+&#x9;&#x9;&#x9;/Application/Views/folder &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- optional layer generation [parameter null if not to be generated]
+&#x9;&#x9;Business
+&#x9;&#x9;&#x9;/Business/Logical/folder &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- optional layer generation [parameter null if not to be generated]
+&#x9;&#x9;Physical
+&#x9;&#x9;&#x9;/Physical/Formatting/folder &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- optional layer generation [parameter null if not to be generated]
+&#x9;&#x9;&#x9;/Physical/Metadata/[catalog]/schema &#x9;&#x9;&#x9;&#x9;&#x9;- mandatory
+
+&#x9;The top [published] and bottom [metadata] layers are mandatory.  The middle layers are optional and the input can be left null
+&#x9;&#x9;to indicate that no generation is required in those layers.  Below is a representation of the Data Abstraction Layers and
+&#x9;&#x9;how the input variables map to those layers.
+
+&#x9;&#x9;&#x9;&#x9;&#x9;/services/databases
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/TEST&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;-- exists&#x9;----^
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/CAT1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;----^
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/SCH1&#x9;&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;----^ = publishedDBLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/V_T1&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;----^
+&#x9;&#x9;&#x9;&#x9;&#x9;/shared&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/TEST&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Application&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Views/SCH1&#x9;&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;^ = applicationLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Business&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Logical/SCH1&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;^ = businessLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&#x9;&#x9;&lt;-- create&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Physical&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Formatting/SCH1&#x9;&#x9;&lt;-- create&#x9;&#x9;^ = formattingLayerPath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&#x9;&lt;-- create&#x9;&#x9;|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/Metadata/Oracle/DS1&#x9;&#x9;&#x9;&#x9;&#x9;| = datasourcePath
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  /SCH1&#x9;&lt;-- exists      | = [Schema Path] and just the schemaName
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T1&#x9;&lt;-- exists     -| [Table exists]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/T2 
+
+&#x9;Input:
+&#x9;&#x9;IN  datasourcePath &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- mandatory.   Full path to datasource
+&#x9;&#x9;IN  &#x9;catalogName &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- optional (null) - Database catalog Name if applicable
+&#x9;&#x9;IN  &#x9;schemaName &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- mandatory.  Database schema name
+&#x9;&#x9;IN  &#x9;schemaTablePatterns&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new tables starting with D, E and F
+&#x9;&#x9;IN  &#x9;tableNames &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional.  NULL=no specified table list OR one or more separated tables to introspect.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;There cannot be any spaces between the separator and the table name.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;When NULL, all tables for the schema are introspected.
+&#x9;&#x9;IN      schemaProcedurePatterns&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new procedures starting with D, E and F.
+&#x9;&#x9;IN      procedureNames &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- NULL=no specified procedure list OR 1 or more separated procedures to introspect.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;There cannot be any spaces between the separator and the procedure name.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;When NULL, all procedures are introspected.
+&#x9;&#x9;IN&#x9;&#x9;separator&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Default=,  The separator used to separate lists for the input parameters: tableNames and procedureNames
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;The separator value should not exist within the table or procedure names.
+&#x9;&#x9;IN&#x9;formattingLayerPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Formatting layer views.  Missing folders are automatically created.
+&#x9;&#x9;IN&#x9;businessLayerPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Business layer views.  Missing folders are automatically created.
+&#x9;&#x9;IN&#x9;applicationLayerPath&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Application layer views.  Missing folders are automatically created.
+&#x9;&#x9;IN&#x9;publishedDBLayerPath&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Published Database Schema layer views.  Datasource and schema &quot;must&quot; exist already
+&#x9;&#x9;IN  prefix &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- prefix for views.  It is recommended that no prefix be added even though the option exists.  Example: V_
+&#x9;&#x9;IN  overwrite&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=overwrite existing views, 0=do not overwrite existing views (throws exception if views exist)
+&#x9;&#x9;IN  copyAnnotation&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy table and column annotations. 0=do not copy
+&#x9;&#x9;IN  copySqlIndexes&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy SQL indexes from source to target.  0=do not copy 
+&#x9;&#x9;IN  copyForeignKeys&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy foreign keys from source to target.  0=do not copy
+&#x9;&#x9;IN  debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off, null=defaultValues.EnableDebugging1
+
+&#x9;Output:
+&#x9;&#x9;OUT errStatus &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SUCCESS or FAILED
+&#x9;&#x9;OUT errMessage &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Error message if errStatus=FAILED, otherwise null
+&#x9;&#x9;OUT introspectionResult &#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;&#x9;OUT dataSourceType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;&#x9;OUT dataSourceSubtype&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype of data source that was introspected.
+&#x9;&#x9;OUT numResourcesIntrospectAdd&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of resources added during introspection.  Includes catalogs and schemas in the count.
+&#x9;&#x9;OUT numTablesIntrospectAdd&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of tables added during introspection.  Only tables are counted.
+&#x9;&#x9;OUT tablesIntrospectAdd&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- List of tables added during introspection.  Excludes catalogs and schemas.
+&#x9;&#x9;OUT numResourcesIntrospectSkip&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of resources skipped during introspection.  Includes catalogs and schemas in the count.
+&#x9;&#x9;OUT numTablesIntrospectSkip&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of tables skipped during introspection.  Only tables are counted.
+&#x9;&#x9;OUT tablesIntrospectSkip&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- List of tables skipped during introspection.  Excludes catalogs and schemas.
+&#x9;&#x9;OUT generatedViewsCursor&#x9;&#x9;&#x9;PIPE (&#x9;&#x9;&#x9;-- A cursor of results for each row created or updated&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;actionType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The action taken for this resource:  CREATED, OVERWRITTEN, SKIPPED [EXISTS].
+&#x9;&#x9;&#x9;layerType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The layer type that the view is being generated in:  METADATA, FORMATTING, BUSINESS, APPLICATION, PUBLISHED.
+&#x9;&#x9;&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The name of the resource.
+&#x9;&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path to the resource.
+&#x9;&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of the resource.
+&#x9;&#x9;&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype of the resource.
+&#x9;&#x9;&#x9;parentLineageLayerType&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The layer type of the parent resource according to the lineage.
+&#x9;&#x9;&#x9;parentLineagePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path of the parent resource according to the lineage.
+&#x9;&#x9;&#x9;metadataLineageName&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Placeholder for generateViews - always null.
+&#x9;&#x9;&#x9;metadataLineagePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- Placeholder for generateViews - always null.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE generateViews(
+&#x9;IN  datasourcePath &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- mandatory.   Full path to datasource
+&#x9;IN  &#x9;catalogName &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- optional (null) - Database catalog Name if applicable
+&#x9;IN  &#x9;schemaName &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- mandatory - Database schema name.  Overrides the schema pattern.  When schemaPatterns is null the schemaName must be provided.
+&#x9;IN  &#x9;schemaTablePatterns&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- optional (null).  Comma separated list of patterns such as D%, E%, F%.    Introspect all tables starting with D, E and F.
+&#x9;IN      tableNames &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional.  NULL=no specified table list OR one or more separated tables to introspect.  When NULL, all tables for the schema are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;There cannot be any spaces between the separator and the table name.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;When NULL, all tables for the schema are introspected.
+&#x9;IN      schemaProcedurePatterns&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new procedures starting with D, E and F.
+&#x9;IN      procedureNames &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- NULL=no specified procedure list OR 1 or more separated procedures to introspect.  When NULL, all procedures are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;There cannot be any spaces between the separator and the procedure name.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;When NULL, all procedures are introspected.
+&#x9;IN&#x9;&#x9;separator&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Default=,  The separator used to separate lists for the input parameters: tableNames and procedureNames
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;The separator value should not exist within the table or procedure names.
+&#x9;IN&#x9;formattingLayerPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Formatting layer views.  Missing folders are automatically created.
+&#x9;IN&#x9;businessLayerPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Business layer views.  Missing folders are automatically created.
+&#x9;IN&#x9;applicationLayerPath&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Application layer views.  Missing folders are automatically created.
+&#x9;IN&#x9;publishedDBLayerPath&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Path to target Published Database Schema layer views.  Datasource and schema &quot;must&quot; exist already
+&#x9;IN  prefix &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- prefix for views.  It is recommended that no prefix be added even though the option exists.  Example: V_
+&#x9;IN  overwrite&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=overwrite existing views, 0=do not overwrite existing views (throws exception if views exist)
+&#x9;IN  copyAnnotation&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy table and column annotations. 0=do not copy
+&#x9;IN  copySqlIndexes&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy SQL indexes from source to target.  0=do not copy 
+&#x9;IN  copyForeignKeys&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=copy foreign keys from source to target.  0=do not copy
+&#x9;IN  inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off, null=N
+
+&#x9;OUT errStatus &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SUCCESS OR FAILED
+&#x9;OUT errMessage &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Error message if errStatus=FAILED
+&#x9;OUT introspectionResult &#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;OUT dataSourceType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;OUT dataSourceSubtype &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype of data source that was introspected.
+&#x9;OUT numResourcesIntrospectAdd&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of resources added during introspection.  Includes catalogs and schemas in the count.
+&#x9;OUT numTablesIntrospectAdd&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of tables added during introspection.  Only tables are counted.
+&#x9;OUT tablesIntrospectAdd&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- List of tables added during introspection.  Excludes catalogs and schemas.
+&#x9;OUT numResourcesIntrospectSkip&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of resources skipped during introspection.  Includes catalogs and schemas in the count.
+&#x9;OUT numTablesIntrospectSkip&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Number of tables skipped during introspection.  Only tables are counted.
+&#x9;OUT tablesIntrospectSkip&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- List of tables skipped during introspection.  Excludes catalogs and schemas.
+&#x9;OUT generatedViewsCursor&#x9;&#x9;&#x9;PIPE (&#x9;&#x9;&#x9;-- A cursor of results for each row created or updated&#x9;&#x9;&#x9;
+&#x9;&#x9;actionType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The action taken for this resource:  CREATED, OVERWRITTEN, SKIPPED [EXISTS].
+&#x9;&#x9;layerType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The layer type that the view is being generated in:  METADATA, FORMATTING, BUSINESS, APPLICATION, PUBLISHED.
+&#x9;&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The name of the resource.
+&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path to the resource.
+&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of the resource.
+&#x9;&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype of the resource.
+&#x9;&#x9;parentLineageLayerType&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The layer type of the parent resource according to the lineage.
+&#x9;&#x9;parentLineagePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path of the parent resource according to the lineage.
+&#x9;&#x9;metadataLineageName&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Placeholder for generateViews - always null.
+&#x9;&#x9;metadataLineagePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- Placeholder for generateViews - always null.
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;generateViews&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT NVL(UPPER(inDebug), &apos;N&apos;);
+&#x9;DECLARE sep&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT NVL(separator, &apos;,&apos;);
+&#x9;DECLARE datasourcePathMod&#x9;LONGVARCHAR DEFAULT TRIM(datasourcePath);
+&#x9;DECLARE Tab_Prefix &#x9;&#x9;&#x9;VARCHAR(255) DEFAULT prefix;
+&#x9;DECLARE Tab_Qualifier&#x9;&#x9;VARCHAR;
+&#x9;DECLARE Table_Name1&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE Table_Name2&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE Table_Names&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT null;
+&#x9;DECLARE Table_Names1&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE Table_Names2&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE beginProc&#x9;&#x9;&#x9;TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+&#x9;DECLARE beginTS&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;DECLARE duration&#x9;&#x9;&#x9;INTERVAL DAY TO SECOND;
+&#x9;DECLARE numCreated&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numUpdated&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE sourcePathTemp&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE sourcePath&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE sourceType&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE containerPath&#x9;&#x9;LONGVARCHAR DEFAULT null;
+&#x9;DECLARE containerType&#x9;&#x9;VARCHAR DEFAULT null;
+&#x9;DECLARE prevContainerPath&#x9;LONGVARCHAR DEFAULT null;
+&#x9;DECLARE prevContainerType&#x9;VARCHAR DEFAULT null;
+&#x9;DECLARE targetPath&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE metadataName&#x9;&#x9;VARCHAR;
+&#x9;DECLARE metadataPath&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE metadataLineage&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE i, pos1, pos2, len&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE containerCount&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE parentLayerType&#x9;&#x9;VARCHAR;&#x9;&#x9;-- The layer type of the parent path.
+&#x9;DECLARE layerType&#x9;&#x9;&#x9;VARCHAR;&#x9;&#x9;-- The layer type of the current path.
+&#x9;DECLARE TYPE resultType&#x9;&#x9;ROW (&#x9;&#x9;&#x9;-- A row type to capture results for each row created or updated
+&#x9;&#x9;actionType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The action taken for this resource:  CREATED, OVERWRITTEN, SKIPPED [EXISTS].
+&#x9;&#x9;layerType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The layer type that the view is being generated in:  METADATA, FORMATTING, BUSINESS, APPLICATION, PUBLISHED.
+&#x9;&#x9;resName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The name of the resource.
+&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path to the resource.
+&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of the resource.
+&#x9;&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype of the resource.
+&#x9;&#x9;parentLineageLayerType&#x9;VARCHAR,&#x9;&#x9;-- The layer type of the parent resource according to the lineage.
+&#x9;&#x9;parentLineagePath&#x9;&#x9;LONGVARCHAR,&#x9;-- The full path of the parent resource according to the lineage.
+&#x9;&#x9;metadataLineageName&#x9;&#x9;LONGVARCHAR,&#x9;-- Placeholder for generateViews - always null.
+&#x9;&#x9;metadataLineagePath&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- Placeholder for generateViews - always null.
+&#x9;);
+&#x9;DECLARE resultRec&#x9;&#x9;&#x9;resultType;
+&#x9;DECLARE resultCursor&#x9;&#x9;CURSOR resultType;
+
+&#x9;-- Remove any white space and / at the end if exists.
+&#x9;IF (SUBSTRING(datasourcePathMod, LENGTH(datasourcePathMod), 1) = &apos;/&apos;) THEN
+&#x9;&#x9;SET datasourcePathMod = SUBSTRING(datasourcePathMod, 1, LENGTH(datasourcePathMod)-1);
+&#x9;END IF;
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos; INPUT:&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    datasourcePath=[&apos;||NVL(datasourcePathMod,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    ____catalogName=[&apos;||NVL(catalogName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    ____schemaName=[&apos;||NVL(schemaName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    ____schemaTablePatterns=[&apos;||NVL(schemaTablePatterns,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    ____tableNames=[&apos;||NVL(tableNames,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    ____schemaProcedurePatterns=[&apos;||NVL(schemaProcedurePatterns,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    ____procedureNames=[&apos;||NVL(procedureNames,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    ____separator=[&apos;||NVL(sep,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    formattingLayerPath=&apos;||NVL(formattingLayerPath,&apos;null&apos;));
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    businessLayerPath=[&apos;||NVL(businessLayerPath,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    applicationLayerPath=[&apos;||NVL(applicationLayerPath,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    publishedDBLayerPath=[&apos;||NVL(publishedDBLayerPath,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    prefix=[&apos;||NVL(prefix,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    overwrite=&apos;||NVL(CAST(overwrite AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    copyAnnotation=&apos;||NVL(CAST(copyAnnotation AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    copySqlIndexes=&apos;||NVL(CAST(copySqlIndexes AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT (moduleName||&apos; : &apos;||&apos;    copyForeignKeys=&apos;||NVL(CAST(copyForeignKeys AS VARCHAR),&apos;null&apos;));
+&#x9;END IF;
+
+&#x9;-- Set default values
+&#x9;SET beginTS = CURRENT_TIMESTAMP;
+&#x9;SET prevContainerPath = datasourcePathMod;&#x9;-- Default to the datasource for purposes of comparison.
+&#x9;SET prevContainerType = &apos;DATA_SOURCE&apos;;&#x9;-- Default to the datasource type for purposes of comparison.
+&#x9;SET numResourcesIntrospectAdd = 0;
+&#x9;SET numTablesIntrospectAdd = 0;
+&#x9;SET numResourcesIntrospectSkip = 0;
+&#x9;SET numTablesIntrospectSkip = 0;
+&#x9;SET tablesIntrospectAdd = &apos;&apos;;
+&#x9;SET tablesIntrospectSkip = &apos;&apos;;
+
+&#x9;/*
+&#x9;&#x9;Generate Physical Metadata Layer
+&#x9;*/
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(beginTS AS VARCHAR)||&apos; BEGIN INTROSPECTION OF MEATADATA SOURCE: &apos;||NVL(datasourcePathMod,&apos;null&apos;);
+&#x9;&#x9;CALL print(message);
+&#x9;END IF;
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/introspectResources(
+&#x9;&#x9;&#x9;datasourcePathMod,&#x9;&#x9;&#x9;-- mandatory.   Full path to datasource
+&#x9;&#x9;&#x9;catalogName,&#x9;&#x9;&#x9;&#x9;-- optional (null) - Database catalog Name if applicable
+&#x9;&#x9;&#x9;schemaName,&#x9;&#x9;&#x9;&#x9;&#x9;-- mandatory - Database schema name.  Overrides the schema pattern.  When schemaPatterns is null the schemaName must be provided.
+&#x9;&#x9;&#x9;schemaTablePatterns,&#x9;&#x9;-- optional (null).  Comma separated list of patterns such as D%, E%, F%.    Introspect all tables starting with D, E and F.
+&#x9;&#x9;&#x9;tableNames,&#x9;&#x9;&#x9;&#x9;&#x9;-- optional.  NULL=no specified table list OR one or more comma separated tables to introspect.  When NULL, all tables for the schema are introspected.
+&#x9;&#x9;&#x9;schemaProcedurePatterns,&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new procedures starting with D, E and F.
+&#x9;&#x9;&#x9;procedureNames, &#x9;&#x9;&#x9;-- NULL=no specified procedure list OR 1 or more comma separated procedures to introspect.  When NULL, all procedures are introspected.
+&#x9;&#x9;&#x9;sep,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Default=,  The separator used to separate lists for the input parameters: tableNames and procedureNames
+&#x9;&#x9;&#x9;debug,&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Y=debug on, N=debug off, null=defaultValues.EnableDebugging1
+&#x9;&#x9;&#x9;errStatus,&#x9;&#x9;&#x9;&#x9;&#x9;-- SUCCESS or FAILED
+&#x9;&#x9;&#x9;errMessage,&#x9;&#x9;&#x9;&#x9;&#x9;-- Error message if errStatus=FAILED, otherwise null
+&#x9;&#x9;&#x9;introspectionResult,&#x9;&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;&#x9;&#x9;dataSourceType,&#x9;&#x9;&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;&#x9;&#x9;dataSourceSubtype&#x9;&#x9;&#x9;-- The subtype of data source that was introspected.
+&#x9;&#x9;);
+&#x9;EXCEPTION
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;RAISE ex VALUE CURRENT_EXCEPTION.TRACE;
+&#x9;END;
+
+&#x9;&#x9;-- Extract the introspection results
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM (
+&#x9;&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/introspectResourcesResultCursor(introspectionResult)
+&#x9;&#x9;&#x9;) a
+&#x9;&#x9;&#x9;UNION
+&#x9;&#x9;&#x9;-- This row will always occur last and is used to create a dummy row in order to trigger processing of the last row while still inside the for loop
+&#x9;&#x9;&#x9;SELECT null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,&apos;DUMMY_CONTAINER_PATH&apos;,&apos;CONTAINER&apos;,&apos;DUMMY_CONTAINER&apos;,&apos;DUMMY_SKIP&apos;,null,null,null,null,null,null,null
+&#x9;&#x9;&#x9;&#x9;FROM /services/databases/system/DUAL
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL print( moduleName||&apos; : loop i=&apos;||i||&apos; &quot;path&quot;=&apos;||NVL(r.&quot;path&quot;,&apos;null&apos;)||&apos;  type=&apos;||NVL(r.&quot;type&quot;,&apos;null&apos;)||&apos;  suybtype=&apos;||NVL(r.subtype,&apos;null&apos;));
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;--  Begin processing the list of tables whenever a container is encountered that is not a catalog container.  e.g. SCHEMA_CONTAINER, DIRECTORY_CONTAINER
+&#x9;&#x9;&#x9;IF (r.&quot;type&quot; = &apos;CONTAINER&apos; AND r.subtype &lt;&gt; &apos;CATALOG_CONTAINER&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET containerCount = containerCount + 1;
+&#x9;&#x9;&#x9;&#x9;SET containerPath = r.&quot;path&quot;;
+&#x9;&#x9;&#x9;&#x9;SET containerType = r.&quot;type&quot;;
+
+&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL print( moduleName||&apos; :   containerCount=&apos;||containerCount||&apos;  prevContainerPath=[&apos;||NVL(prevContainerPath,&apos;null&apos;)||&apos;]  containerPath=[&apos;||NVL(containerPath,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL print( moduleName||&apos; :   Table_Names=&apos;||NVL(Table_Names,&apos;null&apos;)||&apos;  Table_Names1=[&apos;||NVL(Table_Names1,&apos;null&apos;)||&apos;]  Table_Names2=[&apos;||NVL(Table_Names2,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (prevContainerPath &lt;&gt; containerPath) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Process the records if it is the last row or the container count is greater than 1 and it is not the last row
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (r.subtype = &apos;DUMMY_CONTAINER&apos; OR (containerCount &gt; 1 AND r.subtype &lt;&gt; &apos;DUMMY_CONTAINER&apos;)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Determine the source type and source path
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dataSourceSubtype = &apos;RELATIONAL_DATA_SOURCE&apos; THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (prevContainerPath &lt;&gt; datasourcePathMod) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = datasourcePathMod||&apos;/&apos;||prevContainerPath; -- Append the catalog/schema path to the datasource path
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = prevContainerType;&#x9;-- A schema folder is of type CONTAINER
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = datasourcePathMod;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = &apos;DATA_SOURCE&apos;;&#x9;-- A Relational datasource with no schema (e.g. mysql) will not have any underlying folders therefore the datasource is the originating source folder.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Qualifier = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dataSourceSubtype = &apos;FILE_DATA_SOURCE&apos; THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = datasourcePathMod;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = &apos;DATA_SOURCE&apos;;&#x9;-- A CSV datasource has no underlying folders therefore the datasource is the originating source folder.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Qualifier = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dataSourceSubtype = &apos;POI_EXCEL_DATA_SOURCE&apos; THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = datasourcePathMod||&apos;/&apos;||prevContainerPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = prevContainerType;&#x9;-- A directory container is of type CONTAINER
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For Excel datasources, add the container name with a dash as a qualifier to the sheet name
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Qualifier = prevContainerPath||&apos;-&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END CASE;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Process the list of table names
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (sourcePath IS NOT NULL AND LENGTH(TRIM(sourcePath)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call print(moduleName||&apos; : layerType=&apos;||NVL(layerType, &apos;null&apos;)||&apos;  metadataLineage:&apos;||NVL(metadataLineage,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/*
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Generate Formatting Layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;*/
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET beginTS = CURRENT_TIMESTAMP;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET parentLayerType = layerType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET layerType = &apos;FORMATTING&apos;;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (formattingLayerPath IS NOT NULL AND LENGTH(TRIM(formattingLayerPath)) &gt; 0) then 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = formattingLayerPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Remove any white space and / at the end if exists.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (SUBSTRING(targetPath, LENGTH(targetPath), 1) = &apos;/&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = SUBSTRING(targetPath, 1, LENGTH(targetPath)-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(beginTS AS VARCHAR)||&apos; BEGIN GENERATE FORMATTING LAYER: &apos;||NVL(targetPath,&apos;null&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Test for table names usage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (Table_Names IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names1;&#x9;-- This contains the original list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names2;&#x9;-- This contains a modified list with prefixes
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Create the resources for this layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/generate/helpers/createResourceProcess(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;parentLayerType, layerType, sourcePath, sourceType, targetPath, Table_Names, sep, &#x9;&#x9;&#x9;&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Tab_Prefix, Tab_Qualifier, overwrite, copyAnnotation, copySqlIndexes, copyForeignKeys, debug,&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;numCreated, numUpdated, resultCursor);&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Output params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;FOR crp AS resultCursor DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec = crp;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Keep a running list of the metadata.  Initialize this list with [metadata path==&gt;metadata path]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The first metadata path in the list will be replaced subsequently with the source path until
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the published layer points to the metadata path.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (resultRec.parentLineagePath IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(metadataLineage, resultRec.parentLineagePath||&apos;==&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(resultRec.parentLineagePath);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(metadataLineage, &apos;]&apos;, pos1+len+3);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the corresponding metadata path for this resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineagePath = SUBSTRING(metadataLineage, pos1+len+3, pos2-(pos1+len+3));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the resource name
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(resultRec.metadataLineagePath, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineageName = SUBSTRING(resultRec.metadataLineagePath, pos2+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Rewrite the source path with the current resource path
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET metadataLineage = SUBSTRING(metadataLineage, 1, pos1-1) || resultRec.resPath || SUBSTRING(metadataLineage, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Insert the record
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO generatedViewsCursor VALUES (resultRec);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = targetPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = &apos;CONTAINER&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Prefix = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Qualifier = null;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call print(moduleName||&apos; : layerType=&apos;||NVL(layerType, &apos;null&apos;)||&apos;  metadataLineage:&apos;||NVL(metadataLineage,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; END GENERATE FORMATTING LAYER: DURATION=&apos;||CAST(duration AS VARCHAR)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    NUMBER OF RESOURCES CREATED=&apos;||NVL(NVL(CAST(numCreated AS VARCHAR),&apos;0&apos;),&apos;0&apos;)||&apos;  NUMBER OF RESOURCES UPDATED=&apos;||NVL(CAST(numUpdated AS VARCHAR),&apos;0&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; SKIPPED FORMATTING LAYER: DURATION=&apos;||CAST(duration AS VARCHAR);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE CURRENT_EXCEPTION.TRACE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/*
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Generate Business Layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;*/
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET beginTS = CURRENT_TIMESTAMP;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET parentLayerType = layerType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET layerType = &apos;BUSINESS&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (businessLayerPath IS NOT NULL AND LENGTH(TRIM(businessLayerPath)) &gt; 0) then 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = businessLayerPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Remove any white space and / at the end if exists.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (SUBSTRING(targetPath, LENGTH(targetPath), 1) = &apos;/&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = SUBSTRING(targetPath, 1, LENGTH(targetPath)-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(beginTS AS VARCHAR)||&apos; BEGIN GENERATE BUSINESS LAYER: &apos;||NVL(targetPath,&apos;null&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Test for table names usage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (Table_Names IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names1;&#x9;-- This contains the original list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names2;&#x9;-- This contains a modified list with prefixes
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Create the resources for this layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/generate/helpers/createResourceProcess(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;parentLayerType, layerType, sourcePath, sourceType, targetPath, Table_Names, sep, &#x9;&#x9;&#x9;&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Tab_Prefix, Tab_Qualifier, overwrite, copyAnnotation, copySqlIndexes, copyForeignKeys, debug,&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;numCreated, numUpdated, resultCursor);&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Output params&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;FOR crp AS resultCursor DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec = crp;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Keep a running list of the metadata.  Initialize this list with [metadata path==&gt;metadata path]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The first metadata path in the list will be replaced subsequently with the source path until
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the published layer points to the metadata path.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (resultRec.parentLineagePath IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(metadataLineage, resultRec.parentLineagePath||&apos;==&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(resultRec.parentLineagePath);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(metadataLineage, &apos;]&apos;, pos1+len+3);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the corresponding metadata path for this resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineagePath = SUBSTRING(metadataLineage, pos1+len+3, pos2-(pos1+len+3));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the resource name
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(resultRec.metadataLineagePath, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineageName = SUBSTRING(resultRec.metadataLineagePath, pos2+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Rewrite the source path with the current resource path
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET metadataLineage = SUBSTRING(metadataLineage, 1, pos1-1) || resultRec.resPath || SUBSTRING(metadataLineage, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Insert the record
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO generatedViewsCursor VALUES (resultRec);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = targetPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = &apos;CONTAINER&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Prefix = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Qualifier = null;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call print(moduleName||&apos; : layerType=&apos;||NVL(layerType, &apos;null&apos;)||&apos;  metadataLineage:&apos;||NVL(metadataLineage,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; END GENERATE BUSINESS LAYER: DURATION=&apos;||CAST(duration AS VARCHAR)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    NUMBER OF RESOURCES CREATED=&apos;||NVL(CAST(numCreated AS VARCHAR),&apos;0&apos;)||&apos;  NUMBER OF RESOURCES UPDATED=&apos;||NVL(CAST(numUpdated AS VARCHAR),&apos;0&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; SKIPPED BUSINESS LAYER: DURATION=&apos;||CAST(duration AS VARCHAR);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE CURRENT_EXCEPTION.TRACE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/*
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Generate Application Layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;*/
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET beginTS = CURRENT_TIMESTAMP;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET parentLayerType = layerType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET layerType = &apos;APPLICATION&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (applicationLayerPath IS NOT NULL AND LENGTH(TRIM(applicationLayerPath)) &gt; 0) then 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = applicationLayerPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Remove any white space and / at the end if exists.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (SUBSTRING(targetPath, LENGTH(targetPath), 1) = &apos;/&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = SUBSTRING(targetPath, 1, LENGTH(targetPath)-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(beginTS AS VARCHAR)||&apos; BEGIN GENERATE APPLICATION LAYER: &apos;||NVL(targetPath,&apos;null&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Test for table names usage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (Table_Names IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names1;&#x9;-- This contains the original list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names2;&#x9;-- This contains a modified list with prefixes
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Create the resources for this layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/generate/helpers/createResourceProcess(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;parentLayerType, layerType, sourcePath, sourceType, targetPath, Table_Names, sep, &#x9;&#x9;&#x9;&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Tab_Prefix, Tab_Qualifier, overwrite, copyAnnotation, copySqlIndexes, copyForeignKeys, debug,&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;numCreated, numUpdated, resultCursor);&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Output params&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;FOR crp AS resultCursor DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec = crp;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Keep a running list of the metadata.  Initialize this list with [metadata path==&gt;metadata path]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The first metadata path in the list will be replaced subsequently with the source path until
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the published layer points to the metadata path.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (resultRec.parentLineagePath IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(metadataLineage, resultRec.parentLineagePath||&apos;==&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(resultRec.parentLineagePath);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(metadataLineage, &apos;]&apos;, pos1+len+3);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the corresponding metadata path for this resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineagePath = SUBSTRING(metadataLineage, pos1+len+3, pos2-(pos1+len+3));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the resource name
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(resultRec.metadataLineagePath, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineageName = SUBSTRING(resultRec.metadataLineagePath, pos2+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Rewrite the source path with the current resource path
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET metadataLineage = SUBSTRING(metadataLineage, 1, pos1-1) || resultRec.resPath || SUBSTRING(metadataLineage, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Insert the record
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO generatedViewsCursor VALUES (resultRec);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourcePath = targetPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sourceType = &apos;CONTAINER&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Prefix = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Qualifier = null;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call print(moduleName||&apos; : layerType=&apos;||NVL(layerType, &apos;null&apos;)||&apos;  metadataLineage:&apos;||NVL(metadataLineage,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; END GENERATE APPLICATION LAYER: DURATION=&apos;||CAST(duration AS VARCHAR)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    NUMBER OF RESOURCES CREATED=&apos;||NVL(CAST(numCreated AS VARCHAR),&apos;0&apos;)||&apos;  NUMBER OF RESOURCES UPDATED=&apos;||NVL(CAST(numUpdated AS VARCHAR),&apos;0&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; SKIPPED APPLICATION LAYER: DURATION=&apos;||CAST(duration AS VARCHAR);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE CURRENT_EXCEPTION.TRACE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/*
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Generate Published DB Layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;*/
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET beginTS = CURRENT_TIMESTAMP;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET parentLayerType = layerType;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET layerType = &apos;PUBLISHED&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (publishedDBLayerPath IS NOT NULL AND LENGTH(TRIM(publishedDBLayerPath)) &gt; 0) then 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = publishedDBLayerPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Remove any white space and / at the end if exists.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (SUBSTRING(targetPath, LENGTH(targetPath), 1) = &apos;/&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET targetPath = SUBSTRING(targetPath, 1, LENGTH(targetPath)-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(beginTS AS VARCHAR)||&apos; BEGIN GENERATE PUBLISHED DB LAYER: &apos;||NVL(targetPath,&apos;null&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Test for table names usage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (Table_Names IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names1;&#x9;-- This contains the original list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = Table_Names2;&#x9;-- This contains a modified list with prefixes
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Create the resources for this layer
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/generate/helpers/createResourceProcess(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;parentLayerType, layerType, sourcePath, sourceType, targetPath, Table_Names, sep, &#x9;&#x9;&#x9;&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Tab_Prefix, Tab_Qualifier, overwrite, copyAnnotation, copySqlIndexes, copyForeignKeys, debug,&#x9;-- Input params
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;numCreated, numUpdated, resultCursor);&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Output params&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;FOR crp AS resultCursor DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec = crp;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Keep a running list of the metadata.  Initialize this list with [metadata path==&gt;metadata path]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The first metadata path in the list will be replaced subsequently with the source path until
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- the published layer points to the metadata path.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (resultRec.parentLineagePath IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(metadataLineage, resultRec.parentLineagePath||&apos;==&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(resultRec.parentLineagePath);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(metadataLineage, &apos;]&apos;, pos1+len+3);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the corresponding metadata path for this resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineagePath = SUBSTRING(metadataLineage, pos1+len+3, pos2-(pos1+len+3));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the resource name
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(resultRec.metadataLineagePath, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET resultRec.metadataLineageName = SUBSTRING(resultRec.metadataLineagePath, pos2+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Rewrite the source path with the current resource path
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET metadataLineage = SUBSTRING(metadataLineage, 1, pos1-1) || resultRec.resPath || SUBSTRING(metadataLineage, pos1+len);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Insert the record
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO generatedViewsCursor VALUES (resultRec);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call print(moduleName||&apos; : layerType=&apos;||NVL(layerType, &apos;null&apos;)||&apos;  metadataLineage:&apos;||NVL(metadataLineage,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; END GENERATE PUBLISHED DB LAYER: DURATION=&apos;||CAST(duration AS VARCHAR)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    NUMBER OF RESOURCES CREATED=&apos;||NVL(CAST(numCreated AS VARCHAR),&apos;0&apos;)||&apos;  NUMBER OF RESOURCES UPDATED=&apos;||NVL(CAST(numUpdated AS VARCHAR),&apos;0&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; SKIPPED PUBLISHED DB LAYER: DURATION=&apos;||CAST(duration AS VARCHAR);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE CURRENT_EXCEPTION.TRACE;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Reset the metadata lineage list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET metadataLineage = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Reset the prefix
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Tab_Prefix = prefix;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Reset the table name lists
+&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names1 = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names2 = &apos;&apos;;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the previous container path
+&#x9;&#x9;&#x9;&#x9;&#x9;SET prevContainerPath = containerPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET prevContainerType = containerType;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Initialize the layer types
+&#x9;&#x9;&#x9;SET parentLayerType = null;
+&#x9;&#x9;&#x9;SET layerType = &apos;METADATA&apos;;
+
+&#x9;&#x9;&#x9;-- Resources that already exist and therefore were skipped.
+&#x9;&#x9;&#x9;IF (r.&quot;action&quot; = &apos;SKIP&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;-- Count the resources skipped including DATA_SOURCE and CONTAINER types
+&#x9;&#x9;&#x9;&#x9;SET numResourcesIntrospectSkip = numResourcesIntrospectSkip + 1;
+&#x9;&#x9;&#x9;&#x9;IF (r.&quot;type&quot; = &apos;TABLE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Count the tables skipped and concat them to the introspect skip list
+&#x9;&#x9;&#x9;&#x9;&#x9;SET numTablesIntrospectSkip = numTablesIntrospectSkip + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(tablesIntrospectSkip) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET tablesIntrospectSkip = tablesIntrospectSkip || &apos;,&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract just the table name from the path which includes container and resource name
+&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name1 = r.&quot;path&quot;;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (INSTR(Table_Name1, &apos;/&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(Table_Name1, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name1 = SUBSTRING(Table_Name1, pos1+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Excel Non-ODBC resource subtype
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (r.subtype = &apos;EXCEL_NON_ODBC_POI&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Replace the slash with a dash.  e.g.  myexcel.xlsx/Sheet = myexcel.xlsx-Sheet1
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;The container name acts as a qualifier for the sheet name which can be generic/same for different files thus resulting in collisions
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name2 = REPLACE(r.&quot;path&quot;, &apos;/&apos;, &apos;-&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name2 = Table_Name1;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tablesIntrospectSkip = tablesIntrospectSkip || r.&quot;path&quot;;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Insert a record for this table
+&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO generatedViewsCursor VALUES (&apos;SKIPPED [EXISTS]&apos;, layerType, Table_Name1, datasourcePathMod||&apos;/&apos;||r.&quot;path&quot;, r.&quot;type&quot;, r.subtype, parentLayerType, null, Table_Name1, datasourcePathMod||&apos;/&apos;||r.&quot;path&quot;);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Add tables into the table name list 1 representing the original source list.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(Table_Names1) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names1 = Table_Names1 || sep;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names1 = Table_Names1 || Table_Name1;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Add tables into the table name list 2 representing the target list.  If there is a prefix, then add it to the beginning of the table name.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(Table_Names2) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names2 = Table_Names2 || sep;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (prefix IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names2 = Table_Names2 || prefix||Table_Name2;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names2 = Table_Names2 || Table_Name2;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Keep a running list of the metadata.  Initialize this list with [metadata path==&gt;metadata path]
+&#x9;&#x9;&#x9;&#x9;&#x9;-- The first metadata path in the list will be replaced subsequently with the source path until
+&#x9;&#x9;&#x9;&#x9;&#x9;-- the published layer points to the metadata path.
+&#x9;&#x9;&#x9;&#x9;&#x9;SET metadataLineage = metadataLineage || &apos;[&apos; || datasourcePathMod || &apos;/&apos;|| r.&quot;path&quot; || &apos;==&gt;&apos; || datasourcePathMod || &apos;/&apos;|| r.&quot;path&quot; || &apos;]&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Resources that did not exist and therefore were added.
+&#x9;&#x9;&#x9;IF (r.&quot;action&quot; = &apos;ADD&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;-- Count the resources added including DATA_SOURCE and CONTAINER types
+&#x9;&#x9;&#x9;&#x9;SET numResourcesIntrospectAdd = numResourcesIntrospectAdd + 1;
+&#x9;&#x9;&#x9;&#x9;IF (r.&quot;type&quot; = &apos;TABLE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Count the tables added and concat them to the introspect add list
+&#x9;&#x9;&#x9;&#x9;&#x9;SET numTablesIntrospectAdd = numTablesIntrospectAdd + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(tablesIntrospectAdd) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET tablesIntrospectAdd = tablesIntrospectAdd || &apos;,&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract just the table name from the path which includes container and resource name
+&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name1 = r.&quot;path&quot;;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (INSTR(Table_Name1, &apos;/&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(Table_Name1, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name1 = SUBSTRING(Table_Name1, pos1+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Excel Non-ODBC resource subtype
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (r.subtype = &apos;EXCEL_NON_ODBC_POI&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Replace the slash with a dash.  e.g.  myexcel.xlsx/Sheet = myexcel.xlsx-Sheet1
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;The container name acts as a qualifier for the sheet name which can be generic/same for different files thus resulting in collisions
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name2 = REPLACE(r.&quot;path&quot;, &apos;/&apos;, &apos;-&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Name2 = Table_Name1;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tablesIntrospectAdd = tablesIntrospectAdd || r.&quot;path&quot;;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Insert a record for this table
+&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO generatedViewsCursor VALUES (&apos;CREATED&apos;, layerType, Table_Name1, datasourcePathMod||&apos;/&apos;||r.&quot;path&quot;, r.&quot;type&quot;, r.subtype, parentLayerType, null, Table_Name1, datasourcePathMod||&apos;/&apos;||r.&quot;path&quot;);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Add tables into the table name list 1 representing the original source list.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(Table_Names1) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names1 = Table_Names1 || sep;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names1 = Table_Names1 || Table_Name1;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Add tables into the table name list 2 representing the target list.  If there is a prefix, then add it to the beginning of the table name.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(Table_Names2) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names2 = Table_Names2 || sep;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (prefix IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names2 = Table_Names2 || prefix||Table_Name2;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET Table_Names2 = Table_Names2 || Table_Name2;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Keep a running list of the metadata.  Initialize this list with [metadata path==&gt;metadata path]
+&#x9;&#x9;&#x9;&#x9;&#x9;-- The first metadata path in the list will be replaced subsequently with the source path until
+&#x9;&#x9;&#x9;&#x9;&#x9;-- the published layer points to the metadata path.
+&#x9;&#x9;&#x9;&#x9;&#x9;SET metadataLineage = metadataLineage || &apos;[&apos; || datasourcePathMod || &apos;/&apos;|| r.&quot;path&quot; || &apos;==&gt;&apos; || datasourcePathMod || &apos;/&apos;|| r.&quot;path&quot; || &apos;]&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginTS;
+&#x9;&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; END INTROSPECTION OF MEATADATA SOURCE: DURATION=&apos;||CAST(duration AS VARCHAR)||
+&#x9;&#x9;&#x9;&#x9;&apos;    NUMBER OF RESOURCES ADDED=&apos;||CAST(numResourcesIntrospectAdd AS VARCHAR)||&apos;  NUMBER OF RESOURCES SKIPPED=&apos;||CAST(numResourcesIntrospectSkip AS VARCHAR);
+&#x9;&#x9;&#x9;CALL print(message);
+&#x9;&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;END IF;
+
+
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;SET duration = CURRENT_TIMESTAMP - beginProc;
+&#x9;&#x9;SET message = moduleName||&apos; : &apos;||CAST(CURRENT_TIMESTAMP AS VARCHAR)||&apos; END GENERATE PROCEDURE DURATION=&apos;||CAST(duration AS VARCHAR);
+&#x9;&#x9;CALL print(message);
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1396452310047</attribute>
+  <attribute name="creatorUserDomain" type="STRING">ldap</attribute>
+  <attribute name="creatorUserName" type="STRING">zk5tunx</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/793</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/792</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/599</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/237</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/236</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/235</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/234</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/637</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/270</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/421</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/422</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">14/350</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/414</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/415</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/410</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/498</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/575</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/499</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/576</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/800</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/249</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/317</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/491</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/316</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/492</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/306</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/251</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/250</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/568</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/569</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/487</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/564</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/641</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/642</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/368</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/445</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/522</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/239</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/238</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/244</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/243</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/242</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/241</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/248</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/247</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/246</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/245</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/240</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/648</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">16/649</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

@@ -1,0 +1,71 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Workforce_Participant_Skillset" path="/shared/Delta_DV/Business/BusinessSemantic/EDP/Workforce_Participant_Skillset" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Skillset_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Workforce_Participant_Skillset_Key" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Workforce_Participant_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/Logical/EDP/WORKFORCE_PARTICIPANT_SKILLSET" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Skillset_NM">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Workforce_Participant_Skillset_SKEY">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Workforce_Participant_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    Skillset_NM Skillset_Name,
+    Workforce_Participant_Skillset_SKEY Workforce_Participant_Skillset_Key,
+    Workforce_Participant_SKEY Workforce_Participant_Key
+from
+/shared/Delta_DV/Business/Logical/EDP/WORKFORCE_PARTICIPANT_SKILLSET</attribute>
+  <attribute name="creationDate" type="LONG">1611806337754</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611806459968</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611806337754</attribute>
+</metadata>

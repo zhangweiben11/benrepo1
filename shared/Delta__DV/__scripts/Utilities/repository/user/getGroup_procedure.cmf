@@ -1,0 +1,226 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getGroup" path="/shared/Delta_DV/_scripts/Utilities/repository/user/getGroup" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getGroup:
+
+    Get the list of privileges for a given group name and domain and whether the group exists or not.
+ 
+&#x9;Input:
+    &#x9;&#x9;debug - Y=debug on, N=debug off 
+&#x9;&#x9;&#x9;groupName - name of the group to be created
+&#x9;&#x9;&#x9;groupDomain - domain for the group - default is &apos;composite&apos;
+&#x9;&#x9;&#x9;groupPrivileges - space separated list of privileges for the group chosen from this list:
+&#x9;&#x9;&#x9;&#x9;ACCESS_TOOLS MODIFY_ALL_CONFIG MODIFY_ALL_RESOURCES MODIFY_ALL_STATUS MODIFY_ALL_USERS READ_ALL_CONFIG READ_ALL_RESOURCES READ_ALL_STATUS READ_ALL_USERS UNLOCK_RESOURCE
+
+
+&#x9;Output:
+&#x9;&#x9;groupExists&#x9;&#x9;&#x9;&#x9;- 0=group does not exist, 1=group exists
+&#x9;&#x9;groupExplicitRights&#x9;&#x9;- explicit privilges for this group
+&#x9;&#x9;groupEffectiveRights&#x9;- effective (combined) privileges for this group
+&#x9;&#x9;groupInheritedRights&#x9;- inherited privileges for this group
+
+
+&#x9;Exceptions:  Exception may be thrown.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/20/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Created new.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="groupName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+    </parameter>
+    <parameter name="groupDomain" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+    </parameter>
+    <parameter name="groupExists" direction="OUT" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="groupExplicitRights" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+    </parameter>
+    <parameter name="groupEffectiveRights" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+    </parameter>
+    <parameter name="groupInheritedRights" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/user/getDomainGroups" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inDomainName" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="8192"/>
+          </element>
+          <element name="domainName">
+            <datatype type="STRING" maxLength="8192"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="explicitRights">
+            <datatype type="STRING" maxLength="8192"/>
+          </element>
+          <element name="effectiveRights">
+            <datatype type="STRING" maxLength="8192"/>
+          </element>
+          <element name="inheritedRights">
+            <datatype type="STRING" maxLength="8192"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getGroup:
+
+    Get the list of privileges for a given group name and domain and whether the group exists or not.
+ 
+&#x9;Input:
+    &#x9;&#x9;debug - Y=debug on, N=debug off 
+&#x9;&#x9;&#x9;groupName - name of the group to be created
+&#x9;&#x9;&#x9;groupDomain - domain for the group - default is &apos;composite&apos;
+&#x9;&#x9;&#x9;groupPrivileges - space separated list of privileges for the group chosen from this list:
+&#x9;&#x9;&#x9;&#x9;ACCESS_TOOLS MODIFY_ALL_CONFIG MODIFY_ALL_RESOURCES MODIFY_ALL_STATUS MODIFY_ALL_USERS READ_ALL_CONFIG READ_ALL_RESOURCES READ_ALL_STATUS READ_ALL_USERS UNLOCK_RESOURCE
+
+&#x9;Output:
+&#x9;&#x9;groupExists&#x9;&#x9;&#x9;&#x9;- 0=group does not exist, 1=group exists
+&#x9;&#x9;groupExplicitRights&#x9;&#x9;- explicit privilges for this group
+&#x9;&#x9;groupEffectiveRights&#x9;- effective (combined) privileges for this group
+&#x9;&#x9;groupInheritedRights&#x9;- inherited privileges for this group
+
+&#x9;Exceptions:  Exception may be thrown.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/20/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Created new.
+&#x9;2020.201&#x9;04/30/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified call to use /shared/ASAssets/Utilities/repository/user/getDomainGroups.
+&#x9;2020.201&#x9;04/31/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Fixed a bug with XML request to escape XML characters.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getGroup(
+&#x9;IN debug &#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),-- e.g. Y or N
+&#x9;IN groupName&#x9;&#x9;&#x9;&#x9;VARCHAR(8192),
+&#x9;IN groupDomain &#x9;&#x9;&#x9;&#x9;VARCHAR(8192),
+&#x9;OUT groupExists&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;OUT groupExplicitRights&#x9;&#x9;VARCHAR(8192),
+&#x9;OUT groupEffectiveRights&#x9;VARCHAR(8192),
+&#x9;OUT groupInheritedRights&#x9;VARCHAR(8192)
+)
+BEGIN
+&#x9;DECLARE moduleName &#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getGroup&apos;;
+&#x9;DECLARE groupName_&#x9;&#x9;&#x9;&#x9;VARCHAR(8192) DEFAULT groupName;
+&#x9;DECLARE groupDomain_&#x9;&#x9;&#x9;VARCHAR(8192) DEFAULT groupDomain;
+    DECLARE ex &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+    BEGIN
+&#x9;&#x9;if (groupName is null or LENGTH(groupName) = 0) then
+&#x9;&#x9;&#x9;raise ex value &apos;The &quot;groupName&quot; parameter may not be null or empty.&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (groupDomain is null or LENGTH(groupDomain) = 0) then
+&#x9;&#x9;&#x9;raise ex value &apos;The &quot;groupDomain&quot; parameter may not be null or empty.&apos;;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- when the domain is composite use all lower case for domains and group names
+&#x9;&#x9;if (LOWER(groupDomain_) = &apos;composite&apos;) then
+&#x9;&#x9;&#x9;set groupName_ = LOWER(groupName_);
+&#x9;&#x9;&#x9;set groupDomain_ = LOWER(groupDomain_);
+&#x9;&#x9;end if;
+&#x9;&#x9;IF (debug IS NOT NULL AND UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;call print(moduleName || &apos; : Retrieve Groups.  groupDomain=&apos;||NVL(groupDomain_,&apos;null&apos;)||&apos;  groupName=&apos;||NVL(groupName,&apos;null&apos;));
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;set groupExists = 0;
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;user&quot;/getDomainGroups(groupDomain_)
+&#x9;&#x9;&#x9;WHERE name = groupName_
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;SET groupExists&#x9;= 1;
+&#x9;&#x9;&#x9;SET groupExplicitRights = r.explicitRights;
+&#x9;&#x9;&#x9;SET groupEffectiveRights = r.effectiveRights;
+&#x9;&#x9;&#x9;SET groupInheritedRights = r.inheritedRights;
+&#x9;&#x9;END FOR;
+     EXCEPTION                         
+        WHEN System.SOAPFaultException THEN
+&#x9;&#x9;&#x9;raise ex value CURRENT_EXCEPTION.TRACE;
+     END; 
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">14/85</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/71</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

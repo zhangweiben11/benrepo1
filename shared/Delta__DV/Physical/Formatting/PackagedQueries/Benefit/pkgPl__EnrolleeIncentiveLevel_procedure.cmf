@@ -1,0 +1,69 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_EnrolleeIncentiveLevel" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_EnrolleeIncentiveLevel" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inBenefitPkgID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inContractID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inPersonID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="16"/>
+    </parameter>
+    <parameter name="inMemberID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype type="TABLE" refId="256">
+        <element name="IncentiveLevel">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="LastUpdatedDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/A3" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT DISTINCT  
+       CASE
+          WHEN NVL(INCENTIVE_PIDS.INCENTIVE_LEVEL, &apos;00&apos;) = &apos;00&apos; THEN &apos;01&apos;
+          ELSE INCENTIVE_PIDS.INCENTIVE_LEVEL
+       END IncentiveLevel, 
+       TO_DATE(
+          TO_CHAR(
+             MAX(UPDATE_INCENTIVE_LEVEL_TS) OVER (PARTITION BY BENEFIT_PKG_ID, EMPGRP_LVL_1_ID, EMPGRP_LVL_2_ID, CONTRACT_ID, PERSON_ID, MEMBER_ID)
+             ,&apos;YYYY-MM-DD&apos;)
+          , &apos;YYYY-MM-DD&apos;) LastUpdatedDate
+FROM   A3_BENEFITS.INCENTIVE_PIDS
+WHERE  BENEFIT_PKG_ID  = &apos;{0}&apos;
+AND    EMPGRP_LVL_1_ID = &apos;{1}&apos;
+AND    EMPGRP_LVL_2_ID = &apos;{2}&apos;
+AND    CONTRACT_ID     = &apos;{3}&apos;
+AND    PERSON_ID       = &apos;{4}&apos;
+AND    MEMBER_ID       = &apos;{5}&apos;
+</attribute>
+  <attribute name="creationDate" type="LONG">1606324660727</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609987779608</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/A3</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1606324660727</attribute>
+</metadata>

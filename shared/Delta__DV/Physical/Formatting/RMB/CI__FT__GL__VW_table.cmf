@@ -1,0 +1,159 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="CI_FT_GL_VW" path="/shared/Delta_DV/Physical/Formatting/RMB/CI_FT_GL_VW" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="FT_ID" nullable="true">
+      <datatype type="STRING" maxLength="12"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="GL_SEQ_NBR" nullable="true">
+      <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="DST_ID" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CHAR_TYPE_CD" nullable="true">
+      <datatype type="STRING" maxLength="8"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="AMOUNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="15" minFractionalDigits="2" maxFractionalDigits="2"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="CHAR_VAL" nullable="true">
+      <datatype type="STRING" maxLength="16"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOT_AMT_SW" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="VERSION" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="STATISTIC_AMOUNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="36" minFractionalDigits="18" maxFractionalDigits="18"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="GL_ACCT" nullable="true">
+      <datatype type="STRING" maxLength="254"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="VALIDATE_SW" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="GLA_VAL_DT" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="FT_GL_CATEGORY" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/RMB_VIEWS/CISADM/CI_FT_GL_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="FT_ID" nullable="false">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="GL_SEQ_NBR" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="DST_ID" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="CHAR_TYPE_CD" nullable="false">
+        <datatype type="STRING" maxLength="8"/>
+      </element>
+      <element name="AMOUNT" nullable="false">
+        <datatype type="DECIMAL" maxDigits="15" minFractionalDigits="2" maxFractionalDigits="2"/>
+      </element>
+      <element name="CHAR_VAL" nullable="false">
+        <datatype type="STRING" maxLength="16"/>
+      </element>
+      <element name="TOT_AMT_SW" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="VERSION" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="STATISTIC_AMOUNT" nullable="false">
+        <datatype type="DECIMAL" maxDigits="36" minFractionalDigits="18" maxFractionalDigits="18"/>
+      </element>
+      <element name="GL_ACCT" nullable="false">
+        <datatype type="STRING" maxLength="254"/>
+      </element>
+      <element name="VALIDATE_SW" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="GLA_VAL_DT">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="FT_GL_CATEGORY" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    CI_FT_GL_VW.FT_ID, 
+    CI_FT_GL_VW.GL_SEQ_NBR, 
+    CI_FT_GL_VW.DST_ID, 
+    CI_FT_GL_VW.CHAR_TYPE_CD, 
+    CI_FT_GL_VW.AMOUNT, 
+    CI_FT_GL_VW.CHAR_VAL, 
+    CI_FT_GL_VW.TOT_AMT_SW, 
+    CI_FT_GL_VW.VERSION, 
+    CI_FT_GL_VW.STATISTIC_AMOUNT, 
+    CI_FT_GL_VW.GL_ACCT, 
+    CI_FT_GL_VW.VALIDATE_SW, 
+    CI_FT_GL_VW.GLA_VAL_DT, 
+    CI_FT_GL_VW.FT_GL_CATEGORY
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/RMB_VIEWS/CISADM/CI_FT_GL_VW CI_FT_GL_VW</attribute>
+  <attribute name="creationDate" type="LONG">1579788360435</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">1510101</attribute>
+  <attribute name="creatorUserName" type="STRING">dos88106</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">1510101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="BYTE_ARRAY">EIEJBAAAAAEQUQYBAAsAQwBJAF8ARgBUAF8ARwBMAF8AVgBXBgIACwBDAEkAXwBGAFQAXwBHAEwAXwBWAFcDC/////8DCv////8DDP////8LEQAJAAYAcwBoAGEAcgBlAGQACABEAGUAbAB0AGEAXwBEAFYACABQAGgAeQBzAGkAYwBhAGwACABNAGUAdABhAGQAYQB0AGEACwBEAGEAdABhAFMAbwB1AHIAYwBlAHMAAwBJAEQAUwAJAFIATQBCAF8AVgBJAEUAVwBTAAYAQwBJAFMAQQBEAE0ACwBDAEkAXwBGAFQAXwBHAEwAXwBWAFf//wMFAAAAAAgCEDEGAf//AQIBAQYAAQMAAQQAAQUAAwcAAAAABwkAAAABAAAAAAkKAAAADRBBBgEABQBGAFQAXwBJAEQGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACwB2AGEAcgBjAGgAYQByACgAMQAyACkDKwAAAA8DEgAAAAEEBAAAAAAAAAAMARMB//8DCwAAAAD//xBBBgEACgBHAEwAXwBTAEUAUQBfAE4AQgBSBgIAAAYD//8GBP//Awr/////CAwQGQYCAAgAcwBtAGEAbABsAGkAbgB0BgMACABzAG0AYQBsAGwAaQBuAHQDKwAAAA8DEgAAAAEEB////////4AABAYAAAAAAAB/////AwsAAAAA//8QQQYBAAYARABTAFQAXwBJAEQGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACwB2AGEAcgBjAGgAYQByACgAMQAwACkDKwAAAA8DEgAAAAEEBAAAAAAAAAAKARMB//8DCwAAAAD//xBBBgEADABDAEgAQQBSAF8AVABZAFAARQBfAEMARAYCAAAGA///BgT//wMK/////wgMEBsGAgAHAHYAYQByAGMAaABhAHIGAwAKAHYAYQByAGMAaABhAHIAKAA4ACkDKwAAAA8DEgAAAAEEBAAAAAAAAAAIARMB//8DCwAAAAD//xBBBgEABgBBAE0ATwBVAE4AVAYCAAAGA///BgT//wMK/////wgMEBcGAgAHAG4AdQBtAGUAcgBpAGMGAwANAG4AdQBtAGUAcgBpAGMAKAAxADUALAAyACkDKwAAAA8DEgAAAAEDDgAAAA8DEQAAAAIDEAAAAAL//wMLAAAAAP//EEEGAQAIAEMASABBAFIAXwBWAEEATAYCAAAGA///BgT//wMK/////wgMEBsGAgAHAHYAYQByAGMAaABhAHIGAwALAHYAYQByAGMAaABhAHIAKAAxADYAKQMrAAAADwMSAAAAAQQEAAAAAAAAABABEwH//wMLAAAAAP//EEEGAQAKAFQATwBUAF8AQQBNAFQAXwBTAFcGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACgB2AGEAcgBjAGgAYQByACgAMQApAysAAAAPAxIAAAABBAQAAAAAAAAAAQETAf//AwsAAAAA//8QQQYBAAcAVgBFAFIAUwBJAE8ATgYCAAAGA///BgT//wMK/////wgMEBkGAgADAGkAbgB0BgMAAwBpAG4AdAMrAAAADwMSAAAAAQQH/////4AAAAAEBgAAAAB///////8DCwAAAAD//xBBBgEAEABTAFQAQQBUAEkAUwBUAEkAQwBfAEEATQBPAFUATgBUBgIAAAYD//8GBP//Awr/////CAwQFwYCAAcAbgB1AG0AZQByAGkAYwYDAA4AbgB1AG0AZQByAGkAYwAoADMANgAsADEAOAApAysAAAAPAxIAAAABAw4AAAAkAxEAAAASAxAAAAAS//8DCwAAAAD//xBBBgEABwBHAEwAXwBBAEMAQwBUBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAwAdgBhAHIAYwBoAGEAcgAoADIANQA0ACkDKwAAAA8DEgAAAAEEBAAAAAAAAAD+ARMB//8DCwAAAAD//xBBBgEACwBWAEEATABJAEQAQQBUAEUAXwBTAFcGAgAABgP//wYE//8DCv////8IDBAbBgIABwB2AGEAcgBjAGgAYQByBgMACgB2AGEAcgBjAGgAYQByACgAMQApAysAAAAPAxIAAAABBAQAAAAAAAAAAQETAf//AwsAAAAA//8QQQYBAAoARwBMAEEAXwBWAEEATABfAEQAVAYCAAAGA///BgT//wMK/////wgMEBYGAgAJAGQAYQB0AGUAdABpAG0AZQAyBgMACQBkAGEAdABlAHQAaQBtAGUAMgMrAAAADwMSAAAAAf//AwsAAAAA//8QQQYBAA4ARgBUAF8ARwBMAF8AQwBBAFQARQBHAE8AUgBZBgIAAAYD//8GBP//Awr/////CAwQGwYCAAcAdgBhAHIAYwBoAGEAcgYDAAoAdgBhAHIAYwBoAGEAcgAoADEAKQMrAAAADwMSAAAAAQQEAAAAAAAAAAEBEwH//wMLAAAAAP////8JBgAAAAEQggMKAAAAHgMLAAAAHgMMAAAAyAMNAAAAyP//CAMQcQMBAAAACwMCAAAAMgkDAAACJhB0AwYAAAAA//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAH//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAAv//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAD//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAT//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAABf//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAG//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAf//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAACP//EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAJ//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHQDBgAAAAr//xByBgT/////EHMDBQAAAAD//xB1AQcB//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdAMGAAAAC///EHIGBP////8QcwMFAAAAAP//EHUBBwH//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0AwYAAAAM//8QcgYE/////xBzAwUAAAAA//8QdQEHAf//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2//8QdP//EHIGBP////8Qc///EHUBBwD//xB4Bgv/////EHcDCv///////xB5Bgz/////EHb//xB2//8Qdv//EHb//xB0//8QcgYE/////xBz//8QdQEHAP//EHgGC/////8QdwMK////////EHkGDP////8Qdv//EHb//xB2//8Qdv//EHT//xByBgT/////EHP//xB1AQcA//8QeAYL/////xB3Awr///////8QeQYM/////xB2//8Qdv//EHb//xB2////////</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1579788360435</attribute>
+</metadata>

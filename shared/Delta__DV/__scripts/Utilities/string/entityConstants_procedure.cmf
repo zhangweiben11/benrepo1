@@ -1,0 +1,283 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="entityConstants" path="/shared/Delta_DV/_scripts/Utilities/string/entityConstants" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[entityConstants:
+&#x9;This procedure is used by &quot;entityExtract&quot; to perform keyword/entity extraction on text.
+&#x9;In this procedure are 4 vectors defined as constants that feed into &quot;entityExtract&quot;.
+&#x9;Review these vectors and make modifications as required to adjust what gets stripped out of the text and
+&#x9;what simply gets ignored and not returned as a keyword entity.
+ 
+&#x9;Input:
+&#x9;Internal Parameters:
+&#x9;&#x9;symbols1Vector – Single value symbols and punctuation such as &apos;!,@,#,$,%&apos; and etc. 
+&#x9;&#x9;&#x9;that get replaced with a non-null, empty character &apos;&apos;.
+&#x9;&#x9;symbols2Vector – Multi-character value symbols such as &apos; - &apos; that get replaced with a single space, &apos; &apos;.
+&#x9;&#x9;symbols3Vector – Hidden character symbols such as tabs that get replaced with a single space, &apos; &apos;.
+&#x9;&#x9;nonEntityVector – non-Entity based words that are not extracted from the incoming text.   
+&#x9;&#x9;&#x9;Values:  Example include:  ‘a, and, the, of, this, that’ and many more.
+
+&#x9;Output: none
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Added new.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters></parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/* entityConstants:
+&#x9;This procedure is used by &quot;entityExtract&quot; to perform keyword/entity extraction on text.
+&#x9;In this procedure are 4 vectors defined as constants that feed into &quot;entityExtract&quot;.
+&#x9;Review these vectors and make modifications as required to adjust what gets stripped out of the text and
+&#x9;what simply gets ignored and not returned as a keyword entity.
+ 
+&#x9;Input:
+&#x9;Internal Parameters:
+&#x9;&#x9;symbols1Vector – Single value symbols and punctuation such as &apos;!,@,#,$,%&apos; and etc. 
+&#x9;&#x9;&#x9;that get replaced with a non-null, empty character &apos;&apos;.
+&#x9;&#x9;symbols2Vector – Multi-character value symbols such as &apos; - &apos; that get replaced with a single space, &apos; &apos;.
+&#x9;&#x9;symbols3Vector – Hidden character symbols such as tabs that get replaced with a single space, &apos; &apos;.
+&#x9;&#x9;nonEntityVector – non-Entity based words that are not extracted from the incoming text.   
+&#x9;&#x9;&#x9;Values:  Example include:  ‘a, and, the, of, this, that’ and many more.
+
+&#x9;Output: none
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Added new.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE entityConstants()
+BEGIN
+&#x9;-- Single value symbols and punctuation such as &apos;!,@,#,$,%&apos; and etc. that get replaced with a non-null, empty character &apos;&apos;
+&#x9;DECLARE PUBLIC symbols1Vector CONSTANT VECTOR(CHAR(1)) DEFAULT
+&#x9; &#x9;VECTOR[ &apos;~&apos;,&apos;`&apos;,&apos;.&apos;,&apos;:&apos;,&apos;?&apos;,&apos;/&apos;,&apos;\&apos;,&apos;!&apos;,&apos;@&apos;,&apos;#&apos;,&apos;$&apos;,&apos;%&apos;,&apos;^&apos;,&apos;&amp;&apos;,&apos;*&apos;,&apos;(&apos;,&apos;)&apos;,&apos;+&apos;,&apos;=&apos;,
+&#x9;&#x9;&#x9;&apos;{&apos;,&apos;}&apos;,&apos;[&apos;,&apos;]&apos;,&apos;&lt;&apos;,&apos;&gt;&apos;,&apos;,&apos;,&apos;•&apos;,&apos;&quot;&apos;,&apos;“&apos;,&apos;”&apos;];
+&#x9;-- Multi-character value symbols such as &apos; - &apos; that get replaced with a single space, &apos; &apos;.
+&#x9;DECLARE PUBLIC symbols2Vector CONSTANT VECTOR(VARCHAR(255)) DEFAULT
+&#x9;&#x9; VECTOR[&apos; - &apos;,&apos; – &apos;];
+&#x9;-- Hidden character symbols such as tabs that get replaced with a single space, &apos; &apos;.
+&#x9;--   CHR is a string function that converts an integer ASCII code to a character. CHR(integer)
+&#x9;--   CHR can accept a String input as long as the String can be converted to a numeric value. 
+&#x9;--   The input must be equal to 0 (zero) or a value that is between 0 and 255.
+&#x9;-- &#x9;see the chart at the end of this procedure.
+&#x9;DECLARE PUBLIC symbols3Vector CONSTANT VECTOR(INTEGER) DEFAULT
+&#x9;&#x9;VECTOR[8,9,10,11,12,13];
+&#x9;-- non-Entity based words that are not extracted from the incoming text.
+&#x9;DECLARE PUBLIC nonEntityVector CONSTANT VECTOR(VARCHAR(255)) DEFAULT
+&#x9;&#x9;VECTOR[
+&#x9;&#x9;&apos;1&apos;,&apos;2&apos;,&apos;3&apos;,&apos;4&apos;,&apos;5&apos;,&apos;6&apos;,&apos;7&apos;,&apos;8&apos;,&apos;9&apos;,&apos;0&apos;,
+&#x9;&#x9;&apos;a&apos;,&apos;and&apos;,&apos;any&apos;,&apos;are&apos;,&apos;at&apos;,&apos;also&apos;,&apos;as&apos;,
+&#x9;&#x9;&apos;be&apos;,&apos;been&apos;,&apos;by&apos;,&apos;but&apos;,&apos;because&apos;,
+&#x9;&#x9;&apos;can&apos;,&apos;could&apos;,&apos;come&apos;,
+&#x9;&#x9;&apos;do&apos;,&apos;did&apos;,
+&#x9;&#x9;&apos;for&apos;,&apos;from&apos;,
+&#x9;&#x9;&apos;have&apos;,&apos;had&apos;,
+&#x9;&#x9;&apos;i&apos;,&apos;it&apos;,&apos;in&apos;,&apos;is&apos;,
+&#x9;&#x9;&apos;may&apos;,&apos;mine&apos;,&apos;must&apos;,
+&#x9;&#x9;&apos;not&apos;,&apos;neither&apos;,&apos;none&apos;,
+&#x9;&#x9;&apos;or&apos;,&apos;of&apos;,&apos;off&apos;,&apos;out&apos;,&apos;on&apos;,&apos;other&apos;,
+&#x9;&#x9;&apos;so&apos;,&apos;some&apos;,&apos;seen&apos;,&apos;should&apos;,
+&#x9;&#x9;&apos;that&apos;,&apos;the&apos;,&apos;they&apos;,&apos;them&apos;,&apos;their&apos;,&apos;there&apos;,&apos;this&apos;,&apos;to&apos;,&apos;too&apos;,
+&#x9;&#x9;&apos;what&apos;,&apos;where&apos;,&apos;when&apos;,&apos;why&apos;,&apos;who&apos;,&apos;whom&apos;,&apos;were&apos;,&apos;with&apos;,&apos;which&apos;,&apos;would&apos;&#x9;&#x9;
+&#x9;];
+
+END
+/*
+Ascii Table
+--------------------------------------------------------------------------------
+The following is a listing of Ascii values.
+
+Dec &#x9;Hex &#x9;Oct &#x9;Char Description 
+0 &#x9;0 &#x9;000   &#x9;null 
+1 &#x9;1 &#x9;001   &#x9;start of heading 
+2 &#x9;2 &#x9;002   &#x9;start of text 
+3 &#x9;3 &#x9;003   &#x9;end of text 
+4 &#x9;4 &#x9;004   &#x9;end of transmission 
+5 &#x9;5 &#x9;005   &#x9;enquiry 
+6 &#x9;6 &#x9;006   &#x9;acknowledge 
+7 &#x9;7 &#x9;007   &#x9;bell 
+8 &#x9;8 &#x9;010   &#x9;backspace 
+9 &#x9;9 &#x9;011   &#x9;horizontal tab 
+10&#x9;A &#x9;012   &#x9;new line 
+11&#x9;B &#x9;013   &#x9;vertical tab 
+12&#x9;C &#x9;014   &#x9;new page 
+13 &#x9;D &#x9;015   &#x9;carriage return 
+14 &#x9;E &#x9;016   &#x9;shift out 
+15 &#x9;F &#x9;017   &#x9;shift in 
+16 &#x9;10 &#x9;020   &#x9;data link escape 
+17 &#x9;11 &#x9;021   &#x9;device control 1 
+18 &#x9;12 &#x9;022   &#x9;device control 2 
+19 &#x9;13 &#x9;023   &#x9;device control 3 
+20 &#x9;14 &#x9;024   &#x9;device control 4 
+21 &#x9;15 &#x9;025   &#x9;negative acknowledge 
+22 &#x9;16 &#x9;026   &#x9;synchronous idle 
+23 &#x9;17 &#x9;027   &#x9;end of trans. block 
+24 &#x9;18 &#x9;030   &#x9;cancel 
+25 &#x9;19 &#x9;031   &#x9;end of medium 
+26 &#x9;1A &#x9;032   &#x9;substitute 
+27 &#x9;1B &#x9;033   &#x9;escape 
+28 &#x9;1C &#x9;034   &#x9;file separator 
+29 &#x9;1D &#x9;035   &#x9;group separator 
+30 &#x9;1E &#x9;036   &#x9;record separator 
+31 &#x9;1F &#x9;037   &#x9;unit separator 
+32 &#x9;20 &#x9;040   &#x9;space 
+33 &#x9;21 &#x9;041 &#x9;!   
+34 &#x9;22 &#x9;042 &#x9;&quot;   
+35 &#x9;23 &#x9;043 &#x9;#   
+36 &#x9;24 &#x9;044 &#x9;$   
+37 &#x9;25 &#x9;045 &#x9;%   
+38 &#x9;26 &#x9;046 &#x9;&amp;   
+39 &#x9;27 &#x9;047 &#x9;&apos;   
+40 &#x9;28 &#x9;050 &#x9;(   
+41 &#x9;29 &#x9;051 &#x9;)   
+42 &#x9;2A &#x9;052 &#x9;*   
+43 &#x9;2B &#x9;053 &#x9;+   
+44 &#x9;2C &#x9;054 &#x9;,   
+45 &#x9;2D &#x9;055 &#x9;-   
+46 &#x9;2E &#x9;056 &#x9;.   
+47 &#x9;2F &#x9;057 &#x9;/   
+48 &#x9;30 &#x9;060 &#x9;0   
+49 &#x9;31 &#x9;061 &#x9;1   
+50 &#x9;32 &#x9;062 &#x9;2   
+51 &#x9;33 &#x9;063 &#x9;3   
+52 &#x9;34 &#x9;064 &#x9;4   
+53 &#x9;35 &#x9;065 &#x9;5   
+54 &#x9;36 &#x9;066 &#x9;6   
+55 &#x9;37 &#x9;067 &#x9;7   
+56 &#x9;38 &#x9;070 &#x9;8   
+57 &#x9;39 &#x9;071 &#x9;9   
+58 &#x9;3A &#x9;072 &#x9;:   
+59 &#x9;3B &#x9;073 &#x9;;   
+60 &#x9;3C &#x9;074 &#x9;&lt;   
+61 &#x9;3D &#x9;075 &#x9;=   
+62 &#x9;3E &#x9;076 &#x9;&gt;   
+63 &#x9;3F &#x9;077 &#x9;?   
+64 &#x9;40 &#x9;100 &#x9;@ 
+65 &#x9;41 &#x9;101 &#x9;A 
+66 &#x9;42 &#x9;102 &#x9;B 
+67 &#x9;43 &#x9;103 &#x9;C 
+68 &#x9;44 &#x9;104 &#x9;D 
+69 &#x9;45 &#x9;105 &#x9;E 
+70 &#x9;46 &#x9;106 &#x9;F 
+71 &#x9;47 &#x9;107 &#x9;G 
+72 &#x9;48 &#x9;110 &#x9;H 
+73 &#x9;49 &#x9;111 &#x9;I 
+74 &#x9;4A &#x9;112 &#x9;J 
+75 &#x9;4B &#x9;113 &#x9;K 
+76 &#x9;4C &#x9;114 &#x9;L 
+77 &#x9;4D &#x9;115 &#x9;M 
+78 &#x9;4E &#x9;116 &#x9;N 
+79 &#x9;4F &#x9;117 &#x9;O 
+80 &#x9;50 &#x9;120 &#x9;P 
+81 &#x9;51 &#x9;121 &#x9;Q 
+82 &#x9;52 &#x9;122 &#x9;R 
+83 &#x9;53 &#x9;123 &#x9;S 
+84 &#x9;54 &#x9;124 &#x9;T 
+85 &#x9;55 &#x9;125 &#x9;U 
+86 &#x9;56 &#x9;126 &#x9;V 
+87 &#x9;57 &#x9;127 &#x9;W 
+88 &#x9;58 &#x9;130 &#x9;X 
+89 &#x9;59 &#x9;131 &#x9;Y 
+90 &#x9;5A &#x9;132 &#x9;Z 
+91 &#x9;5B &#x9;133 &#x9;[ 
+92 &#x9;5C &#x9;134 &#x9;\ 
+93 &#x9;5D &#x9;135 &#x9;] 
+94 &#x9;5E &#x9;136 &#x9;^ 
+95 &#x9;5F &#x9;137 &#x9;_ 
+96 &#x9;60 &#x9;140 &#x9;` 
+97 &#x9;61 &#x9;141 &#x9;a 
+98 &#x9;62 &#x9;142 &#x9;b 
+99 &#x9;63 &#x9;143 &#x9;c 
+100&#x9;64&#x9;144 &#x9;d 
+101&#x9;65&#x9;145 &#x9;e 
+102&#x9;66&#x9;146 &#x9;f 
+103&#x9;67 &#x9;147 &#x9;g 
+104&#x9;68 &#x9;150 &#x9;h 
+105&#x9;69 &#x9;151 &#x9;i 
+106&#x9;6A &#x9;152 &#x9;j 
+107&#x9;6B &#x9;153 &#x9;k 
+108&#x9;6C &#x9;154 &#x9;l 
+109&#x9;6D &#x9;155 &#x9;m 
+110&#x9;6E &#x9;156 &#x9;n 
+111&#x9;6F &#x9;157 &#x9;o 
+112&#x9;70 &#x9;160 &#x9;p 
+113&#x9;71 &#x9;161 &#x9;q 
+114&#x9;72 &#x9;162 &#x9;r 
+115&#x9;73 &#x9;163 &#x9;s 
+116&#x9;74 &#x9;164 &#x9;t 
+117&#x9;75 &#x9;165 &#x9;u 
+118&#x9;76 &#x9;166 &#x9;v 
+119&#x9;77 &#x9;167 &#x9;w 
+120&#x9;78 &#x9;170 &#x9;x 
+121&#x9;79 &#x9;171 &#x9;y 
+122&#x9;7A &#x9;172 &#x9;z 
+123&#x9;7B &#x9;173 &#x9;{ 
+124&#x9;7C &#x9;174 &#x9;| 
+125&#x9;7D &#x9;175 &#x9;} 
+126&#x9;7E &#x9;176 &#x9;~ 
+127&#x9;7F &#x9;177 &#x9;DEL 
+*/</attribute>
+  <attribute name="creationDate" type="LONG">1382377367849</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_constants" type="MAP">
+    <item>
+      <key type="STRING">symbols3Vector</key>
+      <value type="BYTE_ARRAY">ECMGAgAOAHMAeQBtAGIAbwBsAHMAMwBWAGUAYwB0AG8AcgMSAAABAwgZEBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAQwEBwAAAAAAAAAIBAYAAAAAAAAADf////8=</value>
+    </item>
+    <item>
+      <key type="STRING">symbols2Vector</key>
+      <value type="BYTE_ARRAY">ECMGAgAOAHMAeQBtAGIAbwBsAHMAMgBWAGUAYwB0AG8AcgMSAAABAwgZEBsGAgAEAEMASABBAFIDEgAAAQ4EBQAAAAAAAAADBAQAAAAAAAAAAwETAf////8=</value>
+    </item>
+    <item>
+      <key type="STRING">symbols1Vector</key>
+      <value type="BYTE_ARRAY">ECMGAgAOAHMAeQBtAGIAbwBsAHMAMQBWAGUAYwB0AG8AcgMSAAABAwgZEBsGAgAEAEMASABBAFIDEgAAAQ4BOwAEBQAAAAAAAAABBAQAAAAAAAAAAQETAf////8=</value>
+    </item>
+    <item>
+      <key type="STRING">nonEntityVector</key>
+      <value type="BYTE_ARRAY">ECMGAgAPAG4AbwBuAEUAbgB0AGkAdAB5AFYAZQBjAHQAbwByAxIAAAEDCBkQGwYCAAQAQwBIAEEAUgMSAAABDgE7AAQFAAAAAAAAAAEEBAAAAAAAAAAHARMB/////w==</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

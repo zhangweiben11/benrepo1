@@ -1,0 +1,143 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="splitResourceType" path="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/splitResourceType" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[splitResourceType:
+
+    This procedure gathers the permissions of a list of resources and outputs them in XML format.
+
+    Input:
+        inStr - A comma separated list of paths and types of the format:
+&#x9;&#x9;&#x9;resourcepath1:resourcetype1,resourcepath2:resourcetype2,resourcepath3:resourcetype3
+
+    Output:
+        outPipe - The cursor output
+            rPath - resource path
+&#x9;&#x9;&#x9;rType - resource type
+
+    Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/22/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed getDelimitedOccurrence and replace with simple INSTR and SUBSTRING to be more efficient.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inStr" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="outPipe" direction="OUT" nullable="true">
+      <datatype name="outPipe" type="TABLE" refId="256">
+        <element name="rPath">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="rType">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/p_DelimitedStringToCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inStr" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inDelimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inIncludeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="outTokens" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="strToken">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    splitResourceType:
+
+    This procedure gathers the permissions of a list of resources and outputs them in XML format.
+
+    Input:
+        inStr - A comma separated list of paths and types of the format:
+&#x9;&#x9;&#x9;resourcepath1:resourcetype1,resourcepath2:resourcetype2,resourcepath3:resourcetype3
+
+    Output:
+        outPipe - The cursor output
+            rPath - resource path
+&#x9;&#x9;&#x9;rType - resource type
+
+    Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/22/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed getDelimitedOccurrence and replace with simple INSTR and SUBSTRING to be more efficient.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE splitResourceType(
+&#x9;IN inStr LONGVARCHAR, 
+&#x9;OUT outPipe PIPE (rPath LONGVARCHAR, rType LONGVARCHAR))
+BEGIN
+&#x9;DECLARE resPath&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resType&#x9;&#x9;VARCHAR;
+&#x9;DECLARE pos&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE crs CURSOR FOR SELECT strToken FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/p_DelimitedStringToCursor(inStr, &apos;,&apos;, 0);
+&#x9;OPEN crs;
+&#x9;FOR r AS crs DO
+&#x9;&#x9;SET resPath = null;
+&#x9;&#x9;SET resType = null;
+&#x9;&#x9;SET pos = INSTR(r.strToken, &apos;:&apos;);
+&#x9;&#x9;IF (pos &gt; 0) THEN
+&#x9;&#x9;&#x9;SET resPath = SUBSTRING(r.strToken, 1, pos-1);
+&#x9;&#x9;&#x9;SET resType = SUBSTRING(r.strToken, pos+1);
+&#x9;&#x9;END IF;
+&#x9;&#x9;INSERT INTO outPipe VALUES (resPath, resType);
+&#x9;END FOR;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1382552364202</attribute>
+  <attribute name="creatorUserDomain" type="STRING">janus_cap</attribute>
+  <attribute name="creatorUserName" type="STRING">ovcs003</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

@@ -1,0 +1,137 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="prcBl_GetGroupDetail" path="/shared/Delta_DV/Business/BusinessSemantic/Group/Procedures/prcBl_GetGroupDetail" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="GroupNBR">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="GroupName">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="GroupSurrogateID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="GroupSurrogateIDChar">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="CustomerCareNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="NetworkID">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/util/GetClientProperty" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="variableName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Group/Procedures/prcBl_GroupDetail" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inGroupID" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="inDivisionID" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="inEnrolleeID" direction="IN">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="inAsOfDate" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="GroupID">
+            <datatype type="STRING" maxLength="12"/>
+          </element>
+          <element name="GroupNBR">
+            <datatype type="STRING" maxLength="12"/>
+          </element>
+          <element name="GroupName">
+            <datatype type="STRING" maxLength="50"/>
+          </element>
+          <element name="GroupSurrogateID">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="GroupSurrogateIDChar">
+            <datatype type="STRING" maxLength="25"/>
+          </element>
+          <element name="CustomerCareNumber">
+            <datatype type="STRING" maxLength="12"/>
+          </element>
+          <element name="NetworkID">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="DivisionID">
+            <datatype type="STRING" maxLength="12"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE prcBl_GetGroupDetail(
+    IN inGroupID VARCHAR(12), 
+    IN inDivisionID VARCHAR(12),
+    IN inAsOfDate DATE, 
+    OUT result CURSOR (
+        GroupID VARCHAR(12), 
+        GroupNBR VARCHAR(12), 
+        GroupName VARCHAR(50), 
+        GroupSurrogateID INTEGER, 
+        GroupSurrogateIDChar VARCHAR(25),
+        CustomerCareNumber VARCHAR(12),
+&#x9;&#x9;NetworkID VARCHAR(255),
+        DivisionID VARCHAR(12)
+        )
+    )
+    BEGIN
+        DECLARE varEnrolleeID VARCHAR(30);
+
+        SET varEnrolleeID = NULL;
+        CALL /lib/util/GetClientProperty(&apos;pEnrolleeID&apos;, varEnrolleeID); 
+
+        CALL /shared/Delta_DV/Business/Logical/&quot;Group&quot;/Procedures/prcBl_GroupDetail(inGroupID, inDivisionID, varEnrolleeID, inAsOfDate, result);
+        
+    END</attribute>
+  <attribute name="creationDate" type="LONG">1593649048587</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612391293100</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1593649048587</attribute>
+</metadata>

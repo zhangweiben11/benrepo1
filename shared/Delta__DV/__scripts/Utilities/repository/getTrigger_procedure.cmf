@@ -1,0 +1,1574 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getTrigger" path="/shared/Delta_DV/_scripts/Utilities/repository/getTrigger" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[copyResources:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This is a procedure is used to copy all of the CIS resources from a source folder to a target folder.
+&#x9;If the target folder does not exist, this procedure will create it and then copy the source folder resources.
+ 
+&#x9;Input:
+&#x9;&#x9;sourceFolderPath - CIS source folder path.  Folder must exist.
+&#x9;&#x9;&#x9;Values: e.g. /shared/Utilities
+&#x9;&#x9;targetFolderPath - CIS target folder path.  Gets created if it does not exist
+&#x9;&#x9;&#x9;Values: e.g. /shared/tmp
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;&#x9;faultResponse - null if succesful otherwise contains a fault resposne.
+&#x9;&#x9;&#x9;Values: Fault Resposne XML value
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.4&#x9;&#x9;10/25/2012&#x9;&#x9;Calvin Goodrich&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Updated to pass resource type to getResourceListRecursive
+&#x9;2013.3&#x9;&#x9;08/01/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.1.0&#x9;&#x9;&#x9;Updated resourceList to use RepositoryDefinitionsRecursive.resourceTreeType
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="triggerPath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="name">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="path">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="type">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="id">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="changeId">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="ownerDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ownerName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="impactLevel">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="enabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="annotation">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="creationDateLong">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="creationDate">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="creatorUserDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="creatorUserName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedDateLong">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="lastModifiedDate">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="lastModifiedUserDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="lastModifiedUserName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="maxEventsQueued">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="conditionType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="eventName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="timerMode">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="timerStartTime">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="timerPeriod">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="timerPeriodQty">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="timerFromTimeInADay">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="timerFromTimeInADayFormatted">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="timerEndTimeInADay">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="timerEndTimeInADayFormatted">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="timerRecurringDay">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="timerRecurringDayList">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="timerIsCluster">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="jmsConnector">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="jmsSelector">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="jmsDestination">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="actionType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="actionPath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="actionPathType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="actionExhaustCursors">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="actionParameters">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="actionNumParameters">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="emailTo">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="emailCC">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="emailBCC">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="emailReplyTo">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="emailSubject">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="emailContent">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="emailInclueSummary">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="emailSkipIfNoResults">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="reintrospectNoCommit">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/getResource" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getResource" direction="IN">
+        <datatype name="getResource" extendedName="{http://www.compositesw.com/services/system/admin/resource}getResource" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getResource" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getResource">
+          <schemaDatatype>
+            <datatype name="getResource" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getResourceRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="getResourceResponse" direction="OUT">
+        <datatype name="getResourceResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}getResourceResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getResourceResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getResourceResponse">
+          <schemaDatatype>
+            <datatype name="getResourceResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getResourceResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="513">
+              <element name="resources" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="resourceList" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="resource" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="resource" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="subtype" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="resourceSubType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="id" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="changeId" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                      </element>
+                      <element name="version" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="introspectState" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="introspectState" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="ownerDomain" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="ownerName" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="impactLevel" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="impactLevel" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="impactMessage" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="enabled" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                      <element name="lockState" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="lockState" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="lockOwnerDomain" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="lockOwnerName" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="lockCreateTime" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                          </element>
+                          <element name="lockParentPath" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="hints" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                          <element name="hint" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                            <datatype name="attribute" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                              <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeTypeValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                  <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype name="attributeTypeValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                                      <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                      </element>
+                                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                      </element>
+                                      <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <reference refId="2049"/>
+                                      </element>
+                                      <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <datatype name="attributeTypeValueMap" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2561">
+                                          <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                            <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                                              <element name="key" namespace="http://www.compositesw.com/services/system/util/common">
+                                                <reference refId="2305"/>
+                                              </element>
+                                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common">
+                                                <reference refId="2305"/>
+                                              </element>
+                                            </datatype>
+                                          </element>
+                                        </datatype>
+                                      </element>
+                                      <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                        <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="3073">
+                                          <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                            <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                          </element>
+                                        </datatype>
+                                      </element>
+                                    </datatype>
+                                  </element>
+                                </datatype>
+                              </element>
+                              <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="2561"/>
+                              </element>
+                              <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="3073"/>
+                              </element>
+                              <element name="unset" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="annotation" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="attributeList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3329">
+                          <element name="attribute" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                            <reference refId="1793"/>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="3585">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3841">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor_ActionAttributes" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceCursor" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="actionType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="value">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor_ResourceAttributes" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceCursor" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="value">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="valueList">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="valueMap">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/getCodedString" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inCodingType" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inEncodingActions" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="codingList" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inModuleNameInvoking" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inDebug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inModuleQualifer" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="outString" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/numOccurrences" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="searchString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="stringToSearch" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="num" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/time/DateUtils/BigintToTimestamp" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inBigint" direction="IN">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getTrigger:
+
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This is a procedure is used to get trigger details.  It returns general trigger information, condition information and action information.
+ 
+&#x9;Input:
+&#x9;&#x9;debug &#x9;&#x9;- Y=debug on.  N=debug off.
+&#x9;&#x9;triggerPath - DV source trigger path.  Resource must exist.
+&#x9;Output:
+&#x9;&#x9;result pipe (
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- General Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The trigger name
+&#x9;&#x9;&#x9;&quot;path&quot;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The trigger path
+&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type is always TRIGGER
+&#x9;&#x9;&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype is always NONE
+&#x9;&#x9;&#x9;id&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The resource id
+&#x9;&#x9;&#x9;changeId&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The change id
+&#x9;&#x9;&#x9;ownerDomain&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The owner domain
+&#x9;&#x9;&#x9;ownerName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The owner user name
+&#x9;&#x9;&#x9;impactLevel&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- NONE=no impact.  Anything else indicates that the trigger is impacted and will show red in Studio
+&#x9;&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=enabled 0=disabled
+&#x9;&#x9;&#x9;annotation&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The trigger annotation
+&#x9;&#x9;&#x9;creationDateLong&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The creation date in long format (stored this way)
+&#x9;&#x9;&#x9;creationDate&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The creation date in timestamp format
+&#x9;&#x9;&#x9;creatorUserDomain&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The creator domain
+&#x9;&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The creator user name
+&#x9;&#x9;&#x9;lastModifiedDateLong&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The last modified date in long format (stored this way)
+&#x9;&#x9;&#x9;lastModifiedDate&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The last modified date in timestamp format
+&#x9;&#x9;&#x9;lastModifiedUserDomain&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The last modified user domain
+&#x9;&#x9;&#x9;lastModifiedUserName&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The last modified user name
+&#x9;&#x9;&#x9;maxEventsQueued&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Maximum events that can be queued up for the trigger.
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- Condition Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;conditionType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Condition Type: [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED]
+&#x9;&#x9;&#x9;-- conditionType=SYSTEM_EVENT or USER_DEFINED
+&#x9;&#x9;&#x9;eventName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The name of the SYSTEM_EVENT user defined event or USER_DEFINED event.
+&#x9;&#x9;&#x9;-- conditionType=TIMER
+&#x9;&#x9;&#x9;timerMode&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- mode: [INTERVAL|CALENDAR]
+&#x9;&#x9;&#x9;timerStartTime&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;&#x9;timerPeriod&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- One of [MINUTE|HOUR|DAY|WEEK|MONTH|YEAR]
+&#x9;&#x9;&#x9;timerPeriodQty&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- If timerMode=INTERVAL then timerPeriod=MINUTE and timerPeriodQty=#of min.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If timerMode=CALENDER then timerPeriod=as is value and timerPeriodQty=as is value
+&#x9;&#x9;&#x9;timerFromTimeInADay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- NULL or The time of day to start integer value of the formatted version below.
+&#x9;&#x9;&#x9;timerFromTimeInADayFormatted VARCHAR,&#x9;&#x9;-- NULL or The time of day to start the trigger.  Format = HH24:MM:SS
+&#x9;&#x9;&#x9;timerEndTimeInADay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- NULL or The time of day to end integer value of the formatted version below.
+&#x9;&#x9;&#x9;timerEndTimeInADayFormatted&#x9;VARCHAR,&#x9;&#x9;-- NULL or The time of day to end the trigger.  Format = HH24:MM:SS
+&#x9;&#x9;&#x9;timerRecurringDay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The integer value of the recurring day list.
+&#x9;&#x9;&#x9;timerRecurringDayList&#x9;&#x9;VARCHAR,&#x9;&#x9;-- A list of one or more items: [SUN, MON, TUE, WED, THU, FRI, SAT].  May be space or comma delimited.
+&#x9;&#x9;&#x9;timerIsCluster&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;&#x9;&#x9;-- conditionType=JMS
+&#x9;&#x9;&#x9;jmsConnector&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Connector string.
+&#x9;&#x9;&#x9;jmsSelector&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Selector string.
+&#x9;&#x9;&#x9;jmsDestination&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Destination string.
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- Action Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;actionType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Action Type: [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL]
+&#x9;&#x9;&#x9;-- ActionType=PROCEDURE or STATISTICS or REINTROSPECT or EMAIL Variables
+&#x9;&#x9;&#x9;actionPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The resource path
+&#x9;&#x9;&#x9;&#x9;-- when actionType=PROCEDURE:&#x9;&#x9;actionPath=procedure path and actionPathType=PROCEDURE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=STATISTICS:&#x9;&#x9;actionPath=data source path and actionPathType=DATA_SOURCE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=REINTROSPECT:&#x9;actionPath=data source path and actionPathType=DATA_SOURCE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=EMAIL:&#x9;&#x9;&#x9;actionPath=resource path and actionPathType=the resource path type
+&#x9;&#x9;&#x9;actionPathType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Action Path type: [TABLE|PROCEDURE...]
+&#x9;&#x9;&#x9;-- ActionType=PROCEDURE Variables
+&#x9;&#x9;&#x9;actionExhaustCursors&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to exhaust output cursors
+&#x9;&#x9;&#x9;actionParameters&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The trigger parameters for a procedure call.
+&#x9;&#x9;&#x9;actionNumParameters&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of parameters being passed in to the procedure
+&#x9;&#x9;&#x9;-- ActionType=EMAIL or REINTROSPECT
+&#x9;&#x9;&#x9;emailTo&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The send to email list
+&#x9;&#x9;&#x9;emailCC&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The cc email list
+&#x9;&#x9;&#x9;emailBCC&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The bcc email list
+&#x9;&#x9;&#x9;emailReplyTo&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The replay to email list
+&#x9;&#x9;&#x9;emailSubject&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The email subject
+&#x9;&#x9;&#x9;emailContent&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The email content
+&#x9;&#x9;&#x9;emailInclueSummary&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to include summary
+&#x9;&#x9;&#x9;emailSkipIfNoResults&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to skip sending email if no results
+&#x9;&#x9;&#x9;-- ActionType=REINTROSPECT
+&#x9;&#x9;&#x9;reintrospectNoCommit&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;-- 1=true, 0=false Do not persist/commit detected changes
+&#x9;&#x9;)
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2020.101&#x9;01/20/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.8.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getTrigger(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;&#x9;&#x9;&#x9;-- Y=debug on.  N=debug off
+&#x9;IN triggerPath&#x9; &#x9;&#x9;VARCHAR(4000),&#x9;&#x9;&#x9;&#x9;-- The trigger path
+&#x9;OUT result pipe (
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- General Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The trigger name
+&#x9;&#x9;&#x9;&quot;path&quot;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The trigger path
+&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type is always TRIGGER
+&#x9;&#x9;&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype is always NONE
+&#x9;&#x9;&#x9;id&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The resource id
+&#x9;&#x9;&#x9;changeId&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The change id
+&#x9;&#x9;&#x9;ownerDomain&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The owner domain
+&#x9;&#x9;&#x9;ownerName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The owner user name
+&#x9;&#x9;&#x9;impactLevel&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- NONE=no impact.  Anything else indicates that the trigger is impacted and will show red in Studio
+&#x9;&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=enabled 0=disabled
+&#x9;&#x9;&#x9;annotation&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The trigger annotation
+&#x9;&#x9;&#x9;creationDateLong&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The creation date in long format (stored this way)
+&#x9;&#x9;&#x9;creationDate&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The creation date in timestamp format
+&#x9;&#x9;&#x9;creatorUserDomain&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The creator domain
+&#x9;&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The creator user name
+&#x9;&#x9;&#x9;lastModifiedDateLong&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The last modified date in long format (stored this way)
+&#x9;&#x9;&#x9;lastModifiedDate&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The last modified date in timestamp format
+&#x9;&#x9;&#x9;lastModifiedUserDomain&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The last modified user domain
+&#x9;&#x9;&#x9;lastModifiedUserName&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The last modified user name
+&#x9;&#x9;&#x9;maxEventsQueued&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Maximum events that can be queued up for the trigger.
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- Condition Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;conditionType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Condition Type: [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED]
+&#x9;&#x9;&#x9;-- conditionType=SYSTEM_EVENT or USER_DEFINED
+&#x9;&#x9;&#x9;eventName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The name of the SYSTEM_EVENT user defined event or USER_DEFINED event.
+&#x9;&#x9;&#x9;-- conditionType=TIMER
+&#x9;&#x9;&#x9;timerMode&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- mode: [INTERVAL|CALENDAR]
+&#x9;&#x9;&#x9;timerStartTime&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;&#x9;timerPeriod&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- One of [MINUTE|HOUR|DAY|WEEK|MONTH|YEAR]
+&#x9;&#x9;&#x9;timerPeriodQty&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- If timerMode=INTERVAL then timerPeriod=MINUTE and timerPeriodQty=#of min.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If timerMode=CALENDER then timerPeriod=as is value and timerPeriodQty=as is value
+&#x9;&#x9;&#x9;timerFromTimeInADay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- NULL or The time of day to start integer value of the formatted version below.
+&#x9;&#x9;&#x9;timerFromTimeInADayFormatted VARCHAR,&#x9;&#x9;-- NULL or The time of day to start the trigger.  Format = HH24:MM:SS
+&#x9;&#x9;&#x9;timerEndTimeInADay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- NULL or The time of day to end integer value of the formatted version below.
+&#x9;&#x9;&#x9;timerEndTimeInADayFormatted&#x9;VARCHAR,&#x9;&#x9;-- NULL or The time of day to end the trigger.  Format = HH24:MM:SS
+&#x9;&#x9;&#x9;timerRecurringDay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The integer value of the recurring day list.
+&#x9;&#x9;&#x9;timerRecurringDayList&#x9;&#x9;VARCHAR,&#x9;&#x9;-- A list of one or more items: [SUN, MON, TUE, WED, THU, FRI, SAT].  May be space or comma delimited.
+&#x9;&#x9;&#x9;timerIsCluster&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;&#x9;&#x9;-- conditionType=JMS
+&#x9;&#x9;&#x9;jmsConnector&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Connector string.
+&#x9;&#x9;&#x9;jmsSelector&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Selector string.
+&#x9;&#x9;&#x9;jmsDestination&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Destination string.
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- Action Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;actionType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Action Type: [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL]
+&#x9;&#x9;&#x9;-- Action=PROCEDURE|STATISTICS|REINTROSPECT|EMAIL Variables
+&#x9;&#x9;&#x9;actionPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The resource path
+&#x9;&#x9;&#x9;&#x9;-- when actionType=PROCEDURE:&#x9;&#x9;actionPath=procedure path and actionPathType=PROCEDURE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=STATISTICS:&#x9;&#x9;actionPath=data source path and actionPathType=DATA_SOURCE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=REINTROSPECT:&#x9;actionPath=data source path and actionPathType=DATA_SOURCE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=EMAIL:&#x9;&#x9;&#x9;actionPath=resource path and actionPathType=the resource path type
+&#x9;&#x9;&#x9;actionPathType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Action Path type: [TABLE|PROCEDURE...]
+&#x9;&#x9;&#x9;-- Action=PROCEDURE Variables
+&#x9;&#x9;&#x9;actionExhaustCursors&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to exhaust output cursors
+&#x9;&#x9;&#x9;actionParameters&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The trigger parameters for a procedure call.
+&#x9;&#x9;&#x9;actionNumParameters&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of parameters being passed in to the procedure
+&#x9;&#x9;&#x9;-- Action=EMAIL|REINTROSPECT
+&#x9;&#x9;&#x9;emailTo&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The send to email list
+&#x9;&#x9;&#x9;emailCC&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The cc email list
+&#x9;&#x9;&#x9;emailBCC&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The bcc email list
+&#x9;&#x9;&#x9;emailReplyTo&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The replay to email list
+&#x9;&#x9;&#x9;emailSubject&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The email subject
+&#x9;&#x9;&#x9;emailContent&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The email content
+&#x9;&#x9;&#x9;emailInclueSummary&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to include summary
+&#x9;&#x9;&#x9;emailSkipIfNoResults&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to skip sending email if no results
+&#x9;&#x9;&#x9;-- Action=REINTROSPECT
+&#x9;&#x9;&#x9;reintrospectNoCommit&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;-- 1=true, 0=false Do not persist/commit detected changes
+&#x9;&#x9;)
+)
+BEGIN
+    DECLARE moduleName          &#x9;CONSTANT VARCHAR DEFAULT &apos;repository/getTrigger&apos;;
+&#x9;DECLARE debugPrintSize&#x9;&#x9;&#x9;INTEGER DEFAULT 63000;
+&#x9;DECLARE resExists&#x9;&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE createInput &#x9;&#x9;&#x9;VARCHAR(8128);
+&#x9;DECLARE createResponseXML&#x9;&#x9;XML;
+&#x9;DECLARE faultResponseXML&#x9;&#x9;XML;
+&#x9;DECLARE createResponse&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resourceEntry&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE recurringDay&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE recurringDayList&#x9;&#x9;VARCHAR;
+&#x9;DECLARE intValue&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE intRemainder&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE tempName&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE tempParams&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE pos1, pos2&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pos3, pos4&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE len&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE numEntries&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE namespaceTag&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE TYPE recType&#x9;&#x9;&#x9;ROW(
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- General Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The trigger name
+&#x9;&#x9;&#x9;&quot;path&quot;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The trigger path
+&#x9;&#x9;&#x9;&quot;type&quot;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type is always TRIGGER
+&#x9;&#x9;&#x9;subtype&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The subtype is always NONE
+&#x9;&#x9;&#x9;id&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The resource id
+&#x9;&#x9;&#x9;changeId&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The change id
+&#x9;&#x9;&#x9;ownerDomain&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The owner domain
+&#x9;&#x9;&#x9;ownerName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The owner user name
+&#x9;&#x9;&#x9;impactLevel&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- NONE=no impact.  Anything else indicates that the trigger is impacted and will show red in Studio
+&#x9;&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=enabled 0=disabled
+&#x9;&#x9;&#x9;annotation&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The trigger annotation
+&#x9;&#x9;&#x9;creationDateLong&#x9;&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The creation date in long format (stored this way)
+&#x9;&#x9;&#x9;creationDate&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The creation date in timestamp format
+&#x9;&#x9;&#x9;creatorUserDomain&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The creator domain
+&#x9;&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The creator user name
+&#x9;&#x9;&#x9;lastModifiedDateLong&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;-- The last modified date in long format (stored this way)
+&#x9;&#x9;&#x9;lastModifiedDate&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The last modified date in timestamp format
+&#x9;&#x9;&#x9;lastModifiedUserDomain&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The last modified user domain
+&#x9;&#x9;&#x9;lastModifiedUserName&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The last modified user name
+&#x9;&#x9;&#x9;maxEventsQueued&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- Maximum events that can be queued up for the trigger.
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- Condition Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;conditionType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Condition Type: [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED]
+&#x9;&#x9;&#x9;-- conditionType=SYSTEM_EVENT or USER_DEFINED
+&#x9;&#x9;&#x9;eventName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The name of the SYSTEM_EVENT user defined event or USER_DEFINED event.
+&#x9;&#x9;&#x9;-- conditionType=TIMER
+&#x9;&#x9;&#x9;timerMode&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- mode: [INTERVAL|CALENDAR]
+&#x9;&#x9;&#x9;timerStartTime&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;&#x9;timerPeriod&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- One of [MINUTE|HOUR|DAY|WEEK|MONTH|YEAR]
+&#x9;&#x9;&#x9;timerPeriodQty&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- If timerMode=INTERVAL then timerPeriod=MINUTE and timerPeriodQty=#of min.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If timerMode=CALENDER then timerPeriod=as is value and timerPeriodQty=as is value
+&#x9;&#x9;&#x9;timerFromTimeInADay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- NULL or The time of day to start integer value of the formatted version below.
+&#x9;&#x9;&#x9;timerFromTimeInADayFormatted VARCHAR,&#x9;&#x9;-- NULL or The time of day to start the trigger.  Format = HH24:MM:SS
+&#x9;&#x9;&#x9;timerEndTimeInADay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- NULL or The time of day to end integer value of the formatted version below.
+&#x9;&#x9;&#x9;timerEndTimeInADayFormatted&#x9;VARCHAR,&#x9;&#x9;-- NULL or The time of day to end the trigger.  Format = HH24:MM:SS
+&#x9;&#x9;&#x9;timerRecurringDay&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The integer value of the recurring day list.
+&#x9;&#x9;&#x9;timerRecurringDayList&#x9;&#x9;VARCHAR,&#x9;&#x9;-- A list of one or more items: [SUN, MON, TUE, WED, THU, FRI, SAT].  May be space or comma delimited.
+&#x9;&#x9;&#x9;timerIsCluster&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;&#x9;&#x9;-- conditionType=JMS
+&#x9;&#x9;&#x9;jmsConnector&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Connector string.
+&#x9;&#x9;&#x9;jmsSelector&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Selector string.
+&#x9;&#x9;&#x9;jmsDestination&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The JMS Destination string.
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;-- Action Variables
+&#x9;&#x9;&#x9;------------------------
+&#x9;&#x9;&#x9;actionType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Action Type: [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL]
+&#x9;&#x9;&#x9;-- Action=PROCEDURE|STATISTICS|REINTROSPECT|EMAIL Variables
+&#x9;&#x9;&#x9;actionPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The resource path
+&#x9;&#x9;&#x9;&#x9;-- when actionType=PROCEDURE:&#x9;&#x9;actionPath=procedure path and actionPathType=PROCEDURE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=STATISTICS:&#x9;&#x9;actionPath=data source path and actionPathType=DATA_SOURCE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=REINTROSPECT:&#x9;actionPath=data source path and actionPathType=DATA_SOURCE
+&#x9;&#x9;&#x9;&#x9;-- when actionType=EMAIL:&#x9;&#x9;&#x9;actionPath=resource path and actionPathType=the resource path type
+&#x9;&#x9;&#x9;actionPathType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Action Path type: [TABLE|PROCEDURE...]
+&#x9;&#x9;&#x9;-- Action=PROCEDURE Variables
+&#x9;&#x9;&#x9;actionExhaustCursors&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to exhaust output cursors
+&#x9;&#x9;&#x9;actionParameters&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The trigger parameters for a procedure call.
+&#x9;&#x9;&#x9;actionNumParameters&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of parameters being passed in to the procedure
+&#x9;&#x9;&#x9;-- Action=EMAIL|REINTROSPECT
+&#x9;&#x9;&#x9;emailTo&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The send to email list
+&#x9;&#x9;&#x9;emailCC&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The cc email list
+&#x9;&#x9;&#x9;emailBCC&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The bcc email list
+&#x9;&#x9;&#x9;emailReplyTo&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The replay to email list
+&#x9;&#x9;&#x9;emailSubject&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The email subject
+&#x9;&#x9;&#x9;emailContent&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The email content
+&#x9;&#x9;&#x9;emailInclueSummary&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to include summary
+&#x9;&#x9;&#x9;emailSkipIfNoResults&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=true, 0=false to skip sending email if no results
+&#x9;&#x9;&#x9;-- Action=REINTROSPECT
+&#x9;&#x9;&#x9;reintrospectNoCommit&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;-- 1=true, 0=false Do not persist/commit detected changes
+&#x9;&#x9;);
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;recType;
+&#x9;
+&#x9;IF (triggerPath IS NULL OR LENGTH(TRIM(triggerPath)) = 0) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The &quot;triggerPath&quot;=[&apos;||triggerPath||&apos;] may not be null or empty.&apos;;
+&#x9;END IF;
+
+&#x9;CALL /lib/resource/ResourceExists(triggerPath, &apos;TRIGGER&apos;, null, resExists);
+&#x9;IF (NOT resExists) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The &quot;triggerPath&quot;=[&apos;||triggerPath||&apos;] does not exist.&apos;;
+&#x9;END IF;
+
+&#x9;SET createInput = 
+&#x9;&#x9;&apos;&lt;resource:getResource xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+&apos;||CHR(10)||
+&#x9;&#x9;&apos;  &lt;resource:path&gt;&apos;||CAST(XMLTEXT(triggerPath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;
+&apos;||CHR(10)||
+&#x9;&#x9;&apos;  &lt;resource:type&gt;TRIGGER&lt;/resource:type&gt;
+&apos;||CHR(10)||
+&#x9;&#x9;&apos;  &lt;resource:detail&gt;FULL&lt;/resource:detail&gt;
+&apos;||CHR(10)||
+&#x9;&#x9;&apos;&lt;/resource:getResource&gt;
+&apos;;
+
+&#x9;CALL /services/webservices/system/admin/resource/operations/getResource(createInput, createResponseXML, faultResponseXML);
+&#x9;IF (faultResponseXML IS NOT NULL) THEN
+&#x9;&#x9;RAISE ex VALUE CAST(faultResponseXML AS LONGVARCHAR);
+&#x9;END IF;
+&#x9;SET createResponse = CAST(createResponseXML AS LONGVARCHAR);
+
+&#x9;-- Process the basic configuration parameters
+&#x9;FOR r AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor(triggerPath, &apos;TRIGGER&apos;) DO
+&#x9;&#x9;SET rec.name = r.name;
+&#x9;&#x9;SET rec.&quot;path&quot; = r.&quot;path&quot;;
+&#x9;&#x9;SET rec.&quot;type&quot; = r.&quot;type&quot;;
+&#x9;&#x9;SET rec.subtype = r.subtype;
+&#x9;&#x9;SET rec.enabled = r.enabled;
+&#x9;&#x9;SET rec.id = r.id;
+&#x9;&#x9;SET rec.changeId = r.changeId;
+&#x9;&#x9;SET rec.ownerDomain = r.ownerDomain;
+&#x9;&#x9;SET rec.ownerName = r.ownerName;
+&#x9;&#x9;SET rec.impactLevel = r.impactLevel;
+&#x9;&#x9;SET rec.annotation = r.annotation;
+&#x9;END FOR;
+
+&#x9;-- Process the Action Attributes
+&#x9;FOR r AS 
+&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor_ActionAttributes(triggerPath, &apos;TRIGGER&apos;)
+&#x9;&#x9;WHERE name IS NOT NULL
+&#x9;DO
+&#x9;&#x9;--call print(&apos;name=&apos;||NVL(r.name,&apos;null&apos;)||&apos;  type=&apos;||NVL(r.&quot;type&quot;,&apos;null&apos;)||&apos;  value=&apos;||NVL(r.&quot;value&quot;,&apos;null&apos;));
+&#x9;&#x9;IF (rec.actionType IS NULL) THEN
+&#x9;&#x9;&#x9;SET rec.actionType = r.actionType;
+&#x9;&#x9;END IF;
+&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;-- ActionType=PROCEDURE
+&#x9;&#x9;&#x9;WHEN r.name = &apos;PATH&apos; &#x9;&#x9;&#x9;THEN 
+&#x9;&#x9;&#x9;&#x9;set rec.actionPath = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;&#x9;IF (rec.actionType = &apos;PROCEDURE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.actionPathType = &apos;PROCEDURE&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSEIF (rec.actionType = &apos;STATISTICS&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.actionPathType = &apos;DATA_SOURCE&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSEIF (rec.actionType = &apos;REINTROSPECT&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.actionPathType = &apos;DATA_SOURCE&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;TYPE&apos; &#x9;&#x9;&#x9;THEN SET rec.actionPathType = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;EXHAUST_CURSORS&apos; THEN 
+&#x9;&#x9;&#x9;&#x9;IF (LOWER(r.&quot;value&quot;) = &apos;true&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.actionExhaustCursors = 1;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.actionExhaustCursors = 0;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;PARAMETERS&apos; &#x9;&#x9;THEN set rec.actionParameters = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;&#x9;SET rec.actionNumParameters = 0;
+&#x9;&#x9;&#x9;&#x9;IF (rec.actionParameters IS NOT NULL AND LENGTH(TRIM(rec.actionParameters)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(rec.actionParameters, &apos;,&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tempParams = rec.actionParameters;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Only need to encode if the parameter has single quotes around strings
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (INSTR(rec.actionParameters, &apos;&apos;&apos;&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Encode a comma &apos;,&apos; as &apos;_002C&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getCodedString(&apos;E&apos;, &apos;S&apos;, &apos;_002C&apos;, rec.actionParameters, moduleName, &apos;N&apos;, moduleName, tempParams);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Count the number of separators
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/numOccurrences(&apos;,&apos;, tempParams, rec.actionNumParameters);
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Add one when the number of parameters is 0 or when there is a separator, add 1 for the value after the separator.
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.actionNumParameters = rec.actionNumParameters + 1;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- ActionType=EMAIL
+&#x9;&#x9;&#x9;WHEN r.name = &apos;TO&apos; &#x9;&#x9;&#x9;&#x9;THEN set rec.emailTo = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;CC&apos; &#x9;&#x9;&#x9;&#x9;THEN set rec.emailCC = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;BCC&apos; &#x9;&#x9;&#x9;THEN set rec.emailBCC = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;REPLYTO&apos; &#x9;&#x9;THEN set rec.emailReplyTo = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;SUBJECT&apos; &#x9;&#x9;THEN set rec.emailSubject = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;CONTENT&apos; &#x9;&#x9;THEN set rec.emailContent = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;SUMMARY&apos; &#x9;&#x9;THEN
+&#x9;&#x9;&#x9;&#x9;IF (LOWER(r.&quot;value&quot;) = &apos;true&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.emailInclueSummary = 1;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.emailInclueSummary = 0;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;SKIP_IF_NO_RESULTS&apos; &#x9;THEN
+&#x9;&#x9;&#x9;&#x9;IF (LOWER(r.&quot;value&quot;) = &apos;true&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.emailSkipIfNoResults = 1;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.emailSkipIfNoResults = 0;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- ActionType=REINTROSPECT
+&#x9;&#x9;&#x9;WHEN r.name = &apos;NO_COMMIT&apos; &#x9;THEN
+&#x9;&#x9;&#x9;&#x9;IF (LOWER(r.&quot;value&quot;) = &apos;true&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.reintrospectNoCommit = 1;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;set rec.reintrospectNoCommit = 0;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;END CASE;
+&#x9;END FOR;
+
+&#x9;-- Process the Resource Attributes
+&#x9;FOR r AS
+&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor_ResourceAttributes(triggerPath, &apos;TRIGGER&apos;)
+&#x9;DO
+&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;-- Create variables
+&#x9;&#x9;&#x9;WHEN r.name = &apos;creationDate&apos;&#x9;&#x9;&#x9;THEN 
+&#x9;&#x9;&#x9;&#x9;SET rec.creationDateLong = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;&#x9;IF (rec.creationDateLong IS NOT NULL AND rec.creationDateLong &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;time&quot;/DateUtils/BigintToTimestamp(rec.creationDateLong, rec.creationDate);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;creatorUserDomain&apos;&#x9;&#x9;THEN set rec.creatorUserDomain = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;creatorUserName&apos;&#x9;&#x9;&#x9;THEN set rec.creatorUserName = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;-- Last modified variables
+&#x9;&#x9;&#x9;WHEN r.name = &apos;lastModifiedDate&apos;&#x9;&#x9;THEN set rec.lastModifiedDateLong = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;&#x9;SET rec.lastModifiedDateLong = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;&#x9;IF (rec.lastModifiedDateLong IS NOT NULL AND rec.lastModifiedDateLong &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;time&quot;/DateUtils/BigintToTimestamp(rec.lastModifiedDateLong, rec.lastModifiedDate);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;lastModifiedUserDomain&apos;&#x9;THEN set rec.lastModifiedUserDomain = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;WHEN r.name = &apos;lastModifiedUserName&apos;&#x9;THEN set rec.lastModifiedUserName = r.&quot;value&quot;;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;END CASE;
+&#x9;END FOR;
+
+&#x9;-- Get the namespace tag=ns1 from [&lt;resource: and &lt;/resource:] and replace it with [&lt;resource: and &lt;/resource:]
+&#x9;IF (createResponse IS NOT NULL AND LENGTH(createResponse) &gt; 0) THEN
+&#x9;&#x9;-- Extract the resource conditionType
+&#x9;&#x9;SET pos1 = INSTR(createResponse, &apos;&lt;resource:conditionType&gt;&apos;);
+&#x9;&#x9;SET pos2 = INSTR(createResponse, &apos;&lt;/resource:conditionType&gt;&apos;);
+&#x9;&#x9;SET rec.conditionType = null;
+&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:conditionType&gt;&apos;);
+&#x9;&#x9;&#x9;SET rec.conditionType = TRIM(SUBSTRING(createResponse, pos1+len, pos2&#x9;-(pos1+len)));
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : resource/conditionType=[&apos;||NVL(rec.conditionType,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Extract the resource maxEventsQueued
+&#x9;&#x9;SET pos1 = INSTR(createResponse, &apos;&lt;resource:maxEventsQueued&gt;&apos;);
+&#x9;&#x9;SET pos2 = INSTR(createResponse, &apos;&lt;/resource:maxEventsQueued&gt;&apos;);
+&#x9;&#x9;SET rec.maxEventsQueued = null;
+&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:maxEventsQueued&gt;&apos;);
+&#x9;&#x9;&#x9;SET rec.maxEventsQueued = TRIM(SUBSTRING(createResponse, pos1+len, pos2&#x9;-(pos1+len)));
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : resource/maxEventsQueued=[&apos;||NVL(CAST(rec.maxEventsQueued AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (rec.conditionType = &apos;SYSTEM_EVENT&apos; OR rec.conditionType = &apos;USER_DEFINED&apos;) THEN
+/*    &lt;resource:conditionType&gt;SYSTEM_EVENT&lt;/resource:conditionType&gt;
+      &lt;resource:conditionAttributes&gt;
+        &lt;common:attribute&gt;
+          &lt;common:name&gt;EVENT_NAME&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;RequestRunForTooLong&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:conditionAttributes&gt;
+*/
+&#x9;&#x9;&#x9;-- Extract the various conditionAttributes attributes
+&#x9;&#x9;&#x9;SET pos1 = INSTR(createResponse, &apos;&lt;resource:conditionAttributes&gt;&apos;);
+&#x9;&#x9;&#x9;SET pos2 = INSTR(createResponse, &apos;&lt;/resource:conditionAttributes&gt;&apos;);
+&#x9;&#x9;&#x9;SET numEntries = 0;
+&#x9;&#x9;&#x9;WHILE (pos1 &gt; 0 AND pos2 &gt; 0) DO
+&#x9;&#x9;&#x9;&#x9;SET numEntries = numEntries + 1;
+&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:conditionAttributes&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET resourceEntry = TRIM(SUBSTRING(createResponse, pos1+len, pos2-(pos1+len)));
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionAttributes/name
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;common:name&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/common:name&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET tempName = null;
+&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;common:name&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tempName = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionAttributes/name=[&apos;||NVL(tempName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionAttributes/value
+&#x9;&#x9;&#x9;&#x9;IF (tempName = &apos;EVENT_NAME&apos; OR tempName = &apos;NAME&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;common:value&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/common:value&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.eventName = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;common:value&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.eventName = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionAttributes/value=[&apos;||NVL(rec.eventName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Get the next column entry
+&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(createResponse, &apos;&lt;resource:conditionAttributes&gt;&apos;, pos1+1);
+&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(createResponse, &apos;&lt;/resource:conditionAttributes&gt;&apos;, pos2+1);
+&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (rec.conditionType = &apos;TIMER&apos;) THEN
+/*    &lt;resource:conditionType&gt;TIMER&lt;/resource:conditionType&gt;
+      &lt;resource:conditionSchedule&gt;
+        &lt;resource:mode&gt;INTERVAL&lt;/resource:mode&gt;
+        &lt;resource:startTime&gt;2016-10-06T01:05:00.000Z&lt;/resource:startTime&gt;
+        &lt;resource:interval&gt;60&lt;/resource:interval&gt;
+        &lt;resource:fromTimeInADay&gt;-1&lt;/resource:fromTimeInADay&gt;
+        &lt;resource:endTimeInADay&gt;-1&lt;/resource:endTimeInADay&gt;
+        &lt;resource:recurringDay&gt;-1&lt;/resource:recurringDay&gt;
+        &lt;resource:isCluster&gt;true&lt;/resource:isCluster&gt;
+      &lt;/resource:conditionSchedule&gt;
+
+      &lt;resource:conditionType&gt;TIMER&lt;/resource:conditionType&gt;
+      &lt;resource:conditionSchedule&gt;
+        &lt;resource:mode&gt;CALENDAR&lt;/resource:mode&gt;
+        &lt;resource:startTime&gt;2016-10-06T01:30:00.000Z&lt;/resource:startTime&gt;
+        &lt;resource:period&gt;HOUR&lt;/resource:period&gt;
+        &lt;resource:count&gt;2&lt;/resource:count&gt;
+        &lt;resource:fromTimeInADay&gt;-1&lt;/resource:fromTimeInADay&gt;
+        &lt;resource:endTimeInADay&gt;-1&lt;/resource:endTimeInADay&gt;
+        &lt;resource:recurringDay&gt;-1&lt;/resource:recurringDay&gt;
+        &lt;resource:isCluster&gt;true&lt;/resource:isCluster&gt;
+      &lt;/resource:conditionSchedule&gt;
+*/
+&#x9;&#x9;&#x9;-- Extract the various conditionSchedule attributes
+&#x9;&#x9;&#x9;SET pos1 = INSTR(createResponse, &apos;&lt;resource:conditionSchedule&gt;&apos;);
+&#x9;&#x9;&#x9;SET pos2 = INSTR(createResponse, &apos;&lt;/resource:conditionSchedule&gt;&apos;);
+&#x9;&#x9;&#x9;SET numEntries = 0;
+&#x9;&#x9;&#x9;WHILE (pos1 &gt; 0 AND pos2 &gt; 0) DO
+&#x9;&#x9;&#x9;&#x9;SET numEntries = numEntries + 1;
+&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:conditionSchedule&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET resourceEntry = TRIM(SUBSTRING(createResponse, pos1+len, pos2-(pos1+len)));
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/mode
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:mode&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:mode&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET rec.timerMode = null;
+&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:mode&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerMode = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/mode=[&apos;||NVL(rec.timerMode,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/startTime
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:startTime&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:startTime&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET rec.timerStartTime = null;
+&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:startTime&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerStartTime = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/startTime=[&apos;||NVL(CAST(rec.timerStartTime AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Calendar type fields
+&#x9;&#x9;&#x9;&#x9;IF (rec.timerMode IS NOT NULL AND rec.timerMode = &apos;CALENDAR&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/period
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:period&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:period&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriod = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:period&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriod = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/period=[&apos;||NVL(rec.timerPeriod,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/count
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:count&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:count&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriodQty = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:count&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriodQty = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/count=[&apos;||NVL(CAST(rec.timerPeriodQty AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Interval type fields
+&#x9;&#x9;&#x9;&#x9;IF (rec.timerMode IS NOT NULL AND rec.timerMode = &apos;INTERVAL&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/interval
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:interval&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:interval&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriodQty = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:interval&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriodQty = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriod = &apos;MINUTE&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerPeriodQty = rec.timerPeriodQty / 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : timerPeriod=[&apos;||NVL(CAST(rec.timerPeriod AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/interval=[&apos;||NVL(CAST(rec.timerPeriodQty AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/fromTimeInADay
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:fromTimeInADay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:fromTimeInADay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADay = null;
+&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:fromTimeInADay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADay = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (rec.timerFromTimeInADay &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Calculate hours
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intValue = rec.timerFromTimeInADay / 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intRemainder = rec.timerFromTimeInADay % 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intValue &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = LPAD(CAST(intValue AS VARCHAR), 2, &apos;0&apos;)||&apos;:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = &apos;00:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intRemainder &gt;  0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Calculate minutes and seconds
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intRemainder &gt;  60) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intValue = intRemainder / 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intRemainder = intRemainder % 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intValue &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = rec.timerFromTimeInADayFormatted || LPAD(CAST(intValue AS VARCHAR), 2, &apos;0&apos;)||&apos;:&apos;||LPAD(CAST(intRemainder AS VARCHAR), 2, &apos;0&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = rec.timerFromTimeInADayFormatted||&apos;00:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = rec.timerFromTimeInADayFormatted || LPAD(CAST(intRemainder AS VARCHAR), 2, &apos;0&apos;)||&apos;:00&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = rec.timerFromTimeInADayFormatted || &apos;00:00&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerFromTimeInADayFormatted = &apos;00:00:00&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/fromTimeInADay=[&apos;||NVL(CAST(rec.timerFromTimeInADay AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/endTimeInADay
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:endTimeInADay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:endTimeInADay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADay = null;
+&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:endTimeInADay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADay = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (rec.timerEndTimeInADay &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Calculate hours
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intValue = rec.timerEndTimeInADay / 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intRemainder = rec.timerEndTimeInADay % 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intValue &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = LPAD(CAST(intValue AS VARCHAR), 2, &apos;0&apos;)||&apos;:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = &apos;00:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intRemainder &gt;  0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Calculate minutes and seconds
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intRemainder &gt;  60) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intValue = intRemainder / 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET intRemainder = intRemainder % 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (intValue &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = rec.timerEndTimeInADayFormatted || LPAD(CAST(intValue AS VARCHAR), 2, &apos;0&apos;)||&apos;:&apos;||LPAD(CAST(intRemainder AS VARCHAR), 2, &apos;0&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = rec.timerEndTimeInADayFormatted||&apos;00:&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = rec.timerEndTimeInADayFormatted || LPAD(CAST(intRemainder AS VARCHAR), 2, &apos;0&apos;)||&apos;:00&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = rec.timerEndTimeInADayFormatted || &apos;00:00&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerEndTimeInADayFormatted = &apos;00:00:00&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/endTimeInADay=[&apos;||NVL(CAST(rec.timerEndTimeInADay AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/recurringDay
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:recurringDay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:recurringDay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDay = null;
+&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:recurringDay&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDay = recurringDay;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (recurringDay &gt; 63 AND recurringDay &lt;= 127) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || &apos;SAT &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = recurringDay - 64;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (recurringDay &gt; 31 AND recurringDay &lt;= 63) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || &apos;FRI &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = recurringDay - 32;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (recurringDay &gt; 15 AND recurringDay &lt;= 31) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || &apos;THU &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = recurringDay - 16;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (recurringDay &gt; 7 AND recurringDay &lt;= 15) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || &apos;WED &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = recurringDay - 8;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (recurringDay &gt; 3 AND recurringDay &lt;= 7) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || &apos;TUE &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = recurringDay - 4;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (recurringDay &gt; 1 AND recurringDay &lt;= 3) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || &apos;MON &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = recurringDay - 2;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (recurringDay &gt; 0 AND recurringDay &lt;= 1) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || &apos;SUN &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = recurringDay - 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LENGTH(TRIM(rec.timerRecurringDayList)) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDayList = TRIM(rec.timerRecurringDayList);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;FOR e AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(recurringDayList, &apos; &apos;, 0, 1, 1, 1, 0) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = rec.timerRecurringDayList || e.object || &apos; &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerRecurringDayList = TRIM(rec.timerRecurringDayList);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;--CALL PRINT(&apos;recurringDay=&apos;||recurringDay||&apos;  rec.timerRecurringDayList=&apos;||NVL(rec.timerRecurringDayList,&apos;  &apos;));
+/*&#x9;&#x9;&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;SUN&apos; THEN set recurringDay = recurringDay + 1; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;MON&apos; THEN set recurringDay = recurringDay + 2; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;TUE&apos; THEN set recurringDay = recurringDay + 4; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;WED&apos; THEN set recurringDay = recurringDay + 8; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;THU&apos; THEN set recurringDay = recurringDay + 16; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;FRI&apos; THEN set recurringDay = recurringDay + 32; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;SAT&apos; THEN set recurringDay = recurringDay + 64; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;END CASE;*/
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/recurringDay=[&apos;||NVL(CAST(rec.timerRecurringDay AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the conditionSchedule/isCluster
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;resource:isCluster&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/resource:isCluster&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET rec.timerIsCluster = null;
+&#x9;&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;resource:isCluster&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tempName = TRIM(SUBSTRING(resourceEntry, pos3+len, pos4-(pos3+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (LOWER(tempName) = &apos;true&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerIsCluster = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.timerIsCluster = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : conditionSchedule/isCluster=[&apos;||NVL(CAST(rec.timerIsCluster AS VARCHAR),&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Get the next column entry
+&#x9;&#x9;&#x9;&#x9;SET pos1 = INSTR(createResponse, &apos;&lt;resource:conditionSchedule&gt;&apos;, pos1+1);
+&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(createResponse, &apos;&lt;/resource:conditionSchedule&gt;&apos;, pos2+1);
+&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;INSERT INTO result VALUES(rec);
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/432</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/540</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/475</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/552</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/444</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/638</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/749</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/766</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/679</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/596</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/488</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/566</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/595</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/578</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

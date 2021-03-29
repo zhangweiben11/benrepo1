@@ -1,0 +1,422 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="archiveMetadataXSLT_file" path="/shared/Delta_DV/_scripts/Utilities/repository/modelXSLT/modelArchiveMetadata/archiveMetadataXSLT_file" type="PROCEDURE" subtype="XSLT_TRANSFORM_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="outputs" direction="OUT" nullable="false">
+      <datatype name="outputs" type="TABLE" refId="256">
+        <element name="packageFormatVersion">
+          <datatype name="TINYINT" type="INTEGER" minValue="-128" maxValue="127"/>
+        </element>
+        <element name="name">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="path">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="type">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="changeToken">
+          <datatype name="TINYINT" type="INTEGER" minValue="-128" maxValue="127"/>
+        </element>
+        <element name="virtual">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="tableType">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrName">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrType">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrValue">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/modelXSLT/modelArchiveMetadata/getArchiveMetadataXML/metadata.xml" type="TREE">
+    <datatype name="archiveMetadata" referenceDefinitionSet="/shared/ASAssets/Utilities/repository/modelXSLT/modelArchiveMetadata/getArchiveMetadataXML/metadataDefinitions" referenceType="archiveMetadata" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="archiveMetadata">
+      <schemaDatatype>
+        <datatype name="archiveMetadata" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+          <element name="packageFormatVersion">
+            <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+          </element>
+          <element name="metadata" maxOccurs="2147483647" minOccurs="0">
+            <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+              <element name="name" minOccurs="0" category="1">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="path" minOccurs="0" category="1">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="type" minOccurs="0" category="1">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="subtype" minOccurs="0" category="1">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="changeToken" minOccurs="0" category="1">
+                <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+              </element>
+              <element name="virtual" minOccurs="0" category="1">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="tableType" minOccurs="0" category="1">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="columns" minOccurs="0">
+                <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="column" maxOccurs="2147483647" minOccurs="0">
+                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="name" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="nullable" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="datatype">
+                        <datatype superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="type" minOccurs="0" category="1">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="minValue" minOccurs="0" category="1">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="maxValue" minOccurs="0" category="1">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="maxDigits" minOccurs="0" category="1">
+                            <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                          </element>
+                          <element name="minFractionalDigits" minOccurs="0" category="1">
+                            <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                          </element>
+                          <element name="maxFractionalDigits" minOccurs="0" category="1">
+                            <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                          </element>
+                          <element name="maxLength" minOccurs="0" category="1">
+                            <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                          </element>
+                          <element name="value" category="5">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="security">
+                        <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                          <element name="owner">
+                            <datatype superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                              <element name="user" minOccurs="0" category="1">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="domain" minOccurs="0" category="1">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="value" category="5">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="indexes" minOccurs="0">
+                <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                  <element name="index">
+                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                      <element name="name" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="unique" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="indexColumn">
+                        <datatype superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2561">
+                          <element name="name" minOccurs="0" category="1">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="sortOrder" minOccurs="0" category="1">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="value" category="5">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="foreignKeys" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="security">
+                <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                  <element name="owner">
+                    <reference refId="1793"/>
+                  </element>
+                  <element name="privilege">
+                    <datatype superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3073">
+                      <element name="group" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="domain" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="privileges" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="value" category="5">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="dependency" maxOccurs="2147483647" minOccurs="0">
+                <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3329">
+                  <element name="target" minOccurs="0" category="1">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="type" minOccurs="0" category="1">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="datatype">
+                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3585">
+                      <element name="type" minOccurs="0" category="1">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="refId" minOccurs="0" category="1">
+                        <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                      </element>
+                      <element name="element" maxOccurs="2147483647" minOccurs="0">
+                        <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3841">
+                          <element name="name" minOccurs="0" category="1">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="nullable" minOccurs="0" category="1">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="datatype">
+                            <datatype superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="4097">
+                              <element name="type" minOccurs="0" category="1">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="minValue" minOccurs="0" category="1">
+                                <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                              </element>
+                              <element name="maxValue" minOccurs="0" category="1">
+                                <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                              </element>
+                              <element name="maxLength" minOccurs="0" category="1">
+                                <datatype name="short" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="int" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-32768" maxValue="32767"/>
+                              </element>
+                              <element name="maxDigits" minOccurs="0" category="1">
+                                <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                              </element>
+                              <element name="minFractionalDigits" minOccurs="0" category="1">
+                                <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                              </element>
+                              <element name="maxFractionalDigits" minOccurs="0" category="1">
+                                <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                              </element>
+                              <element name="value" category="5">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="attribute" maxOccurs="2147483647" minOccurs="0">
+                <datatype superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="4353">
+                  <element name="name" minOccurs="0" category="1">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="type" minOccurs="0" category="1">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="value" category="5">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </element>
+        </datatype>
+      </schemaDatatype>
+    </datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1568756021457</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1568756021457</attribute>
+  <attribute name="sourcePath" type="STRING">/shared/Delta_DV/_scripts/Utilities/repository/modelXSLT/modelArchiveMetadata/getArchiveMetadataXML/metadata.xml</attribute>
+  <attribute name="sourceType" type="SHORT">4</attribute>
+  <attribute name="transformModel" type="BYTE_ARRAY">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</attribute>
+  <attribute name="xqueryModel" type="NULL"/>
+  <attribute name="xslt" type="STRING">
+&lt;xslt:stylesheet version=&quot;2.0&quot; xmlns:csw-xform=&quot;http://www.compositesw.com/2003/xform&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:xslt=&quot;http://www.w3.org/1999/XSL/Transform&quot;&gt;
+  &lt;xslt:template match=&quot;/&quot;&gt;
+    &lt;xslt:variable name=&quot;_packageFormatVersion&quot;/&gt;
+    &lt;xslt:variable name=&quot;_name&quot;/&gt;
+    &lt;xslt:variable name=&quot;_path&quot;/&gt;
+    &lt;xslt:variable name=&quot;_type&quot;/&gt;
+    &lt;xslt:variable name=&quot;_subtype&quot;/&gt;
+    &lt;xslt:variable name=&quot;_changeToken&quot;/&gt;
+    &lt;xslt:variable name=&quot;_virtual&quot;/&gt;
+    &lt;xslt:variable name=&quot;_tableType&quot;/&gt;
+    &lt;xslt:variable name=&quot;_attrName&quot;/&gt;
+    &lt;xslt:variable name=&quot;_attrType&quot;/&gt;
+    &lt;xslt:variable name=&quot;_attrValue&quot;/&gt;
+    &lt;xslt:element name=&quot;results&quot;&gt;
+      &lt;xslt:for-each select=&quot;archiveMetadata&quot;&gt;
+        &lt;xslt:variable name=&quot;_packageFormatVersion&quot; select=&quot;packageFormatVersion&quot;/&gt;
+        &lt;xslt:for-each select=&quot;metadata&quot;&gt;
+          &lt;xslt:variable name=&quot;_name&quot; select=&quot;@name&quot;/&gt;
+          &lt;xslt:variable name=&quot;_path&quot; select=&quot;@path&quot;/&gt;
+          &lt;xslt:variable name=&quot;_type&quot; select=&quot;@type&quot;/&gt;
+          &lt;xslt:variable name=&quot;_subtype&quot; select=&quot;@subtype&quot;/&gt;
+          &lt;xslt:variable name=&quot;_changeToken&quot; select=&quot;@changeToken&quot;/&gt;
+          &lt;xslt:variable name=&quot;_virtual&quot; select=&quot;@virtual&quot;/&gt;
+          &lt;xslt:variable name=&quot;_tableType&quot; select=&quot;@tableType&quot;/&gt;
+          &lt;xslt:for-each select=&quot;attribute&quot;&gt;
+            &lt;xslt:variable name=&quot;_attrName&quot; select=&quot;@name&quot;/&gt;
+            &lt;xslt:variable name=&quot;_attrType&quot; select=&quot;@type&quot;/&gt;
+            &lt;xslt:variable name=&quot;_attrValue&quot; select=&quot;.&quot;/&gt;
+            &lt;xslt:element name=&quot;result&quot;&gt;
+              &lt;xslt:element name=&quot;packageFormatVersion&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_packageFormatVersion&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;name&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_name&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;path&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_path&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;type&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_type&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;subtype&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_subtype&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;changeToken&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_changeToken&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;virtual&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_virtual&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;tableType&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_tableType&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;attrName&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_attrName&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;attrType&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_attrType&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;attrValue&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_attrValue&quot;/&gt;
+              &lt;/xslt:element&gt;
+            &lt;/xslt:element&gt;
+          &lt;/xslt:for-each&gt;
+          &lt;xslt:element name=&quot;result&quot;&gt;
+            &lt;xslt:element name=&quot;packageFormatVersion&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_packageFormatVersion&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;name&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_name&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;path&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_path&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;type&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_type&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;subtype&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_subtype&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;changeToken&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_changeToken&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;virtual&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_virtual&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;tableType&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_tableType&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;attrName&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_attrName&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;attrType&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_attrType&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;attrValue&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_attrValue&quot;/&gt;
+            &lt;/xslt:element&gt;
+          &lt;/xslt:element&gt;
+        &lt;/xslt:for-each&gt;
+        &lt;xslt:element name=&quot;result&quot;&gt;
+          &lt;xslt:element name=&quot;packageFormatVersion&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_packageFormatVersion&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;name&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_name&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;path&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_path&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;type&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_type&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;subtype&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_subtype&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;changeToken&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_changeToken&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;virtual&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_virtual&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;tableType&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_tableType&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;attrName&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_attrName&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;attrType&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_attrType&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;attrValue&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_attrValue&quot;/&gt;
+          &lt;/xslt:element&gt;
+        &lt;/xslt:element&gt;
+      &lt;/xslt:for-each&gt;
+    &lt;/xslt:element&gt;
+  &lt;/xslt:template&gt;
+&lt;/xslt:stylesheet&gt;</attribute>
+</metadata>

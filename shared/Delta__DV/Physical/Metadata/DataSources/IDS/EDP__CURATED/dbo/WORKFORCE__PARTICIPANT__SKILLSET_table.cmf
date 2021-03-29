@@ -1,0 +1,133 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="WORKFORCE_PARTICIPANT_SKILLSET" path="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/WORKFORCE_PARTICIPANT_SKILLSET" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="Skillset_NM" nullable="false">
+      <datatype name="varchar" extendedName="varchar(60)" subType="DATASOURCE_TYPE" type="STRING" maxLength="60"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Workforce_Participant_Skillset_SKEY" nullable="false">
+      <datatype name="varchar" extendedName="varchar(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Created_DTM" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Created_By_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Last_Modified_DTM" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Last_Modified_By_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Workforce_Participant_SKEY" nullable="false">
+      <datatype name="int" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="PK__WORKFORC__195F13BB5D09A304" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="Workforce_Participant_Skillset_SKEY" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="FK__WORKFORCE__Workf__3A6CA48E" primaryKeyName="XPKWORKFORCE_PARTICIPANT" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/WORKFORCE_PARTICIPANT">
+      <foreignKeyColumn primaryColumnName="Workforce_Participant_SKEY" foreignColumnName="Workforce_Participant_SKEY"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/WORKFORCE_PARTICIPANT" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="User_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Given_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Family_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Current_Role_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_NM" nullable="false">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Workforce_Participant_SKEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Parent_Workforce_Participant_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Workforce_Participant_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Active_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Production_Target_Case_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:3:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:4:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:5:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:6:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1611790550555</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5681189</attribute>
+  <attribute name="creatorUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611790550555</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5681189</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611790550555</attribute>
+</metadata>

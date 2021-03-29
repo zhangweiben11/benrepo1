@@ -1,0 +1,549 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getDependentResourcesDirectRecurseCursor" path="/shared/Delta_DV/_scripts/Utilities/repository/getDependentResourcesDirectRecurseCursor" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getDependentResourcesDirectRecurseCursor
+ 
+&#x9;This procedure recursively retrieves the &quot;direct&quot; dependent resource metadata for a given resource.  
+&#x9;If a dependent resource is a foreign key reference to another view it is not returned.
+&#x9;If a dependent resource is a data source reference, it is not returned.
+&#x9;A cursor of metadata is returned.
+ 
+      Input:
+            fullResourcePath - Full resource path which includes the path and the resource name  
+                  Values: e.g. /shared/examples/ds_orders/orders
+            resourceType - Type of CIS resource to be created
+                  Values: see RESOURCE_TYPE_* in the &quot;Constants&quot; tab of /lib/resource/ResourceDefs
+&#x9;&#x9;&#x9;includeInitialPath - 1=include the initial passed in path in the output results.  0=do not include the initial path.
+&#x9;&#x9;&#x9;inLineageResourceIdList&#x9;- Null to start with.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- A list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;- Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;&#x9;&#x9;&#x9;  Values: null to start out with.  This procedure addes resource ids to the list as the depth increases.
+
+      Output:
+            result  - response containing the resource metadata
+        CURSOR (
+            resourceName VARCHAR(255), 
+            resourcePath VARCHAR(4096), 
+            resourceType VARCHAR(40), 
+            subtype VARCHAR(40), 
+&#x9;&#x9;&#x9;id INTEGER,
+            ownerDomain VARCHAR(255),
+            ownerName VARCHAR(255),
+            impactLevel VARCHAR(255),
+            impactMessage VARCHAR(32768),
+            enabled BIT 
+        )
+ 
+      Exceptions:  none
+ 
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2011.3&#x9;&#x9;04/21/2011&#x9;&#x9;Calvin Goodrich&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+    2014.1&#x9;&#x9;02/18/2014      Jeremy Akers&#x9;&#x9;6.2.0           Updated to prevent an infinite recursive loop with cache policies.
+&#x9;2014.2&#x9;&#x9;03/28/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Updated to detect circular references with any resource by passing in the list of resource ids &quot;inLineageResourceIdList&quot; as a parameter.
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Adapted from getDependentResourcesRecurseCursor but returns only direct descendants and not foreign key descedents.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="fullResourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="includeInitialPath" direction="IN" nullable="true">
+      <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+    </parameter>
+    <parameter name="inLineageResourceIdList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="resourceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resourcePath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="resourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="id">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="ownerDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ownerName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="impactLevel">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="impactMessage">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="enabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getDependentResourcesDirectCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getDependentResourcesDirectRecurseCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="includeInitialPath" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="inLineageResourceIdList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+    getDependentResourcesDirectRecurseCursor
+ 
+&#x9;This procedure recursively retrieves the &quot;direct&quot; dependent resource metadata for a given resource.  
+&#x9;If a dependent resource is a foreign key reference to another view it is not returned.
+&#x9;If a dependent resource is a data source reference, it is not returned.
+&#x9;A cursor of metadata is returned.
+ 
+      Input:
+            fullResourcePath - Full resource path which includes the path and the resource name  
+                  Values: e.g. /shared/examples/ds_orders/orders
+            resourceType - Type of CIS resource to be created
+                  Values: see RESOURCE_TYPE_* in the &quot;Constants&quot; tab of /lib/resource/ResourceDefs
+&#x9;&#x9;&#x9;includeInitialPath - 1=include the initial passed in path in the output results.  0=do not include the initial path.
+&#x9;&#x9;&#x9;inLineageResourceIdList&#x9;- Null to start with.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- A list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;- Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+&#x9;&#x9;&#x9;&#x9;  Values: null to start out with.  This procedure addes resource ids to the list as the depth increases.
+
+      Output:
+            result  - response containing the resource metadata
+        CURSOR (
+            resourceName VARCHAR(255), 
+            resourcePath VARCHAR(4096), 
+            resourceType VARCHAR(40), 
+            subtype VARCHAR(40), 
+&#x9;&#x9;&#x9;id INTEGER,
+            ownerDomain VARCHAR(255),
+            ownerName VARCHAR(255),
+            impactLevel VARCHAR(255),
+            impactMessage VARCHAR(32768),
+            enabled BIT 
+        )
+ 
+      Exceptions:  none
+ 
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2011.3&#x9;&#x9;04/21/2011&#x9;&#x9;Calvin Goodrich&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+    2014.1&#x9;&#x9;02/18/2014      Jeremy Akers&#x9;&#x9;6.2.0           Updated to prevent an infinite recursive loop with cache policies.
+&#x9;2014.2&#x9;&#x9;03/28/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Updated to detect circular references with any resource by passing in the list of resource ids &quot;inLineageResourceIdList&quot; as a parameter.
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Adapted from getDependentResourcesRecurseCursor but returns only direct descendants and not foreign key descedents.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getDependentResourcesDirectRecurseCursor(
+    IN fullResourcePath &#x9;&#x9;&#x9;VARCHAR(4096),
+    IN resourceType &#x9;&#x9;&#x9;&#x9;VARCHAR, 
+&#x9;IN includeInitialPath&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- 1=include the initial path in the output results.  0=do not include the initial path.
+&#x9;IN inLineageResourceIdList&#x9;&#x9;LONGVARCHAR,&#x9;-- null to start with.  A list of space separated resource ids built up as the resources are traversed. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;&#x9;-- Used to prevent circular recursive calls by detecting if a parent resource id is found in this list on subsequent invocations.
+    OUT result &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PIPE (
+        resourceName &#x9;VARCHAR(255), 
+        resourcePath &#x9;VARCHAR(4096), 
+        resourceType &#x9;VARCHAR(40), 
+        subtype&#x9;&#x9;&#x9;VARCHAR(40), 
+&#x9;&#x9;id &#x9;&#x9;&#x9;&#x9;INTEGER,
+        ownerDomain &#x9;VARCHAR(255), 
+        ownerName &#x9;&#x9;VARCHAR(255), 
+        impactLevel &#x9;VARCHAR(255), 
+        impactMessage &#x9;VARCHAR(32768), 
+        enabled &#x9;&#x9;BIT
+    )
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getDependentResourcesDirectRecurseCursor&apos;;
+&#x9;DECLARE lineageResourceIdList &#x9;&#x9;LONGVARCHAR DEFAULT inLineageResourceIdList;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+
+&#x9;-- Initialize the 1st invocation with the resource id of the resource being passed in so that it is not duplicated during a circular reference.
+&#x9;if (lineageResourceIdList is null or LENGTH(TRIM(lineageResourceIdList)) = 0) then
+&#x9;&#x9;set lineageResourceIdList = &apos;&apos;;
+&#x9;&#x9;FOR br AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor(fullResourcePath, resourceType) DO
+&#x9;&#x9;&#x9;set lineageResourceIdList = CAST(br.id AS VARCHAR);
+&#x9;&#x9;&#x9;if (includeInitialPath IS NOT NULL AND includeInitialPath = 1) then
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES (
+&#x9;&#x9;&#x9;&#x9;&#x9;br.name,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.&quot;path&quot;,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.&quot;type&quot;,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.subtype,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.id,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.ownerDomain,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.ownerName,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.impactLevel,
+&#x9;&#x9;&#x9;&#x9;&#x9;null,
+&#x9;&#x9;&#x9;&#x9;&#x9;br.enabled
+&#x9;&#x9;&#x9;&#x9;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+&#x9;end if;
+&#x9;--call print(&apos;lineageResourceIdList=&apos;||lineageResourceIdList);
+
+    FOR r AS
+        SELECT
+            resourceName,
+            resourcePath,
+            resourceType,
+            subtype,
+&#x9;&#x9;&#x9;id,
+            ownerDomain,
+            ownerName,
+            impactLevel,
+            impactMessage,
+            enabled
+        FROM
+            /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getDependentResourcesDirectCursor(
+                fullResourcePath,
+                resourceType
+            )
+    DO
+&#x9;&#x9;-- Check this parent resource id against the resource id lineage list to detect circular references.  Keep going if not found in the list.
+&#x9;&#x9;IF (POSITION(r.id IN lineageResourceIdList) = 0) THEN
+&#x9;&#x9;&#x9;-- Add the resource id to the list so that it gets passed into the next invocation and resources can be tracked through recursive calls.
+&#x9;&#x9;&#x9;SET lineageResourceIdList = lineageResourceIdList || &apos; &apos; || r.id;
+
+&#x9;&#x9;&#x9;INSERT INTO result VALUES (
+&#x9;&#x9;&#x9;&#x9;r.resourceName,
+&#x9;&#x9;&#x9;&#x9;r.resourcePath,
+&#x9;&#x9;&#x9;&#x9;r.resourceType,
+&#x9;&#x9;&#x9;&#x9;r.subtype,
+&#x9;&#x9;&#x9;&#x9;r.id,
+&#x9;&#x9;&#x9;&#x9;r.ownerDomain,
+&#x9;&#x9;&#x9;&#x9;r.ownerName,
+&#x9;&#x9;&#x9;&#x9;r.impactLevel,
+&#x9;&#x9;&#x9;&#x9;r.impactMessage,
+&#x9;&#x9;&#x9;&#x9;r.enabled
+&#x9;&#x9;&#x9;);
+&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;FOR d AS
+&#x9;&#x9;&#x9;&#x9;SELECT
+&#x9;&#x9;&#x9;&#x9;&#x9;resourceName,
+&#x9;&#x9;&#x9;&#x9;&#x9;resourcePath,
+&#x9;&#x9;&#x9;&#x9;&#x9;resourceType,
+&#x9;&#x9;&#x9;&#x9;&#x9;subtype,
+&#x9;&#x9;&#x9;&#x9;&#x9;id,
+&#x9;&#x9;&#x9;&#x9;&#x9;ownerDomain,
+&#x9;&#x9;&#x9;&#x9;&#x9;ownerName,
+&#x9;&#x9;&#x9;&#x9;&#x9;impactLevel,
+&#x9;&#x9;&#x9;&#x9;&#x9;impactMessage,
+&#x9;&#x9;&#x9;&#x9;&#x9;enabled
+&#x9;&#x9;&#x9;&#x9;FROM
+&#x9;&#x9;&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getDependentResourcesDirectRecurseCursor(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;r.resourcePath,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;r.resourceType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;includeInitialPath,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;lineageResourceIdList
+&#x9;&#x9;&#x9;&#x9;&#x9;)
+&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES (
+&#x9;&#x9;&#x9;&#x9;&#x9;d.resourceName,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.resourcePath,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.resourceType,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.subtype,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.id,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.ownerDomain,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.ownerName,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.impactLevel,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.impactMessage,
+&#x9;&#x9;&#x9;&#x9;&#x9;d.enabled
+&#x9;&#x9;&#x9;&#x9;);
+&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;-- Log the fact that the resource id has been encountered again within the lineage chain.
+&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN &#x9;
+&#x9;&#x9;&#x9;&#x9;set message = &apos;Circular Rereference found. id=&apos;||r.id || &apos;  path=&apos;||r.resourcePath; 
+&#x9;&#x9;&#x9;&#x9;call log  (moduleName||&apos; : &apos;||message);
+&#x9;&#x9;&#x9;&#x9;call print(moduleName||&apos; : &apos;||message);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+    END FOR;
+END
+
+</attribute>
+  <attribute name="creationDate" type="LONG">1376679119330</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="impactLevel" type="INTEGER">0</attribute>
+  <attribute name="impactMessage" type="NULL"/>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">10/182</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/181</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

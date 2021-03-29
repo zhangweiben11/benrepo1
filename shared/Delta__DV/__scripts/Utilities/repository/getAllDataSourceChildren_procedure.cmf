@@ -1,0 +1,340 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getAllDataSourceChildren" path="/shared/Delta_DV/_scripts/Utilities/repository/getAllDataSourceChildren" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getAllDataSourceChildren:
+
+&#x9;This procedure returns all the children for a given DATA_SOURCE type resources found under the starting path.
+ 
+&#x9;Input:
+&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;The starting CIS path for which to introspect resources and find data source type resources
+&#x9;&#x9;includeColumns&#x9;&#x9;&#x9;&#x9;0=do not include columns, 1=do include columns
+&#x9;Output:
+&#x9;&#x9;childResCursor&#x9;&#x9;&#x9;&#x9;A list of data source children as recursively introspected from the passed in starting path.
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;7/27/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.1.0&#x9;&#x9;&#x9;Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="resourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="pathType" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="includeColumns" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="childResCursor" direction="OUT" nullable="true">
+      <datatype name="childResCursorType" type="TABLE" refId="256">
+        <element name="depthNum">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="depthUsedNum">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="lineage">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="parentName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="parentPath">
+          <datatype name="ResourcePath" referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="parentType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="parentSubType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resourceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resourcePath">
+          <datatype name="ResourcePath" referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="resourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="enabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="isNullable">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="columnName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="columnType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="nativeBaseType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="nativeType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/TypeDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getAllDataSources" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getChildResourcesCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="childResCursor" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="isNullable">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="columnName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="columnType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="nativeBaseType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="nativeType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* &#x9;getAllDataSourceChildren:
+
+&#x9;This procedure returns all the children for a given DATA_SOURCE type resources found under the starting path.
+ 
+&#x9;Input:
+&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;The starting CIS path for which to introspect resources and find data source type resources
+&#x9;&#x9;includeColumns&#x9;&#x9;&#x9;&#x9;0=do not include columns, 1=do include columns
+&#x9;Output:
+&#x9;&#x9;childResCursor&#x9;&#x9;&#x9;&#x9;A list of data source children as recursively introspected from the passed in starting path.
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;7/27/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.1.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getAllDataSourceChildren(
+&#x9;IN resourcePath &#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.pathType, -- this must be a container path only 
+&#x9;IN includeColumns&#x9;&#x9;BIT, -- 0=do not include columns, 1=do include columns
+&#x9;OUT&#x9;childResCursor  &#x9;PIPE /shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.childResCursorType
+)
+BEGIN
+&#x9;DECLARE depthNum&#x9;INTEGER;
+
+&#x9;for r as select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getAllDataSources(resourcePath) do
+&#x9;&#x9;if (r.name is not null) then
+&#x9;&#x9;&#x9;for c as select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getChildResourcesCursor(r.resPath, r.resType) do
+&#x9;&#x9;&#x9;&#x9;if ( (includeColumns = 1) or (includeColumns = 0 and c.columnName is null) ) then
+&#x9;&#x9;&#x9;&#x9;&#x9;if (c.columnName is null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set depthNum = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set depthNum = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;insert into childResCursor values (
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;depthNum,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;0,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;r.name, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;r.resPath, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;r.resType, 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;r.subType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;c.resourceName, 
+    &#x9;    &#x9;&#x9;&#x9;c.resourcePath, 
+&#x9;        &#x9;&#x9;&#x9;c.resourceType, 
+    &#x9;    &#x9;&#x9;&#x9;c.subtype, 
+        &#x9;&#x9;&#x9;&#x9;c.enabled, 
+&#x9;        &#x9;&#x9;&#x9;c.isNullable, 
+    &#x9;    &#x9;&#x9;&#x9;c.columnName, 
+        &#x9;&#x9;&#x9;&#x9;c.columnType, 
+&#x9;        &#x9;&#x9;&#x9;c.nativeBaseType, 
+    &#x9;    &#x9;&#x9;&#x9;c.nativeType
+&#x9;&#x9;&#x9;&#x9;&#x9;);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end for;
+&#x9;&#x9;end if;
+&#x9;end for;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1369417729293</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

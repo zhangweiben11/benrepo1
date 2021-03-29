@@ -1,0 +1,422 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="introspectResourcesResultCursor" path="/shared/Delta_DV/_scripts/Utilities/repository/introspectResourcesResultCursor" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[introspectResourcesResultCursor:
+
+&#x9;This script is used to extract the introspection result text into a cursor of results.
+&#x9;The input to this procedure is the output variable [introspectionResult LONGVARCHAR] 
+&#x9;from the procedure introspectResources.
+
+&#x9;Input:
+&#x9;&#x9;IN  introspectionResult &#x9;&#x9;LONGVARCHAR,&#x9;-- The output from the procedure introspectResources
+&#x9;&#x9;IN  inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off, null=N
+
+&#x9;Output:
+&#x9;&#x9;IntrospectResultType CURSOR (
+&#x9;&#x9;&#x9;status                  VARCHAR(32768),
+&#x9;&#x9;&#x9;introspectorVersion     INTEGER,
+&#x9;&#x9;&#x9;startTime               TIMESTAMP,
+&#x9;&#x9;&#x9;endTime                 TIMESTAMP,
+&#x9;&#x9;&#x9;addedCount              INTEGER,
+&#x9;&#x9;&#x9;removedCount            INTEGER,
+&#x9;&#x9;&#x9;updatedCount            INTEGER,
+&#x9;&#x9;&#x9;skippedCount            INTEGER,
+&#x9;&#x9;&#x9;totalCompletedCount     INTEGER,
+&#x9;&#x9;&#x9;toBeAddedCount          INTEGER,
+&#x9;&#x9;&#x9;toBeRemovedCount        INTEGER,
+&#x9;&#x9;&#x9;toBeUpdatedCount        INTEGER,
+&#x9;&#x9;&#x9;totalToBeCompletedCount INTEGER,
+&#x9;&#x9;&#x9;warningCount            INTEGER,
+&#x9;&#x9;&#x9;errorCount              INTEGER,
+&#x9;&#x9;&#x9;&quot;path&quot;                  VARCHAR(4096),
+&#x9;&#x9;&#x9;&quot;type&quot;                  VARCHAR(40),
+&#x9;&#x9;&#x9;subtype                 VARCHAR(40),
+&#x9;&#x9;&#x9;&quot;action&quot;                VARCHAR(32768),
+&#x9;&#x9;&#x9;durationMs              INTEGER,
+&#x9;&#x9;&#x9;entryStatus             VARCHAR(32768),
+&#x9;&#x9;&#x9;code                    VARCHAR(32768),
+&#x9;&#x9;&#x9;name                    VARCHAR(32768),
+&#x9;&#x9;&#x9;message                 LONGVARCHAR&#x9;,
+&#x9;&#x9;&#x9;detail                  VARCHAR(32768),
+&#x9;&#x9;&#x9;severity                VARCHAR(32768),
+&#x9;&#x9;)
+
+&#x9;The value of introspectionResult is extracted from the a line delimited string:
+&#x9;&#x9;introspection entry=2  path=tutorial/categories,
+                 status=SUCCESS,
+                 introspectorVersion=2,
+                 startTime=2018-01-13 09:29:56.841,
+                 endTime=2018-01-13 09:29:56.966,
+                 addedCount=1,
+                 removedCount=0,
+                 updatedCount=0,
+                 skippedCount=2,
+                 totalCompletedCount=3,
+                 toBeAddedCount=1,
+                 toBeRemovedCount=0,
+                 toBeUpdatedCount=2,
+                 totalToBeCompletedCount=3,
+                 warningCount=0,
+                 errorCount=0
+                 &quot;path&quot;=tutorial/categories
+                 &quot;type&quot;=TABLE
+                 subtype=DATABASE_TABLE
+                 &quot;action&quot;=ADD
+                 durationMs=46
+                 entryStatus=INFO
+                 code=NULL
+                 name=NULL
+                 message=info:[Created resource.]  info:[=Updated table type from &apos;UNKNOWN to TABLE]  info:[=Added column #0 &apos;categoryid&apos; Type=INTEGER NOT NULL]  info:[=Added column #1 &apos;categoryname&apos; Type=VARCHAR(50) NULLABLE]  info:[=Added index &apos;categories_pkey&apos;: Unique=true Type=PRIMARY_KEY Column=categoryid at position 1 Sort=ASCENDING IndexSchema=tutorial]
+                 detail=NULL
+                 severity=INFO
+
+ &#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="introspectionResult" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="IntrospectResultType" type="TABLE" refId="256">
+        <element name="status">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="introspectorVersion">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="startTime">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="endTime">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="addedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="removedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="updatedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="skippedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="totalCompletedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="toBeAddedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="toBeRemovedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="toBeUpdatedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="totalToBeCompletedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="warningCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="errorCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="path">
+          <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="type">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="action">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="durationMs">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="entryStatus">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="code">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="name">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="message">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="detail">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="severity">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;introspectResourcesResultCursor:
+
+&#x9;This script is used to extract the introspection result text into a cursor of results.
+&#x9;The input to this procedure is the output variable [introspectionResult LONGVARCHAR] 
+&#x9;from the procedure introspectResources.
+
+&#x9;Input:
+&#x9;&#x9;IN  introspectionResult &#x9;&#x9;LONGVARCHAR,&#x9;-- The output from the procedure introspectResources
+&#x9;&#x9;IN  inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off, null=N
+
+&#x9;Output:
+&#x9;&#x9;IntrospectResultType CURSOR (
+&#x9;&#x9;&#x9;status                  VARCHAR(32768),
+&#x9;&#x9;&#x9;introspectorVersion     INTEGER,
+&#x9;&#x9;&#x9;startTime               TIMESTAMP,
+&#x9;&#x9;&#x9;endTime                 TIMESTAMP,
+&#x9;&#x9;&#x9;addedCount              INTEGER,
+&#x9;&#x9;&#x9;removedCount            INTEGER,
+&#x9;&#x9;&#x9;updatedCount            INTEGER,
+&#x9;&#x9;&#x9;skippedCount            INTEGER,
+&#x9;&#x9;&#x9;totalCompletedCount     INTEGER,
+&#x9;&#x9;&#x9;toBeAddedCount          INTEGER,
+&#x9;&#x9;&#x9;toBeRemovedCount        INTEGER,
+&#x9;&#x9;&#x9;toBeUpdatedCount        INTEGER,
+&#x9;&#x9;&#x9;totalToBeCompletedCount INTEGER,
+&#x9;&#x9;&#x9;warningCount            INTEGER,
+&#x9;&#x9;&#x9;errorCount              INTEGER,
+&#x9;&#x9;&#x9;&quot;path&quot;                  VARCHAR(4096),
+&#x9;&#x9;&#x9;&quot;type&quot;                  VARCHAR(40),
+&#x9;&#x9;&#x9;subtype                 VARCHAR(40),
+&#x9;&#x9;&#x9;&quot;action&quot;                VARCHAR(32768),
+&#x9;&#x9;&#x9;durationMs              INTEGER,
+&#x9;&#x9;&#x9;entryStatus             VARCHAR(32768),
+&#x9;&#x9;&#x9;code                    VARCHAR(32768),
+&#x9;&#x9;&#x9;name                    VARCHAR(32768),
+&#x9;&#x9;&#x9;message                 LONGVARCHAR&#x9;,
+&#x9;&#x9;&#x9;detail                  VARCHAR(32768),
+&#x9;&#x9;&#x9;severity                VARCHAR(32768),
+&#x9;&#x9;)
+
+&#x9;The value of introspectionResult is extracted from the a line delimited string:
+&#x9;&#x9;introspection entry=2  path=tutorial/categories,
+                 status=SUCCESS,
+                 introspectorVersion=2,
+                 startTime=2018-01-13 09:29:56.841,
+                 endTime=2018-01-13 09:29:56.966,
+                 addedCount=1,
+                 removedCount=0,
+                 updatedCount=0,
+                 skippedCount=2,
+                 totalCompletedCount=3,
+                 toBeAddedCount=1,
+                 toBeRemovedCount=0,
+                 toBeUpdatedCount=2,
+                 totalToBeCompletedCount=3,
+                 warningCount=0,
+                 errorCount=0
+                 &quot;path&quot;=tutorial/categories
+                 &quot;type&quot;=TABLE
+                 subtype=DATABASE_TABLE
+                 &quot;action&quot;=ADD
+                 durationMs=46
+                 entryStatus=INFO
+                 code=NULL
+                 name=NULL
+                 message=info:[Created resource.]  info:[=Updated table type from &apos;UNKNOWN to TABLE]  info:[=Added column #0 &apos;categoryid&apos; Type=INTEGER NOT NULL]  info:[=Added column #1 &apos;categoryname&apos; Type=VARCHAR(50) NULLABLE]  info:[=Added index &apos;categories_pkey&apos;: Unique=true Type=PRIMARY_KEY Column=categoryid at position 1 Sort=ASCENDING IndexSchema=tutorial]
+                 detail=NULL
+                 severity=INFO
+
+ &#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Created new
+&#x9;2020.400&#x9;10/15/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added XML unescape characters for all attributes.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE introspectResourcesResultCursor(
+&#x9;IN  introspectionResult &#x9;&#x9;LONGVARCHAR,
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PIPE /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.IntrospectResultType
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;introspectResourcesResultCursor&apos;;
+&#x9;DECLARE sep&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT CHR(10); -- linefeed separator
+&#x9;DECLARE pos&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE object&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE name&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE val&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE numEntries&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.IntrospectResultType;
+
+&#x9;-- Add table entries if applicable
+&#x9;IF (introspectionResult IS NOT NULL AND LENGTH(introspectionResult) &gt; 0) THEN
+&#x9;&#x9;-- Extract the object from the list of schemas
+&#x9;&#x9;FOR o AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(introspectionResult, sep, 0, 0, 0, 1, 0) DO
+&#x9;&#x9;&#x9;SET object = o.object;
+&#x9;&#x9;&#x9;SET name = null;
+&#x9;&#x9;&#x9;-- This marks the beginning of a new entry
+&#x9;&#x9;&#x9;IF (INSTR(object, &apos;introspection entry&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;-- Insert a record if the entry is complete
+&#x9;&#x9;&#x9;&#x9;IF (numEntries &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES (rec);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;-- Initialize the record for the next entry
+&#x9;&#x9;&#x9;&#x9;SET rec = null;
+&#x9;&#x9;&#x9;&#x9;SET numEntries = numEntries + 1;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;-- Extract the name/value pairs based on first = sign found
+&#x9;&#x9;&#x9;&#x9;SET pos = INSTR(object,&apos;=&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (pos &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET name = SUBSTRING(object, 1, pos-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Remove the comma on the end of the line if exists
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (SUBSTRING(object,LENGTH(object),1) = &apos;,&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET val = SUBSTRING(object,pos+1,LENGTH(object)-pos-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET val = SUBSTRING(object, pos+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Test the object for the value of &quot;NULL&quot; and set to null if true
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(val) = &apos;NULL&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET val = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- If the name is not null then assign the value to the corresponding name in the record entry.
+&#x9;&#x9;&#x9;IF (name IS NOT NULL) THEN
+/*
+&#x9;The Escape Characters: &#x9;When unescaping parsed data from XML: 
+&#x9;quote &#x9;&#x9;&#x9;(&quot;) &#x9;&#x9;&amp;quot; 
+&#x9;apostrophe &#x9;&#x9;(&apos;)&#x9;&#x9;&#x9;&amp;apos; 
+&#x9;ampersand&#x9;&#x9;(&amp;)&#x9;&#x9;&#x9;&amp;amp;
+&#x9;less than &#x9;&#x9;(&lt;) &#x9;&#x9;&amp;lt; 
+&#x9;greater than &#x9;(&gt;) &#x9;&#x9;&amp;gt; 
+*/
+&#x9;&#x9;&#x9;&#x9;IF (INSTR(val, &apos;&amp;&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET val = REPLACE(val, &apos;&amp;lt;&apos;, &apos;&lt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET&#x9;val = REPLACE(val, &apos;&amp;gt;&apos;, &apos;&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET&#x9;val = REPLACE(val, &apos;&amp;apos;&apos;, &apos;&apos;&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET&#x9;val = REPLACE(val, &apos;&amp;quot;&apos;, &apos;&quot;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET&#x9;val = REPLACE(val, &apos;&amp;amp;&apos;, &apos;&amp;&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Assign the resource value to output record structure variables
+&#x9;&#x9;&#x9;&#x9;CASE 
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;status&apos;) THEN SET rec.status = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;introspectorVersion&apos;) THEN SET rec.introspectorVersion = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;startTime&apos;) THEN SET rec.startTime = CAST(val AS TIMESTAMP);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;endTime&apos;) THEN SET rec.endTime = CAST(val AS TIMESTAMP);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;addedCount&apos;) THEN SET rec.addedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;removedCount&apos;) THEN SET rec.removedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;updatedCount&apos;) THEN SET rec.updatedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;skippedCount&apos;) THEN SET rec.skippedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;totalCompletedCount&apos;) THEN SET rec.totalCompletedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;toBeAddedCount&apos;) THEN SET rec.toBeAddedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;toBeRemovedCount&apos;) THEN SET rec.toBeRemovedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;toBeUpdatedCount&apos;) THEN SET rec.toBeUpdatedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;totalToBeCompletedCount&apos;) THEN SET rec.totalToBeCompletedCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;warningCount&apos;) THEN SET rec.warningCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;errorCount&apos;) THEN SET rec.errorCount = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;&quot;path&quot;&apos;) THEN SET rec.&quot;path&quot; = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;&quot;type&quot;&apos;) THEN SET rec.&quot;type&quot; = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;subtype&apos;) THEN SET rec.subtype = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;&quot;action&quot;&apos;) THEN SET rec.&quot;action&quot; = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;durationMs&apos;) THEN SET rec.durationMs = CAST(val AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;entryStatus&apos;) THEN SET rec.entryStatus = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;code&apos;) THEN SET rec.code = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;name&apos;) THEN SET rec.name = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;message&apos;) THEN SET rec.message = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;detail&apos;) THEN SET rec.detail = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;WHEN lower(name) = lower(&apos;severity&apos;) THEN SET rec.severity = val;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;END CASE;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+&#x9;&#x9;-- Insert the final record
+&#x9;&#x9;IF (numEntries &gt; 0) THEN
+&#x9;&#x9;&#x9;INSERT INTO result VALUES (rec);
+&#x9;&#x9;END IF;
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1515851806885</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1515851806885</attribute>
+</metadata>

@@ -1,0 +1,207 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="MEMBER_PHONE" path="/shared/Delta_DV/Physical/Formatting/TIBCOEBX/MEMBER_PHONE" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <annotation><![CDATA[Comments saved during Model Generation 2020/11/16 15:33:01
+{OPTION CASE_SENSITIVE=&quot;false&quot; }
+
+
+Comments saved during Model Generation 2020/11/26 14:14:36
+{ OPTION CASE_SENSITIVE=&quot;false&quot; }
+]]></annotation>
+  <columns>
+    <column name="Member_Phone_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Phone_NBR_TXT" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Extension_TXT" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Phone_Type_CD" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Unique_ID" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_NM" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Create_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Created_By_ID" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Last_Updated_By_ID" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Last_Update_DTM" nullable="true">
+      <datatype type="STRING"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Primary_IND" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_MEM_MEMBER_ROLE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="MEMBER_ROLE_SKEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="T_LAST_USER_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATOR_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATION_DATE">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="T_LAST_WRITE">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="IDS_SOURCE_SYSTEM_MEMBER_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="IDS_SOURCE_SYSTEM_CONTRACT_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="SOURCE_SYSTEM_PERSON_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="SOURCE_SYSTEM_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="INFORMATION">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="AUDIT_FLG">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="REGION_CD">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="NATIVE_AMERICAN_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="NATIVE_AMERICAN_IND">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="PERSON_SKEY_">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_MEM_PERSON_PHONE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="PERSON_PHONE_SKEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="T_LAST_USER_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATOR_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATION_DATE">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="T_LAST_WRITE">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="PRIMARY_IND">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="PHONE_NBR_TXT">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="EXTENSION_TXT">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="PHONE_TYPE_CD_">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="SOURCE_SYSTEM_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="SOURCE_SYSTEM_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="PERSON_SKEY_">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+       EBX_MEM_PERSON_PHONE.PERSON_PHONE_SKEY   Member_Phone_SKEY, 
+    EBX_MEM_PERSON_PHONE.PHONE_NBR_TXT Phone_NBR_TXT, 
+    EBX_MEM_PERSON_PHONE.EXTENSION_TXT Extension_TXT, 
+    EBX_MEM_MEMBER_ROLE.MEMBER_ROLE_SKEY Member_SKEY, 
+    EBX_MEM_PERSON_PHONE.PHONE_TYPE_CD_ Phone_Type_CD, 
+    EBX_MEM_PERSON_PHONE.SOURCE_SYSTEM_ID Source_System_Unique_ID, 
+    EBX_MEM_PERSON_PHONE.SOURCE_SYSTEM_NM Source_System_NM, 
+    EBX_MEM_PERSON_PHONE.T_CREATION_DATE Create_DTM, 
+    EBX_MEM_PERSON_PHONE.T_CREATOR_ID Created_By_ID, 
+    EBX_MEM_PERSON_PHONE.T_LAST_USER_ID Last_Updated_By_ID, 
+    FROM_UNIXTIME(EBX_MEM_PERSON_PHONE.T_LAST_WRITE / 1000) Last_Update_DTM, 
+    EBX_MEM_PERSON_PHONE.PRIMARY_IND Primary_IND
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_MEM_PERSON_PHONE EBX_MEM_PERSON_PHONE INNER JOIN 
+        /shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_MEM_MEMBER_ROLE EBX_MEM_MEMBER_ROLE
+    ON EBX_MEM_MEMBER_ROLE.PERSON_SKEY_ = EBX_MEM_PERSON_PHONE.PERSON_SKEY_</attribute>
+  <attribute name="creationDate" type="LONG">1605540474364</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1605540474364</attribute>
+</metadata>

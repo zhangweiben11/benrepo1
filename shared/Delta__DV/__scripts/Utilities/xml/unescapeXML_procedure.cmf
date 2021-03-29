@@ -1,0 +1,121 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="unescapeXML" path="/shared/Delta_DV/_scripts/Utilities/xml/unescapeXML" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[unescapeXML:
+&#x9;Change xml entities to their corresponding characters.
+
+&#x9;The Escape Characters
+&#x9;When writing parsed data to XML: 
+&#x9;Character in HDF5 Output Character in XML 
+&#x9;quote &#x9;&#x9;&#x9;(&quot;) &#x9;&#x9;&quot; 
+&#x9;apostrophe &#x9;&#x9;(&apos;) &#x9;&#x9;&apos; 
+&#x9;ampersand&#x9;&#x9;()&#x9;&#x9;&#x9;&amp;
+&#x9;less than &#x9;&#x9;(&lt;) &#x9;&#x9;&lt; 
+&#x9;greater than &#x9;(&gt;) &#x9;&#x9;&gt; 
+&#x9;slash &#x9;&#x9;&#x9;(\) &#x9;&#x9;No escape required 
+&#x9;space &#x9;&#x9;&#x9;( )&#x9;&#x9;&#x9;No escape required 
+ 
+&#x9;Input:
+&#x9;&#x9;inStr - incoming xml escaped string.  
+&#x9;&#x9;&#x9;Values: Any xml escaped text string
+&#x9;Output:
+&#x9;&#x9;outStr - incoming xml escaped xml string with xml entities unescaped.
+&#x9;&#x9;&#x9;Values: Any text string
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2011.2&#x9;&#x9;3/23/2011&#x9;&#x9;Calvin Goodrich&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inStr" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="outStr" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/* unescapeXML:
+&#x9;Change xml entities to their corresponding characters.
+ 
+&#x9;Input:
+&#x9;&#x9;inStr - incoming xml escaped string.  
+&#x9;&#x9;&#x9;Values: Any xml escaped text string
+&#x9;Output:
+&#x9;&#x9;outStr - incoming xml escaped xml string with xml entities unescaped.
+&#x9;&#x9;&#x9;Values: Any text string
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2011.2&#x9;&#x9;3/23/2011&#x9;&#x9;Calvin Goodrich&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE unescapeXML(
+&#x9;IN inStr longvarchar,
+&#x9;OUT outStr longvarchar&#x9;
+)
+BEGIN
+/*
+&#x9;The Escape Characters
+&#x9;When writing parsed data to XML: 
+&#x9;Character in HDF5 Output Character in XML 
+&#x9;quote &#x9;&#x9;&#x9;(&quot;) &#x9;&#x9;&amp;quot; 
+&#x9;apostrophe &#x9;&#x9;(&apos;) &#x9;&#x9;&amp;apos; 
+&#x9;ampersand&#x9;&#x9;(&amp;)&#x9;&#x9;&#x9;&amp;amp;
+&#x9;less than &#x9;&#x9;(&lt;) &#x9;&#x9;&amp;lt; 
+&#x9;greater than &#x9;(&gt;) &#x9;&#x9;&amp;gt; 
+&#x9;slash &#x9;&#x9;&#x9;(\) &#x9;&#x9;No escape required 
+&#x9;space &#x9;&#x9;&#x9;( )&#x9;&#x9;&#x9;No escape required 
+*/
+&#x9;set outStr = REPLACE(inStr,  &apos;&amp;lt;&apos;, &apos;&lt;&apos;);
+&#x9;set outStr = REPLACE(outStr, &apos;&amp;gt;&apos;, &apos;&gt;&apos;);
+&#x9;set outStr = REPLACE(outStr, &apos;&amp;apos;&apos;, &apos;&apos;&apos;&apos;);
+&#x9;set outStr = REPLACE(outStr, &apos;&amp;quot;&apos;, &apos;&quot;&apos;);
+&#x9;set outStr = REPLACE(outStr, &apos;&amp;amp;&apos;, &apos;&amp;&apos;);
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

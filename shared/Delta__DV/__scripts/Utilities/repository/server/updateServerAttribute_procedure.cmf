@@ -1,0 +1,486 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="updateServerAttribute" path="/shared/Delta_DV/_scripts/Utilities/repository/server/updateServerAttribute" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[updateServerAttribute:
+    * Update the Server Attributes
+ 
+&#x9;Common settings to configure:
+&#x9;SQL
+&#x9;--------------
+&#x9;name=/server/sql/language/caseSensitive, type=BOOLEAN
+&#x9;name=/server/sql/language/ignoreTrailingSpaces, type=BOOLEAN
+
+&#x9;MEMORY
+&#x9;--------------
+&#x9;ATTR=/server/memory/heap/javaHeapMaxOnServerRestart, ATTR_TYPE=INTEGER, NEWVAL=2048
+
+&#x9;WEB SERVICES
+&#x9;--------------
+&#x9;ATTR=/server/webservices/baseURI, ATTR_TYPE=STRING, NEWVAL=http://com.company
+
+&#x9;STUDIO (LIST and MAP)
+&#x9;---------------------
+&#x9;Example of LIST: ATTR=/studio/data/examplelist, ATTR_TYPE=LIST, NEWVAL=
+&#x9;&#x9;&#x9;&#x9;&lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;a1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;b2&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/common:item&gt;
+
+&#x9;Example of MAP: ATTR=/studio/data/examplemap, ATTR_TYPE=MAP, NEWVAL=
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:entry&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;Environment&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;DEV1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:entry&gt;
+
+&#x9;Input:
+&#x9;&#x9;debug &#x9;&#x9;CHAR(1) -- Y=debug on, N=debug off 
+&#x9;&#x9;ATTR &#x9;&#x9;VARCHAR(1024), -- e.g. /server/sql/language/caseSensitive
+&#x9;&#x9;ATTR_TYPE &#x9;VARCHAR(1024), -- e.g. STRING, MAP, LIST
+&#x9;&#x9;NEWVAL &#x9;&#x9;VARCHAR(1024) - the new value to be updated.  May be XML when the type is MAP or LIST
+
+&#x9;Output: none
+
+&#x9;Exceptions:  Exception may be thrown.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.2&#x9;&#x9;2/10/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new 
+&#x9;2017.2&#x9;&#x9;2/10/2016&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.2&#x9;&#x9;&#x9;modified input variable NEWVAL to LONGVARCHAR
+&#x9;2017.2&#x9;&#x9;3/17/2016&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.2&#x9;&#x9;&#x9;modified request variable to LONGVARCHAR
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="ATTR" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="ATTR_TYPE" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="NEWVAL" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/Pause" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="timeInMilliSeconds" direction="IN">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/server/operations/updateServerAttributes" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="updateServerAttributes" direction="IN">
+        <datatype name="updateServerAttributes" extendedName="{http://www.compositesw.com/services/system/admin/server}updateServerAttributes" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}updateServerAttributes" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}updateServerAttributes">
+          <schemaDatatype>
+            <datatype name="updateServerAttributes" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="updateServerAttributesRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/server">
+                <datatype name="attributeList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="attribute" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="attribute" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeTypeValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                          <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                            <datatype name="attributeTypeValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                              <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="1025"/>
+                              </element>
+                              <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeTypeValueMap" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                                  <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                                      <element name="key" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1281"/>
+                                      </element>
+                                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1281"/>
+                                      </element>
+                                    </datatype>
+                                  </element>
+                                </datatype>
+                              </element>
+                              <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                  <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="1537"/>
+                      </element>
+                      <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="2049"/>
+                      </element>
+                      <element name="unset" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="updateServerAttributesResponse" direction="OUT">
+        <datatype name="updateServerAttributesResponse" extendedName="{http://www.compositesw.com/services/system/admin/server}updateServerAttributesResponse" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}updateServerAttributesResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}updateServerAttributesResponse">
+          <schemaDatatype>
+            <datatype name="updateServerAttributesResponse" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="updateServerAttributesResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="2305"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="2561">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;updateServerAttribute:
+
+
+    This procecure is used to update the configuration server attribute on the server.
+&#x9;To see a list of all server attribute definitions use this procedure /shared/ASAssets/Utilities/repository/getServerAttributeDefs(/)
+&#x9;To see a list of all server attribute values use this procedure /shared/ASAssets/Utilities/repository/server/getServerAttributesAll(/)
+ 
+&#x9;The invoker must have the following studio rights: ACCESS_TOOLS, READ_ALL_CONFIG, MODIFY_ALL_CONFIG
+
+&#x9;Common settings to configure:
+&#x9;SQL
+&#x9;--------------
+&#x9;name=/server/sql/language/caseSensitive, type=BOOLEAN
+&#x9;name=/server/sql/language/ignoreTrailingSpaces, type=BOOLEAN
+
+&#x9;MEMORY
+&#x9;--------------
+&#x9;ATTR=/server/memory/heap/javaHeapMaxOnServerRestart, ATTR_TYPE=INTEGER, NEWVAL=2048
+
+&#x9;WEB SERVICES
+&#x9;--------------
+&#x9;ATTR=/server/webservices/baseURI, ATTR_TYPE=STRING, NEWVAL=http://com.company
+
+&#x9;STUDIO (LIST and MAP)
+&#x9;---------------------
+&#x9;Example of LIST: ATTR=/studio/data/examplelist, ATTR_TYPE=LIST, NEWVAL=
+&#x9;&#x9;&#x9;&#x9;&lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;a1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;b2&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/common:item&gt;
+
+&#x9;Example of MAP: ATTR=/studio/data/examplemap, ATTR_TYPE=MAP, NEWVAL=
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:entry&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;Environment&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;DEV1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:entry&gt;
+
+&#x9;Example of STRING_ARRAY: ATTR=/studio/data/examplearray, ATTR_TYPE=STRING_ARRAY, NEWVAL=
+                       &lt;common:item&gt;a1&lt;/common:item&gt;
+                       &lt;common:item&gt;a2&lt;/common:item&gt;
+
+&#x9;Input:
+&#x9;&#x9;debug &#x9;&#x9;CHAR(1) -- Y=debug on, N=debug off 
+&#x9;&#x9;ATTR &#x9;&#x9;VARCHAR(1024), -- e.g. /server/sql/language/caseSensitive
+&#x9;&#x9;ATTR_TYPE &#x9;VARCHAR(1024), -- e.g. STRING, MAP, LIST
+&#x9;&#x9;NEWVAL &#x9;&#x9;VARCHAR(1024) - the new value to be updated.  May be XML when the type is MAP or LIST
+
+&#x9;Output: none
+
+&#x9;Exceptions:  Exception may be thrown.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.2&#x9;&#x9;2/10/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new 
+&#x9;2017.2&#x9;&#x9;2/10/2016&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.2&#x9;&#x9;&#x9;modified input variable NEWVAL to LONGVARCHAR
+&#x9;2017.2&#x9;&#x9;3/17/2016&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.2&#x9;&#x9;&#x9;modified request variable to LONGVARCHAR
+&#x9;2019.400&#x9;10/14/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added an XML section for updating STRING_ARRAY.
+&#x9;2020.401&#x9;11/02/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Handle NEWVAL=NULL or NEWVAL=[NULL] for simple value attribute paths and set &lt;common:value/&gt; to a null string.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE updateServerAttribute(
+&#x9;IN debug &#x9;&#x9;&#x9;&#x9;CHAR(1),-- e.g. Y or N
+&#x9;IN ATTR &#x9;&#x9;&#x9;&#x9;VARCHAR(1024), -- e.g. /server/sql/language/caseSensitive
+&#x9;IN ATTR_TYPE &#x9;&#x9;&#x9;VARCHAR(1024), -- e.g. STRING, MAP, LIST, STRING_ARRAY
+&#x9;IN NEWVAL &#x9;&#x9;&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;VARCHAR(255) DEFAULT &apos;updateServerAttribute&apos;;
+&#x9;DECLARE request &#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE response &#x9;&#x9;XML;
+&#x9;DECLARE fault &#x9;&#x9;&#x9;XML;
+    DECLARE ex &#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;CASE 
+&#x9;WHEN UPPER(ATTR_TYPE) = &apos;MAP&apos; THEN
+&#x9;&#x9;set request =
+    &#x9;&apos;&lt;ns1:updateServerAttributes &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/server&quot; &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&apos;||CHR(10)||
+    &#x9;&apos;    &lt;ns1:attributes&gt;&apos;||CHR(10)||
+    &#x9;&apos;&#x9;    &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:name&gt;&apos; || ATTR || &apos;&lt;/common:name&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:type&gt;&apos; || ATTR_TYPE || &apos;&lt;/common:type&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:valueMap&gt;&apos;|| CHR(10) ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;NEWVAL || 
+/* This string format gets passed in as the NEWVAL variable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:entry&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;Environment&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;DEV1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:entry&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:entry&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;NAME1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:key&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;common:value&gt;VALUE1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;/common:entry&gt;
+*/
+&#x9;&#x9;&apos;            &lt;/common:valueMap&gt;&apos;||CHR(10)||
+    &#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+    &#x9;&apos;    &lt;/ns1:attributes&gt;&apos;||CHR(10)||
+    &#x9;&apos;&lt;/ns1:updateServerAttributes&gt;&apos;;
+
+&#x9;WHEN UPPER(ATTR_TYPE) = &apos;LIST&apos; THEN
+&#x9;&#x9;set request =
+    &#x9;&apos;&lt;ns1:updateServerAttributes &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/server&quot; &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&apos;||CHR(10)||
+    &#x9;&apos;    &lt;ns1:attributes&gt;&apos;||CHR(10)||
+    &#x9;&apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:name&gt;&apos; || ATTR || &apos;&lt;/common:name&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:type&gt;&apos; || ATTR_TYPE || &apos;&lt;/common:type&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:valueList&gt;&apos;|| CHR(10) ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;NEWVAL || 
+/* This string format gets passed in as the NEWVAL variable
+&#x9;&#x9;&#x9;&#x9;        &lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;        &#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;        &#x9;&#x9;&lt;common:value&gt;a1&lt;/common:value&gt;
+&#x9;&#x9;&#x9;        &#x9;&lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;        &lt;common:item&gt;
+&#x9;&#x9;&#x9;        &#x9;&#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;        &#x9;&#x9;&lt;common:value&gt;b2&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;        &lt;/common:item&gt;
+&#x9;&#x9;&#x9;&#x9;        &lt;common:item&gt;
+&#x9;&#x9;&#x9;&#x9;        &#x9;&lt;common:type&gt;STRING&lt;/common:type&gt;
+&#x9;&#x9;&#x9;&#x9;        &#x9;&lt;common:value&gt;c3&lt;/common:value&gt;
+&#x9;&#x9;&#x9;&#x9;        &lt;/common:item&gt;
+*/
+&#x9;&#x9;&apos;            &lt;/common:valueList&gt;&apos;||CHR(10)||
+    &#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+    &#x9;&apos;    &lt;/ns1:attributes&gt;&apos;||CHR(10)||
+    &#x9;&apos;&lt;/ns1:updateServerAttributes&gt;&apos;;
+
+&#x9;WHEN UPPER(ATTR_TYPE) = &apos;STRING_ARRAY&apos; THEN
+&#x9;&#x9;set request =
+    &#x9;&apos;&lt;ns1:updateServerAttributes &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/server&quot; &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; &apos;||CHR(10)||
+&#x9;&#x9;&apos; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&apos;||CHR(10)||
+    &#x9;&apos;    &lt;ns1:attributes&gt;&apos;||CHR(10)||
+    &#x9;&apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:name&gt;&apos; || ATTR || &apos;&lt;/common:name&gt;&apos;||CHR(10)||
+    &#x9;&apos;            &lt;common:type&gt;&apos; || ATTR_TYPE || &apos;&lt;/common:type&gt;&apos;||CHR(10)||
+        &apos;            &lt;common:valueArray&gt;&apos;|| CHR(10) ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;NEWVAL ||
+/* This string format gets passed in as the NEWVAL variable
+                       &lt;common:item&gt;a1&lt;/common:item&gt;
+                       &lt;common:item&gt;a2&lt;/common:item&gt;
+*/
+        &apos;            &lt;/common:valueArray&gt;&apos;||CHR(10)||
+    &#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+    &#x9;&apos;    &lt;/ns1:attributes&gt;&apos;||CHR(10)||
+    &#x9;&apos;&lt;/ns1:updateServerAttributes&gt;&apos;;
+
+
+&#x9;ELSE
+&#x9;&#x9;IF (UPPER(NEWVAL) = &apos;NULL&apos; OR UPPER(NEWVAL) = &apos;[NULL]&apos;) THEN
+&#x9;&#x9;&#x9;-- Set the common:value to a null entry
+&#x9;&#x9;&#x9;set request =
+&#x9;&#x9;&#x9;&apos;&lt;ns1:updateServerAttributes &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/server&quot; &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;ns1:attributes&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            &lt;common:name&gt;&apos; || ATTR || &apos;&lt;/common:name&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            &lt;common:type&gt;&apos; || ATTR_TYPE || &apos;&lt;/common:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            &lt;common:value/&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;/ns1:attributes&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;&lt;/ns1:updateServerAttributes&gt;&apos;;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;set request =
+&#x9;&#x9;&#x9;&apos;&lt;ns1:updateServerAttributes &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/server&quot; &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;ns1:attributes&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            &lt;common:name&gt;&apos; || ATTR || &apos;&lt;/common:name&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            &lt;common:type&gt;&apos; || ATTR_TYPE || &apos;&lt;/common:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            &lt;common:value&gt;&apos; || NEWVAL || &apos;&lt;/common:value&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;/ns1:attributes&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;&lt;/ns1:updateServerAttributes&gt;&apos;;
+&#x9;&#x9;END IF;
+&#x9;END CASE;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName || &apos;:&apos;||CHR(10)||request);
+&#x9;&#x9;CALL PAUSE(300);
+&#x9;END IF;
+
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;CALL /services/webservices/system/admin/server/operations/updateServerAttributes(request, response, fault);
+&#x9;&#x9;--call print(&apos;fault1: &apos;||NVL(cast(fault as longvarchar),&apos;[NULL]&apos;));
+&#x9;&#x9;--call pause(500);
+&#x9;&#x9;IF (fault IS NOT NULL) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE CAST(fault AS LONGVARCHAR);
+&#x9;&#x9;END IF;
+&#x9;EXCEPTION
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;--call print(&apos;EXCEPTION: &apos;||CAST(CURRENT_EXCEPTION.MESSAGE AS LONGVARCHAR));
+&#x9;&#x9;&#x9;RAISE;
+&#x9;END;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896425519</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/228</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/227</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

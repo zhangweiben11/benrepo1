@@ -1,0 +1,270 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="vwBI_InvoiceSearch" path="/shared/Delta_DV/Business/Logical/Billing/Views/vwBI_InvoiceSearch" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="invoiceNumber" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoiceDate" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="coverageStartDate" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="coverageEndDate" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoiceStatus" nullable="true">
+      <datatype type="STRING" maxLength="20"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoiceType" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoiceSubType" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="billToGroupNumber" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="billToDivisionNumber" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="billToGroupName" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="numberOfEnrollees" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoiceAmount" nullable="true">
+      <datatype type="DECIMAL" maxDigits="18" minFractionalDigits="2" maxFractionalDigits="2"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="adjustmentAmount" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="legalEntity" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="billToId" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="billerId" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoiceVersion" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoicePaidStatus" nullable="true">
+      <datatype type="STRING" maxLength="6"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="invoicebalancedue" nullable="true">
+      <datatype type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/Ebillpay/Group-Invoice/dbo/invoice" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="id" nullable="false">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="invoice_number">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="invoice_json">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="invoice_status">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+      <element name="created_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="updated_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="last_updated_by">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="group_numbers">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_group_name">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_group_number">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_bill_to_id">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_invoice_type">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_brand">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="invoice_release_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="v_invoice_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="v_biller_id">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_invoice_amount">
+        <datatype type="DECIMAL" maxDigits="18" minFractionalDigits="2" maxFractionalDigits="2"/>
+      </element>
+      <element name="v_group_name_reverse">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_invoice_sub_type">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_bill_to_division_number">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_coverage_start_date">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_coverage_end_date">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_number_of_enrollees">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_adjustment_amount">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_invoice_legal_entity">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="v_group_amount_due">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="version_number">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="v_bill_type_identifier">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/efs/APPS/XXDD_AR_INV_STATUS_V" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="CONS_INV_ID" nullable="false">
+        <datatype type="INTEGER" minValue="-999999999999999" maxValue="999999999999999"/>
+      </element>
+      <element name="CONS_BILLING_NUMBER" nullable="false">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="BILL_TO_GROUP" nullable="false">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="INVOICE_PAID_STATUS">
+        <datatype type="STRING" maxLength="6"/>
+      </element>
+      <element name="BALANCE_DUE">
+        <datatype type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    invoice.invoice_number invoiceNumber, 
+    invoice.v_invoice_date invoiceDate, 
+    invoice.v_coverage_start_date coverageStartDate, 
+    invoice.v_coverage_end_date coverageEndDate, 
+    invoice.invoice_status invoiceStatus, 
+    invoice.v_invoice_type invoiceType, 
+    invoice.v_invoice_sub_type invoiceSubType, 
+    invoice.v_group_number billToGroupNumber, 
+    invoice.v_bill_to_division_number billToDivisionNumber, 
+    invoice.v_group_name billToGroupName, 
+    invoice.v_number_of_enrollees numberOfEnrollees, 
+    invoice.v_invoice_amount invoiceAmount, 
+    invoice.v_adjustment_amount adjustmentAmount, 
+    invoice.v_invoice_legal_entity legalEntity, 
+    invoice.v_bill_to_id billToId, 
+    invoice.v_biller_id billerId, 
+    invoice.version_number invoiceVersion, 
+    XXDD_AR_INV_STATUS_V.INVOICE_PAID_STATUS invoicePaidStatus, 
+    XXDD_AR_INV_STATUS_V.BALANCE_DUE invoicebalancedue
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/Ebillpay/&quot;Group-Invoice&quot;/dbo/invoice invoice LEFT OUTER JOIN 
+        /shared/Delta_DV/Physical/Metadata/DataSources/efs/APPS/XXDD_AR_INV_STATUS_V XXDD_AR_INV_STATUS_V
+    ON (invoice.invoice_number = XXDD_AR_INV_STATUS_V.CONS_BILLING_NUMBER AND 
+        invoice.invoice_number = XXDD_AR_INV_STATUS_V.CONS_BILLING_NUMBER) AND 
+        invoice.v_group_number = XXDD_AR_INV_STATUS_V.BILL_TO_GROUP AND 
+XXDD_AR_INV_STATUS_V.CONS_BILLING_NUMBER=&apos;BE000098050&apos;</attribute>
+  <attribute name="creationDate" type="LONG">1611171515722</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2850169</attribute>
+  <attribute name="creatorUserName" type="STRING">dca32905</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611353984347</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2850169</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca32905</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611171515722</attribute>
+</metadata>

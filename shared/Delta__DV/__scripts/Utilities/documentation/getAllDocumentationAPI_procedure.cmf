@@ -1,0 +1,480 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getAllDocumentationAPI" path="/shared/Delta_DV/_scripts/Utilities/documentation/getAllDocumentationAPI" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getAllDocumentationAPI:
+
+&#x9;This procedure servers as an &quot;API&quot; procedure.  It can be invoked by other application procedures to return the documentation.
+&#x9;If the file path is left null, then it does not attempt to write to a file.
+ 
+&#x9;Input:
+&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;The starting CIS path for which to introspect resources and generate documentation.  Must be of type CONTAINER.
+&#x9;&#x9;resourceType&#x9;&#x9;&#x9;&#x9;The resource type of the resource path.
+&#x9;&#x9;docPreambleImpl&#x9;&#x9;&#x9;&#x9;The CIS path to the procedure that represents the preamble of the documentation.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;If left null, the default &quot;geDocPreambleImpl1&quot; is used.
+&#x9;&#x9;docResourceFormatImpl&#x9;&#x9;The CIS path to the procedure that performs the documentation formatting.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;If left null, the default &quot;getDocResourceFormatImpl1&quot; is used.
+&#x9;&#x9;constantPath&#x9;&#x9;&#x9;&#x9;This is the path to the constants file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;e.g. /shared/ASAssets/Utilities/documentation/constants()
+&#x9;&#x9;switches&#x9;&#x9;&#x9;&#x9;&#x9;Provides guidance on what to print for documentation and save files.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The format is print_switch=[option1|{default_option2}|option3]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This is a space separate list with no spaces before or after the equal sign.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_containers=[{none}|all] - print the resource container (folder)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_annotations=[none|{all}|nonblank|blank] - print all annotations whether they are blank or not
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resource_projections=[none|{all}] - print the resource projections
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resources_used=[none|{all}] - print the immediate child resources used by the parent resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_accessed=[none|{all}] - print the data source accessed list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_lineage=[none|{all}] - print the data source lineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_time=[{no}|yes] - print the time it takes to retrieve the full documentation for each resource and the final time
+ &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file=[{no}|yes] - save the results to a file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file_intermediate=[{no}|yes] - save the file intermediately after each resource is completed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Example:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1) switches: when left blank or null then the defaults are taken
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: all documentation modules are printed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;2) switches: print_annotations=nonblank print_resource_projections=none print_resources_used=none print_datasource_lineage=none
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: only non-blank annotations are printed and nothing else
+
+&#x9;&#x9;excludeKeywordsInPathList&#x9;Exclude keywords in path, case insensitive.  Comma separated list.  These are whole words and not wild cards.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;A word is defined by what exists between folder separators &quot;/&quot;. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. &apos;analysis,archive&apos;
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;Exclude actual paths.  Double quotes are not required.  Comma separated list.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The exclude path list simply has to be present in any part of the resource path.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This means that it can be a partial path.
+&#x9;&#x9;filePath&#x9;&#x9;&#x9;&#x9;&#x9;The full file system path to generate the documentation file to.
+&#x9;Output:
+&#x9;&#x9;formattedText&#x9;&#x9;&#x9;&#x9;The formattted text is returned for all documentation
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;07/25/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Added the ability to save to a file after each resources formatted text is completed.  Modified input parameters.
+&#x9;2013.3&#x9;&#x9;05/12/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Fixed so that it will create directories prior to creating file. It throws an error if the directory does not exist.
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="resourcePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="docPreambleImpl" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="docResourceFormatImpl" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="constantPath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="switches" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludeKeywordsInPathList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludePathsList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="filePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="formattedText" direction="OUT" nullable="true">
+      <datatype name="Text" referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/documentation/helpers/parseDocSwitches" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="switches" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="command" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="commandOptionValue" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/createFileAscii" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="filePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="append" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="fileContent" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/existsDir" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="dirPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/makeDirs" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="dirPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/returnFolderNameAndFolderPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="mode" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="folderName" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="folderPath" direction="OUT">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/getConstantV2" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="constantsPath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="constantsName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="optionReturn" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="outValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* &#x9;getAllDocumentationAPI:
+
+&#x9;This procedure servers as an &quot;API&quot; procedure.  It can be invoked by other application procedures to return the documentation.
+&#x9;If the file path is left null, then it does not attempt to write to a file.
+ 
+&#x9;Input:
+&#x9;&#x9;resourcePath&#x9;&#x9;&#x9;&#x9;The starting CIS path for which to introspect resources and generate documentation.  Must be of type CONTAINER.
+&#x9;&#x9;resourceType&#x9;&#x9;&#x9;&#x9;The resource type of the resource path.
+&#x9;&#x9;docPreambleImpl&#x9;&#x9;&#x9;&#x9;The CIS path to the procedure that represents the preamble of the documentation.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;If left null, the default &quot;geDocPreambleImpl1&quot; is used.
+&#x9;&#x9;docResourceFormatImpl&#x9;&#x9;The CIS path to the procedure that performs the documentation formatting.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;If left null, the default &quot;getDocResourceFormatImpl1&quot; is used.
+&#x9;&#x9;constantPath&#x9;&#x9;&#x9;&#x9;This is the path to the constants file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;e.g. /shared/ASAssets/Utilities/documentation/constants()
+&#x9;&#x9;switches&#x9;&#x9;&#x9;&#x9;&#x9;Provides guidance on what to print for documentation and save files.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The format is print_switch=[option1|{default_option2}|option3]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This is a space separate list with no spaces before or after the equal sign.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_containers=[{none}|all] - print the resource container (folder)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_annotations=[none|{all}|nonblank|blank] - print all annotations whether they are blank or not
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resource_projections=[none|{all}] - print the resource projections
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resources_used=[none|{all}] - print the immediate child resources used by the parent resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_accessed=[none|{all}] - print the data source accessed list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_lineage=[none|{all}] - print the data source lineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_time=[{no}|yes] - print the time it takes to retrieve the full documentation for each resource and the final time
+ &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file=[{no}|yes] - save the results to a file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file_intermediate=[{no}|yes] - save the file intermediately after each resource is completed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Example:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1) switches: when left blank or null then the defaults are taken
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: all documentation modules are printed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;2) switches: print_annotations=nonblank print_resource_projections=none print_resources_used=none print_datasource_lineage=none
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: only non-blank annotations are printed and nothing else
+
+&#x9;&#x9;excludeKeywordsInPathList&#x9;Exclude keywords in path, case insensitive.  Comma separated list.  These are whole words and not wild cards.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;A word is defined by what exists between folder separators &quot;/&quot;. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. &apos;analysis,archive&apos;
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;Exclude actual paths.  Double quotes are not required.  Comma separated list.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The exclude path list simply has to be present in any part of the resource path.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This means that it can be a partial path.
+&#x9;&#x9;filePath&#x9;&#x9;&#x9;&#x9;&#x9;The full file system path to generate the documentation file to.
+&#x9;Output:
+&#x9;&#x9;formattedText&#x9;&#x9;&#x9;&#x9;The formattted text is returned for all documentation
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;07/25/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Added the ability to save to a file after each resources formatted text is completed.  Modified input parameters.
+&#x9;2013.3&#x9;&#x9;05/12/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Fixed so that it will create directories prior to creating file. It throws an error if the directory does not exist.
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getAllDocumentationAPI(
+    IN resourcePath &#x9;&#x9;&#x9;&#x9;LONGVARCHAR, -- must be a starting folder path to recurse through 
+&#x9;IN resourceType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,
+ &#x9;IN docPreambleImpl&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,  
+&#x9;IN docResourceFormatImpl&#x9;&#x9;LONGVARCHAR, 
+&#x9;IN constantPath&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN switches&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN excludeKeywordsInPathList&#x9;LONGVARCHAR,
+&#x9;IN excludePathsList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN filePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;OUT formattedText&#x9;&#x9;&#x9;&#x9;/lib/util/System.Text
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getAllDocumentationAPI&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) ;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;VARCHAR(1024);
+&#x9;DECLARE result&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR (formattedText LONGVARCHAR);
+&#x9;DECLARE resultText&#x9;&#x9;&#x9;&#x9;/lib/util/System.Text DEFAULT &apos;&apos;;
+&#x9;DECLARE eol&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE success&#x9;&#x9;&#x9;&#x9;&#x9;boolean;
+&#x9;DECLARE fileName,dirPath&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE resourceExists&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE parseDocSwitch&#x9;&#x9;&#x9;INTEGER;
+
+&#x9;-- check to see if the resource path exists
+&#x9;call /lib/resource/ResourceExists(resourcePath, resourceType, null, resourceExists);
+&#x9;if (resourceExists) then
+
+&#x9;&#x9;if (constantPath IS NULL) then
+&#x9;&#x9;&#x9;raise ex value &apos;The constantPath cannot be null.&apos;;
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;call /lib/resource/ResourceExists(constantPath, &apos;PROCEDURE&apos;, null, resourceExists);
+&#x9;&#x9;&#x9;if (NOT resourceExists) then
+&#x9;&#x9;&#x9;&#x9;raise ex value &apos;The constantPath does not exist=[&apos;||NVL(constantPath,&apos;null&apos;)||&apos;]&apos;;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Initialize variables
+&#x9;&#x9;set formattedText = &apos;&apos;;
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;debug&apos;, 1, debug);
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;eol&apos;, 1, eol);
+
+&#x9;&#x9;-- Create the directory if it does not exist
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/returnFolderNameAndFolderPath(REPLACE(filePath,&apos;\&apos;,&apos;/&apos;),&apos;E&apos;,fileName,dirPath);
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/existsDir(dirPath, resourceExists);
+&#x9;&#x9;if (not resourceExists) then
+&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Create directory path=&apos;||dirPath);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/makeDirs(dirPath,success);
+&#x9;&#x9;end if;
+
+&#x9;&#x9;--  Initialize the file if the file path is not empty and the switch save_file_intermediate=yes
+&#x9;&#x9;&#x9;--  no=0 which means to overwrite the file because it was not saved previously.  Write it all at once at the end. 
+&#x9;&#x9;&#x9;-- yes=1 which means append the contents since it has been saved intermediately along the way.
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file&apos;, parseDocSwitch);
+&#x9;&#x9;if (filePath IS NOT NULL AND LENGTH(&apos;|&apos;||filePath||&apos;|&apos;) &gt; 2 and parseDocSwitch = 1) then
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(filePath,0,formattedText);
+&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Resource documentation was initialized.&apos;);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Resource documentation could not be initialized.&apos;);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if; 
+
+&#x9;&#x9;/************************************************************************
+&#x9;&#x9; * Get the documentation preamble
+&#x9;&#x9; ************************************************************************/
+&#x9;&#x9;call /lib/resource/ResourceExists(docPreambleImpl, &apos;PROCEDURE&apos;, null, resourceExists);
+&#x9;&#x9;if (resourceExists) then
+
+&#x9;&#x9;&#x9;-- Construct the dynamic SQL statement
+&#x9;&#x9;&#x9;set sqlStatement = &apos;SELECT * from &apos;||docPreambleImpl||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;(&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(resourcePath,&apos;  &apos;))||&apos;&apos;&apos;&apos;|| &apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(resourceType,&apos;  &apos;))||&apos;&apos;&apos;&apos;|| &apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(constantPath,&apos;  &apos;))||&apos;&apos;&apos;&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;)&apos;;
+&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Invoking Preamble Format Procedure:&apos;||sqlStatement);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Open the dynamic cursor to the Document Preamble Implementation
+&#x9;&#x9;&#x9;set resultText = &apos;&apos;;
+&#x9;&#x9;&#x9;open result for sqlStatement;
+&#x9;&#x9;&#x9;for r as result do
+&#x9;&#x9;&#x9;&#x9;if (r.formattedText is not null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set resultText = resultText || r.formattedText;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end for;
+
+&#x9;&#x9;&#x9;-- Set the outgoing variable
+&#x9;&#x9;&#x9;set formattedText = formattedText || resultText;
+
+&#x9;&#x9;&#x9;/********************************
+&#x9;&#x9;&#x9; * Save File Intermediate
+&#x9;&#x9;&#x9; *******************************/
+&#x9;&#x9;&#x9;-- Save the documentation to the file if there is documentation and the file path is not empty and the switch save_file_intermediate=yes
+&#x9;&#x9;&#x9;&#x9;--  no=0 which means to overwrite the file because it was not saved previously.  Write it all at once at the end. 
+&#x9;&#x9;&#x9;&#x9;-- yes=1 which means append the contents since it has been saved intermediately along the way.
+&#x9;&#x9;&#x9;if ( (formattedText IS NOT NULL AND LENGTH(&apos;|&apos;||formattedText||&apos;|&apos;) &gt; 2) and
+&#x9;&#x9;&#x9;&#x9; (filePath IS NOT NULL AND LENGTH(&apos;|&apos;||filePath||&apos;|&apos;) &gt; 2) ) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file&apos;, parseDocSwitch);
+&#x9;&#x9;&#x9;&#x9;if (parseDocSwitch = 1) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file_intermediate&apos;, parseDocSwitch);
+&#x9;&#x9;&#x9;&#x9;&#x9;if (parseDocSwitch = 1) then&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(filePath,1,formattedText);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Resource documentation text has been saved.&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set formattedText = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;set formattedText = formattedText || eol;
+&#x9;&#x9;&#x9;end if; 
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Preamble Procedure [&apos;||NVL(docPreambleImpl,&apos;null&apos;)||&apos;] DOES NOT exist.&apos;);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;/************************************************************************
+&#x9;&#x9; * Get all documentation for all resources as per the passed in path
+&#x9;&#x9; ************************************************************************/
+&#x9;&#x9;call /lib/resource/ResourceExists(docResourceFormatImpl, &apos;PROCEDURE&apos;, null, resourceExists);
+&#x9;&#x9;if (resourceExists) then
+
+&#x9;&#x9;&#x9;-- Construct the dynamic SQL statement
+&#x9;&#x9;&#x9;set sqlStatement = &apos;SELECT * from &apos;||docResourceFormatImpl||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;(&apos; ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(resourcePath,&apos;  &apos;))||&apos;&apos;&apos;&apos; || &apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(resourceType,&apos;  &apos;))||&apos;&apos;&apos;&apos;|| &apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(constantPath,&apos;  &apos;))||&apos;&apos;&apos;&apos; || &apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(switches,&apos;  &apos;))||&apos;&apos;&apos;&apos; ||&apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(excludeKeywordsInPathList,&apos;  &apos;))||&apos;&apos;&apos;&apos; ||&apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(excludePathsList,&apos;  &apos;))||&apos;&apos;&apos;&apos; ||&apos;,&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos;&apos;||TRIM(NVL(REPLACE(filePath,&apos;\&apos;,&apos;/&apos;),&apos;  &apos;))||&apos;&apos;&apos;&apos; ||
+&#x9;&#x9;&#x9;&#x9;&#x9; &apos;)&apos;;
+&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Invoking Resource Format Implementation Procedure:&apos;||sqlStatement);
+&#x9;&#x9;&#x9;end if;
+
+&#x9;&#x9;&#x9;-- Open the dynamic cursor to the Document Resource Implementation
+&#x9;&#x9;&#x9;set resultText = &apos;&apos;;
+&#x9;&#x9;&#x9;open result for sqlStatement;
+&#x9;&#x9;&#x9;for r as result do
+&#x9;&#x9;&#x9;&#x9;if (r.formattedText is not null) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set resultText = resultText || r.formattedText;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end for;
+
+&#x9;&#x9;&#x9;-- Set the outgoing variable
+&#x9;&#x9;&#x9;set formattedText = formattedText || resultText;
+
+&#x9;&#x9;&#x9;/********************************
+&#x9;&#x9;&#x9; * Save File Intermediate
+&#x9;&#x9;&#x9; *******************************/
+&#x9;&#x9;&#x9;-- Save the documentation to the file if there is documentation and the file path is not empty and the switch save_file_intermediate=yes
+&#x9;&#x9;&#x9;&#x9;--  no=0 which means to overwrite the file because it was not saved previously.  Write it all at once at the end. 
+&#x9;&#x9;&#x9;&#x9;-- yes=1 which means append the contents since it has been saved intermediately along the way.
+&#x9;&#x9;&#x9;if ( (formattedText IS NOT NULL AND LENGTH(&apos;|&apos;||formattedText||&apos;|&apos;) &gt; 2) and
+&#x9;&#x9;&#x9;&#x9; (filePath IS NOT NULL AND LENGTH(&apos;|&apos;||filePath||&apos;|&apos;) &gt; 2) ) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file&apos;, parseDocSwitch);
+&#x9;&#x9;&#x9;&#x9;if (parseDocSwitch = 1) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(filePath,1,formattedText);
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Resource documentation text has been saved.&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;set formattedText = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if; 
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Resource Formatting Procedure [&apos;||NVL(docResourceFormatImpl,&apos;null&apos;)||&apos;] DOES NOT exist.&apos;);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+&#x9;else
+&#x9;&#x9;set formattedText = &apos;Resource path provided does not exist: &apos;||NVL(resourcePath,&apos;null&apos;);
+&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,formattedText);
+&#x9;&#x9;end if;
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

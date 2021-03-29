@@ -1,0 +1,130 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="HLP_DDC_Lite" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_DDC_Lite" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Case_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Managed_By_Stakeholder" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Client_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Database_Partition_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Created_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Resolved_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Queue_Fact" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Queue_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Queue_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Placed_In_Queue_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Complaint_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Case_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Member_Key">
+        <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      </element>
+      <element name="Provider_Key">
+        <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      </element>
+      <element name="Removed_From_Queue_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_Case_Complaint_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Case_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Case_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Managed_By_Stakeholder">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Complaint_Client_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Created_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Resolved_Date">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    a.*
+from
+/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_Case_Complaint_vw a 
+left join /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Queue_Fact b
+on a.Case_Key=b.Complaint_Case_Key and b.Queue_Name=&apos;TriageWQ&apos; and 
+ISNULL(b.Removed_From_Queue_DateTime,&apos;2060-12-31 23:59:59.000&apos;)&gt;CURRENT_TIMESTAMP()
+where a.Complaint_Case_Type_Code != &apos;COMPLAINT&apos;
+and b.Complaint_Event_Queue_Key is null
+</attribute>
+  <attribute name="creationDate" type="LONG">1611883076575</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612114859357</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611883076575</attribute>
+</metadata>

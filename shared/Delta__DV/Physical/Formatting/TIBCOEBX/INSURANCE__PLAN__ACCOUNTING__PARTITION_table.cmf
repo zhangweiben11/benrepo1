@@ -1,0 +1,129 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="INSURANCE_PLAN_ACCOUNTING_PARTITION" path="/shared/Delta_DV/Physical/Formatting/TIBCOEBX/INSURANCE_PLAN_ACCOUNTING_PARTITION" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Insurance_Plan_Accounting_Partition_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Last_Updated_By_ID" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Created_By_ID" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Create_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Begin_DT" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Accounting_Partition_NM" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_NM" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_ID" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Plan_Sponsor_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="BENEFIT_PACKAGE_SKEY_" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="INSURACE_PLAN_ACCOUNTING_PARTITION_SKEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="T_LAST_USER_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATOR_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="T_CREATION_DATE">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="T_LAST_WRITE">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="ACCOUNTING_PARTITION_NM">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="SOURCE_SYSTEM_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="SOURCE_SYSTEM_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="PLAN_SPONSOR_ROLE_SKEY_">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="BENEFIT_PACKAGE_SKEY_">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.INSURACE_PLAN_ACCOUNTING_PARTITION_SKEY Insurance_Plan_Accounting_Partition_SKEY, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.T_LAST_USER_ID Last_Updated_By_ID, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.T_CREATOR_ID Created_By_ID, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.T_CREATION_DATE Create_DTM, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.T_LAST_WRITE Begin_DT, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.ACCOUNTING_PARTITION_NM Accounting_Partition_NM, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.SOURCE_SYSTEM_NM Source_System_NM, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.SOURCE_SYSTEM_ID Source_System_ID, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.PLAN_SPONSOR_ROLE_SKEY_ Plan_Sponsor_SKEY, 
+    EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION.BENEFIT_PACKAGE_SKEY_
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/tibcoebx/dbo/EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION EBX_MEM_INSURACE_PLAN_ACCOUNTING_PARTITION</attribute>
+  <attribute name="creationDate" type="LONG">1612208217825</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612209691001</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89575</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1612208217825</attribute>
+</metadata>

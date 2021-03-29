@@ -1,0 +1,75 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_DivisionBenefitPkgNoClass_IDS" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionBenefitPkgNoClass_IDS" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="EffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="BenefitPkgID">
+          <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+        </element>
+        <element name="DeltaCareIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT DISTINCT
+       BenefitPackage.EMPGRP_LEVEL_1_ID GroupID, 
+       BenefitPackage.EMPGRP_LEVEL_2_ID DivisionID, 
+       CAST(BenefitPackage.EFFECTIVE_DATE AS DATE) EffDate, 
+       CAST(BenefitPackage.END_DATE AS DATE) EndDate, 
+       BenefitPackage.BENEFIT_PACKAGE_ID BenefitPkgID,
+       MAX(CASE
+              WHEN BusinessLevel.BUS_LEVEL_5_ID = &apos;DDIC DHMO&apos; THEN &apos;true&apos;
+              ELSE &apos;false&apos;
+           END
+          ) OVER (PARTITION BY BusinessLevel.EMPGRP_LEVEL_1_ID) DeltaCareIND
+FROM   [MTV_VIEWS].[dbo].EMPGRP_LVX_BEN_PKG_VW BenefitPackage
+JOIN   [MTV_VIEWS].[dbo].EMPGRP_LVL_BUS_LVL_VW BusinessLevel
+ON     BenefitPackage.EMPGRP_LEVEL_1_ID = BusinessLevel.EMPGRP_LEVEL_1_ID
+AND    BenefitPackage.EMPGRP_LEVEL_2_ID = BusinessLevel.EMPGRP_LEVEL_2_ID
+WHERE  BenefitPackage.EMPGRP_LEVEL_1_ID = &apos;{0}&apos; 
+AND    BenefitPackage.EMPGRP_LEVEL_2_ID = &apos;{1}&apos; 
+AND    {2} BETWEEN BenefitPackage.EFFECTIVE_DATE AND BenefitPackage.END_DATE
+AND    BusinessLevel.EMP_GRP_LEVEL = &apos;2&apos;
+AND    {2} BETWEEN BusinessLevel.EFFECTIVE_DATE AND BusinessLevel.END_DATE
+</attribute>
+  <attribute name="creationDate" type="LONG">1600731251260</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612390376581</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1600731251260</attribute>
+</metadata>

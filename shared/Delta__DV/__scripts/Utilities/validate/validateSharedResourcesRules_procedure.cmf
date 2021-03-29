@@ -1,0 +1,1066 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="validateSharedResourcesRules" path="/shared/Delta_DV/_scripts/Utilities/validate/validateSharedResourcesRules" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[validateSharedResourcesRules
+
+&#x9;This procedure is used to evaluate a group of DV source code resources for a given starting path
+&#x9; and provide an output of code that fails the source code check rules.
+
+&#x9;Evaluation rule list:
+&#x9;&#x9;1=impacted resource
+&#x9;&#x9;2=select distinct
+&#x9;&#x9;3=select *
+&#x9;&#x9;4=order by
+        5=published path not allowed
+        6=shared path(s) not allowed (specified)
+        7=users path not allowed
+&#x9;&#x9;8=limit number of web service operations
+&#x9;
+&#x9;Input:
+&#x9;&#x9;inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- N=no debug.  Y=debug on.
+&#x9;&#x9;startingContainer&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The folder path to interrogate
+&#x9;&#x9;displayViolations&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Display violation types: A[all],P[pass],W[warning],F[fail] or a combination like W,F.  A comma separated list.  Null returns all.
+&#x9;&#x9;includeList&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Comma separated list of evaluation rules to include.
+&#x9;&#x9;excludeList&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Comma separated list of evaluation rules to exclude.  ExcludeList overrides includeList.
+&#x9;&#x9;sendEmail&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- null/N=do not send an email.  Y=send email for each resource with a violation/warning F or W.
+&#x9;&#x9;emailList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A comma-separated list of valid emails
+&#x9;&#x9;-- comma separated list of paths that are not allowed to be directly referenced above the formatting layer.
+&#x9;&#x9;--&#x9;&#x9;Example: &apos;/shared/EnterpriseDatabase/Physical/Metadata,/shared/EnterpriseDatabase/Physical/MetadataFiles&apos;;
+&#x9;&#x9;pathNotAllowed&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9; &#x9;-- comma separated list of resource paths or partials paths to exclude when traversing a published resources lineage using getResourceLineageDirectRecursive().
+&#x9;&#x9;--&#x9;&#x9;Example: &apos;/shared/EnterpriseDatabase/Physical/Formatting,/lib,/services/webservices/system&apos;
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Comma separated list of resource paths or partials paths to exclude while processing.
+&#x9;&#x9;maxNumberWebServiceOperations INTEGER,&#x9;&#x9;-- maximum number of web service operations allowed per web service
+&#x9;&#x9;waiverList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A formatted list of resources that have been granted a waiver from processing.  These resources were previously in violation. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;The format is as follows: &apos;|&apos; || w.resourceType || &apos;:&apos; || w.ResourcePath || &apos;|&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- e.g. |/shared/path1/view1:TABLE|/shared/path2/proc2:PROCEDURE|
+&#x9;Output:
+&#x9;&#x9;OUT result&#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;&#x9;groupNum&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- A numerical sequential value indicating what group number the set of resources belong to.
+&#x9;&#x9;&#x9;violation&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- F=Fail, W=Warning, P=pass.
+&#x9;&#x9;&#x9;ruleViolations&#x9;&#x9;VARCHAR(255),&#x9;-- A list of rule violations that have occurred for a given resource.
+&#x9;&#x9;&#x9;ruleWarnings&#x9;&#x9;VARCHAR(255),&#x9;-- A list of rule warnings that have occurred for a given resource.
+&#x9;&#x9;&#x9;ruleMessage&#x9;&#x9;&#x9;VARCHAR(500),&#x9;-- A message to be relayed to the user.
+&#x9;&#x9;&#x9;parentPath&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The parent path of the resource being evaluated.
+&#x9;&#x9;&#x9;resourcePath &#x9;&#x9;VARCHAR(4000),&#x9;-- The actual path of the resource being evaluated.
+&#x9;&#x9;&#x9;resourceType&#x9;&#x9;VARCHAR(255),&#x9;-- The resource type of the resource being evaluated.
+&#x9;&#x9;&#x9;resourceName&#x9;&#x9;VARCHAR(255),&#x9;-- The resource name of the resource being evaluated.
+&#x9;&#x9;&#x9;ownerName&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The owner name of the resource being modified.
+&#x9;&#x9;&#x9;ownerDomain&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The owner domain of the resource being modified.
+&#x9;&#x9;&#x9;modUser&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The modified user of the resource being modified.
+&#x9;&#x9;&#x9;modDomain&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The modified user domain of the resource being modified.
+&#x9;&#x9;&#x9;modDate&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The modified timestamp of the resource being modified.
+&#x9;&#x9;&#x9;impactLevel&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The impact level (type) of the resource being modified.
+&#x9;&#x9;&#x9;impactMessage&#x9;&#x9;VARCHAR(32767)&#x9;-- The impact message of the resource beaing modified.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.200&#x9;01/08/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new
+&#x9;2019.200&#x9;02/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added waiver list check.  Added rule 8-limit number of web service operations
+&#x9;2019.200&#x9;04/19/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added to Utilities
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inDebug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="startingContainer" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="displayViolations" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="includeList" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="excludeList" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="sendEmail" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="emailList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="pathNotAllowed" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludePathsList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="maxNumberWebServiceOperations" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="waiverList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="groupNum">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="violation">
+          <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+        </element>
+        <element name="ruleViolations">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ruleWarnings">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ruleMessage">
+          <datatype name="VARCHAR" type="STRING" maxLength="500"/>
+        </element>
+        <element name="parentPath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="resourcePath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="resourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resourceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ownerName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="ownerDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="modUser">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="modDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="modDate">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="impactLevel">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="impactMessage">
+          <datatype name="VARCHAR" type="STRING" maxLength="32767"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/SendEMail" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="from" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="EMailAddress" type="STRING" maxLength="1024"/>
+      </element>
+      <element name="replyTo" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="EMailAddress" type="STRING" maxLength="1024"/>
+      </element>
+      <element name="to" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="EMailAddress" type="STRING" maxLength="1024"/>
+      </element>
+      <element name="cc" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="EMailAddress" type="STRING" maxLength="1024"/>
+      </element>
+      <element name="bcc" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="EMailAddress" type="STRING" maxLength="1024"/>
+      </element>
+      <element name="subject" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="contentType" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="content" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Content" type="STRING" maxLength="65535"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getResourceListRecursive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/returnFolderNameAndFolderPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="mode" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="folderName" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="folderPath" direction="OUT">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/server/getServerAttribute" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="attributePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="keyValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/validate/helpers/evaluateResource" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inDebug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="displayViolations" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="includeList" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="excludeList" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inGroupNum" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="pathNotAllowed" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="excludePathsList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="maxNumberWebServiceOperations" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="groupNum">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="violation">
+            <datatype type="STRING" minLength="1" maxLength="1"/>
+          </element>
+          <element name="ruleViolations">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ruleWarnings">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ruleMessage">
+            <datatype type="STRING" maxLength="500"/>
+          </element>
+          <element name="parentPath">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="modUser">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="modDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="modDate">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32767"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;validateSharedResourcesRules
+
+&#x9;This procedure is used to evaluate a group of DV source code resources for a given starting path
+&#x9; and provide an output of code that fails the source code check rules.
+
+&#x9;Evaluation rule list:
+&#x9;&#x9;1=impacted resource
+&#x9;&#x9;2=select distinct
+&#x9;&#x9;3=select *
+&#x9;&#x9;4=order by
+        5=published path not allowed
+        6=shared path(s) not allowed (specified)
+        7=users path not allowed
+&#x9;&#x9;8=limit number of web service operations
+&#x9;
+&#x9;Input:
+&#x9;&#x9;inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- N=no debug.  Y=debug on.
+&#x9;&#x9;startingContainer&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The folder path to interrogate
+&#x9;&#x9;displayViolations&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Display violation types: A[all],P[pass],W[warning],F[fail] or a combination like W,F.  A comma separated list.  Null returns all.
+&#x9;&#x9;includeList&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Comma separated list of evaluation rules to include.
+&#x9;&#x9;excludeList&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Comma separated list of evaluation rules to exclude.  ExcludeList overrides includeList.
+&#x9;&#x9;sendEmail&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- null/N=do not send an email.  Y=send email for each resource with a violation/warning F or W.
+&#x9;&#x9;emailList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A comma-separated list of valid emails
+&#x9;&#x9;-- comma separated list of paths that are not allowed to be directly referenced above the formatting layer.
+&#x9;&#x9;--&#x9;&#x9;Example: &apos;/shared/EnterpriseDatabase/Physical/Metadata,/shared/EnterpriseDatabase/Physical/MetadataFiles&apos;;
+&#x9;&#x9;pathNotAllowed&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9; &#x9;-- comma separated list of resource paths or partials paths to exclude when traversing a published resources lineage using getResourceLineageDirectRecursive().
+&#x9;&#x9;--&#x9;&#x9;Example: &apos;/shared/EnterpriseDatabase/Physical/Formatting,/lib,/services/webservices/system&apos;
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Comma separated list of resource paths or partials paths to exclude while processing.
+&#x9;&#x9;maxNumberWebServiceOperations INTEGER,&#x9;&#x9;-- maximum number of web service operations allowed per web service
+&#x9;&#x9;waiverList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A formatted list of resources that have been granted a waiver from processing.  These resources were previously in violation. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;The format is as follows: &apos;|&apos; || w.resourceType || &apos;:&apos; || w.ResourcePath || &apos;|&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- e.g. |/shared/path1/view1:TABLE|/shared/path2/proc2:PROCEDURE|
+&#x9;Output:
+&#x9;&#x9;OUT result&#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;&#x9;groupNum&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- A numerical sequential value indicating what group number the set of resources belong to.
+&#x9;&#x9;&#x9;violation&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- F=Fail, W=Warning, P=pass.
+&#x9;&#x9;&#x9;ruleViolations&#x9;&#x9;VARCHAR(255),&#x9;-- A list of rule violations that have occurred for a given resource.
+&#x9;&#x9;&#x9;ruleWarnings&#x9;&#x9;VARCHAR(255),&#x9;-- A list of rule warnings that have occurred for a given resource.
+&#x9;&#x9;&#x9;ruleMessage&#x9;&#x9;&#x9;VARCHAR(500),&#x9;-- A message to be relayed to the user.
+&#x9;&#x9;&#x9;parentPath&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The parent path of the resource being evaluated.
+&#x9;&#x9;&#x9;resourcePath &#x9;&#x9;VARCHAR(4000),&#x9;-- The actual path of the resource being evaluated.
+&#x9;&#x9;&#x9;resourceType&#x9;&#x9;VARCHAR(255),&#x9;-- The resource type of the resource being evaluated.
+&#x9;&#x9;&#x9;resourceName&#x9;&#x9;VARCHAR(255),&#x9;-- The resource name of the resource being evaluated.
+&#x9;&#x9;&#x9;ownerName&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The owner name of the resource being modified.
+&#x9;&#x9;&#x9;ownerDomain&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The owner domain of the resource being modified.
+&#x9;&#x9;&#x9;modUser&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The modified user of the resource being modified.
+&#x9;&#x9;&#x9;modDomain&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The modified user domain of the resource being modified.
+&#x9;&#x9;&#x9;modDate&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The modified timestamp of the resource being modified.
+&#x9;&#x9;&#x9;impactLevel&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The impact level (type) of the resource being modified.
+&#x9;&#x9;&#x9;impactMessage&#x9;&#x9;VARCHAR(32767)&#x9;-- The impact message of the resource beaing modified.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.200&#x9;01/08/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new
+&#x9;2019.200&#x9;02/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added waiver list check.  Added rule 8-limit number of web service operations
+&#x9;2019.200&#x9;04/19/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added to Utilities
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE validateSharedResourcesRules(
+&#x9;IN inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- N=no debug.  Y=debug on.
+&#x9;IN startingContainer&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The folder path to interrogate
+&#x9;IN displayViolations&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Display violation types: A[all],P[pass],W[warning],F[fail] or a combination like W,F.  A comma separated list.  Null returns all.
+&#x9;IN includeList&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Comma separated list of evaluation rules to include. Ex: 2,3,5,7
+&#x9;IN excludeList&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Comma separated list of evaluation rules to exclude.  ExcludeList overrides includeList. Ex: 1
+&#x9;IN sendEmail&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- null/N=do not send an email.  Y=send email for each resource with a violation/warning F or W.
+&#x9;IN emailList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A comma-separated list of valid emails
+&#x9;-- comma separated list of paths that are not allowed to be directly referenced above the formatting layer.
+&#x9;--&#x9;&#x9;Example: &apos;/shared/EnterpriseDatabase/Physical/Metadata,/shared/EnterpriseDatabase/Physical/MetadataFiles&apos;;
+&#x9;IN pathNotAllowed&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+ &#x9;-- comma separated list of resource paths or partials paths to exclude when traversing a published resources lineage using getResourceLineageDirectRecursive().
+&#x9;--&#x9;&#x9;Example: &apos;/shared/EnterpriseDatabase/Physical/Formatting,/lib,/services/webservices/system&apos;
+&#x9;IN excludePathsList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Comma separated list of resource paths or partials paths to exclude while processing.
+&#x9;IN maxNumberWebServiceOperations INTEGER,&#x9;&#x9;-- maximum number of web service operations allowed per web service
+&#x9;IN waiverList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- A formatted list of resources that have been granted a waiver from processing.  These resources were previously in violation. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;The format is as follows: &apos;|&apos; || w.resourceType || &apos;:&apos; || w.ResourcePath || &apos;|&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- e.g. |/shared/path1/view1:TABLE|/shared/path2/proc2:PROCEDURE|
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;&#x9;groupNum&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- A numerical sequential value indicating what group number the set of resources belong to.
+&#x9;&#x9;&#x9;violation&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- F=Fail, W=Warning, P=pass.
+&#x9;&#x9;&#x9;ruleViolations&#x9;&#x9;VARCHAR(255),&#x9;-- A list of rule violations that have occurred for a given resource.
+&#x9;&#x9;&#x9;ruleWarnings&#x9;&#x9;VARCHAR(255),&#x9;-- A list of rule warnings that have occurred for a given resource.
+&#x9;&#x9;&#x9;ruleMessage&#x9;&#x9;&#x9;VARCHAR(500),&#x9;-- A message to be relayed to the user.
+&#x9;&#x9;&#x9;parentPath&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The parent path of the resource being evaluated.
+&#x9;&#x9;&#x9;resourcePath &#x9;&#x9;VARCHAR(4000),&#x9;-- The actual path of the resource being evaluated.
+&#x9;&#x9;&#x9;resourceType&#x9;&#x9;VARCHAR(255),&#x9;-- The resource type of the resource being evaluated.
+&#x9;&#x9;&#x9;resourceName&#x9;&#x9;VARCHAR(255),&#x9;-- The resource name of the resource being evaluated.
+&#x9;&#x9;&#x9;ownerName&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The owner name of the resource being modified.
+&#x9;&#x9;&#x9;ownerDomain&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The owner domain of the resource being modified.
+&#x9;&#x9;&#x9;modUser&#x9;&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The modified user of the resource being modified.
+&#x9;&#x9;&#x9;modDomain&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The modified user domain of the resource being modified.
+&#x9;&#x9;&#x9;modDate&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The modified timestamp of the resource being modified.
+&#x9;&#x9;&#x9;impactLevel&#x9;&#x9;&#x9;VARCHAR(255),&#x9;-- The impact level (type) of the resource being modified.
+&#x9;&#x9;&#x9;impactMessage&#x9;&#x9;VARCHAR(32767)&#x9;-- The impact message of the resource beaing modified.
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;validateSharedResourcesRules&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT UPPER(NVL(inDebug,&apos;N&apos;));
+&#x9;DECLARE ruleKey&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(500) DEFAULT 
+&apos;    Evaluation rule list:
+        1=impacted resource
+        2=select distinct
+        3=select *
+        4=order by
+        5=published path not allowed
+        6=shared path(s) not allowed (&apos;||NVL(pathNotAllowed,&apos;null&apos;)||&apos;)
+        7=users path not allowed
+        8=limit number of web service operations
+&apos;;
+&#x9;DECLARE resourcePath&#x9;&#x9;&#x9;&#x9;VARCHAR(4000) DEFAULT startingContainer;
+&#x9;DECLARE resourceType&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE parentPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE resourceName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT null;
+&#x9;DECLARE len&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE groupNum&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+&#x9;DECLARE incrFlag&#x9;&#x9;&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE email&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE emailFormat&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;TEXT_PLAIN&apos;;
+&#x9;DECLARE displayName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE subject&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1000);&#x9;-- The email subject line
+&#x9;DECLARE body&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;&#x9;-- The body of the email
+&#x9;DECLARE sourceServerDisplayName&#x9;&#x9;VARCHAR;
+&#x9;DECLARE version&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE pos1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Get the version of the source server.
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/server/getServerAttribute(&apos;/server/config/info/version&apos;, version);
+&#x9;-- Get the display name of the source server.
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/server/getServerAttribute(&apos;/server/config/info/displayName&apos;, sourceServerDisplayName);
+&#x9;-- Concat the version at the end of the server display
+&#x9;SET pos1 = INSTR(sourceServerDisplayName, &apos;-&apos;, -1, 1);
+&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;SET sourceServerDisplayName = SUBSTRING(sourceServerDisplayName, 1, pos1);
+&#x9;END IF;
+&#x9;SET sourceServerDisplayName = sourceServerDisplayName || &apos;[&apos;||version||&apos;]&apos;;
+
+
+&#x9;-- Get the resource type
+&#x9;getType:
+&#x9;FOR r AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor(startingContainer, null) DO
+&#x9;&#x9;IF (r.&quot;type&quot; = &apos;DATA_SOURCE&apos; OR r.&quot;type&quot; = &apos;CONTAINER&apos;) THEN
+&#x9;&#x9;&#x9;SET resourceType = r.&quot;type&quot;;
+&#x9;&#x9;ELSEIF (r.&quot;type&quot; = &apos;LINK&apos; AND INSTR(resourcePath, &apos;/services/&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;SET resourceType = r.&quot;type&quot;;
+&#x9;&#x9;&#x9;leave getType;
+&#x9;&#x9;ELSEIF ((r.&quot;type&quot; = &apos;TABLE&apos; OR r.&quot;type&quot; = &apos;PROCEDURE&apos;) AND INSTR(resourcePath, &apos;/shared/&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;SET resourceType = r.&quot;type&quot;;
+&#x9;&#x9;&#x9;leave getType;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;SET message = moduleName||&apos; : resourceType=&apos;||NVL(resourceType,&apos;null&apos;) || &apos;   resourcePath=&apos;||NVL(resourcePath,&apos;null&apos;);  
+&#x9;&#x9;CALL PRINT(message);
+&#x9;END IF;
+
+&#x9;IF (resourceType &lt;&gt; &apos;CONTAINER&apos; AND resourceType &lt;&gt; &apos;DATA_SOURCE&apos; AND (INSTR(resourcePath,&apos;/shared/&apos;) &gt; 0 AND resourceType = &apos;DATA_SOURCE&apos;)) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The starting path must be a CONTAINER/FOLDER or a published DATA_SOURCE.&apos;;
+&#x9;END IF;
+
+&#x9;IF (resourceType IN (&apos;LINK&apos;, &apos;TABLE&apos;, &apos;PROCEDURE&apos;)) THEN
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/returnFolderNameAndFolderPath(resourcePath, &apos;R&apos;, resourceName, parentPath);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;SET message = moduleName||&apos; : parentPath=&apos;||NVL(parentPath,&apos;null&apos;) || &apos;   resourceName=&apos;||NVL(resourceName,&apos;null&apos;);  
+&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET resourcePath = parentPath;
+&#x9;&#x9;SET resourceType = &apos;CONTAINER&apos;;
+&#x9;END IF;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : waiverList=&apos;||NVL(waiverList,&apos;null&apos;));
+&#x9;END IF;
+
+&#x9;-- Logic for /services/databases folders
+&#x9;IF (INSTR(resourcePath, &apos;/services/databases&apos;) &gt; 0) THEN
+&#x9;&#x9;-- Iterate over the resource container list
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getResourceListRecursive(resourcePath, resourceType) 
+&#x9;&#x9;&#x9;WHERE resType &lt;&gt; &apos;CONTAINER&apos;
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;IF (resourceName IS NULL OR (resourceName IS NOT NULL AND resourceName = r.name)) THEN
+&#x9;&#x9;&#x9;&#x9;SET incrFlag = true;
+
+&#x9;&#x9;&#x9;&#x9;-- Check the resourceType and resourcePath for the waiver list.  
+&#x9;&#x9;&#x9;&#x9;--   Evaluate the resource if it is not in the waiver list.
+&#x9;&#x9;&#x9;&#x9;IF (waiverList IS NULL OR LENGTH(TRIM(waiverList)) = 0 OR INSTR(waiverList, &apos;|&apos;||r.resType||&apos;:&apos;||r.resPath||&apos;|&apos;) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : PROCESSING: resourceType=&apos;||r.resType||&apos;  resourcePath=&apos;||r.resPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(RPAD(&apos;-&apos;, len, &apos;-&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(RPAD(&apos;-&apos;, len, &apos;-&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Evaluate the resources
+&#x9;&#x9;&#x9;&#x9;&#x9;FOR e AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/validate/helpers/evaluateResource(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;debug, r.resPath, r.resType, displayViolations, includeList, excludeList, groupNum, pathNotAllowed, excludePathsList, maxNumberWebServiceOperations) 
+&#x9;&#x9;&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(e);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (sendEmail IS NOT NULL AND UPPER(sendEmail) = &apos;Y&apos; AND( e.violation = &apos;F&apos; OR e.violation = &apos;W&apos;)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET email = emailList;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET displayName = &apos;To Whom It May Concern&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Potentially could integrate with LDAP to get user email
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (email IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the subject and body for the email
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.violation = &apos;W&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET subject = &apos;DV VALIDATION WARNING: &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.violation = &apos;F&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET subject = &apos;DV VALIDATION EXCEPTION: &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = &apos;To: &apos;|| displayName || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;  &apos; || subject || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.ruleViolations IS NOT NULL AND LENGTH(TRIM(e.ruleViolations)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;   The following resource has been flagged due to the following rule violations: &apos;||e.ruleViolations || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.ruleMessage IS NOT NULL AND LENGTH(TRIM(e.ruleMessage)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Violation message: &apos;||e.ruleMessage || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.ruleWarnings IS NOT NULL AND LENGTH(TRIM(e.ruleWarnings)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;   The following resource has been flagged due to the following rule warnings: &apos;||e.ruleWarnings || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Path=&apos; || NVL(e.resourcePath,&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Modified User=&apos; || NVL(e.modUser,&apos;null&apos;) || &apos;@&apos; || NVL(e.modDomain,&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Modified Date=&apos; || NVL(CAST(e.modDate AS VARCHAR),&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Original User=&apos; || NVL(e.ownerName,&apos;null&apos;) || &apos;@&apos; || NVL(e.ownerDomain,&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || CHR(10) || ruleKey;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET subject = subject || &apos;Resource=&apos;||NVL(e.resourceName,&apos;null&apos;)||&apos;  Server=&apos;||sourceServerDisplayName;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Print out email debug
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : Send Email:&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  email=&apos;||NVL(email,&apos;null recipient list&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  subject=&apos;||NVL(subject,&apos;null subject&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  body=&apos;||NVL(body,&apos;null message body&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Send the email
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /lib/util/SendEMail(null, null, email, null, null, subject, emailFormat, NVL(body,&apos;null message body&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Only increment the groupNum once in the loop and only when rows are returned.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (incrFlag) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET groupNum = groupNum + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET incrFlag = false;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : WAIVER LIST: resourceType=&apos;||r.resType||&apos;  resourcePath=&apos;||r.resPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(RPAD(&apos;-&apos;, len, &apos;-&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(RPAD(&apos;-&apos;, len, &apos;-&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+
+&#x9;-- Logic for /services/webservices folders
+&#x9;ELSEIF (INSTR(resourcePath, &apos;/services/webservices&apos;) &gt; 0 AND (resourceType = &apos;CONTAINER&apos; OR resourceType = &apos;DATA_SOURCE&apos;)) THEN
+
+&#x9;&#x9;SET resourceName = null;
+&#x9;&#x9;IF (resourceType = &apos;DATA_SOURCE&apos;) THEN
+&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/returnFolderNameAndFolderPath(resourcePath, &apos;R&apos;, resourceName, parentPath);
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : parentPath=&apos;||NVL(parentPath,&apos;null&apos;) || &apos;   resourceName=&apos;||NVL(resourceName,&apos;null&apos;);  
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET resourcePath = parentPath;
+&#x9;&#x9;&#x9;SET resourceType = &apos;CONTAINER&apos;;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getResourceListRecursive(resourcePath, resourceType) 
+&#x9;&#x9;&#x9;&#x9;WHERE resType = &apos;DATA_SOURCE&apos;
+&#x9;&#x9;&#x9;&#x9;  AND resPath &lt;&gt; &apos;/services/webservices/system/admin&apos;
+&#x9;&#x9;&#x9;&#x9;  AND resPath &lt;&gt; &apos;/services/webservices/system/util&apos;
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;IF (resourceName IS NULL OR (resourceName IS NOT NULL AND resourceName = r.name)) THEN
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : resourceType=&apos;||r.resType||&apos;  resourcePath=&apos;||r.resPath;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(RPAD(&apos;-&apos;, len, &apos;-&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(RPAD(&apos;-&apos;, len, &apos;-&apos;));
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;SET incrFlag = true;
+
+&#x9;&#x9;&#x9;&#x9;-- Check the resourceType and resourcePath for the waiver list.  
+&#x9;&#x9;&#x9;&#x9;--   Evaluate the resource if it is not in the waiver list.
+&#x9;&#x9;&#x9;&#x9;IF (waiverList IS NULL OR LENGTH(TRIM(waiverList)) = 0 OR INSTR(waiverList, &apos;|&apos;||r.resType||&apos;:&apos;||r.resPath||&apos;|&apos;) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Evaluate the resources
+&#x9;&#x9;&#x9;&#x9;&#x9;FOR e AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/validate/helpers/evaluateResource(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;debug, r.resPath, r.resType, displayViolations, includeList, excludeList, groupNum, pathNotAllowed, excludePathsList, maxNumberWebServiceOperations) 
+&#x9;&#x9;&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(e);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (sendEmail IS NOT NULL AND UPPER(sendEmail) = &apos;Y&apos; AND( e.violation = &apos;F&apos; OR e.violation = &apos;W&apos;)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET email = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET displayName = &apos;To Whom It May Concern&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Potentially could integrate with LDAP to get user email
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (email IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the subject and body for the email
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.violation = &apos;W&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET subject = &apos;DV VALIDATION WARNING: &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.violation = &apos;F&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET subject = &apos;DV VALIDATION EXCEPTION: &apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = &apos;To: &apos;|| displayName || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;  &apos; || subject || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.ruleViolations IS NOT NULL AND LENGTH(TRIM(e.ruleViolations)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;   The following resource has been flagged due to the following rule violations: &apos;||e.ruleViolations || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.ruleMessage IS NOT NULL AND LENGTH(TRIM(e.ruleMessage)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Violation message: &apos;||e.ruleMessage || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (e.ruleWarnings IS NOT NULL AND LENGTH(TRIM(e.ruleWarnings)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;   The following resource has been flagged due to the following rule warnings: &apos;||e.ruleWarnings || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Path=&apos; || NVL(e.resourcePath,&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Modified User=&apos; || NVL(e.modUser,&apos;null&apos;) || &apos;@&apos; || NVL(e.modDomain,&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Modified Date=&apos; || NVL(CAST(e.modDate AS VARCHAR),&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || &apos;      Resource Original User=&apos; || NVL(e.ownerName,&apos;null&apos;) || &apos;@&apos; || NVL(e.ownerDomain,&apos;null&apos;) || CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET body = body  || CHR(10) || ruleKey;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET subject = subject || &apos;Resource=&apos;||NVL(e.resourceName,&apos;null&apos;)||&apos;  Server=&apos;||sourceServerDisplayName;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Print out email debug
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : Send Email:&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  email=&apos;||NVL(email,&apos;null recipient list&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  subject=&apos;||NVL(subject,&apos;null subject&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  body=&apos;||NVL(body,&apos;null message body&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Send the email
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /lib/util/SendEMail(null, null, email, null, null, subject, emailFormat, NVL(body,&apos;null message body&apos;));
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Only increment the groupNum once in the loop and only when rows are returned.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (incrFlag) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET groupNum = groupNum + 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET incrFlag = false;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET message = moduleName||&apos; : The resource was found in the waiver list and was not evaluated.&apos;;  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+&#x9;ELSE
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;SET message = moduleName||&apos; : The resource is not valid for applying rules.  resourceType=&apos;||NVL(resourceType,&apos;null&apos;) || &apos;   resourcePath=&apos;||NVL(resourcePath,&apos;null&apos;);  
+&#x9;&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;END IF;
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1546981287194</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/379</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/272</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/371</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/306</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/184</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/304</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/305</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/211</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/212</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/273</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/274</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/288</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/355</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/210</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/191</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/255</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/173</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1546981287194</attribute>
+</metadata>

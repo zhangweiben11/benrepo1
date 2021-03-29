@@ -1,0 +1,376 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getMaxDed_IDS" path="/shared/Delta_DV/Application/Published/Benefit/getMaxDed_IDS" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[Maximum/Deductible Service: API to get counter static info of the Benefit Package and enrollee&apos;s real-time counter amounts  
+1. Get Benefit Package Id for Group/Division as of Effective Date or for Enrollee Id as of Effective Date
+2. Get counter static info for the Benefit Package Id
+3. If the request is for Enrollee Id, then also get enrollee&apos;s real-time counter amounts]]></annotation>
+  <parameters>
+    <parameter name="maximumDeductible" direction="OUT" nullable="true">
+      <datatype name="maximumDeductible" referenceDefinitionSet="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_MaxDed" referenceType="maximumDeductible" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="maximumDeductible">
+        <schemaDatatype>
+          <datatype name="maximumDeductible" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="memberInfo">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="enrolleeId">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="contractId">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="personId">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="benefitPackageId">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="memberName">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="groupNumber">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="divisionNumber">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="defaultNetwork">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="oopmDetails" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                    <element name="flag">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="oopm">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="childAgeLimit">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="networksAllowed" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                    <element name="code">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="description">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+              </datatype>
+            </element>
+            <element name="maximumsInfo" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                <element name="maximumDetails">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                    <element name="type">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="calendarOrContractClassification">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="accumPeriodStartDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                    <element name="accumPeriodEndDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                    <element name="maximumKeyword">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="sexAgeCode" minOccurs="0">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="maximumCounterId">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="highAgeRange">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="servicesAllowed" maxOccurs="2147483647" minOccurs="0">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                    <element name="treatmentTypeCode">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="treatmentTypeDescription">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="networksApplicable">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="procedureCodesAllowed" maxOccurs="2147483647" minOccurs="0">
+                      <reference refId="1025"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="amountInfo">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                    <element name="totalAmount">
+                      <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                    </element>
+                    <element name="totalUsedAmount">
+                      <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                    </element>
+                    <element name="remainingAmount">
+                      <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                    </element>
+                    <element name="usedDentalAmount" minOccurs="0">
+                      <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                    </element>
+                    <element name="usedMedicalAmount" minOccurs="0">
+                      <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                    </element>
+                    <element name="lastCounterUsedDate">
+                      <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                    </element>
+                  </datatype>
+                </element>
+              </datatype>
+            </element>
+            <element name="deductiblesInfo" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                <element name="deductibleDetails">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2561">
+                    <element name="type">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="calendarOrContractClassification">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="accumPeriodStartDate">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="accumPeriodEndDate">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="deductibleKeyword">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="sexAgeCode" minOccurs="0">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="deductibleCounterId">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="highAgeRange">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="servicesAllowed" maxOccurs="2147483647" minOccurs="0">
+                  <reference refId="1793"/>
+                </element>
+                <element name="amountInfo">
+                  <reference refId="2049"/>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="pGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="pEffectiveDate" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/DefinitionSets/Benefit/defxAI_MaxDed" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetMaxDed_IDS" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_MaxDedCounterAMT" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_BenefitPkgNetworkAllowed" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedCounter_V1" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedProcedureCD" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedTreatment" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1595869491358</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612390944787</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1595869491358</attribute>
+  <attribute name="transformModel" type="NULL"/>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare variable $pGroupID external;
+declare variable $pDivisionID external;
+declare variable $pEffectiveDate external;
+
+&lt;root xmlns:ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+  let $nodes := (
+    let $inputs := (if (empty($pGroupID)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pGroupID), &quot;&apos;&quot;) cast as xs:string,if (empty($pDivisionID)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pDivisionID), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+    let $query := concat( &quot;select EnrolleeID,ContractID,PersonID,BenefitPkgID,PersonName,GroupNBR,DivisionNBR,DefaultNetwork,GroupID,DivisionID,MemberID from /shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetMaxDed_IDS(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+    let $BenefitPkg1 := composite:executeQuery($query)//result
+    for $BenefitPkg in $BenefitPkg1
+    return
+    element maximumDeductible {
+      let $nodes := (
+        element memberInfo {
+          element enrolleeId {$BenefitPkg/EnrolleeID/text()},
+          element contractId {$BenefitPkg/ContractID/text()},
+          element personId {$BenefitPkg/PersonID/text()},
+          element benefitPackageId {$BenefitPkg/BenefitPkgID/text()},
+          element memberName {$BenefitPkg/PersonName/text()},
+          element groupNumber {$BenefitPkg/GroupNBR/text()},
+          element divisionNumber {$BenefitPkg/DivisionNBR/text()},
+          element defaultNetwork {$BenefitPkg/DefaultNetwork/text()},
+          let $inputs := (if (empty($BenefitPkg/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select BenefitPkgID,NetworkCD,NetworkDESC from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_BenefitPkgNetworkAllowed(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          let $NetworksAllowed1 := composite:executeQuery($query)//result
+          for $NetworksAllowed in $NetworksAllowed1
+          return
+          element networksAllowed {
+            element code {$NetworksAllowed/NetworkCD/text()},
+            element description {$NetworksAllowed/NetworkDESC/text()}
+          }
+        }
+      )
+      return
+      $nodes[1],
+      let $inputs := (if (empty($BenefitPkg/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,&quot;&apos;MAX&apos;&quot;,if (empty($BenefitPkg/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($BenefitPkg/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+      let $query := concat( &quot;select BenefitPkgID,TypeAndClassification,CalendarOrContractClass,AccumEffDate,AccumEndDate,Keyword,SexAgeCD,CounterID,HighAgeRange,MaxDedIND,TotalAMT,UsageCalcIND from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedCounter_V1(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+      let $Maximum1 := composite:executeQuery($query)//result
+      for $Maximum in $Maximum1
+      return
+      element maximumsInfo {
+        let $nodes := (
+          element maximumDetails {
+            element type {$Maximum/TypeAndClassification/text()},
+            element calendarOrContractClassification {$Maximum/CalendarOrContractClass/text()},
+            element accumPeriodStartDate {$Maximum/AccumEffDate/text()},
+            element accumPeriodEndDate {$Maximum/AccumEndDate/text()},
+            element maximumKeyword {$Maximum/Keyword/text()},
+            element sexAgeCode {$Maximum/SexAgeCD/text()},
+            element maximumCounterId {$Maximum/CounterID/text()},
+            element highAgeRange {$Maximum/HighAgeRange/text()}
+          }
+        )
+        return
+        $nodes[1],
+        let $inputs := (if (empty($Maximum/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/MaxDedIND/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/MaxDedIND/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/CounterID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/CounterID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/TotalAMT/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/TotalAMT/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select BenefitPkgID,CounterID,MaxDedIND,TotalAMT,TreatmentCD,TreatmentDESC,NetworkApplicable from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedTreatment(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        let $MaximumTreatment1 := composite:executeQuery($query)//result
+        for $MaximumTreatment in $MaximumTreatment1
+        return
+        element servicesAllowed {
+          element treatmentTypeCode {$MaximumTreatment/TreatmentCD/text()},
+          element treatmentTypeDescription {$MaximumTreatment/TreatmentDESC/text()},
+          element networksApplicable {$MaximumTreatment/NetworkApplicable/text()},
+          let $inputs := (if (empty($MaximumTreatment/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$MaximumTreatment/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($MaximumTreatment/MaxDedIND/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$MaximumTreatment/MaxDedIND/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($MaximumTreatment/CounterID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$MaximumTreatment/CounterID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($MaximumTreatment/TotalAMT/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$MaximumTreatment/TotalAMT/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($MaximumTreatment/TreatmentCD/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$MaximumTreatment/TreatmentCD/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select ProcedureCD,ProcedureCdDESC from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedProcedureCD(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          let $MaximumProcedureCD1 := composite:executeQuery($query)//result
+          for $MaximumProcedureCD in $MaximumProcedureCD1
+          return
+          element procedureCodesAllowed {
+            element code {$MaximumProcedureCD/ProcedureCD/text()},
+            element description {$MaximumProcedureCD/ProcedureCdDESC/text()}
+          }
+        },
+        let $nodes := (
+          let $inputs := (if (empty($BenefitPkg/ContractID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/ContractID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($BenefitPkg/MemberID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/MemberID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($BenefitPkg/PersonID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/PersonID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/CounterID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/CounterID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/AccumEffDate/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/AccumEffDate/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/AccumEndDate/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/AccumEndDate/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/TotalAMT/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/TotalAMT/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Maximum/UsageCalcIND/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Maximum/UsageCalcIND/text()), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select CounterID,TotalAMT,UsedAMT,RemainingAMT,UsedDentalAMT,UsedMedicalAMT,LastCounterUsedDate from /shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_MaxDedCounterAMT(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          for $MaximumAMT in composite:executeQuery($query)//result
+          return
+          element amountInfo {
+            element totalAmount {$MaximumAMT/TotalAMT/text()},
+            element totalUsedAmount {$MaximumAMT/UsedAMT/text()},
+            element remainingAmount {$MaximumAMT/RemainingAMT/text()},
+            element usedDentalAmount {$MaximumAMT/UsedDentalAMT/text()},
+            element usedMedicalAmount {$MaximumAMT/UsedMedicalAMT/text()},
+            element lastCounterUsedDate {$MaximumAMT/LastCounterUsedDate/text()}
+          }
+        )
+        return
+        $nodes[1]
+      },
+      let $inputs := (if (empty($BenefitPkg/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,&quot;&apos;DED&apos;&quot;,if (empty($BenefitPkg/GroupID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/GroupID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($BenefitPkg/DivisionID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/DivisionID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+      let $query := concat( &quot;select BenefitPkgID,TypeAndClassification,CalendarOrContractClass,AccumEffDate,AccumEndDate,Keyword,SexAgeCD,CounterID,HighAgeRange,MaxDedIND,TotalAMT,UsageCalcIND from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedCounter_V1(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+      let $Deductible1 := composite:executeQuery($query)//result
+      for $Deductible in $Deductible1
+      return
+      element deductiblesInfo {
+        let $nodes := (
+          element deductibleDetails {
+            element type {$Deductible/TypeAndClassification/text()},
+            element calendarOrContractClassification {$Deductible/CalendarOrContractClass/text()},
+            element accumPeriodStartDate {$Deductible/AccumEffDate/text()},
+            element accumPeriodEndDate {$Deductible/AccumEndDate/text()},
+            element deductibleKeyword {$Deductible/Keyword/text()},
+            element sexAgeCode {$Deductible/SexAgeCD/text()},
+            element deductibleCounterId {$Deductible/CounterID/text()},
+            element highAgeRange {$Deductible/HighAgeRange/text()}
+          }
+        )
+        return
+        $nodes[1],
+        let $inputs := (if (empty($Deductible/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/MaxDedIND/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/MaxDedIND/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/CounterID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/CounterID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/TotalAMT/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/TotalAMT/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select BenefitPkgID,CounterID,MaxDedIND,TotalAMT,TreatmentCD,TreatmentDESC,NetworkApplicable from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedTreatment(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        let $DeductibleTreatment1 := composite:executeQuery($query)//result
+        for $DeductibleTreatment in $DeductibleTreatment1
+        return
+        element servicesAllowed {
+          element treatmentTypeCode {$DeductibleTreatment/TreatmentCD/text()},
+          element treatmentTypeDescription {$DeductibleTreatment/TreatmentDESC/text()},
+          element networksApplicable {$DeductibleTreatment/NetworkApplicable/text()},
+          let $inputs := (if (empty($DeductibleTreatment/BenefitPkgID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$DeductibleTreatment/BenefitPkgID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($DeductibleTreatment/MaxDedIND/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$DeductibleTreatment/MaxDedIND/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($DeductibleTreatment/CounterID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$DeductibleTreatment/CounterID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($DeductibleTreatment/TotalAMT/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$DeductibleTreatment/TotalAMT/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($DeductibleTreatment/TreatmentCD/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$DeductibleTreatment/TreatmentCD/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($pEffectiveDate)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$pEffectiveDate), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select ProcedureCD,ProcedureCdDESC from /shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedProcedureCD(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          let $DeductibleProcedureCD1 := composite:executeQuery($query)//result
+          for $DeductibleProcedureCD in $DeductibleProcedureCD1
+          return
+          element procedureCodesAllowed {
+            element code {$DeductibleProcedureCD/ProcedureCD/text()},
+            element description {$DeductibleProcedureCD/ProcedureCdDESC/text()}
+          }
+        },
+        let $nodes := (
+          let $inputs := (if (empty($BenefitPkg/ContractID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/ContractID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($BenefitPkg/MemberID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/MemberID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($BenefitPkg/PersonID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$BenefitPkg/PersonID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/CounterID/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/CounterID/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/AccumEffDate/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/AccumEffDate/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/AccumEndDate/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/AccumEndDate/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/TotalAMT/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/TotalAMT/text()), &quot;&apos;&quot;) cast as xs:string,if (empty($Deductible/UsageCalcIND/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$Deductible/UsageCalcIND/text()), &quot;&apos;&quot;) cast as xs:string)
+          let $query := concat( &quot;select CounterID,TotalAMT,UsedAMT,RemainingAMT,UsedDentalAMT,UsedMedicalAMT,LastCounterUsedDate from /shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_MaxDedCounterAMT(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+          for $DeductibleAMT in composite:executeQuery($query)//result
+          return
+          element amountInfo {
+            element totalAmount {$DeductibleAMT/TotalAMT/text()},
+            element totalUsedAmount {$DeductibleAMT/UsedAMT/text()},
+            element remainingAmount {$DeductibleAMT/RemainingAMT/text()},
+            element usedDentalAmount {$DeductibleAMT/UsedDentalAMT/text()},
+            element usedMedicalAmount {$DeductibleAMT/UsedMedicalAMT/text()},
+            element lastCounterUsedDate {$DeductibleAMT/LastCounterUsedDate/text()}
+          }
+        )
+        return
+        $nodes[1]
+      }
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/maximumDeductible</attribute>
+  <attribute name="xqueryModel" type="BYTE_ARRAY">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</attribute>
+</metadata>

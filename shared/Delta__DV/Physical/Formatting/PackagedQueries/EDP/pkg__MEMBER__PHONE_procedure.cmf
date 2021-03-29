@@ -1,0 +1,80 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkg_MEMBER_PHONE" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/EDP/pkg_MEMBER_PHONE" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype type="TABLE" refId="256">
+        <element name="Member_Phone_SKEY">
+          <datatype name="INTEGER" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="Phone_NBR_TXT">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Extension_TXT">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Phone_Type_CD">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Source_System_Unique_ID">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Source_System_NM">
+          <datatype name="VARCHAR" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+        </element>
+        <element name="Create_DTM">
+          <datatype name="TIMESTAMP" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+        </element>
+        <element name="Created_By_ID">
+          <datatype name="VARCHAR" extendedName="nvarchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+        </element>
+        <element name="Last_Updated_By_ID">
+          <datatype name="VARCHAR" extendedName="nvarchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+        </element>
+        <element name="Last_Update_DTM">
+          <datatype name="TIMESTAMP" extendedName="datetime" subType="DATASOURCE_TYPE" type="DATETIME"/>
+        </element>
+        <element name="Primary_IND">
+          <datatype name="VARCHAR" extendedName="nvarchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+        </element>
+        <element name="Member_SKEY">
+          <datatype name="INTEGER" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    EBX_MEM_PERSON_PHONE.PERSON_PHONE_SKEY Member_Phone_SKEY, 
+    EBX_MEM_PERSON_PHONE.PHONE_NBR_TXT Phone_NBR_TXT, 
+    EBX_MEM_PERSON_PHONE.EXTENSION_TXT Extension_TXT, 
+    EBX_MEM_PERSON_PHONE.PHONE_TYPE_CD_ Phone_Type_CD, 
+    EBX_MEM_PERSON_PHONE.SOURCE_SYSTEM_ID Source_System_Unique_ID, 
+    EBX_MEM_PERSON_PHONE.SOURCE_SYSTEM_NM Source_System_NM, 
+    EBX_MEM_PERSON_PHONE.T_CREATION_DATE Create_DTM, 
+    EBX_MEM_PERSON_PHONE.T_CREATOR_ID Created_By_ID, 
+    EBX_MEM_PERSON_PHONE.T_LAST_USER_ID Last_Updated_By_ID, 
+ cast(DATEADD(S, CONVERT(int,LEFT(EBX_MEM_PERSON_PHONE.T_LAST_WRITE  , 10)), &apos;1970-01-01&apos;)  AT TIME ZONE &apos;UTC&apos; AT TIME ZONE &apos;Pacific Standard Time&apos; as DATETIME) Last_Update_DTM, 
+    EBX_MEM_PERSON_PHONE.PRIMARY_IND Primary_IND, 
+    EBX_MEM_MEMBER_ROLE.MEMBER_ROLE_SKEY Member_SKEY
+FROM      
+    tibcoebx.dbo.EBX_MEM_PERSON_PHONE EBX_MEM_PERSON_PHONE INNER JOIN 
+        tibcoebx.dbo.EBX_MEM_MEMBER_ROLE EBX_MEM_MEMBER_ROLE
+    ON EBX_MEM_MEMBER_ROLE.PERSON_SKEY_ = EBX_MEM_PERSON_PHONE.PERSON_SKEY_</attribute>
+  <attribute name="creationDate" type="LONG">1606235226529</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1606235226529</attribute>
+</metadata>

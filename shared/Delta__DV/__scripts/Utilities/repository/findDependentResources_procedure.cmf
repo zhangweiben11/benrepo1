@@ -1,0 +1,371 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="findDependentResources" path="/shared/Delta_DV/_scripts/Utilities/repository/findDependentResources" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="displayImpactedOnly" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="startingResourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="resourceTypeList" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="srcResourceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="srcResourcePath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="srcResourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="depResourceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="depResourcePath">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="depResourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="depSubtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="depId">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="depOwnerDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="depOwnerName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="depImpactLevel">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getDependentResourcesDirectCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="40"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    findDependentResources:
+
+&#x9;This procedure is used to find any dependent resource for the resources found within the boundaries of the starting path.
+&#x9;&#x9;A dependent resource is one in which invokes the source resource designated by &quot;srcResourcePath&quot;.
+
+&#x9;&#x9;Example 1: Find all dependents of ASAssets folder resources the startingResourcePath=/shared/ASAssets/
+&#x9;&#x9;&#x9;By adding a forward slash at the end of the path, it insures that only /shared/ASAssets resources are searched and not other folders
+&#x9;&#x9;&#x9;&#x9;that start like /shared/ASAssets.
+&#x9;&#x9;Example 2: Find all dependents of ASAssets folder resources the startingResourcePath=/shared/ASAssets/Utilities/
+
+&#x9;&#x9;Example 3: Find all dependents of ASAssets folder resources the startingResourcePath=/shared/Common/Utilities/
+
+    Input:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;&#x9;displayImpactedOnly&#x9;&#x9;BIT, &#x9;&#x9;&#x9;-- 1=display impacted only.  0=display all
+&#x9;&#x9;startingResourcePath&#x9;VARCHAR(4000),&#x9;-- Any DV folder/container path.
+&#x9;&#x9;resourceTypeList&#x9;&#x9;VARCHAR,&#x9;&#x9;-- A comma-separated list of resource types to filter on.  Null to select all.  e.g. TABLE,PROCEDURE,LINK,TREE,DATA_SOURCE,DEFINITION_SET,TRIGGER
+
+    Output:
+&#x9;&#x9;result&#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;&#x9;srcResourceName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;&#x9;srcResourcePath&#x9;&#x9;VARCHAR(4000),
+&#x9;&#x9;&#x9;srcResourceType&#x9;&#x9;VARCHAR(40),
+        &#x9;depResourceName &#x9;VARCHAR(255), 
+        &#x9;depResourcePath &#x9;VARCHAR(4000), 
+        &#x9;depResourceType &#x9;VARCHAR(40), 
+        &#x9;depSubtype&#x9;&#x9;&#x9;VARCHAR(40), 
+&#x9;&#x9;&#x9;depId &#x9;&#x9;&#x9;&#x9;INTEGER,
+        &#x9;depOwnerDomain &#x9;&#x9;VARCHAR(255), 
+        &#x9;depOwnerName &#x9;&#x9;VARCHAR(255), 
+        &#x9;depImpactLevel &#x9;&#x9;VARCHAR(255)
+&#x9;&#x9;)
+
+    Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+    2020.101&#x9;01/22/2020      Mike Tinius&#x9;&#x9;&#x9;7.0.8           Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE findDependentResources(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;IN displayImpactedOnly&#x9;&#x9;BIT, &#x9;&#x9;&#x9;-- 1=display impacted only.  0=display all
+&#x9;IN startingResourcePath&#x9;&#x9;VARCHAR(4000),&#x9;-- Any DV folder/container path.
+&#x9;IN resourceTypeList&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- A comma-separated list of resource types to filter on.  Null to select all.  e.g. TABLE,PROCEDURE,LINK,TREE,DATA_SOURCE,DEFINITION_SET,TRIGGER
+    OUT result PIPE (
+&#x9;&#x9;srcResourceName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;srcResourcePath&#x9;&#x9;VARCHAR(4000),
+&#x9;&#x9;srcResourceType&#x9;&#x9;VARCHAR(40),
+        depResourceName &#x9;VARCHAR(255), 
+        depResourcePath &#x9;VARCHAR(4000), 
+        depResourceType &#x9;VARCHAR(40), 
+        depSubtype&#x9;&#x9;&#x9;VARCHAR(40), 
+&#x9;&#x9;depId &#x9;&#x9;&#x9;&#x9;INTEGER,
+        depOwnerDomain &#x9;&#x9;VARCHAR(255), 
+        depOwnerName &#x9;&#x9;VARCHAR(255), 
+        depImpactLevel &#x9;&#x9;VARCHAR(255)
+    )
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;findDependentResources&apos;;
+&#x9;DECLARE displayImpactedOnly_&#x9;BIT DEFAULT NVL(CAST(displayImpactedOnly AS VARCHAR), &apos;0&apos;);
+&#x9;DECLARE startingPath&#x9;&#x9;&#x9;VARCHAR(4000) DEFAULT NVL(startingResourcePath, &apos;/shared/ASAssets/&apos;);
+&#x9;DECLARE TYPE resultType&#x9;&#x9;&#x9;ROW (
+&#x9;&#x9;srcResourceName&#x9;&#x9;VARCHAR,
+&#x9;&#x9;srcResourcePath&#x9;&#x9;VARCHAR(4000),
+&#x9;&#x9;srcResourceType&#x9;&#x9;VARCHAR(40),
+        depResourceName &#x9;VARCHAR(255), 
+        depResourcePath &#x9;VARCHAR(4000), 
+        depResourceType &#x9;VARCHAR(40), 
+        depSubtype&#x9;&#x9;&#x9;VARCHAR(40), 
+&#x9;&#x9;depId &#x9;&#x9;&#x9;&#x9;INTEGER,
+        depOwnerDomain &#x9;&#x9;VARCHAR(255), 
+        depOwnerName &#x9;&#x9;VARCHAR(255), 
+        depImpactLevel &#x9;&#x9;VARCHAR(255)
+    );
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resultType;
+&#x9;DECLARE cursList&#x9;&#x9;&#x9;&#x9;CURSOR (name VARCHAR, resPath VARCHAR(4000), resType VARCHAR);
+&#x9;-- Variables to modify based on requirements
+&#x9;DECLARE criteriaField&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;resType&apos;;
+&#x9;DECLARE inputCharacter&#x9;&#x9;&#x9;BOOLEAN DEFAULT true;&#x9;-- true=the input is a character value and requires single quotes around each item.  false=the input is numeric.
+&#x9;DECLARE inputUpper&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT true;&#x9;-- true=Upper case the input.  false=do not upper case.  leave as is.
+&#x9;DECLARE inputTrim&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT true;&#x9;-- true=Trim the input from leading and trailing space.  false=do not trim.
+&#x9;DECLARE inputRemoveSpaces&#x9;&#x9;BOOLEAN DEFAULT true;&#x9;-- true=Remove all spaces from list. If there are valid spaces within the data then do not do this.   false=do not remove spaces
+&#x9;DECLARE trimParsedObject&#x9;&#x9;BOOLEAN DEFAULT false;&#x9;-- true=Trim the individual parsed object.  false=Do not trim the individual objects.
+&#x9;DECLARE sep&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;,&apos;;&#x9;-- The separator to use between objects.
+&#x9;-- Standard list processing variables
+&#x9;DECLARE sqlStatement &#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE list1&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE list2&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE object&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE pos1, pos2, len&#x9;&#x9;&#x9;INTEGER;
+
+&#x9;SET sqlStatement = &apos;SELECT name, resPath, resType FROM /shared/ASAssets/Utilities/repository/getResourceListRecursive(startingPath, &apos;&apos;CONTAINER&apos;&apos;)&apos;;
+
+&#x9;-- Assign input to list1
+&#x9;SET list1 = resourceTypeList;
+
+&#x9;-- Standard input processing rules
+&#x9;IF (inputUpper) THEN
+&#x9;&#x9;SET list1 = UPPER(list1);
+&#x9;END IF;
+&#x9;IF (inputTrim) THEN
+&#x9;&#x9;SET list1 = TRIM(list1);
+&#x9;END IF;
+&#x9;IF (inputRemoveSpaces) THEN
+&#x9;&#x9;SET list1 = REPLACE(list1, &apos; &apos;, &apos;&apos;);
+&#x9;END IF;
+
+&#x9;-- Standard list processing
+&#x9;IF (list1 IS NOT NULL AND LENGTH(list1) &gt; 0) THEN
+&#x9;&#x9;SET len = LENGTH(list1);
+&#x9;&#x9;SET pos1 = 1;
+&#x9;&#x9;WHILE (pos1 &gt; 0) DO
+&#x9;&#x9;&#x9;SET pos2 = INSTR(list1, &apos;,&apos;, pos1);
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;pos1=&apos;||pos1||&apos;  pos2=&apos;||pos2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (pos2 = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(list1, pos1);
+&#x9;&#x9;&#x9;&#x9;SET pos1 = 0;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(list1, pos1, pos2-pos1);
+&#x9;&#x9;&#x9;&#x9;SET pos1 = pos2+1;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Trim the object
+&#x9;&#x9;&#x9;IF (trimParsedObject) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = TRIM(object);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Escape any single quotes in the data
+&#x9;&#x9;&#x9;IF (INSTR(object, &apos;&apos;&apos;&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = REPLACE(object, &apos;&apos;&apos;&apos;, &apos;&apos;&apos;&apos;&apos;&apos;);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Concat the object to list2.  Add a separator if needed.
+&#x9;&#x9;&#x9;IF (LENGTH(list2) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET list2 = list2 || sep;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (inputCharacter) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = &apos;&apos;&apos;&apos;||object||&apos;&apos;&apos;&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET list2 = list2 || object;
+&#x9;&#x9;END WHILE;
+&#x9;&#x9;-- Concat the modified list
+&#x9;&#x9;SET sqlStatement = sqlStatement || CHR(10) || &apos;WHERE &apos;||criteriaField||&apos; IN (&apos;||list2||&apos;)&apos;;
+&#x9;ELSE
+&#x9;&#x9;SET sqlStatement = sqlStatement || CHR(10) || &apos;WHERE &apos;||criteriaField||&apos; &lt;&gt; &apos;&apos;CONTAINER&apos;&apos;&apos;;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;sqlStatement: &apos;||CHR(10)||NVL(sqlStatement, &apos;null&apos;));
+&#x9;END IF;
+/*
+&#x9;IF (list1 IS NOT NULL AND LENGTH(list1) &gt; 0) THEN
+&#x9;&#x9;SET len = LENGTH(list1);
+&#x9;&#x9;SET pos1 = 1;
+&#x9;&#x9;WHILE (pos1 &gt; 0) DO
+&#x9;&#x9;&#x9;SET pos2 = INSTR(list1, &apos;,&apos;, pos1);
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : pos1=&apos;||pos1||&apos;  pos2=&apos;||pos2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (pos2 = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(list1, pos1);
+&#x9;&#x9;&#x9;&#x9;SET pos1 = 0;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET object = SUBSTRING(list1, pos1, pos2-pos1);
+&#x9;&#x9;&#x9;&#x9;SET pos1 = pos2+1;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Escape any single quotes in the data
+&#x9;&#x9;&#x9;IF (INSTR(object, &apos;&apos;&apos;&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = REPLACE(object, &apos;&apos;&apos;&apos;, &apos;&apos;&apos;&apos;&apos;&apos;);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Concat the object to list2.  Add a separator if needed.
+&#x9;&#x9;&#x9;IF (LENGTH(list2) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET list2 = list2 || sep;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (addSingleQuotes) THEN
+&#x9;&#x9;&#x9;&#x9;SET object = &apos;&apos;&apos;&apos;||object||&apos;&apos;&apos;&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET list2 = list2 || object;
+&#x9;&#x9;END WHILE;
+&#x9;&#x9;-- Concat the modified list
+&#x9;&#x9;SET sqlStatement = sqlStatement || CHR(10) || &apos;WHERE resType IN (&apos;||list2||&apos;)&apos;;
+&#x9;ELSE
+&#x9;&#x9;SET sqlStatement = sqlStatement || CHR(10) || &apos;WHERE resType &lt;&gt; &apos;&apos;CONTAINER&apos;&apos;&apos;;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : sqlStatement: &apos;||CHR(10)||NVL(sqlStatement, &apos;null&apos;));
+&#x9;END IF;
+*/
+&#x9;OPEN cursList FOR sqlStatement;
+&#x9;FOR r AS cursList DO
+&#x9;&#x9;SET rec = null;
+&#x9;&#x9;SET rec.srcResourceName = r.name;
+&#x9;&#x9;SET rec.srcResourcePath = r.resPath;
+&#x9;&#x9;SET rec.srcResourceType = r.resType;
+&#x9;&#x9;FOR d AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getDependentResourcesDirectCursor(r.resPath, r.resType)
+&#x9;&#x9;&#x9;WHERE INSTR(resourcePath, startingPath) = 0
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;SET rec.depResourceName = d.resourceName;
+&#x9;&#x9;&#x9;SET rec.depResourcePath = d.resourcePath;
+&#x9;&#x9;&#x9;SET rec.depResourceType = d.resourceType;
+&#x9;&#x9;&#x9;SET rec.depSubtype = d.subtype;
+&#x9;&#x9;&#x9;SET rec.depId = d.id;
+&#x9;&#x9;&#x9;SET rec.depOwnerDomain = d.ownerDomain;
+&#x9;&#x9;&#x9;SET rec.depOwnerName = d.ownerName;
+&#x9;&#x9;&#x9;SET rec.depImpactLevel = d.impactLevel;
+&#x9;&#x9;&#x9;IF (displayImpactedOnly_ = 0 OR (displayImpactedOnly_ = 1 AND rec.depImpactLevel &lt;&gt; &apos;NONE&apos;)) THEN
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(rec);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+&#x9;END FOR;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1578610877386</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/167</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/133</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1578610877386</attribute>
+</metadata>

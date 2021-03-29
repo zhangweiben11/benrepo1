@@ -1,0 +1,61 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Customer_Call_Center_Dim" path="/shared/Delta_DV/Application/Views/Reports/CCTA/Customer_Call_Center_Dim" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Customer_Call_Center_Code" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Call_Center_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Call_Center_State_Code" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Call_Center" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Call_Center_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Customer_Call_Center_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Customer_Call_Center_State_CD">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    Customer_Call_Center.Customer_Call_Center_Code, 
+    Customer_Call_Center.Customer_Call_Center_Name, 
+    Customer_Call_Center.Customer_Call_Center_State_CD Customer_Call_Center_State_Code
+FROM      
+    /shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Call_Center Customer_Call_Center
+
+</attribute>
+  <attribute name="creationDate" type="LONG">1609106491890</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1609106491890</attribute>
+</metadata>

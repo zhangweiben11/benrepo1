@@ -1,0 +1,112 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="COMPLAINT_CASE_CLAIM_PROCEDURE" path="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CASE_CLAIM_PROCEDURE" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="Complaint_Case_Claim_SKEY" nullable="false">
+      <datatype name="bigint" extendedName="bigint" subType="DATASOURCE_TYPE" type="INTEGER"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Created_DTM" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Created_By_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Last_Modified_DTM" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Last_Modified_By_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Claim_Procedure_SKEY" nullable="false">
+      <datatype name="bigint" extendedName="bigint" subType="DATASOURCE_TYPE" type="INTEGER"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Industry_Standard_Procedure_SKEY" nullable="false">
+      <datatype name="bigint" extendedName="bigint" subType="DATASOURCE_TYPE" type="INTEGER"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="PK__COMPLAIN__378883CB102A1C30" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="Complaint_Case_Claim_Procedure_SKEY" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="FK__COMPLAINT__Compl__05F8DC4F" primaryKeyName="PK__COMPLAIN__9039AECE90F5752F" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CASE_CLAIM">
+      <foreignKeyColumn primaryColumnName="Complaint_Case_Claim_SKEY" foreignColumnName="Complaint_Case_Claim_SKEY"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Indus__06ED0088" primaryKeyName="PK__INDUSTRY__BD89397D115C85F0" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/INDUSTRY_STANDARD_PROCEDURE">
+      <foreignKeyColumn primaryColumnName="Industry_Standard_Procedure_SKEY" foreignColumnName="Industry_Standard_Procedure_SKEY"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CASE_CLAIM" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Case_Claim_SKEY" nullable="false">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Claim_Source_System_Unique_ID" nullable="false">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Claim_Source_System_NM">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Total_Allowed_AMT">
+        <datatype type="DECIMAL" maxDigits="9" maxFractionalDigits="2"/>
+      </element>
+      <element name="Total_Paid_AMT">
+        <datatype type="DECIMAL" maxDigits="9" maxFractionalDigits="2"/>
+      </element>
+      <element name="Complaint_Case_SKEY" nullable="false">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/INDUSTRY_STANDARD_PROCEDURE" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:3:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:4:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:5:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:6:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1611790550556</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5681189</attribute>
+  <attribute name="creatorUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611790550556</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5681189</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611790550556</attribute>
+</metadata>

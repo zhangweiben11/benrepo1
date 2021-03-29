@@ -1,0 +1,64 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_OrthoBenefitTreatment" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_OrthoBenefitTreatment" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inBenefitPKGID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="BenefitPKGID">
+          <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+        </element>
+        <element name="ServiceID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="ServiceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="NetworkCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="AMTType">
+          <datatype name="VARCHAR" type="STRING" maxLength="7"/>
+        </element>
+        <element name="AMT">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="28" maxFractionalDigits="2"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT DISTINCT 
+       Ortho.ORTHOBENEFITPACKAGEID BenefitPKGID, 
+       Ortho.SVC_ID SequenceNBR, 
+       OrthoSVC.SVC_NAME ServiceName, 
+       Ortho.NETWORKCODE NetworkCD, 
+       Ortho.AMOUNTTYPE AmountType, 
+       Ortho.AMOUNT Amount
+FROM   [BENEFITS_VIEWS].[dbo].[PBC_PKGDTL_ORTHO_COPAYS_JSON_VW] Ortho
+INNER JOIN [BENEFITS_VIEWS].[dbo].[PBC_DCUSA_ORTHO_COPAY_SVC_VW] OrthoSVC
+ON     Ortho.SVC_ID = OrthoSVC.SVC_ID
+WHERE  Ortho.ORTHOBENEFITPACKAGEID = &apos;{0}&apos;
+AND    {1} BETWEEN Ortho.EFFDT AND Ortho.ENDDT
+ORDER BY Ortho.SVC_ID</attribute>
+  <attribute name="creationDate" type="LONG">1600469125419</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1600469125419</attribute>
+</metadata>

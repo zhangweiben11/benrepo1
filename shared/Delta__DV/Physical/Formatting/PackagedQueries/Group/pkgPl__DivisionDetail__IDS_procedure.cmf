@@ -1,0 +1,167 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_DivisionDetail_IDS" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionDetail_IDS" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionNBR">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionName">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="DivisionSurrogateID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="GroupSurrogateIDChar">
+          <datatype name="CHAR" type="STRING" minLength="25" maxLength="25"/>
+        </element>
+        <element name="DivisionSurrogateIDChar">
+          <datatype name="CHAR" type="STRING" minLength="25" maxLength="25"/>
+        </element>
+        <element name="PrePaidGroupIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="ProgramType">
+          <datatype name="VARCHAR" type="STRING" maxLength="160"/>
+        </element>
+        <element name="SelfFundedIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="BasisOfPayment">
+          <datatype name="VARCHAR" type="STRING" maxLength="275"/>
+        </element>
+        <element name="BenefitAssignmentIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="ToaIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="DeltaCareOrthoMsgIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="ProductID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT DISTINCT 
+       EGL1.IDENTIFIER GroupID
+&#x9;  ,EGL2.IDENTIFIER DivisionID
+&#x9;  ,RTRIM(EGL2.IDENTIFIER) DivisionNBR
+&#x9;  ,EGL2.UC_NAME DivisionName
+&#x9;  ,EGL2.SURROGATE_ID DivisionSurrogateID
+&#x9;  ,CAST(EGL1.SURROGATE_ID AS CHAR(25)) GroupSurrogateIDChar
+      ,CAST(EGL2.SURROGATE_ID AS CHAR(25)) DivisionSurrogateIDChar
+      ,MAX(CASE
+              WHEN BL.BUS_LEVEL_4_ID IN (&apos;AARP&apos;, &apos;DNTGRA INDVL&apos;, &apos;INDIVIDUAL&apos;, &apos;DNTGRAIXDDIC&apos;, &apos;INDIVXDDP&apos;) THEN &apos;true&apos;
+              WHEN BL.BUS_LEVEL_4_ID = &apos;GROUP&apos; AND
+                   BL.BUS_LEVEL_7_ID IN (&apos;DLTACARE USA&apos;, &apos;PPO&apos;) AND
+                  (EGL2_MC.CONTACT_TYPE_CODE = &apos;PP&apos; OR EGL1_MC.CONTACT_TYPE_CODE = &apos;PP&apos;) THEN &apos;true&apos;
+              ELSE &apos;false&apos;
+           END
+&#x9;&#x9;  ) OVER (PARTITION BY EGL2.EMPGRP_LEVEL_1_ID, EGL2.IDENTIFIER) PrePaidGroupIND
+&#x9;  ,CASE
+           WHEN BL.BUS_LEVEL_6_ID = &apos;TX&apos; AND
+                BL.BUS_LEVEL_7_ID IN (&apos;PPO&apos;, &apos;NOFQLTRT&apos;) THEN &apos;DPO&apos;
+           WHEN BL.BUS_LEVEL_4_ID = &apos;AARP&apos; AND
+                BL.BUS_LEVEL_6_ID = &apos;NC&apos; AND
+                BL.BUS_LEVEL_7_ID IN (&apos;PPO&apos;, &apos;NOFQLTRT&apos;) THEN &apos;DPO&apos;
+           WHEN BL.BUS_LEVEL_7_ID = &apos;CPP Dental&apos; THEN &apos;CPP Dental&apos;
+           ELSE RTRIM(BL.BUS_LEVEL_7_ID)
+       END ProgramType
+&#x9;  ,CASE
+&#x9;      WHEN BDC.BILLING_ARRGMT_IND = &apos;A&apos; THEN &apos;true&apos;
+&#x9;&#x9;  ELSE &apos;false&apos;
+       END SelfFundedIND
+      ,RTRIM(LKP.REPORT_DESC) BasisOfPayment
+      ,CASE 
+&#x9;      WHEN EGL2.BEN_ASSIGNMENT_IND = &apos;Y&apos; THEN &apos;true&apos;
+&#x9;      WHEN EGL2.BEN_ASSIGNMENT_IND = &apos;N&apos; THEN &apos;false&apos;
+&#x9;&#x9;  WHEN EGL1.BEN_ASSIGNMENT_IND = &apos;Y&apos; THEN &apos;true&apos;
+&#x9;&#x9;  WHEN EGL1.BEN_ASSIGNMENT_IND = &apos;N&apos; THEN &apos;false&apos;
+&#x9;&#x9;  ELSE &apos;false&apos;
+       END BenefitAssignmentIND
+&#x9;  ,MAX(CASE
+&#x9;          WHEN EGL2_MC.CONTACT_TYPE_CODE = &apos;ZB&apos; OR EGL1_MC.CONTACT_TYPE_CODE = &apos;ZB&apos; THEN &apos;true&apos;
+&#x9;&#x9;      ELSE &apos;false&apos;
+           END
+&#x9;&#x9;  ) OVER (PARTITION BY EGL2.EMPGRP_LEVEL_1_ID, EGL2.IDENTIFIER) ToaIND
+&#x9;  ,MAX(CASE
+&#x9;          WHEN EGL2_MC.CONTACT_TYPE_CODE = &apos;ZE&apos; OR EGL1_MC.CONTACT_TYPE_CODE = &apos;ZE&apos; THEN &apos;true&apos;
+&#x9;&#x9;      ELSE &apos;false&apos;
+           END
+&#x9;&#x9;  ) OVER (PARTITION BY EGL2.EMPGRP_LEVEL_1_ID, EGL2.IDENTIFIER) DeltaCareOrthoMessageIND
+      ,RTRIM(BL.BUS_LEVEL_7_ID) ProductID
+FROM [MTV_VIEWS].[dbo].[EMP_GRP_LVL_2_VW] EGL2
+INNER JOIN [MTV_VIEWS].[dbo].[EMP_GRP_LVL_1_VW] EGL1
+ON EGL2.EMPGRP_LEVEL_1_ID = EGL1.IDENTIFIER 
+INNER JOIN [MTV_VIEWS].[dbo].[EMP_GRP_LEVEL_SPAN_VW] EGLS
+ON EGL2.EMPGRP_LEVEL_1_ID = EGLS.EMPGRP_LEVEL_1_ID
+AND EGL2.IDENTIFIER = EGLS.EMPGRP_LEVEL_2_ID
+INNER JOIN [MTV_VIEWS].[dbo].[EMPGRP_LVL_BUS_LVL_VW] BL
+ON EGL2.EMPGRP_LEVEL_1_ID = BL.EMPGRP_LEVEL_1_ID
+AND EGL2.IDENTIFIER = BL.EMPGRP_LEVEL_2_ID
+INNER JOIN [MTV_VIEWS].[dbo].[EMPGRP_LVX_BEN_PKG_VW] BP
+ON EGL2.EMPGRP_LEVEL_1_ID = BP.EMPGRP_LEVEL_1_ID
+AND EGL2.IDENTIFIER = BP.EMPGRP_LEVEL_2_ID
+LEFT OUTER JOIN [MTV_VIEWS].[dbo].[BILLING_DIV_CONFIG_VW] BDC
+ON CAST(EGL2.EMPGRP_LEVEL_1_ID AS CHAR(12)) = BDC.FK_EMPGRP_LVL1_ID
+AND CAST(EGL2.IDENTIFIER AS CHAR(25)) = BDC.FK_BILL_ENT_ID
+AND {2} BETWEEN BDC.EFF_DATE AND BDC.END_DATE
+LEFT OUTER JOIN [MTV_VIEWS].[dbo].[METAVANCE_CONTACT_VW] EGL1_MC
+ON CAST(EGL1.SURROGATE_ID AS CHAR(25)) = EGL1_MC.WHO_IDENTIFIER
+AND &apos;G1&apos; = EGL1_MC.WHO_TYPE_INDICATOR
+LEFT OUTER JOIN [MTV_VIEWS].[dbo].[METAVANCE_CONTACT_VW] EGL2_MC
+ON CAST(EGL2.SURROGATE_ID AS CHAR(25))= EGL2_MC.WHO_IDENTIFIER
+AND &apos;G2&apos; = EGL2_MC.WHO_TYPE_INDICATOR
+LEFT OUTER JOIN [EDA_STAR_VIEWS].[dbo].[MTV_PRICING_RULE_DAILY_VW] PR
+ON EGL2.EMPGRP_LEVEL_1_ID = PR.EMPGRP_LEVEL_1_ID
+AND EGL2.IDENTIFIER = PR.EMPGRP_LEVEL_2_ID
+AND {2} BETWEEN PR.EFFECTIVE_DATE AND PR.END_DATE
+LEFT OUTER JOIN [MTV_VIEWS].[dbo].[CODE_VALUE_VW] LKP
+ON &apos;UE3&apos; = LKP.FK_CODE_CATG_ID
+AND PR.PRICING_RULE_CD = LKP.CODE_VALUE_ID
+WHERE EGL2.EMPGRP_LEVEL_1_ID = &apos;{0}&apos;
+  AND EGL2.IDENTIFIER = COALESCE(NULLIF(&apos;{1}&apos;,&apos;null&apos;),EGL2.IDENTIFIER)
+  AND EGLS.EMPGRP_LEVEL = &apos;2&apos;  
+  AND {2} BETWEEN EGLS.EFFECTIVE_DATE AND EGLS.END_DATE
+  AND {2} BETWEEN BL.EFFECTIVE_DATE AND BL.END_DATE
+  AND {2} BETWEEN BP.EFFECTIVE_DATE AND BP.END_DATE
+--OPTION (MAXDOP 16)
+--OPTION(USE HINT(&apos;ENABLE_PARALLEL_PLAN_PREFERENCE&apos;))
+;</attribute>
+  <attribute name="creationDate" type="LONG">1600293354166</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612390539196</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1600293354166</attribute>
+</metadata>

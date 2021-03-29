@@ -1,0 +1,745 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="COMPLAINT_EVENT" path="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_EVENT" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="Plan_State_Province_CD" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Client_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Initiator_Type_CD" nullable="false">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Intake_Summary_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(500)" subType="DATASOURCE_TYPE" type="STRING" maxLength="500"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Plan_Sponsor_SKEY" nullable="true">
+      <datatype name="int" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Intake_Type_CD" nullable="false">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Unique_ID" nullable="false">
+      <datatype name="varchar" extendedName="varchar(128)" subType="DATASOURCE_TYPE" type="STRING" maxLength="128"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_NM" nullable="false">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Duplicate_IND" nullable="false">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Not_Grievance_Appeal_Complaint_IND" nullable="false">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Resolution_Turn_Around_TM_Calendar_Days_QTY" nullable="true">
+      <datatype name="decimal" extendedName="decimal(5,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="5" maxFractionalDigits="0"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_CMS_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(30)" subType="DATASOURCE_TYPE" type="STRING" maxLength="30"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Plan_Sponsor_NM" nullable="true">
+      <datatype name="varchar" extendedName="varchar(60)" subType="DATASOURCE_TYPE" type="STRING" maxLength="60"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Plan_Sponsor_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(30)" subType="DATASOURCE_TYPE" type="STRING" maxLength="30"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Plan_Sponsor_ID_Source_System_CD" nullable="false">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Self_Funded_IND" nullable="false">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Submitter_Given_NM" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Submitter_Family_NM" nullable="true">
+      <datatype name="char" extendedName="char(18)" subType="DATASOURCE_TYPE" type="STRING" minLength="18" maxLength="18"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_SKEY" nullable="false">
+      <datatype name="bigint" extendedName="bigint" subType="DATASOURCE_TYPE" type="INTEGER"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Type_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(20)" subType="DATASOURCE_TYPE" type="STRING" maxLength="20"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Makes_Final_Decision_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Line_Of_Business_Type_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Product_Type_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Contract_Active_IND" nullable="false">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_In_Out_Network_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_Source_System_Contract_ID" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_Source_System_ID" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_Source_System_NM" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Source_System_ID" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Source_System_NM" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Executive_Complaint_Escalation_IND" nullable="false">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Group_Location_Postal_Address_SKEY" nullable="true">
+      <datatype name="int" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Specialty_Type_CD" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Group_Location_Postal_Address_Source_System_ID" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Group_Location_Postal_Address_Source_System_NM" nullable="true">
+      <datatype name="nvarchar" extendedName="nvarchar(100)" subType="DATASOURCE_TYPE" type="STRING" maxLength="100"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Database_Partition_DTM" nullable="false">
+      <datatype name="datetime" extendedName="datetime" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Created_DTM" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Created_By_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Last_Modified_DTM" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="EDP_Last_Modified_By_TXT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Report_To_Regulatory_Agency_SKEY" nullable="true">
+      <datatype name="int" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Triage_Workforce_Participant_SKEY" nullable="true">
+      <datatype name="int" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Accounting_Partition_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Accounting_Partition_Identifier_Source_System_NM" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Insurance_Plan_Accounting_Partition_SKEY" nullable="true">
+      <datatype name="int" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Single_Licensed_Entity_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="PK__COMPLAIN__8F4A6FEB23FBCCC9" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="Event_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF20COMPLAINT_EVENT" type="OTHER" unique="true">
+      <indexColumn name="Event_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE10COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Provider_Group_Location_Postal_Address_Source_System_ID" sortOrder="ASCENDING"/>
+      <indexColumn name="Provider_Group_Location_Postal_Address_Source_System_NM" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE1COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Plan_State_Province_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE2COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Client_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE3COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Initiator_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE4COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Provider_Group_Location_Postal_Address_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE5COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Provider_Specialty_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE6COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Intake_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE7COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Plan_Sponsor_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE8COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Line_Of_Business_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE9COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Product_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF10COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Initiator_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF18COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Plan_Sponsor_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF19COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Intake_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF21COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Line_Of_Business_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF22COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Product_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF23COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Provider_Group_Location_Postal_Address_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF24COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Provider_Specialty_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF26COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Report_To_Regulatory_Agency_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF27COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Triage_Workforce_Participant_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF8COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Plan_State_Province_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF9COMPLAINT_EVENT" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Client_CD" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="FK__COMPLAINT__Compl__1FEDB87C" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1E05700A" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__30242045" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__0AF29B96" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__20E1DCB5" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__2E3BD7D3" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__119F9925" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__15702A09" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1C1D2798" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__0EC32C7A" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1A34DF26" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__23BE4960" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__0DCF0841" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__10AB74EC" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__21D600EE" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__16644E42" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1293BD5E" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1EF99443" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__0CDAE408" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1940BAED" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__2A6B46EF" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1B29035F" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__297722B6" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1D114BD1" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__22CA2527" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__24B26D99" primaryKeyName="PK__COMPLAIN__B02E1B62F321C2BF" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Intake_Type_CD" foreignColumnName="Complaint_Intake_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__0BE6BFCF" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__269AB60B" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="R_682" primaryKeyName="XPKWORKFORCE_PARTICIPANT" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/WORKFORCE_PARTICIPANT">
+      <foreignKeyColumn primaryColumnName="Workforce_Participant_SKEY" foreignColumnName="Triage_Workforce_Participant_SKEY"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__2D47B39A" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__2882FE7D" primaryKeyName="PK__COMPLAIN__A7D145EDFC8CD412" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Initiator_Type_CD" foreignColumnName="Complaint_Initiator_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__2F2FFC0C" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__25A691D2" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1387E197" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__2B5F6B28" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__147C05D0" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__2C538F61" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__1758727B" primaryKeyName="PK__COMPLAIN__46B07A10B232A2A4" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Line_Of_Business_Type_CD" foreignColumnName="Complaint_Line_Of_Business_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__278EDA44" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__184C96B4" primaryKeyName="PK__COMPLAIN__6DB41020AAB7F712" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE">
+      <foreignKeyColumn primaryColumnName="Complaint_Product_Type_CD" foreignColumnName="Complaint_Product_Type_CD"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__0FB750B3" primaryKeyName="PK__COMPLAIN__341CF64C2E152B70" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT">
+      <foreignKeyColumn primaryColumnName="Complaint_Client_CD" foreignColumnName="Complaint_Client_CD"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CLIENT" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Client_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Client_NM" nullable="false">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INITIATOR_TYPE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Initiator_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Parent_Complaint_Initiator_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaintl_Initiator_Type_NM" nullable="false">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_INTAKE_TYPE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Intake_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Intake_Type_NM" nullable="false">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_LINE_OF_BUSINESS_TYPE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Line_Of_Business_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Line_Of_Business_Type_NM" nullable="false">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_PRODUCT_TYPE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Product_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Product_Type_NM" nullable="false">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/WORKFORCE_PARTICIPANT" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="User_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Given_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Family_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Current_Role_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_NM" nullable="false">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Workforce_Participant_SKEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Parent_Workforce_Participant_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Workforce_Participant_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Active_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Production_Target_Case_QTY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:10:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:11:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:12:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:13:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:14:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:15:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:16:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:17:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:18:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:19:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:20:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:21:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:22:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:23:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:24:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:25:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:26:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:27:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:28:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:29:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:30:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:31:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:32:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:33:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:34:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:35:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:36:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:37:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:38:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:39:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:3:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:40:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:41:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:42:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:43:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:44:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:45:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:4:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:5:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:6:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:7:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:8:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:9:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1611790550521</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5681189</attribute>
+  <attribute name="creatorUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611790550521</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5681189</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611790550521</attribute>
+</metadata>

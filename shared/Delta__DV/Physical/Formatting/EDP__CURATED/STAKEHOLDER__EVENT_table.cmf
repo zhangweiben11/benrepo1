@@ -1,0 +1,74 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="STAKEHOLDER_EVENT" path="/shared/Delta_DV/Physical/Formatting/EDP_CURATED/STAKEHOLDER_EVENT" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Stakeholder_Event_SKEY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_SKEY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Stakeholder_Role_Cross_Reference_SKEY" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/STAKEHOLDER_EVENT" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Stakeholder_Event_SKEY" nullable="false">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Event_SKEY" nullable="false">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_SKEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Database_Partition_DTM" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    STAKEHOLDER_EVENT.Stakeholder_Event_SKEY, 
+    STAKEHOLDER_EVENT.Event_SKEY, 
+     Stakeholder_Role_Cross_Reference_SKEY
+FROM      
+    /shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/STAKEHOLDER_EVENT STAKEHOLDER_EVENT</attribute>
+  <attribute name="creationDate" type="LONG">1605046739512</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5240211</attribute>
+  <attribute name="creatorUserName" type="STRING">dca90042</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5240211</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1605046739512</attribute>
+</metadata>

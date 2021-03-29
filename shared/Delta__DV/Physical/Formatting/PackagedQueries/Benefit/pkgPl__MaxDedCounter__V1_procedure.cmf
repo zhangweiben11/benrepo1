@@ -1,0 +1,165 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_MaxDedCounter_V1" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_MaxDedCounter_V1" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inBenefitPkgID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+    </parameter>
+    <parameter name="inMaxDedIND" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="3"/>
+    </parameter>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype type="TABLE" refId="256">
+        <element name="BenefitPkgID">
+          <datatype name="VARCHAR" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+        </element>
+        <element name="MaxDedIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="3"/>
+        </element>
+        <element name="CounterID">
+          <datatype name="VARCHAR" extendedName="varchar(30)" subType="DATASOURCE_TYPE" type="STRING" maxLength="30"/>
+        </element>
+        <element name="TotalAMT">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="27" maxFractionalDigits="2"/>
+        </element>
+        <element name="TypeAndClassification">
+          <datatype name="VARCHAR" extendedName="varchar(40)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2000"/>
+        </element>
+        <element name="CalendarOrContractClass">
+          <datatype name="VARCHAR" extendedName="varchar(15)" subType="DATASOURCE_TYPE" type="STRING" maxLength="20"/>
+        </element>
+        <element name="Keyword">
+          <datatype name="VARCHAR" extendedName="varchar(30)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="HighAgeRange">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="SexAgeCD">
+          <datatype name="VARCHAR" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="AccumPeriodID">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="AccumEffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="AccumEndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="UsageCalcIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">    SELECT DISTINCT
+&#x9;&#x9;   CTRS.BENEFITPACKAGEID BenefitPKGID, 
+&#x9;&#x9;   CTRS.MAX_OR_DED MaxDedIND, 
+&#x9;&#x9;   CTRS.COUNTERID CounterID, 
+&#x9;&#x9;   CTRS.TOTALAMOUNT TotalAmount,
+&#x9;&#x9;   CTRS.TYPEANDCLASSIFICATION TypeAndClassification, 
+&#x9;&#x9;   CTRS.CALENDARORCONTRACTCLASS CalendarOrContractClass, 
+&#x9;&#x9;   CTRS.KEYWORD Keyword,
+&#x9;&#x9;   CTRS.HIGHAGERANGE HighAgeRange,
+&#x9;&#x9;   CTRS.SEXAGECODE SexAgeCD,
+           XREF.ACCUM_PERIOD_ID AccumPeriodID,
+           CASE  
+              WHEN CTRS.CALENDARORCONTRACTCLASS = &apos;LIFETIME&apos; THEN CAST(&apos;01/01/1900&apos; AS DATE)
+              WHEN CTRS.COUNTERID = &apos;MBMED     &apos; THEN CAST(&apos;01/01/1900&apos; AS DATE)
+              WHEN CTRS.COUNTERID = &apos;CALYRMAXN &apos; THEN DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0)                          --TRUNC (SYSDATE, &apos;YEAR&apos;)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB005ROYR&apos; THEN DATEADD(MM, -60, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))  --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -60)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB012ROMN&apos; THEN DATEADD(MM, -12, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))  --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -12)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB024ROMN&apos; THEN DATEADD(MM, -24, {4})                                       --ADD_MONTHS (TRUNC (SYSDATE), -24)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB540RODY&apos; THEN DATEADD(MM, -18, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))  --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -18)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB9999999&apos; THEN CAST(&apos;01/01/1950&apos; AS DATE)                                  --TO_DATE (&apos;01/01/1950&apos;, &apos;MM/DD/YYYY&apos;)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX000DVSP&apos; THEN EMP_GRP.CONTRACT_YEAR_EFFECTIVE_DATE                        --TRUNC (EMP_GRP.CONTRACT_YEAR_EFFECTIVE_DATE)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001CAYR&apos; THEN DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0)                    --TRUNC (SYSDATE, &apos;YEAR&apos;)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001D03Y&apos; THEN DATEADD(MM, -3, EMP_GRP.CONTRACT_YEAR_EFFECTIVE_DATE)       --ADD_MONTHS (TRUNC (EMP_GRP.CONTRACT_YEAR_EFFECTIVE_DATE), -3)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001DVYR&apos; THEN EMP_GRP.CONTRACT_YEAR_EFFECTIVE_DATE                        --TRUNC (EMP_GRP.CONTRACT_YEAR_EFFECTIVE_DATE)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001R02Y&apos; THEN DATEADD(MM, -2, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))   --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -2)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001R03Y&apos; THEN DATEADD(MM, -3, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))   --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -3)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001R07Y&apos; THEN DATEADD(MM, -7, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))   --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -7)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX002CAYR&apos; THEN DATEADD(MM, -24, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))  --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -24)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX003CAYR&apos; THEN DATEADD(MM, -36, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))  --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -36)  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX005CAYR&apos; THEN DATEADD(MM, -48, DATEADD(YYYY, DATEDIFF(YYYY, 0, {4}), 0))  --ADD_MONTHS (TRUNC (SYSDATE, &apos;YEAR&apos;), -48)  
+              ELSE NULL  
+            END AS AccumPeriodEffDate,  
+            CASE  
+              WHEN CTRS.CALENDARORCONTRACTCLASS = &apos;LIFETIME&apos; THEN CAST(&apos;12/31/9999&apos; AS DATE)
+              WHEN CTRS.COUNTERID = &apos;MBMED     &apos; THEN CAST(&apos;12/31/9999&apos; AS DATE)
+              WHEN CTRS.COUNTERID = &apos;CALYRMAXN &apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0)))       --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB005ROYR&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB012ROMN&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB024ROMN&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB540RODY&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFB9999999&apos; THEN CAST(&apos;12/31/9999&apos; AS DATE)
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX000DVSP&apos; THEN EMP_GRP.CONTRACT_YEAR_END_DATE
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001CAYR&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001D03Y&apos; THEN EMP_GRP.CONTRACT_YEAR_END_DATE
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001DVYR&apos; THEN EMP_GRP.CONTRACT_YEAR_END_DATE
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001R02Y&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001R03Y&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX001R07Y&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX002CAYR&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX003CAYR&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              WHEN XREF.ACCUM_PERIOD_ID = &apos;EFX005CAYR&apos; THEN DATEADD(DD, -1, DATEADD(YY, 1, DATEADD(yy, DATEDIFF(yy, 0, {4}), 0))) --LAST_DAY(ADD_MONTHS(TRUNC(SYSDATE),12- TO_NUMBER(TO_CHAR (TRUNC (SYSDATE), &apos;MM&apos;))))  
+              ELSE NULL  
+            END AS AccumPeriodEndDate,
+            &apos;true&apos; UsageCalcIND
+     FROM   [BENEFITS_VIEWS].[dbo].[PBC_PKGDTL_CTRS_JSON_VW] CTRS
+     INNER JOIN  (SELECT EMPGRP_LEVEL_1_ID, EMPGRP_LEVEL_2_ID, EFFECTIVE_DATE, END_DATE,
+                         CASE  
+                                WHEN CONTRACT_YEAR_EFFECTIVE_DATE &gt; {4} THEN DATEADD(MM, -12, CONTRACT_YEAR_EFFECTIVE_DATE)
+                                ELSE CONTRACT_YEAR_EFFECTIVE_DATE  
+                         END AS CONTRACT_YEAR_EFFECTIVE_DATE,  
+                         CASE  
+                                WHEN CONTRACT_YEAR_EFFECTIVE_DATE &gt; {4} THEN DATEADD(DD, -1, DATEADD(MM, 12, DATEADD(MM, -12, CONTRACT_YEAR_EFFECTIVE_DATE))) -- ADD_MONTHS (ADD_MONTHS (CONTRACT_YEAR_EFFECTIVE_DATE, -12),12)- 1  
+                                ELSE CONTRACT_YEAR_END_DATE  
+                         END AS CONTRACT_YEAR_END_DATE  
+                  FROM  (SELECT GRP.EMPGRP_LEVEL_1_ID, GRP.EMPGRP_LEVEL_2_ID, GRP.EFFECTIVE_DATE, GRP.END_DATE,   
+                                CAST(CONCAT(DATEPART (MONTH, GRP.EFFECTIVE_DATE), &apos;/&apos;, DATEPART (DAY, GRP.EFFECTIVE_DATE), &apos;/&apos;, DATEPART (YEAR, {4})) AS DATE) AS CONTRACT_YEAR_EFFECTIVE_DATE,  
+                                DATEADD( DD, -1, DATEADD( MM, 12, CAST(CONCAT(DATEPART (MONTH, GRP.EFFECTIVE_DATE), &apos;/&apos;, DATEPART (DAY, GRP.EFFECTIVE_DATE), &apos;/&apos;, DATEPART (YEAR, {4})) AS DATE))) AS CONTRACT_YEAR_END_DATE  
+                         FROM   [MTV_VIEWS].[dbo].[EMP_GRP_LEVEL_SPAN_VW] GRP
+                         WHERE  GRP.EMPGRP_LEVEL_1_ID = &apos;{2}&apos;  
+                         AND    GRP.EMPGRP_LEVEL_2_ID = &apos;{3}&apos;
+                         AND    GRP.EFFECTIVE_DATE &lt;= {4}
+                         AND    GRP.END_DATE &gt;= {4}
+                        ) SP
+                 ) EMP_GRP
+     ON 1 = 1
+     INNER JOIN [MTV_VIEWS].[dbo].[BEN_PKG_CNTR_XREF_VW] XREF 
+     ON  XREF.BENEFIT_PKG_ID = CTRS.BENEFITPACKAGEID 
+     AND XREF.COUNTER_ID = CASE WHEN CTRS.COUNTERID = &apos;CALYRMAXN &apos; THEN &apos;AMTPAIDEQ &apos; ELSE CTRS.COUNTERID END --TEXAS ERS Project  
+     WHERE CTRS.BENEFITPACKAGEID = &apos;{0}&apos;
+&#x9;&#x9;AND CTRS.MAX_OR_DED = &apos;{1}&apos;
+   &#x9;&#x9;AND CTRS.EFFDT &lt;= {4}
+   &#x9;&#x9;AND CTRS.ENDDT &gt;= {4}
+     ORDER BY 1, 2, 3, 4, 7, 8, 9
+--OPTION (MAXDOP 16)</attribute>
+  <attribute name="creationDate" type="LONG">1594863388916</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612390944787</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1594863388916</attribute>
+</metadata>

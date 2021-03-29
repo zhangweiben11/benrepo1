@@ -1,0 +1,205 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="prcBl_GetEnrolleeIncentiveLevel" path="/shared/Delta_DV/Business/BusinessSemantic/Benefit/Procedures/prcBl_GetEnrolleeIncentiveLevel" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="EnrolleeID">
+          <datatype name="VARCHAR" type="STRING" maxLength="27"/>
+        </element>
+        <element name="PersonID">
+          <datatype name="VARCHAR" type="STRING" maxLength="16"/>
+        </element>
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="GroupNBR">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionNBR">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="BenefitPkgID">
+          <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+        </element>
+        <element name="ContractID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="MemberID">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/util/GetClientProperty" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="variableName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/SetWebSourceProperty" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="variableName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="value" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="WebSourcePropertyValue" type="STRING" maxLength="8192"/>
+      </element>
+      <element name="category" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="WebSourcePropertyCategory" type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_BenefitHeaderByDivOrEnrollee" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inGroupID" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="inDivisionID" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="inEnrolleeID" direction="IN">
+        <datatype type="STRING" maxLength="27"/>
+      </element>
+      <element name="inAsOfDate" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="EnrolleeID">
+            <datatype type="STRING" maxLength="27"/>
+          </element>
+          <element name="ContractID">
+            <datatype type="STRING" maxLength="25"/>
+          </element>
+          <element name="MemberID">
+            <datatype type="STRING" maxLength="2"/>
+          </element>
+          <element name="PersonID">
+            <datatype type="STRING" maxLength="16"/>
+          </element>
+          <element name="PersonName">
+            <datatype type="STRING" maxLength="125"/>
+          </element>
+          <element name="GroupID">
+            <datatype type="STRING" maxLength="12"/>
+          </element>
+          <element name="DivisionID">
+            <datatype type="STRING" maxLength="12"/>
+          </element>
+          <element name="BenefitPkgID">
+            <datatype type="STRING" maxLength="8"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE prcBl_GetEnrolleeIncentiveLevel(
+    IN inAsOfDate DATE,
+    OUT result PIPE (
+        EnrolleeID VARCHAR(27), 
+        PersonID VARCHAR(16), 
+        GroupID VARCHAR(12), 
+        DivisionID VARCHAR(12), 
+        GroupNBR VARCHAR(12), 
+        DivisionNBR VARCHAR(12), 
+        BenefitPkgID VARCHAR(8),
+        ContractID VARCHAR(25), 
+        MemberID VARCHAR(2)
+        )
+   )
+    BEGIN
+        DECLARE missing_required_parameters EXCEPTION;
+
+        DECLARE varEnrolleeID VARCHAR(27); 
+        DECLARE varContractID VARCHAR(25); 
+        DECLARE varMemberID VARCHAR(2);
+        DECLARE varPersonID VARCHAR(16); 
+        DECLARE varPersonName VARCHAR(125); 
+        DECLARE varGroupID VARCHAR(12);
+        DECLARE varDivisionID VARCHAR(12);
+        DECLARE varBenefitPkgID VARCHAR(8);
+
+        DECLARE curBenefitHeader CURSOR (
+        EnrolleeID VARCHAR(27), 
+        ContractID VARCHAR(25), 
+        MemberID VARCHAR(2), 
+        PersonID VARCHAR(16), 
+        PersonName VARCHAR(125), 
+        GroupID VARCHAR(12), 
+        DivisionID VARCHAR(12), 
+        BenefitPkgID VARCHAR(8)
+        );
+
+        DECLARE rowBenefitHeader ROW (
+        EnrolleeID VARCHAR(27), 
+        ContractID VARCHAR(25), 
+        MemberID VARCHAR(2), 
+        PersonID VARCHAR(16), 
+        PersonName VARCHAR(125), 
+        GroupID VARCHAR(12), 
+        DivisionID VARCHAR(12), 
+        BenefitPkgID VARCHAR(8)
+        );
+
+        CALL /lib/util/GetClientProperty(&apos;pEnrolleeID&apos;, varEnrolleeID);
+        IF varEnrolleeID IS NULL OR varEnrolleeID = &apos;&apos; THEN
+           RAISE missing_required_parameters VALUE &apos;Expect EnrolleeID but receive [&apos; || nvl2(varEnrolleeID,varEnrolleeID,&apos;NULL&apos;) || &apos;]&apos;;
+        END IF;
+&#x9;&#x9;
+&#x9;&#x9;IF inAsOfDate IS NULL THEN
+           RAISE missing_required_parameters VALUE &apos;Effective Date is required&apos;; 
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;CALL /shared/Delta_DV/Business/Logical/Benefit/Procedures/prcBl_BenefitHeaderByDivOrEnrollee(null, null, varEnrolleeID, inAsOfDate, curBenefitHeader);
+        FETCH NEXT FROM curBenefitHeader INTO rowBenefitHeader;
+&#x9;&#x9;SET varEnrolleeID = rowBenefitHeader.EnrolleeID;
+        SET varContractID = rowBenefitHeader.ContractID; 
+&#x9;&#x9;SET varMemberID = rowBenefitHeader.MemberID;
+&#x9;&#x9;SET varPersonID = rowBenefitHeader.PersonID;
+&#x9;&#x9;SET varPersonName = rowBenefitHeader.PersonName;
+        SET varGroupID = rowBenefitHeader.GroupID;
+        SET varDivisionID = rowBenefitHeader.DivisionID;
+        SET varBenefitPkgID = rowBenefitHeader.BenefitPKGID;
+        CLOSE curBenefitHeader;
+
+        INSERT INTO result VALUES (varEnrolleeID, varPersonID, varGroupID, varDivisionID, TRIM(varGroupID), TRIM(varDivisionID), varBenefitPkgID, varContractID, varMemberID);
+
+    EXCEPTION
+        WHEN missing_required_parameters THEN
+&#x9;&#x9;&#x9;CALL /lib/util/SetWebSourceProperty(&apos;STATUS&apos;,&apos;400&apos;,&apos;SERVICE.SETHTTPHEADER&apos;);
+            RAISE VALUE CURRENT_EXCEPTION.MESSAGE;           
+        ELSE
+            IF LENGTH(CURRENT_EXCEPTION.MESSAGE)&gt;1 THEN
+               RAISE VALUE CURRENT_EXCEPTION.MESSAGE;
+            ELSE
+               RAISE VALUE CURRENT_EXCEPTION.NAME;
+            END IF;
+    END</attribute>
+  <attribute name="creationDate" type="LONG">1595637877753</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611946084753</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1595637877753</attribute>
+</metadata>

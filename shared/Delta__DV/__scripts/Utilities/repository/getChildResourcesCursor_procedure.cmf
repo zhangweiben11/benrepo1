@@ -1,0 +1,388 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getChildResourcesCursor" path="/shared/Delta_DV/_scripts/Utilities/repository/getChildResourcesCursor" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getChildResourcesCursor:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure retrieves the child metadata for a given resource.  A cursor of metadata is returned.
+ &#x9;This procedure invokes 2 lower level API procedures &apos;getChildResourcesXML&apos; and &apos;getChildResourcesXSLT&apos;.
+&#x9;&#x9;getChildResourcesXML - this performs the actual invocation to the CIS repository API and returns XML
+&#x9;&#x9;getChildResourcesXSLT - this procedure takes the XML response and turns it into a cursor which
+&#x9;&#x9;&#x9;is more usable by other CIS procedures.
+
+&#x9;Input:
+&#x9;&#x9;fullResourcePath - Full resource path which includes the path and the resource name  
+&#x9;&#x9;&#x9;Values: e.g. /shared/Utilities/repository/definitions
+&#x9;&#x9;resourceType - Type of CIS resource to be created
+&#x9;&#x9;&#x9;Values: see &quot;TYPES / SUBTYPES&quot; listing below.  e.g. CONTAINER
+&#x9;Output:
+&#x9;&#x9;childResCursor  - response containing the resource metadata
+&#x9;&#x9;CURSOR (
+&#x9;&#x9;&#x9;&#x9;resourceName VARCHAR(255), 
+        &#x9;&#x9;resourcePath VARCHAR(1024), 
+        &#x9;&#x9;resourceType VARCHAR(255), 
+        &#x9;&#x9;subtype VARCHAR(255), 
+        &#x9;&#x9;enabled BIT, 
+&#x9;&#x9;&#x9;&#x9;annotation LONGVARCHAR,
+        &#x9;&#x9;isNullable VARCHAR(255), 
+        &#x9;&#x9;columnName VARCHAR(255), 
+        &#x9;&#x9;columnType VARCHAR(255), 
+        &#x9;&#x9;nativeBaseType VARCHAR(255), 
+        &#x9;&#x9;nativeType VARCHAR(255)&#x9;)
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.2&#x9;&#x9;03/15/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;modified to provide &quot;annotation&quot; to output cursor for Best Practices 7.0.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+
+
+&#x9;TYPES / SUBTYPES:
+&#x9;=================
+&#x9;The following resource types/subtypes are supported by this operation.  Resources
+&#x9;cannot be created under &quot;/services&quot; unless otherwise noted, and cannot be created
+&#x9;within a physical data source.  
+
+&#x9;(Basic CIS folder)
+&#x9;* CONTAINER / FOLDER_CONTAINER - A Composite folder.   Cannot be created anywhere under /services except in another FOLDER under /services/webservices.
+&#x9;* CONTAINER / DIRECTORY_CONTAINER - A Composite directory.
+&#x9;(Database)
+&#x9;* CONTAINER / CATALOG_CONTAINER - A Composite catalog folder under a data source.  Can only be created within a data source under /services/databases.
+&#x9;* CONTAINER / SCHEMA_CONTAINER - A Composite schema container.  Can only be created within a CATALOG that is under /services/databases.
+&#x9;(Web Services)
+&#x9;* CONTAINER / SERVICE_CONTAINER - A web service container for the service.  Can only be created within a Composite Web Services data source that is under /services/webservices.
+&#x9;* CONTAINER / OPERATIONS_CONTAINER - A web service container for the operations
+&#x9;* CONTAINER / PORT_CONTAINER - A Composite web service container for port.   Can only be created within a SERVICE under /services/webservices.
+&#x9;(Connectors)
+&#x9;* CONTAINER / CONNECTOR_CONTAINER - A Composite container for connectors.
+
+&#x9;* CONNECTOR / JMS - A Composite JMS Connector.  Created with no connection information
+&#x9;* CONNECTOR / HTTP - A Composite HTTP Connector.  Created with no connection information
+
+&#x9;* DATA_SOURCE / RELATIONAL_DATA_SOURCE - A relational database source.
+&#x9;* DATA_SOURCE / FILE_DATA_SOURCE - A comma separate file data source.
+&#x9;* DATA_SOURCE / XML_FILE_DATA_SOURCE - An XML file data source.
+&#x9;* DATA_SOURCE / WSDL_DATA_SOURCE - A Composite web service data source.
+&#x9;* DATA_SOURCE / XML_HTTP_DATA_SOURCE - An HTTP XML data source.
+&#x9;* DATA_SOURCE / NONE - A custom java procedure data source.
+
+&#x9;* DEFINITION_SET / SQL_DEFINITION_SET - A Composite SQL Definition set.
+&#x9;* DEFINITION_SET / XML_SCHEMA_DEFINITION_SET - A Composite XML Schema Defintion set.
+&#x9;* DEFINITION_SET / WSDL_DEFINITION_SET - A Composite WSDL Definition set.
+&#x9;* DEFINITION_SET / ABSTRACT_WSDL_DEFINITION_SET - A Composite Abstract WSDL Definition set such as the ones imported from Designer.
+&#x9;* DEFINITION_SET / SCDL_DEFINITION_SET - A Composite SCA composite Definition set imported from Designer.
+
+&#x9;* LINK / unknown at this time
+
+&#x9;(CIS procedures)
+&#x9;* PROCEDURE / SQL_SCRIPT_PROCEDURE - A Composite SQL Procedure.  Created with a simple default script body that is runnable.
+&#x9;(Custom procedures)
+&#x9;* PROCEDURE / JAVA_PROCEDURE - A Composite java data source procedure.  Created from a java data source (jar file).
+&#x9;(Database procedures)
+&#x9;* PROCEDURE / EXTERNAL_SQL_PROCEDURE - A Composite Packaged Query.  Created with no SQL text, so it is not runnable.  
+&#x9;* PROCEDURE / DATABASE_PROCEDURE - A database stored procedure.
+&#x9;(XML procedures)
+&#x9;* PROCEDURE / BASIC_TRANSFORM_PROCEDURE - A Composite Basic XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XSLT_TRANSFORM_PROCEDURE - A Composite XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / STREAM_TRANSFORM_PROCEDURE - A Composite XSLT Streaming Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XQUERY_TRANSFORM_PROCEDURE - A Composite XQUERY Transformation Procedure.  Created with no target schema and no model, so it is not runnable.
+&#x9;(Misc procedures)
+&#x9;* PROCEDURE / OPERATION_PROCEDURE - A Composite web service or HTTP procedure operation.
+
+&#x9;* TABLE / SQL_TABLE - A Composite View.  Created with no SQL text or model, so it is not runnable.  
+&#x9;* TABLE / DATABASE_TABLE - A Composite database table.
+&#x9;* TABLE / DELIMITED_FILE_TABLE - A Composite delimited file table
+&#x9;* TABLE / SYSTEM_TABLE - A Composite system table view.
+
+&#x9;* TREE / XML_FILE_TREE - The XML tree structure associated with a file-XML data source.
+
+&#x9;* TRIGGER / NONE - A Composite trigger.   Created disabled.]]></annotation>
+  <parameters>
+    <parameter name="fullResourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="childResCursor" direction="OUT" nullable="true">
+      <datatype name="childResCursor" type="TABLE" refId="256">
+        <element name="resourceName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="resourcePath">
+          <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+        </element>
+        <element name="resourceType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="enabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="annotation">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="isNullable">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="columnName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="columnType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="nativeBaseType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="nativeType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getChildResourcesXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="pathType" type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getChildResourcesXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inXML" direction="IN">
+        <datatype name="XML" referenceType="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT" nullable="false">
+        <datatype type="TABLE" refId="256">
+          <element name="resourceName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resourcePath">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="resourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="isNullable">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="columnName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="columnType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="nativeBaseType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="nativeType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getChildResourcesCursor:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure retrieves the child metadata for a given resource.  A cursor of metadata is returned.
+ &#x9;This procedure invokes 2 lower level API procedures &apos;getChildResourcesXML&apos; and &apos;getChildResourcesXSLT&apos;.
+&#x9;&#x9;getChildResourcesXML - this performs the actual invocation to the CIS repository API and returns XML
+&#x9;&#x9;getChildResourcesXSLT - this procedure takes the XML response and turns it into a cursor which
+&#x9;&#x9;&#x9;is more usable by other CIS procedures.
+
+&#x9;Input:
+&#x9;&#x9;fullResourcePath - Full resource path which includes the path and the resource name  
+&#x9;&#x9;&#x9;Values: e.g. /shared/Utilities/repository/definitions
+&#x9;&#x9;resourceType - Type of CIS resource to be created
+&#x9;&#x9;&#x9;Values: see &quot;TYPES / SUBTYPES&quot; listing below.  e.g. CONTAINER
+&#x9;Output:
+&#x9;&#x9;childResCursor  - response containing the resource metadata
+&#x9;&#x9;CURSOR (
+&#x9;&#x9;&#x9;&#x9;resourceName VARCHAR(255), 
+        &#x9;&#x9;resourcePath VARCHAR(1024), 
+        &#x9;&#x9;resourceType VARCHAR(255), 
+        &#x9;&#x9;subtype VARCHAR(255), 
+        &#x9;&#x9;enabled BIT, 
+&#x9;&#x9;&#x9;&#x9;annotation LONGVARCHAR,
+        &#x9;&#x9;isNullable VARCHAR(255), 
+        &#x9;&#x9;columnName VARCHAR(255), 
+        &#x9;&#x9;columnType VARCHAR(255), 
+        &#x9;&#x9;nativeBaseType VARCHAR(255), 
+        &#x9;&#x9;nativeType VARCHAR(255)&#x9;)
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.2&#x9;&#x9;03/15/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;modified to provide &quot;annotation&quot; to output cursor for Best Practices 7.0.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+
+&#x9;TYPES / SUBTYPES:
+&#x9;=================
+&#x9;The following resource types/subtypes are supported by this operation.  Resources
+&#x9;cannot be created under &quot;/services&quot; unless otherwise noted, and cannot be created
+&#x9;within a physical data source.  
+
+&#x9;(Basic CIS folder)
+&#x9;* CONTAINER / FOLDER_CONTAINER - A Composite folder.   Cannot be created anywhere under /services except in another FOLDER under /services/webservices.
+&#x9;* CONTAINER / DIRECTORY_CONTAINER - A Composite directory.
+&#x9;(Database)
+&#x9;* CONTAINER / CATALOG_CONTAINER - A Composite catalog folder under a data source.  Can only be created within a data source under /services/databases.
+&#x9;* CONTAINER / SCHEMA_CONTAINER - A Composite schema container.  Can only be created within a CATALOG that is under /services/databases.
+&#x9;(Web Services)
+&#x9;* CONTAINER / SERVICE_CONTAINER - A web service container for the service.  Can only be created within a Composite Web Services data source that is under /services/webservices.
+&#x9;* CONTAINER / OPERATIONS_CONTAINER - A web service container for the operations
+&#x9;* CONTAINER / PORT_CONTAINER - A Composite web service container for port.   Can only be created within a SERVICE under /services/webservices.
+&#x9;(Connectors)
+&#x9;* CONTAINER / CONNECTOR_CONTAINER - A Composite container for connectors.
+
+&#x9;* CONNECTOR / JMS - A Composite JMS Connector.  Created with no connection information
+&#x9;* CONNECTOR / HTTP - A Composite HTTP Connector.  Created with no connection information
+
+&#x9;* DATA_SOURCE / RELATIONAL_DATA_SOURCE - A relational database source.
+&#x9;* DATA_SOURCE / FILE_DATA_SOURCE - A comma separate file data source.
+&#x9;* DATA_SOURCE / XML_FILE_DATA_SOURCE - An XML file data source.
+&#x9;* DATA_SOURCE / WSDL_DATA_SOURCE - A Composite web service data source.
+&#x9;* DATA_SOURCE / XML_HTTP_DATA_SOURCE - An HTTP XML data source.
+&#x9;* DATA_SOURCE / NONE - A custom java procedure data source.
+
+&#x9;* DEFINITION_SET / SQL_DEFINITION_SET - A Composite SQL Definition set.
+&#x9;* DEFINITION_SET / XML_SCHEMA_DEFINITION_SET - A Composite XML Schema Defintion set.
+&#x9;* DEFINITION_SET / WSDL_DEFINITION_SET - A Composite WSDL Definition set.
+&#x9;* DEFINITION_SET / ABSTRACT_WSDL_DEFINITION_SET - A Composite Abstract WSDL Definition set such as the ones imported from Designer.
+&#x9;* DEFINITION_SET / SCDL_DEFINITION_SET - A Composite SCA composite Definition set imported from Designer.
+
+&#x9;* LINK / unknown at this time
+
+&#x9;(CIS procedures)
+&#x9;* PROCEDURE / SQL_SCRIPT_PROCEDURE - A Composite SQL Procedure.  Created with a simple default script body that is runnable.
+&#x9;(Custom procedures)
+&#x9;* PROCEDURE / JAVA_PROCEDURE - A Composite java data source procedure.  Created from a java data source (jar file).
+&#x9;(Database procedures)
+&#x9;* PROCEDURE / EXTERNAL_SQL_PROCEDURE - A Composite Packaged Query.  Created with no SQL text, so it is not runnable.  
+&#x9;* PROCEDURE / DATABASE_PROCEDURE - A database stored procedure.
+&#x9;(XML procedures)
+&#x9;* PROCEDURE / BASIC_TRANSFORM_PROCEDURE - A Composite Basic XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XSLT_TRANSFORM_PROCEDURE - A Composite XSLT Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / STREAM_TRANSFORM_PROCEDURE - A Composite XSLT Streaming Transformation procedure.  Created with no target procedure and no output columns, so it is not runnable.
+&#x9;* PROCEDURE / XQUERY_TRANSFORM_PROCEDURE - A Composite XQUERY Transformation Procedure.  Created with no target schema and no model, so it is not runnable.
+&#x9;(Misc procedures)
+&#x9;* PROCEDURE / OPERATION_PROCEDURE - A Composite web service or HTTP procedure operation.
+
+&#x9;* TABLE / SQL_TABLE - A Composite View.  Created with no SQL text or model, so it is not runnable.  
+&#x9;* TABLE / DATABASE_TABLE - A Composite database table.
+&#x9;* TABLE / DELIMITED_FILE_TABLE - A Composite delimited file table
+&#x9;* TABLE / SYSTEM_TABLE - A Composite system table view.
+
+&#x9;* TREE / XML_FILE_TREE - The XML tree structure associated with a file-XML data source.
+
+&#x9;* TRIGGER / NONE - A Composite trigger.   Created disabled.
+*/
+PROCEDURE getChildResourcesCursor(
+    IN fullResourcePath &#x9;VARCHAR(4096), 
+    IN resourceType &#x9;&#x9;VARCHAR(255), 
+    OUT childResCursor CURSOR (
+        resourceName VARCHAR(255), 
+        resourcePath VARCHAR(1024), 
+        resourceType VARCHAR(255), 
+        subtype VARCHAR(255), 
+        enabled BIT, 
+&#x9;&#x9;annotation LONGVARCHAR,
+        isNullable VARCHAR(255), 
+        columnName VARCHAR(255), 
+        columnType VARCHAR(255), 
+        nativeBaseType VARCHAR(255), 
+        nativeType VARCHAR(255)
+        )
+    )
+BEGIN
+&#x9;DECLARE childResourceResponse&#x9;XML;
+
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getChildResourcesXML(fullResourcePath, resourceType, childResourceResponse);
+&#x9;OPEN childResCursor FOR 
+&#x9;&#x9;SELECT *
+&#x9;&#x9;FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getChildResourcesXSLT(childResourceResponse);
+&#x9;&#x9;/* Important Note:  The FIRST ROW FOR a TABLE returns a NULL IN the COLUMN name.  
+&#x9;&#x9;   This IS used TO determine the start OF a new TABLE.  Don&apos;t change the XSLT -- getChildResourcesResponseXSLT
+&#x9;    &#x9;   getChildResourcesResponseXSLT returns the following:
+&#x9;&#x9;select--&gt; resourceName:&#x9;inventorytransactions
+&#x9;&#x9;select--&gt; resourcePath:&#x9;/shared/ViewGenerator/PhysicalLayer/INVENTORY/ds_inventory/inventorytransactions
+&#x9;&#x9;select--&gt; resourceType:&#x9;TABLE
+&#x9;&#x9;select--&gt; subtype:&#x9;DATABASE_TABLE
+&#x9;&#x9;select--&gt; enabled:&#x9;1
+&#x9;&#x9;select--&gt; isNullable:&#x9;IS_NOT_NULLABLE
+&#x9;&#x9;select--&gt; columnName:&#x9;TransactionID
+&#x9;&#x9;select--&gt; columnType:&#x9;INTEGER
+&#x9;&#x9;select--&gt; nativeBaseType:&#x9;int
+&#x9;&#x9;select--&gt; nativeType:&#x9;int(11)    &#x9;&#x9;&#x9;&#x9;
+*/
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

@@ -1,0 +1,225 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="splitByDelimiter" path="/shared/Delta_DV/_scripts/Utilities/string/splitByDelimiter" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[splitByDelimiter:
+&#x9;Split a string by a defined delimiter and return the results in a VECTOR of varchar(255) strings.
+&#x9;IMPORTANT: 
+&#x9;Will not include empty strings (&apos;&apos;) as tokens (skipped).  Tokens returned are trimmed.
+&#x9;Due to the LENGTH() function not including trailing spaces as delimiters, do not use 
+&#x9;delimiters that include trailing spaces.  This will cause unexpected results as the 
+&#x9;token advancement relies on the length of the delimiter. The only exception is that 
+&#x9;you MAY use a single empty space &apos; &apos; as a delimiter (because it&apos;s handled manually).
+ 
+&#x9;Input:
+&#x9;&#x9;inString - contains the text string to split.  
+&#x9;&#x9;&#x9;Values: Any text value.  e.g. this is a delimited string
+&#x9;&#x9;inDelimiter - any single delimiter character.  
+&#x9;&#x9;&#x9;Values: Common separators include: &apos; &apos; or &apos;|&apos; or &apos;,&apos;
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;Output:
+&#x9;&#x9;outString - returns a vector of VARCHAR(255) words split by the defined delimiter
+&#x9;&#x9;&#x9;Values: Any text value.  e.g. this,is,a,delimited,string
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/08/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Fixed bug where server is set with ignore trailing spaces=true and there is a trailing space in the delimiter.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inString" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="inDelimiter" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="outString" direction="OUT" nullable="true">
+      <datatype name="outString" type="ARRAY">
+        <itemDatatype>
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/services/databases/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* splitByDelimiter:
+&#x9;Split a string by a defined delimiter and return the results in a VECTOR of varchar(255) strings.
+&#x9;IMPORTANT: 
+&#x9;Will not include empty strings (&apos;&apos;) as tokens (skipped).  Tokens returned are trimmed.
+&#x9;Due to the LENGTH() function not including trailing spaces as delimiters, do not use 
+&#x9;delimiters that include trailing spaces.  This will cause unexpected results as the 
+&#x9;token advancement relies on the length of the delimiter. The only exception is that 
+&#x9;you MAY use a single empty space &apos; &apos; as a delimiter (because it&apos;s handled manually).
+ 
+&#x9;Input:
+&#x9;&#x9;inString - contains the text string to split.  
+&#x9;&#x9;&#x9;Values: Any text value.  e.g. this is a delimited string
+&#x9;&#x9;inDelimiter - any single delimiter character.  
+&#x9;&#x9;&#x9;Values: Common separators include: &apos; &apos; or &apos;|&apos; or &apos;,&apos;
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;Output:
+&#x9;&#x9;outString - returns a vector of VARCHAR(255) words split by the defined delimiter
+&#x9;&#x9;&#x9;Values: Any text value.  e.g. this,is,a,delimited,string
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/08/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Fixed bug where server is set with ignore trailing spaces=true and there is a trailing space in the delimiter.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE splitByDelimiter(
+  IN inString &#x9;&#x9;LONGVARCHAR, 
+  IN inDelimiter &#x9;CHAR(1), 
+  IN debug&#x9;&#x9;&#x9;CHAR(1), --Y or N
+  OUT outString &#x9;VECTOR(LONGVARCHAR)
+)
+BEGIN
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log;
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository;
+
+  DECLARE moduleName &#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;string/splitByDelimiter()&apos;;
+  DECLARE sanityCheck &#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+  DECLARE stringLen&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+  DECLARE delimiterLen&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+  DECLARE occurPos &#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+  DECLARE vectorCntr &#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+  DECLARE stringLeftToParse&#x9;&#x9;LONGVARCHAR;
+  DECLARE token &#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+  DECLARE trailingSpaceInDelim&#x9;BOOLEAN DEFAULT false;
+
+  IF inString IS NOT NULL AND inDelimiter IS NOT NULL THEN
+    call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;Input provided: [&apos; || inString || &apos;], delimiter provided: [&apos; || inDelimiter || &apos;]&apos;);&#x9;
+
+    -- setup for initial loop
+    SET stringLeftToParse = inString;
+&#x9;-- The space character can be a problem if it is used as a delimiter, because the
+&#x9;-- Query Engine&apos;s &quot;Ignore Trailing Spaces&quot; setting can cause unexpected consequences with the LENGTH() function.
+&#x9;-- To work around this, we always append a character to the parameter used in LENGTH().
+    SET stringLen = LENGTH(stringLeftToParse||&apos;*&apos;)-1;
+&#x9;SET delimiterLen = LENGTH(inDelimiter||&apos;*&apos;)-1;
+&#x9;IF (SUBSTRING(inDelimiter, delimiterLen, 1) = &apos; &apos;) THEN
+&#x9;&#x9;SET trailingSpaceInDelim = true;
+&#x9;END IF;
+    call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;stringLeftToParse: &apos; || stringLeftToParse || &apos;, stringLen: &apos; || stringLen || &apos;, delimiterLen: &apos; || delimiterLen);&#x9;
+
+    -- Logic: everytime we find a token, we reduce the string by it PLUS the delimiter.
+    mainLoop: WHILE stringLen &gt; 0 DO
+      SET sanityCheck = sanityCheck + 1;IF sanityCheck &gt; 9999 THEN call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;ERROR!ENDLESS LOOP!&apos;);LEAVE mainLoop;END IF;
+
+      IF (trailingSpaceInDelim) THEN
+&#x9;&#x9;SELECT {OPTION IGNORE_TRAILING_SPACES=&quot;FALSE&quot;} INSTR(stringLeftToParse, inDelimiter) INTO occurPos FROM /services/databases/system/DUAL;
+      ELSE
+&#x9;&#x9;SET occurPos = INSTR(stringLeftToParse, inDelimiter);
+      END IF;
+
+      IF occurPos = 0 THEN -- delimiter not found
+        SET occurPos = stringLen; -- important: ends the loop on last token
+        SET token = SUBSTRING(stringLeftToParse, 1, stringLen); -- no more occurrences, take remainder of string
+      ELSEIF occurPos = 1 THEN -- delimiter is in first position
+        SET token = &apos;&apos;; -- since empty space will not be added to result, we&apos;ll just continue on...
+      ELSE
+        SET token = SUBSTRING(stringLeftToParse, 1, occurPos - 1);
+      END IF;
+      call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, token || &apos; from &apos; || stringLeftToParse || &apos; occurPos &apos; || occurPos);
+      call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, token || &apos; from &apos; || stringLeftToParse || &apos; occurPos &apos; || occurPos);
+
+      -- only add if not empty...
+      IF TRIM(token) != &apos;&apos; THEN
+        -- if counter is 1, no need to extend vector (an entry is initialized at this location)...
+        IF vectorCntr = 1 THEN
+          SET outString = VECTOR[&apos;&apos;]; -- initialize
+        ELSE
+          SET outString = EXTEND(outString, 1);
+        END IF;
+        SET outString[vectorCntr] = TRIM(token);
+        call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;adding &apos; || token || &apos; to vector&apos;);
+
+        SET vectorCntr = vectorCntr + 1; -- only increment when we add something, else will get oob exception
+      END IF;
+
+      -- reset everything
+      call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;determining stringLeftToParse using: &apos; || stringLeftToParse || &apos;,&apos; || occurPos || &apos;,&apos; || delimiterLen || &apos;,&apos; || LENGTH(stringLeftToParse));
+      SET stringLeftToParse = SUBSTRING(stringLeftToParse, occurPos + delimiterLen, LENGTH(stringLeftToParse));
+      SET stringLen = LENGTH(stringLeftToParse);
+
+      call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;stringLeftToParse: &apos; || stringLeftToParse);
+    END WHILE;
+  END IF;
+END
+</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:3:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

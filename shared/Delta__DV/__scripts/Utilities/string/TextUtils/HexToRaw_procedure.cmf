@@ -1,0 +1,79 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="HexToRaw" path="/shared/Delta_DV/_scripts/Utilities/string/TextUtils/HexToRaw" type="PROCEDURE" subtype="CUSTOM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[HexToRaw:
+
+    This procedure converts a hexadecimal string into a binary array value.
+
+    NOTE - Calls to this procedure can be pushed to Oracle data sources by 
+    adding some custom code to the Oracle capabilities file. Simply edit the
+    $CIS_HOME/conf/adapters/system/oracle_&lt;ver&gt;_&lt;type&gt;_driver/oracle_&lt;ver&gt;_&lt;type&gt;_driver_values.xml  
+    by adding the following lines just before the closing &quot;&lt;/common:attributes&gt;&quot;
+    line. CIS may need to be restarted after making this change.
+
+    &lt;ns726:attribute xmlns:ns726=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+        &lt;ns726:name&gt;/custom/HexToRaw(@null)&lt;/ns726:name&gt;
+        &lt;ns726:type&gt;STRING&lt;/ns726:type&gt;
+        &lt;ns726:value&gt;HexToRaw($1)&lt;/ns726:value&gt;
+        &lt;ns726:configID&gt;HexToRaw(~string)&lt;/ns726:configID&gt;
+    &lt;/ns726:attribute&gt;
+    &lt;ns725:attribute xmlns:ns725=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+        &lt;ns725:name&gt;/custom/RawToHex(@null)&lt;/ns725:name&gt;
+        &lt;ns725:type&gt;STRING&lt;/ns725:type&gt;
+        &lt;ns725:value&gt;RawToHex($1)&lt;/ns725:value&gt;
+        &lt;ns725:configID&gt;RawToHex(~binary)&lt;/ns725:configID&gt;
+    &lt;/ns725:attribute&gt; 
+&#x9;
+
+    Input:
+        hexVal - The string to convert into a binary array  
+            Values: Any text value whose characters are 0-9 and/or A-F
+
+
+    Output:
+        rawVal - The string converted to a binary array
+            Values: A binary array
+
+
+    Exceptions:  none
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+    2011.4&#x9;&#x9;07/26/2011      Alex Dedov          5.2.0           Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="hexVal" direction="IN" nullable="true">
+      <datatype name="VARCHAR" subType="DATASOURCE_TYPE" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="rawVal" direction="OUT" nullable="true">
+      <datatype name="VARBINARY" subType="DATASOURCE_TYPE" type="BINARY" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="className" type="STRING">com.tibco.ps.utils.text.HexToRaw</attribute>
+  <attribute name="creationDate" type="LONG">1415733336995</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="selectionState" type="INTEGER">2</attribute>
+</metadata>

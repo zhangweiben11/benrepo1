@@ -1,0 +1,244 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="createResourceCopy" path="/shared/Delta_DV/_scripts/Utilities/repository/createResourceCopy" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[createResourceCopy:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This is a procedure is used to create a copy of a resource by adding _Copy_1 and etc.  It looks for existing copies and increments the number.
+&#x9;The resource can be any resource including folders.
+ 
+&#x9;Input:
+&#x9;&#x9;mode - C=Copy resource and leave original, R=Rename resource to the &quot;copied&quot; name
+&#x9;&#x9;&#x9;&#x9;If left null, the default is copy and leave original in place.
+&#x9;&#x9;resourcePath - CIS resource to be copied
+&#x9;&#x9;&#x9;Values: e.g. /shared/examples/LookupProduct
+&#x9;&#x9;resourceType - the type of resources
+&#x9;&#x9;&#x9;Values: e.g. PROCEDURE
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;Exceptions:  ex
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.3&#x9;&#x9;05/23/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;created new for Best Practices 7.1
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="mode" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="resourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="pathType" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="resourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/resource/CopyResource" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="targetContainerPath" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="newName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="copyMode" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="CopyMode" type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/RenameResource" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="newName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceName" type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/TypeDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/returnFolderNameAndFolderPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="mode" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="folderName" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="folderPath" direction="OUT">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* createResourceCopy:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This is a procedure is used to create a copy of a resource by adding _Copy_1 and etc.  It looks for existing copies and increments the number.
+&#x9;The resource can be any resource including folders.
+ 
+&#x9;Input:
+&#x9;&#x9;mode - C=Copy resource and leave original, R=Rename resource to the &quot;copied&quot; name
+&#x9;&#x9;&#x9;&#x9;If left null, the default is copy and leave original in place.
+&#x9;&#x9;resourcePath - CIS resource to be copied
+&#x9;&#x9;&#x9;Values: e.g. /shared/examples/LookupProduct
+&#x9;&#x9;resourceType - the type of resources
+&#x9;&#x9;&#x9;Values: e.g. PROCEDURE
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;Exceptions:  ex
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.3&#x9;&#x9;05/23/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;created new for Best Practices 7.1
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE createResourceCopy(
+&#x9;IN mode&#x9;&#x9;&#x9;&#x9;CHAR(1),
+&#x9;IN resourcePath&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.pathType,
+&#x9;IN resourceType&#x9;&#x9;VARCHAR,
+&#x9;OUT success&#x9;&#x9;&#x9;INTEGER
+)
+BEGIN
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository;
+
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;createResourceCopy&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE resourceNameCopy&#x9;&#x9;VARCHAR;
+&#x9;DECLARE resourceName&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE parentPath&#x9;&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.pathType;
+&#x9;DECLARE fullResourcePath&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.pathType;
+&#x9;DECLARE resourceExists &#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+
+&#x9;set success = 0;
+&#x9;call /lib/resource/ResourceExists(resourcePath, resourceType, null, resourceExists);
+&#x9;if (resourceExists) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/returnFolderNameAndFolderPath(resourcePath, &apos;E&apos;, resourceName, parentPath);
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;resourcePath=&apos;||NVL(resourcePath,&apos;null&apos;));
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;parentPath=&apos;||NVL(parentPath,&apos;null&apos;));
+
+&#x9;&#x9;-- make a copy of the resource
+&#x9;&#x9;set resourceNameCopy = resourceName||&apos;_Copy_&apos;||i;
+&#x9;&#x9;set fullResourcePath = parentPath||&apos;/&apos;||resourceNameCopy;
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;fullResourcePath=&apos;||NVL(fullResourcePath,&apos;null&apos;));
+
+&#x9;&#x9;call /lib/resource/ResourceExists(fullResourcePath, resourceType, null, resourceExists);
+&#x9;&#x9;while(resourceExists) do  -- Exit the loop if resource not found
+&#x9;&#x9;&#x9;set i = i + 1;
+&#x9;&#x9;&#x9;set resourceNameCopy = resourceName||&apos;_Copy_&apos;||i;
+&#x9;&#x9;&#x9;set fullResourcePath = parentPath||&apos;/&apos;||resourceNameCopy;
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;resourceNameCopy=&apos;||NVL(resourceNameCopy,&apos;null&apos;));
+&#x9;&#x9;&#x9;call /lib/resource/ResourceExists(fullResourcePath, resourceType, null, resourceExists);
+&#x9;&#x9;end while;
+
+&#x9;&#x9;if (mode is null or UPPER(mode) = &apos;C&apos;) then
+&#x9;&#x9;&#x9;-- Rename the existing resource to a copy of the old name
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;renameResource: resourcePath=&apos;||resourcePath || &apos;...to new name=&apos;||resourceNameCopy);
+&#x9;&#x9;&#x9;call /lib/resource/CopyResource(resourcePath, resourceType, parentPath, resourceNameCopy, &apos;OVERWRITE_REPLACE_IF_EXISTS&apos;);
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (mode is not null and UPPER(mode) = &apos;R&apos;) then
+&#x9;&#x9;&#x9;-- Rename the existing resource to a copy of the old name
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;renameResource: resourcePath=&apos;||resourcePath || &apos;...to new name=&apos;||resourceNameCopy);
+&#x9;&#x9;&#x9;call /lib/resource/RenameResource(resourcePath, resourceType, resourceNameCopy);
+&#x9;&#x9;&#x9;set success = 1;
+&#x9;&#x9;end if;
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

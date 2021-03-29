@@ -1,0 +1,170 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_DivisionDependantAgeRule_IDS" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionDependantAgeRule_IDS" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="inGroupSurrogateIDChar" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inDivisionSurrogateIDChar" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="State">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="FirstName">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="MiddleName">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="LastName">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ContactTitle">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="NameSuffix">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="EffDateZ2">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EndDateZ2">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="DependantAgeRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="StudentAgeRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="EffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT A.GroupID,
+       A.DivisionID,
+&#x9;   A.State,
+&#x9;   A.FirstName,
+&#x9;   A.MiddleName,
+&#x9;   A.LastName,
+&#x9;   A.ContactTitle,
+&#x9;   A.NameSuffix,
+&#x9;   A.EffDateZ2,
+&#x9;   A.EndDateZ2,
+&#x9;   A.DependantAgeRule,
+&#x9;   A.StudentAgeRule,
+&#x9;   A.EffDate,
+&#x9;   A.EndDate
+FROM  (SELECT DISTINCT RTRIM(BL.EMPGRP_LEVEL_1_ID) GroupID, RTRIM(BL.EMPGRP_LEVEL_2_ID) DivisionID, RTRIM(BL.BUS_LEVEL_6_ID) State, 
+              RTRIM(CASE
+       &#x9;               WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN Contact_G2.CMPLT_FIRST_NAME
+&#x9;&#x9;               ELSE Contact_G1.CMPLT_FIRST_NAME
+                    END) FirstName, 
+              RTRIM(CASE
+                      WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN Contact_G2.CMPLT_MIDDLE_NAME 
+                      ELSE Contact_G1.CMPLT_MIDDLE_NAME
+                    END) MiddleName, 
+              RTRIM(CASE
+                       WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN Contact_G2.CMPLT_LAST_NAME
+                       ELSE Contact_G1.CMPLT_LAST_NAME
+                    END) LastName, 
+              RTRIM(CASE
+                       WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN Contact_G2.CMPLT_CONTACT_TITLE
+                       ELSE Contact_G1.CMPLT_CONTACT_TITLE
+                    END) ContactTitle, 
+              RTRIM(CASE
+                       WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN Contact_G2.CMPLT_NAME_SUFFIX
+                       ELSE Contact_G1.CMPLT_NAME_SUFFIX 
+                    END) NameSuffix, 
+              CASE
+                 WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN Contact_G2.EFF_DATE
+                 ELSE Contact_G1.EFF_DATE 
+              END EffDateZ2, 
+              CASE
+                 WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN Contact_G2.END_DATE 
+                 ELSE Contact_G1.END_DATE
+              END EndDateZ2, 
+              CASE 
+                 WHEN RTRIM(BL.BUS_LEVEL_6_ID) =  CASE
+&#x9;                                                 WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN RTRIM(Contact_G2.CMPLT_MIDDLE_NAME)
+&#x9;&#x9;                                             ELSE RTRIM(Contact_G1.CMPLT_MIDDLE_NAME)
+&#x9;                                              END
+                                                  THEN 1
+                 ELSE 2
+              END RNK,
+              MIN(CASE 
+                     WHEN RTRIM(BL.BUS_LEVEL_6_ID) =  CASE
+                                                         WHEN Contact_G2.IDENTIFIER IS NOT NULL THEN RTRIM(Contact_G2.CMPLT_MIDDLE_NAME)
+                                                         ELSE RTRIM(Contact_G1.CMPLT_MIDDLE_NAME)
+                                                      END
+                                                      THEN 1
+                     ELSE 2
+                  END
+                 ) OVER (PARTITION BY BL.EMPGRP_LEVEL_1_ID, BL.EMPGRP_LEVEL_2_ID, BL.BUS_LEVEL_6_ID) MIN_RNK,
+              AR.DEPNDNT_MXAGE_RULE DependantAgeRule, AR.STUDENT_MXAGE_RULE StudentAgeRule, AR.EFFECTIVE_DATE EffDate, AR.END_DATE EndDate
+       FROM   MTV_VIEWS.dbo.EMPGRP_LVL_BUS_LVL_VW BL
+       LEFT OUTER JOIN MTV_VIEWS.dbo.METAVANCE_CONTACT_VW Contact_G2
+       ON     Contact_G2.WHO_IDENTIFIER = &apos;{4}&apos;                    
+       AND    Contact_G2.WHO_TYPE_INDICATOR = &apos;G2&apos; 
+       AND    Contact_G2.CONTACT_TYPE_CODE = &apos;Z2&apos;
+       AND    BL.BUS_LEVEL_6_ID = CASE WHEN RTRIM(Contact_G2.CMPLT_MIDDLE_NAME) != &apos;&apos; THEN LEFT(RTRIM(Contact_G2.CMPLT_MIDDLE_NAME) + REPLICATE(&apos; &apos;, 12), 12) ELSE BL.BUS_LEVEL_6_ID END
+       AND    Contact_G2.AUDIT_FLAG = &apos;N&apos; AND Contact_G2.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MTV_VIEWS.dbo.METAVANCE_CONTACT_VW Contact_G1
+       ON     Contact_G1.WHO_IDENTIFIER = &apos;{3}&apos; 
+       AND    Contact_G1.WHO_TYPE_INDICATOR = &apos;G1&apos; 
+       AND    Contact_G1.CONTACT_TYPE_CODE = &apos;Z2&apos;
+       AND    BL.BUS_LEVEL_6_ID = CASE WHEN RTRIM(Contact_G1.CMPLT_MIDDLE_NAME) != &apos;&apos; THEN LEFT(RTRIM(Contact_G1.CMPLT_MIDDLE_NAME) + REPLICATE(&apos; &apos;, 12), 12) ELSE BL.BUS_LEVEL_6_ID END
+       AND    Contact_G1.AUDIT_FLAG = &apos;N&apos; AND Contact_G1.VOID_FLAG = &apos;N&apos;
+       LEFT OUTER JOIN MTV_VIEWS.dbo.EGLX_DPNDNT_AG_RUL_VW AR
+       ON     BL.EMPGRP_LEVEL_1_ID = AR.EMPGRP_LEVEL_1_ID
+       AND    BL.EMPGRP_LEVEL_2_ID = AR.EMPGRP_LEVEL_2_ID
+       AND    RTRIM(BL.BUS_LEVEL_6_ID) = CASE WHEN AR.BUS_LEVEL_6_ID != REPLICATE(&apos; &apos;, 12) THEN AR.BUS_LEVEL_6_ID ELSE BL.BUS_LEVEL_6_ID END
+       AND    {2} BETWEEN AR.EFFECTIVE_DATE AND AR.END_DATE
+       AND    AR.AUDIT_FLAG = &apos;N&apos; AND AR.VOID_FLAG = &apos;N&apos;
+       WHERE  BL.EMPGRP_LEVEL_1_ID = &apos;{0}&apos; 
+       AND    BL.EMPGRP_LEVEL_2_ID = &apos;{1}&apos; 
+       AND    BL.AUDIT_FLAG = &apos;N&apos; AND BL.VOID_FLAG = &apos;N&apos;
+       AND    {2} BETWEEN BL.EFFECTIVE_DATE AND BL.END_DATE 
+      ) A
+WHERE  A.RNK = A.MIN_RNK</attribute>
+  <attribute name="creationDate" type="LONG">1602025260091</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612827883307</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1602025260091</attribute>
+</metadata>

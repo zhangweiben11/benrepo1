@@ -1,0 +1,324 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="medianFromQuery" path="/shared/Delta_DV/_scripts/Utilities/calculations/medianFromQuery" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[medianFromQuery:
+
+&#x9;This procedure determines the median value of an input query that returns a single column.
+    The median is defined as the middle value of a sorted list of numbers. If the number of
+    elements in the list is odd, the median is the middle element. If the number of elements
+    in the list is even, then the median is the average of the two middle elements.
+
+
+&#x9;Input:
+&#x9;&#x9;query - contains a query that returns a single column result set. Must have an ORDER BY
+                clause (ASC or DESC doesn&apos;t matter), or an exception is thrown.
+&#x9;&#x9;&#x9;Values: A select statement
+
+
+&#x9;Output:
+&#x9;&#x9;result - the median value of the result set
+&#x9;&#x9;&#x9;Values: a double
+
+
+&#x9;Exceptions:
+        /lib/util/System.IllegalArgumentException - Thrown when the input query does not return 
+                                                    a single column or does not contain an ORDER
+                                                    BY clause.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed the VECTOR to make this more efficient.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="query" direction="IN" nullable="true">
+      <datatype name="Text" referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/TextUtils/RegexPosition" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="Input Text" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="Regular Expression" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="Occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+  medianFromQuery:
+
+&#x9;This procedure determines the median value of the result set of an input query that returns
+    a single column. The median is defined as the middle value of a sorted list of numbers. If
+    the number of elements in the list is odd, the median is the middle element. If the number
+    of elements in the list is even, then the median is the average of the two middle elements.
+    If the query results in no rows, the result is NULL.
+
+
+&#x9;Input:
+&#x9;&#x9;query - contains a query that returns a single column result set. Must have an ORDER BY
+                clause (ASC or DESC doesn&apos;t matter), or an exception is thrown.
+&#x9;&#x9;&#x9;Values: A select statement
+
+
+&#x9;Output:
+&#x9;&#x9;result - the median value of the result set
+&#x9;&#x9;&#x9;Values: a double or NULL (if the query returns no rows.)
+
+
+&#x9;Exceptions:
+        /lib/util/System.IllegalArgumentException - Thrown when the input query does not return 
+                                                    a single column or does not contain an ORDER
+                                                    BY clause.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed the VECTOR to make this more efficient.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE medianFromQuery(
+&#x9;IN&#x9;query&#x9;/lib/util/System.Text,
+&#x9;OUT&#x9;result&#x9;DOUBLE
+)
+BEGIN
+    DECLARE PROC_NAME &#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;medianFromQuery&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT &apos;N&apos;;
+    DECLARE myQuery System.Text DEFAULT query;
+    DECLARE curs &#x9;&#x9;&#x9;&#x9;CURSOR (myCol DOUBLE);
+    DECLARE myVal1, myVal2&#x9;&#x9;DOUBLE;
+&#x9;DECLARE myValues&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE numValues&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE mypos&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE mysearch&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE pos1, pos2, len&#x9;&#x9;INTEGER;
+
+
+    -- the regex here will allow:
+    --     a single column name
+    --     a single column name with a column alias
+    --     a function call with any number of arguments (but no sub-calls to other functions.)
+    --     a function call with any number of arguments with a column alias
+    --
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/TextUtils/RegexPosition(myQuery, &apos;(?i)^\s*SELECT\s+([^\s,\*]+|[^\s,]+\s+\([^\(\)]+\))((\s+AS)?\s+[^\s,\*]+)?\s+FROM\s+&apos;, 1, pos1);
+    IF (pos1 = 0) THEN
+        RAISE System.IllegalArgumentException VALUE PROC_NAME || &apos;: Input query does not return a single column or query is malformed.&apos;;
+    END IF;
+
+    -- see if the query has an order by. if not, add one.
+    --
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/TextUtils/RegexPosition(myQuery, &apos;(?i)\s+order\s+by\s+&apos;, 1, pos1);
+    IF (pos1 = 0) THEN
+        RAISE System.IllegalArgumentException VALUE PROC_NAME || &apos;: Input query does not contain an ORDER BY clause.&apos;;
+    END IF;
+
+    OPEN curs FOR myQuery;
+    FETCH curs INTO myVal1;
+    WHILE (curs.FOUND) DO
+&#x9;&#x9;SET numValues = numValues + 1;
+&#x9;&#x9;SET myValues = myValues || &apos;|&apos;||numValues||&apos;:&apos;||myVal1;
+        FETCH curs INTO myVal1;
+    END WHILE;
+    CLOSE curs;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL print(&apos;numValues=&apos;||numValues||&apos;  myValues=&apos;||NVL(myValues,&apos;null&apos;));
+&#x9;END IF;
+
+    IF (numValues = 0) THEN
+        SET result = NULL;
+    ELSEIF (numValues % 2 = 1) THEN -- number of values is odd
+&#x9;&#x9;SET mypos = CAST(numValues / 2 AS INT) + 1;
+&#x9;&#x9;SET mysearch = &apos;|&apos;||mypos||&apos;:&apos;;
+&#x9;&#x9;SET len = LENGTH(mysearch);
+&#x9;&#x9;SET pos1 = INSTR(myValues, mysearch);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL print(&apos;ODD:  mypos=&apos;||mypos||&apos;  mysearch=&apos;||mysearch||&apos;  pos1=&apos;||pos1||&apos;  len=&apos;||len);
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET pos2 = INSTR(myValues, &apos;|&apos;, pos1+len);
+&#x9;&#x9;&#x9;SET myVal1 = SUBSTRING(myValues, pos1+len, pos2-(pos1+len));
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL print(&apos;ODD: myVal1=&apos;||myVal1||&apos;  pos2=&apos;||pos2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET result = myVal1;
+    ELSE
+&#x9;&#x9;-- Extract the 1st median value
+&#x9;&#x9;SET mypos = CAST(numValues / 2 AS INT);
+&#x9;&#x9;SET mysearch = &apos;|&apos;||mypos||&apos;:&apos;;
+&#x9;&#x9;SET len = LENGTH(mysearch);
+&#x9;&#x9;SET pos1 = INSTR(myValues, mysearch);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL print(&apos;EVEN: mypos=&apos;||mypos||&apos;  mysearch=&apos;||mysearch||&apos;  pos1=&apos;||pos1||&apos;  len=&apos;||len);
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET pos2 = INSTR(myValues, &apos;|&apos;, pos1+len);
+&#x9;&#x9;&#x9;SET myVal1 = SUBSTRING(myValues, pos1+len, pos2-(pos1+len));
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL print(&apos;EVEN: myVal1=&apos;||myVal1||&apos;  pos2=&apos;||pos2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Extract the 2nd medan value
+&#x9;&#x9;SET mypos = CAST(numValues / 2 AS INT) + 1;
+&#x9;&#x9;SET mysearch = &apos;|&apos;||mypos||&apos;:&apos;;
+&#x9;&#x9;SET len = LENGTH(mysearch);
+&#x9;&#x9;SET pos1 = INSTR(myValues, mysearch);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL print(&apos;EVEN: mypos=&apos;||mypos||&apos;  mysearch=&apos;||mysearch||&apos;  pos1=&apos;||pos1||&apos;  len=&apos;||len);
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET pos2 = INSTR(myValues, &apos;|&apos;, pos1+len);
+&#x9;&#x9;&#x9;SET myVal2 = SUBSTRING(myValues, pos1+len, pos2-(pos1+len));
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL print(&apos;EVEN: myVal2=&apos;||myVal2||&apos;  pos2=&apos;||pos2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;SET result = (myVal1 + myVal2) / 2;
+    END IF;
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/120</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/126</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">21/55</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/103</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/136</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/80</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/142</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/92</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/73</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/109</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

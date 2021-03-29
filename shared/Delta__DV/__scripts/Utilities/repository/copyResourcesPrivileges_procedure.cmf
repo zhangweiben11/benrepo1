@@ -1,0 +1,449 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="copyResourcesPrivileges" path="/shared/Delta_DV/_scripts/Utilities/repository/copyResourcesPrivileges" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[*** DEPRECATED ***
+&#x9;DO NOT USE THIS PROCEDURE.  
+&#x9;USER copyResourcesPrivilegesV2 which does not use a vector as input.  Memory leak associated with vector parameter.
+
+&#x9;copyResourcesPrivileges:
+
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This is a procedure is used to copy resource privileges from one resource to another.
+ 
+&#x9;This procedure enables changes to resource privileges for users and groups, by copying
+&#x9;privileges from other resources. Changes can be made to one or more resources with
+&#x9;different source resource for one or many users and groups. Resource privileges
+&#x9;can be set for a specified set of users and groups without modifying any
+&#x9;existing privileges for other users and groups, or the procedure can set resource
+&#x9;privileges restrictively to only privileges of source resource explicitly.
+
+&#x9;Only a user with GRANT privilege on a resource can modify the privileges for that
+&#x9;resource. The owner of a resource always has GRANT privilege, as do users with the
+&#x9;MODIFY_ALL_RESOURCES right.
+
+&#x9;When &quot;mode&quot; is &quot;OVERWRITE_APPEND&quot;, or is not supplied, privileges are applied on a
+&#x9;per-user or per-group basis, so that updating privileges for one user or group does not
+&#x9;alter privileges from any other user or group.  The privileges applied for a user or
+&#x9;group replace the previous value for that user or group. 
+
+&#x9;When &quot;mode&quot; is &quot;SET_EXACTLY&quot;, all privileges on the resource are made to look exactly like 
+&#x9;the privileges of source resource.
+
+&#x9;When &quot;updateRecursively&quot; is &quot;false&quot;, the privileges are applied only to the specified
+&#x9;resources.  When it is &quot;true&quot;, the privileges are recursively applied into any CONTAINER
+&#x9;or DATA_SOURCE resource specified.  When recursively applying privileges, the privilege
+&#x9;change is ignored for any resource the user lacks owner privileges for.
+
+&#x9;Privileges that are not applicable for a given resource type are automatically stripped
+&#x9;down to the set that is legal for each resource.  TABLE resources support NONE, READ,
+&#x9;WRITE, SELECT, INSERT, UPDATE, and DELETE.  PROCEDURE resources support NONE, READ,
+&#x9;WRITE, and EXECUTE.  All other resource types only support NONE, READ, and WRITE.
+
+&#x9;Request Elements:
+&#x9;------------------
+    updateRecursively: If &quot;true&quot;, then all children of the given resources will
+       recursively be updated with the privileges assigned to their parent.
+    copyPrivilegeEntry: Source resource and list of destination resources.
+       Privileges of the source resource will be copied over to destination resources.
+    mode (optional): Determines whether privileges are merged with existing ones,
+       default is &quot;OVERWRITE_APPEND&quot;, which merges and does not update privileges for
+       users or groups not mentioned.  &quot;SET_EXACTLY&quot; makes privileges look exactly like
+       those provided in the call.
+
+&#x9;Input:
+&#x9;&#x9;updatePrivilegesRecursively - flag indicating whether to update the children of the given resources or not.
+&#x9;&#x9;&#x9;0 (false) or null - only update the given resource and not the children.
+&#x9;&#x9;&#x9;1 (true) - update children recursively
+&#x9;&#x9;copyPrivilegeEntry - a vector array of source and destination resources
+&#x9;&#x9;&#x9;srcResources - a vector of &quot;path&quot; and &quot;type&quot; which allows a max of 1 entry
+&#x9;&#x9;&#x9;dstResources - a vector of &quot;path&quot; and &quot;type&quot; which allows an unbounded number of destination resources to be set.
+&#x9;&#x9;copyPrivilegeMode - 
+&#x9;&#x9;&#x9;null - optional parameter that may not be set.
+&#x9;&#x9;&#x9;0 or null (default) - set mode to &quot;OVERWRITE_APPEND&quot; - merges and does not update privileges for
+       &#x9;&#x9;&#x9;users or groups not mentioned.
+&#x9;&#x9;&#x9;1 - set the mode to &quot;SET_EXACTLY&quot; - makes privileges look exactly like those provided in the call.
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+
+&#x9;Exceptions:  ex
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.3&#x9;&#x9;05/06/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new for Best Practices 7.1
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/15/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Deprecated this procedure.  Do not use.  Use copyResourcesPrivilegesV2.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="updatePrivilegesRecursively" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="copyPrivilegeMode" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="copyPrivilegeEntry" direction="IN" nullable="true">
+      <datatype name="copyPrivilegeEntryVector" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions" referenceType="copyPrivilegeEntryVector" type="ARRAY">
+        <itemDatatype>
+          <datatype name="copyPrivilegeEntryType" type="TREE" refId="257">
+            <element name="srcResource">
+              <datatype name="srcResource" type="ARRAY">
+                <itemDatatype>
+                  <datatype name="resourceType" type="TREE" refId="513">
+                    <element name="path">
+                      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+                    </element>
+                    <element name="type">
+                      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+                    </element>
+                  </datatype>
+                </itemDatatype>
+              </datatype>
+            </element>
+            <element name="dstResource">
+              <datatype name="dstResource" type="ARRAY">
+                <itemDatatype>
+                  <reference refId="513"/>
+                </itemDatatype>
+              </datatype>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="faultResponse" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/services/webservices/system/admin/resource/operations/copyResourcePrivileges" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="copyResourcePrivileges" direction="IN">
+        <datatype name="copyResourcePrivileges" extendedName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivileges" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivileges" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivileges">
+          <schemaDatatype>
+            <datatype name="copyResourcePrivileges" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="copyResourcePrivilegesRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="updateRecursively" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+              <element name="copyPrivilegeEntries" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="copyPrivilegeEntry" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="copyPrivilegeEntryType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                      <element name="srcResource" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="pathTypeOrColumnPair" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                          <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="resourceOrColumnType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="dstResource" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647">
+                        <reference refId="1025"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="updatePrivilegesMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="copyResourcePrivilegesResponse" direction="OUT">
+        <datatype name="copyResourcePrivilegesResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivilegesResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivilegesResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivilegesResponse">
+          <schemaDatatype>
+            <datatype name="copyResourcePrivilegesResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="copyResourcePrivilegesResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="1281"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="1537">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;*** DEPRECATED ***
+&#x9;DO NOT USE THIS PROCEDURE.  
+&#x9;USE copyResourcesPrivilegesV2 which does not use a vector as input.  Memory leak associated with vector parameter.
+
+&#x9;copyResourcesPrivileges:
+
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This is a procedure is used to copy resource privileges from one resource to another.
+ 
+&#x9;This procedure enables changes to resource privileges for users and groups, by copying
+&#x9;privileges from other resources. Changes can be made to one or more resources with
+&#x9;different source resource for one or many users and groups. Resource privileges
+&#x9;can be set for a specified set of users and groups without modifying any
+&#x9;existing privileges for other users and groups, or the procedure can set resource
+&#x9;privileges restrictively to only privileges of source resource explicitly.
+
+&#x9;Only a user with GRANT privilege on a resource can modify the privileges for that
+&#x9;resource. The owner of a resource always has GRANT privilege, as do users with the
+&#x9;MODIFY_ALL_RESOURCES right.
+
+&#x9;When &quot;mode&quot; is &quot;OVERWRITE_APPEND&quot;, or is not supplied, privileges are applied on a
+&#x9;per-user or per-group basis, so that updating privileges for one user or group does not
+&#x9;alter privileges from any other user or group.  The privileges applied for a user or
+&#x9;group replace the previous value for that user or group. 
+
+&#x9;When &quot;mode&quot; is &quot;SET_EXACTLY&quot;, all privileges on the resource are made to look exactly like 
+&#x9;the privileges of source resource.
+
+&#x9;When &quot;updateRecursively&quot; is &quot;false&quot;, the privileges are applied only to the specified
+&#x9;resources.  When it is &quot;true&quot;, the privileges are recursively applied into any CONTAINER
+&#x9;or DATA_SOURCE resource specified.  When recursively applying privileges, the privilege
+&#x9;change is ignored for any resource the user lacks owner privileges for.
+
+&#x9;Privileges that are not applicable for a given resource type are automatically stripped
+&#x9;down to the set that is legal for each resource.  TABLE resources support NONE, READ,
+&#x9;WRITE, SELECT, INSERT, UPDATE, and DELETE.  PROCEDURE resources support NONE, READ,
+&#x9;WRITE, and EXECUTE.  All other resource types only support NONE, READ, and WRITE.
+
+&#x9;Request Elements:
+&#x9;------------------
+    updateRecursively: If &quot;true&quot;, then all children of the given resources will
+       recursively be updated with the privileges assigned to their parent.
+    mode (optional): Determines whether privileges are merged with existing ones,
+       default is &quot;OVERWRITE_APPEND&quot;, which merges and does not update privileges for
+       users or groups not mentioned.  &quot;SET_EXACTLY&quot; makes privileges look exactly like
+       those provided in the call.
+    copyPrivilegeEntry: Source resource and list of destination resources.
+       Privileges of the source resource will be copied over to destination resources.
+
+&#x9;Input:
+&#x9;&#x9;updatePrivilegesRecursively - flag indicating whether to update the children of the given resources or not.
+&#x9;&#x9;&#x9;0 (false) or null - only update the given resource and not the children.
+&#x9;&#x9;&#x9;1 (true) - update children recursively
+&#x9;&#x9;copyPrivilegeMode - flag indicating the mode in which to copy privileges
+&#x9;&#x9;&#x9;flag indicating the mode in which to copy privileges
+&#x9;&#x9;&#x9;null (default) - do not set any privileges at all
+&#x9;&#x9;&#x9;0 - set mode to &quot;OVERWRITE_APPEND&quot; - merges and does not update privileges for
+       &#x9;&#x9;&#x9;users or groups not mentioned.
+&#x9;&#x9;&#x9;1 - set the mode to &quot;SET_EXACTLY&quot; - makes privileges look exactly like those provided in the call.
+&#x9;&#x9;copyPrivilegeEntry - a vector array of source and destination resources
+&#x9;&#x9;&#x9;srcResources - a vector of &quot;path&quot; and &quot;type&quot; which allows a max of 1 entry
+&#x9;&#x9;&#x9;dstResources - a vector of &quot;path&quot; and &quot;type&quot; which allows an unbounded number of destination resources to be set.
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;&#x9;faultResponse - null if succesful otherwise contains a fault response.
+&#x9;&#x9;&#x9;Values: Fault Resposne XML value
+
+&#x9;Exceptions:  ex
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.3&#x9;&#x9;05/06/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new for Best Practices 7.1
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/15/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Deprecated this procedure.  Do not use.  Use copyResourcesPrivilegesV2.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE copyResourcesPrivileges(
+&#x9;IN updatePrivilegesRecursively&#x9;BIT,
+&#x9;IN copyPrivilegeMode&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;-- flag indicating the mode in which to copy privileges
+&#x9;&#x9;-- null (default) - do not set any privileges at all
+&#x9;&#x9;-- 0 - set mode to &quot;OVERWRITE_APPEND&quot; - merges and does not update privileges for users or groups not mentioned.
+&#x9;&#x9;-- 1 - set the mode to &quot;SET_EXACTLY&quot; - makes privileges look exactly like those provided in the call.
+&#x9;IN copyPrivilegeEntry&#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.copyPrivilegeEntryVector,
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT, -- true(1) or false(0)
+&#x9;OUT faultResponse &#x9;&#x9;&#x9;&#x9;XML
+)
+BEGIN
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log;
+    PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository;
+
+    DECLARE moduleName          VARCHAR DEFAULT &apos;copyResourcesPrivileges&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE updateRecursively_&#x9;BIT DEFAULT updatePrivilegesRecursively;
+&#x9;DECLARE&#x9;mode&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+&#x9;DECLARE createInput &#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE dstResource&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE createResponse &#x9;&#x9;XML;
+&#x9;DECLARE ex &#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+    set success = 1;
+ 
+&#x9;if (copyPrivilegeMode is not null and copyPrivilegeMode = 1) then
+
+&#x9;&#x9;-- Translate the copy privilege mode
+&#x9;&#x9;if (copyPrivilegeMode is null or copyPrivilegeMode = 0) then
+&#x9;&#x9;&#x9;set mode = &apos;OVERWRITE_APPEND&apos;;
+&#x9;&#x9;elseif copyPrivilegeMode = 1 then
+&#x9;&#x9;&#x9;set mode = &apos;SET_EXACTLY&apos;;
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;raise ex value &apos;Invlalid copy mode=[&apos;||copyPrivilegeMode||&apos;]&apos;;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Check the update recursive flag for null
+&#x9;&#x9;if (updateRecursively_ is null) then
+&#x9;&#x9;&#x9;set updateRecursively_ = 0;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Validate copyPrivilegeEntry
+&#x9;&#x9;-- Make sure the source resource path and type are not empty.
+&#x9;&#x9;if (copyPrivilegeEntry is null) then
+&#x9;&#x9;&#x9;raise ex value &apos;copyPrivilegeEntry may not be blank or empty.&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (copyPrivilegeEntry[1].srcResource is null) then
+&#x9;&#x9;&#x9;raise ex value &apos;copyPrivilegeEntry source resource not be blank or empty.&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (copyPrivilegeEntry[1].srcResource[1].&quot;path&quot; IS NULL OR LENGTH(&apos;|&apos;||copyPrivilegeEntry[1].srcResource[1].&quot;path&quot;||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;raise ex value &apos;copyPrivilegeEntry source resource path may not be blank or empty.&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (copyPrivilegeEntry[1].srcResource[1].&quot;type&quot; IS NULL OR LENGTH(&apos;|&apos;||copyPrivilegeEntry[1].srcResource[1].&quot;type&quot;||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;raise ex value &apos;copyPrivilegeEntry source resource type may not be blank or empty.&apos;;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Validate and set copyPrivilegeEntry destination resources
+&#x9;&#x9;if (copyPrivilegeEntry[1].dstResource is null) then
+&#x9;&#x9;&#x9;raise ex value &apos;copyPrivilegeEntry destination resource not be blank or empty.&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;while (i &lt;= CARDINALITY(copyPrivilegeEntry[1].dstResource)) do
+&#x9;&#x9;&#x9;if (copyPrivilegeEntry[1].dstResource[1].&quot;path&quot; IS NULL OR LENGTH(&apos;|&apos;||copyPrivilegeEntry[1].dstResource[1].&quot;path&quot;||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;&#x9;raise ex value &apos;copyPrivilegeEntry destination resource path may not be blank or empty.&apos;;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;if (copyPrivilegeEntry[1].dstResource[1].&quot;type&quot; IS NULL OR LENGTH(&apos;|&apos;||copyPrivilegeEntry[1].dstResource[1].&quot;type&quot;||&apos;|&apos;) = 2) then
+&#x9;&#x9;&#x9;&#x9;raise ex value &apos;copyPrivilegeEntry destination resource type may not be blank or empty.&apos;;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;set dstResource = dstResource || &apos;
+&#x9;&#x9;&#x9;&#x9;  &lt;resource:dstResource&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;resource:path&gt;&apos; || CAST(XMLTEXT(copyPrivilegeEntry[1].dstResource[i].&quot;path&quot;) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;resource:type&gt;&apos; || CAST(XMLTEXT(copyPrivilegeEntry[1].dstResource[i].&quot;type&quot;) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;
+&#x9;&#x9;&#x9;&#x9;  &lt;/resource:dstResource&gt;&apos;;
+&#x9;&#x9;&#x9;set i = i + 1;
+&#x9;&#x9;end while;
+
+&#x9;&#x9;-- Create the web service input request for copyResourcePrivileges
+&#x9;&#x9;set createInput = 
+&#x9;&#x9;&#x9;&apos;&lt;resource:copyResourcePrivileges xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;resource:updateRecursively&gt;&apos; || CAST(XMLTEXT(updateRecursively_) AS LONGVARCHAR) || &apos;&lt;/resource:updateRecursively&gt;
+&#x9;&#x9;&#x9;  &lt;resource:copyPrivilegeEntries&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;resource:copyPrivilegeEntry&gt;
+&#x9;&#x9;&#x9;&#x9; &lt;resource:srcResource&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;resource:path&gt;&apos; || CAST(XMLTEXT(copyPrivilegeEntry[1].srcResource[1].&quot;path&quot;) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;resource:type&gt;&apos; || CAST(XMLTEXT(copyPrivilegeEntry[1].srcResource[1].&quot;type&quot;) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;
+&#x9;&#x9;&#x9;&#x9;  &lt;/resource:srcResource&gt;&apos;;
+
+&#x9;&#x9;set createInput = createInput || dstResource || &apos;
+&#x9;&#x9;&#x9;&#x9;&lt;/resource:copyPrivilegeEntry&gt;
+&#x9;&#x9;&#x9;  &lt;/resource:copyPrivilegeEntries&gt;
+&#x9;&#x9;&#x9;  &lt;resource:mode&gt;&apos; || CAST(XMLTEXT(mode) AS LONGVARCHAR) || &apos;&lt;/resource:mode&gt;
+&#x9;&#x9;&#x9;&lt;/resource:copyResourcePrivileges&gt;&apos;;
+
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;&#x9;&#x9;&#x9;&#x9;&apos; || createInput);
+
+&#x9;&#x9;-- Invoke copyResourcePrivileges
+&#x9;&#x9;Call /services/webservices/system/admin/resource/operations/copyResourcePrivileges(createInput, createResponse, faultResponse);
+&#x9;&#x9;if (faultResponse is not null) then
+&#x9;&#x9;&#x9;raise ex value CAST(faultResponse as LONGVARCHAR);
+&#x9;&#x9;end if;&#x9;
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:1:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:2:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:4:Customized" type="STRING">datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

@@ -1,0 +1,241 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="EVENT_VW_CALL_ENDED_IVR" path="/shared/Delta_DV/Physical/Formatting/IVR_PA_VIEWS/EVENT_VW_CALL_ENDED_IVR" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Event_SKEY" nullable="true">
+      <datatype type="STRING" maxLength="36"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Start_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="End_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Duration_Seconds_QTY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="5" maxLength="5" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Sub_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="6" maxLength="6" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Source_key" nullable="true">
+      <datatype type="STRING" maxLength="36"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Call_Center_CD" nullable="true">
+      <datatype type="STRING" minLength="2" maxLength="2" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Contact_Center_Business_Unit_CD" nullable="true">
+      <datatype type="STRING" minLength="3" maxLength="10" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Channel_Type_CD" nullable="true">
+      <datatype type="STRING" minLength="9" maxLength="9" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/IRF_USER_DATA_CUST_1_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="INTERACTION_RESOURCE_ID" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="START_DATE_TIME_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TENANT_KEY" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CREATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="UPDATE_AUDIT_KEY" nullable="false">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="CUSTOM_DATA_1">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_2">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_3">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_4">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_5">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_6">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_7">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_8">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_9">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_10">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_11">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_12">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_13">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_14">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_15">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CUSTOM_DATA_16">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/RECORDHEADER_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="RH_ID" nullable="false">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="SEQNO" nullable="false">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="0"/>
+      </element>
+      <element name="RECORDTYPE">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="RECORDDATETIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="STATENAME">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="DATATABLE">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="SESSIONINFO_SESSIONID" nullable="false">
+        <datatype type="STRING" maxLength="36"/>
+      </element>
+      <element name="TASK">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="TASKSTATUS">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="TASKENDRECORD">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/SESSIONINFO_VW" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="CALLID" nullable="false">
+        <datatype type="STRING" maxLength="36"/>
+      </element>
+      <element name="NVPSESSIONID" nullable="false">
+        <datatype type="STRING" maxLength="36"/>
+      </element>
+      <element name="ANI">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="DNIS">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="APPLICATION">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+      <element name="TRANSFERNUMBER">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="IVRBUSINESSUNIT">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select 
+ {OPTION CASE_SENSITIVE=&quot;false&quot;}
+    SESSIONINFO_VW.NVPSESSIONID Event_SKEY,
+&#x9;min(RECORDHEADER_VW.RECORDDATETIME)  Start_DTM ,
+&#x9;max(RECORDHEADER_VW.RECORDDATETIME)  End_DTM,
+DATEDIFF(&apos;SECOND&apos;, min(RECORDHEADER_VW.RECORDDATETIME),max(RECORDHEADER_VW.RECORDDATETIME)) Event_Duration_Seconds_QTY,
+&#x9;&apos;CSEVT&apos;  Event_Type_CD,
+&#x9;&apos;CSCALL&apos; Event_Sub_Type_CD,
+&#x9;SESSIONINFO_VW.NVPSESSIONID Event_Source_key,
+&#x9; &apos;UN&apos; Customer_Call_Center_CD ,
+  &#x9;Case 
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;AARP_%&apos; THEN &apos;AARP&apos;  
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;CPP_%&apos; THEN &apos;CPP&apos;  
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;DCal_%&apos; THEN &apos;DENTICAL&apos;
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;DC_%&apos; THEN &apos;DELATACARE&apos; 
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;DDC_%&apos; THEN &apos;DDC&apos; 
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;DDIC_%&apos; THEN &apos;DDIC&apos; 
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;DDPR_%&apos; THEN &apos;DDPR&apos;  
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;DDP_%&apos; THEN &apos;DDP&apos;  
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;DENT_%&apos; THEN &apos;DENTEGRA&apos;
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;PROV_SRV_%&apos; THEN &apos;CONCIERGE&apos;
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;GnA_%&apos; THEN &apos;GNA&apos;  
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;D2C_DirectPay%&apos; THEN &apos;DDP&apos;
+ WHEN SESSIONINFO_VW.IVRBUSINESSUNIT Like &apos;D2C_%&apos; THEN &apos;D2C&apos;
+ Else &apos;Default&apos;  End  Contact_Center_Business_Unit_CD,
+&#x9;&apos;TELEPHONY&apos; Customer_Service_Channel_Type_CD
+&#x9;from /shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/SESSIONINFO_VW SESSIONINFO_VW inner join 
+&#x9;/shared/Delta_DV/Physical/Metadata/DataSources/IDS/IVR_PA_VIEWS/IVRCDR/RECORDHEADER_VW RECORDHEADER_VW on  
+&#x9;SESSIONINFO_VW.NVPSESSIONID = RECORDHEADER_VW.SESSIONINFO_SESSIONID 
+    LEFT OUTER JOIN /shared/Delta_DV/Physical/Metadata/DataSources/IDS/GENESYS_VIEWS/dbo/IRF_USER_DATA_CUST_1_VW irf_udc 
+ON SESSIONINFO_VW.NVPSESSIONID=irf_udc.CUSTOM_DATA_7 and  CUSTOM_DATA_7 IS NULL --and not exists
+&#x9;--( select 1 from /shared/Delta_DV/Physical/Metadata/Repositories/GENESYS_VIEWS/dbo/IRF_USER_DATA_CUST_1_VW irf_udc where SESSIONINFO_VW.NVPSESSIONID=irf_udc.CUSTOM_DATA_7)
+&#x9;group by SESSIONINFO_VW.NVPSESSIONID,SESSIONINFO_VW.IVRBUSINESSUNIT</attribute>
+  <attribute name="creationDate" type="LONG">1602120465150</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5240211</attribute>
+  <attribute name="creatorUserName" type="STRING">dca90042</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5240211</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1602120465150</attribute>
+</metadata>

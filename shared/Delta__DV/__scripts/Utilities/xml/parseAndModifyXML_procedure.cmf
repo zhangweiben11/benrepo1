@@ -1,0 +1,498 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="parseAndModifyXML" path="/shared/Delta_DV/_scripts/Utilities/xml/parseAndModifyXML" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[*** DEPRECATED ***
+&#x9;DO NOT USE THIS PROCEDURE.  
+&#x9;USE updateResourcesSqlTableV2 which does not use a vector as input.  Memory leak associated with vector parameter.
+
+&#x9;parseAndModifyXML:
+
+&#x9;Parse and XML document given a vector of XPath statements and modify the values and reconstruct the XML.
+ &#x9;IMPORTANT:  When updating an element with a list of attributes, you must supply all of the original
+&#x9;attributes in order to retain what you had.  This routine overwrites the original element so be careful.
+
+&#x9;Use cases supported:
+&#x9;&#x9;Use Case 1: Modify the attribute for an element
+&#x9;&#x9;Use Case 2: Modify the value of the the element with attributes
+&#x9;&#x9;Use Case 3: Modify the element with no attributes
+&#x9;&#x9;Use Case 4: Modify the element with no attributes and set it to null
+&#x9;&#x9;Use Case 5: Retain the original attributes and modify the element with attributes and set it to null
+
+&#x9;Input:
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;&#x9;namespaces - any string with the valid namespaces for the incoming XML  
+&#x9;&#x9;&#x9;Values: e.g. xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;
+&#x9;&#x9;&#x9;&#x9;     xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot; 
+&#x9;&#x9;&#x9;&#x9;     xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;
+&#x9;&#x9;ElemAttrVector - contains a vector of qualified elements, qualified attributes and the value to change.
+&#x9;&#x9;&#x9;&#x9;&#x9;qualElem varchar(2048), 
+&#x9;&#x9;&#x9;&#x9;&#x9;qualAttr varchar(2048), 
+&#x9;&#x9;&#x9;&#x9;&#x9;invalue varchar
+&#x9;&#x9;&#x9;It may be necessary to read the orginal values for each attribute to construct this vector on the fly
+&#x9;&#x9;&#x9;if you want to retain certain values.  Then modify only the attributes that you want to change.
+&#x9;&#x9;&#x9;Values: ElemAttrVector e.g. 
+&#x9;&#x9;&#x9;&#x9;{
+&#x9;&#x9;&#x9;&#x9;--qualElem,  qualAttr,  invalue
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,&apos;sam:isbn&apos;,&apos;00-0000-000&apos;), &#x9;-- Use Case 1: Modify the attribute for an element
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,NULL,&apos;Joe Author&apos;),&#x9;&#x9;&#x9;-- Use Case 2: Modify the value of the the element with attributes
+&#x9;&#x9;&#x9;&#x9;(&apos;Chapter&apos;,NULL,&apos;Chapter 1&apos;),&#x9;&#x9;&#x9;-- Use Case 3: Modify the element with no attributes
+&#x9;&#x9;&#x9;&#x9;(&apos;Paragraph&apos;,NULL,NULL),&#x9;&#x9;&#x9;&#x9;-- Use Case 4: Modify the element with no attributes and set it to null
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:firstname&apos;,&apos;Joe&apos;), &#x9;-- Use Case 5: Retain the attribute
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:lastname&apos;,&apos;Author&apos;), -- Use Case 5: Retain the attribute
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Author&apos;,NULL,NULL) &#x9;&#x9;&#x9;&#x9;-- Use Case 5: Modify the element with attributes and set it to null
+&#x9;&#x9;&#x9;&#x9;}
+&#x9;&#x9;inXml - any XML document
+&#x9;&#x9;&#x9;Values: e.g. 
+&#x9;&#x9;&#x9;&#x9;&lt;Book xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;sam:Name sam:isbn=&quot;12-3456-123&quot;/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Chapter&gt;Test Data&lt;/Chapter&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Paragraph&gt;Paragraph 1&lt;/Paragraph&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/Book&gt;
+&#x9;Output:
+&#x9;&#x9;outXml - modified XML
+&#x9;&#x9;&#x9;Values: e.g. 
+&#x9;&#x9;&#x9;&#x9;&lt;Book xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;&gt; &#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;sam:Name sam:isbn=&quot;00-0000-000&quot;&gt;Joe Author&lt;/sam:Name&gt; &#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Chapter&gt;Chapter 1&lt;/Chapter&gt; &#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Paragraph xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:nil=&quot;true&quot;/&gt; 
+&#x9;&#x9;&#x9;&#x9;&lt;/Book&gt; 
+&#x9;Limitations:
+&#x9;&#x9;This method does not modify an iteration of the same node.
+
+&#x9;XSLT Template Examples:
+&#x9;-----------------------
+&#x9;&#x9;Use Case 1: Modify the attribute for an element
+&#x9;&#x9;Use Case 2: Modify the value of the the element with attributes
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector =
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,&apos;sam:isbn&apos;,&apos;00-0000-000&apos;),
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,NULL,&apos;Joe Author&apos;),&#x9;
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;sam:Name&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;xslt:attribute name=&quot;sam:isbn&quot;&gt;00-0000-000&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;xslt:element&gt;Joe Author&lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;&#x9;Use Case 3: Modify the element with no attributes
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector =
+&#x9;&#x9;&#x9;&#x9;(&apos;Chapter&apos;,NULL,&apos;Chapter 1&apos;),
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;Chapter&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;xslt:element&gt;Chapter 1&lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;&#x9;Use Case 4: Modify the element with no attributes and set it to null
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector = 
+&#x9;&#x9;&#x9;&#x9;(&apos;Paragraph&apos;,NULL,NULL),
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;Paragraph&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;xsi:nil&quot;&gt;true&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;&#x9;Use Case 5: Retain the original attributes and modify the element with attributes and set it to null
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector = 
+&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:firstname&apos;,&apos;Joe&apos;), &#x9;-- Use Case 5: Retain the attribute
+&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:lastname&apos;,&apos;Author&apos;), -- Use Case 5: Retain the attribute
+&#x9;&#x9;(&apos;sam:Author&apos;,NULL,NULL) &#x9;&#x9;&#x9;&#x9;-- Use Case 5: Modify an element with attributes and set it to null
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;sam:Author&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;sam:firstname&quot;&gt;Joe&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;sam:lastname&quot;&gt;Author&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;xsi:nil&quot;&gt;true&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2011.2&#x9;&#x9;01/18/2011&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/21/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Depracated parseAndModifyXML in favor of using parseAndModifyXMLV2 which has no vector input.
+&#x9;
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="namespaces" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="ElemAttrVector" direction="IN" nullable="true">
+      <datatype name="ElemAttrVector" type="ARRAY">
+        <itemDatatype>
+          <datatype name="ElemAttrValuesType" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="ElemAttrValuesType" type="TREE" refId="257">
+            <element name="qualElem">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="qualAttr">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="invalue">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="inXml" direction="IN" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="outXml" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/TypeDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;*** DEPRECATED ***
+&#x9;DO NOT USE THIS PROCEDURE.  
+&#x9;USE updateResourcesSqlTableV2 which does not use a vector as input.  Memory leak associated with vector parameter.
+
+&#x9;parseAndModifyXML:
+
+&#x9;Parse and XML document given a vector of XPath statements and modify the values and reconstruct the XML.
+ &#x9;IMPORTANT:  When updating an element with a list of attributes, you must supply all of the original
+&#x9;attributes in order to retain what you had.  This routine overwrites the original element so be careful.
+
+&#x9;Use cases supported:
+&#x9;&#x9;Use Case 1: Modify the attribute for an element
+&#x9;&#x9;Use Case 2: Modify the value of the the element with attributes
+&#x9;&#x9;Use Case 3: Modify the element with no attributes
+&#x9;&#x9;Use Case 4: Modify the element with no attributes and set it to null
+&#x9;&#x9;Use Case 5: Retain the original attributes and modify the element with attributes and set it to null
+
+&#x9;Input:
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;&#x9;namespaces - any string with the valid namespaces for the incoming XML  
+&#x9;&#x9;&#x9;Values: e.g. xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;
+&#x9;&#x9;&#x9;&#x9;     xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot; 
+&#x9;&#x9;&#x9;&#x9;     xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;
+&#x9;&#x9;ElemAttrVector - contains a vector of qualified elements, qualified attributes and the value to change.
+&#x9;&#x9;&#x9;&#x9;&#x9;qualElem varchar(2048), 
+&#x9;&#x9;&#x9;&#x9;&#x9;qualAttr varchar(2048), 
+&#x9;&#x9;&#x9;&#x9;&#x9;invalue varchar
+&#x9;&#x9;&#x9;It may be necessary to read the orginal values for each attribute to construct this vector on the fly
+&#x9;&#x9;&#x9;if you want to retain certain values.  Then modify only the attributes that you want to change.
+&#x9;&#x9;&#x9;Values: ElemAttrVector e.g. 
+&#x9;&#x9;&#x9;&#x9;{
+&#x9;&#x9;&#x9;&#x9;--qualElem,  qualAttr,  invalue
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,&apos;sam:isbn&apos;,&apos;00-0000-000&apos;), &#x9;-- Use Case 1: Modify the attribute for an element
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,NULL,&apos;Joe Author&apos;),&#x9;&#x9;&#x9;-- Use Case 2: Modify the value of the the element with attributes
+&#x9;&#x9;&#x9;&#x9;(&apos;Chapter&apos;,NULL,&apos;Chapter 1&apos;),&#x9;&#x9;&#x9;-- Use Case 3: Modify the element with no attributes
+&#x9;&#x9;&#x9;&#x9;(&apos;Paragraph&apos;,NULL,NULL),&#x9;&#x9;&#x9;&#x9;-- Use Case 4: Modify the element with no attributes and set it to null
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:firstname&apos;,&apos;Joe&apos;), &#x9;-- Use Case 5: Retain the attribute
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:lastname&apos;,&apos;Author&apos;), -- Use Case 5: Retain the attribute
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Author&apos;,NULL,NULL) &#x9;&#x9;&#x9;&#x9;-- Use Case 5: Modify the element with attributes and set it to null
+&#x9;&#x9;&#x9;&#x9;}
+&#x9;&#x9;inXml - any XML document
+&#x9;&#x9;&#x9;Values: e.g. 
+&#x9;&#x9;&#x9;&#x9;&lt;Book xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;sam:Name sam:isbn=&quot;12-3456-123&quot;/&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Chapter&gt;Test Data&lt;/Chapter&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Paragraph&gt;Paragraph 1&lt;/Paragraph&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/Book&gt;
+&#x9;Output:
+&#x9;&#x9;outXml - modified XML
+&#x9;&#x9;&#x9;Values: e.g. 
+&#x9;&#x9;&#x9;&#x9;&lt;Book xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;&gt; &#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;sam:Name sam:isbn=&quot;00-0000-000&quot;&gt;Joe Author&lt;/sam:Name&gt; &#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Chapter&gt;Chapter 1&lt;/Chapter&gt; &#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Paragraph xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:nil=&quot;true&quot;/&gt; 
+&#x9;&#x9;&#x9;&#x9;&lt;/Book&gt; 
+&#x9;Limitations:
+&#x9;&#x9;This method does not modify an iteration of the same node.
+
+&#x9;XSLT Template Examples:
+&#x9;-----------------------
+&#x9;&#x9;Use Case 1: Modify the attribute for an element
+&#x9;&#x9;Use Case 2: Modify the value of the the element with attributes
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector =
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,&apos;sam:isbn&apos;,&apos;00-0000-000&apos;),
+&#x9;&#x9;&#x9;&#x9;(&apos;sam:Name&apos;,NULL,&apos;Joe Author&apos;),&#x9;
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;sam:Name&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;xslt:attribute name=&quot;sam:isbn&quot;&gt;00-0000-000&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;xslt:element&gt;Joe Author&lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;&#x9;Use Case 3: Modify the element with no attributes
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector =
+&#x9;&#x9;&#x9;&#x9;(&apos;Chapter&apos;,NULL,&apos;Chapter 1&apos;),
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;Chapter&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;xslt:element&gt;Chapter 1&lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;&#x9;Use Case 4: Modify the element with no attributes and set it to null
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector = 
+&#x9;&#x9;&#x9;&#x9;(&apos;Paragraph&apos;,NULL,NULL),
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;Paragraph&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;xsi:nil&quot;&gt;true&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;&#x9;Use Case 5: Retain the original attributes and modify the element with attributes and set it to null
+&#x9;&#x9;-----------
+&#x9;&#x9;&#x9;ElemAttrVector = 
+&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:firstname&apos;,&apos;Joe&apos;), &#x9;-- Use Case 5: Retain the attribute
+&#x9;&#x9;(&apos;sam:Author&apos;,&apos;sam:lastname&apos;,&apos;Author&apos;), -- Use Case 5: Retain the attribute
+&#x9;&#x9;(&apos;sam:Author&apos;,NULL,NULL) &#x9;&#x9;&#x9;&#x9;-- Use Case 5: Modify an element with attributes and set it to null
+
+&#x9;&#x9;&#x9;&lt;xslt:template match=&quot;sam:Author&quot;&gt;
+&#x9;&#x9;&#x9;  &lt;xslt:element name=&quot;{name()}&quot;&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;sam:firstname&quot;&gt;Joe&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;sam:lastname&quot;&gt;Author&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;    &lt;xslt:attribute name=&quot;xsi:nil&quot;&gt;true&lt;/xslt:attribute&gt;
+&#x9;&#x9;&#x9;  &lt;/xslt:element&gt;
+&#x9;&#x9;&#x9;&lt;/xslt:template&gt;
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2011.2&#x9;&#x9;01/18/2011&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/21/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Depracated parseAndModifyXML in favor of using parseAndModifyXMLV2 which has no vector input.
+&#x9;
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE parseAndModifyXML(
+&#x9;IN debug&#x9;&#x9;&#x9;CHAR(1),
+&#x9;IN namespaces&#x9;&#x9;LONGVARCHAR,
+&#x9;IN ElemAttrVector&#x9;VECTOR(/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.ElemAttrValuesType),
+/*&#x9;&#x9;qualElem varchar(2048), 
+&#x9;&#x9;qualAttr varchar(2048), 
+&#x9;&#x9;invalue varchar
+*/
+&#x9;IN inXml&#x9;&#x9;&#x9;XML,
+&#x9;OUT outXml&#x9;&#x9;&#x9;XML
+&#x9;)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;VARCHAR DEFAULT &apos;parseAndModifyXML()&apos;;
+&#x9;DECLARE xsltExpr&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE xsltTemplate&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE xsltAttributes&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 1;
+&#x9;DECLARE prevElement&#x9;&#x9;VARCHAR(2048) DEFAULT &apos;&apos;;
+&#x9;DECLARE newline&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE firstTime&#x9;&#x9;BOOLEAN DEFAULT TRUE;
+
+&#x9;set newline = &apos;
+&apos;;
+&#x9;-- Build the XSLT template that will set element and attribute values for a given Element
+&#x9;-- Build a template for each Element/Attribute pair found in the Element-Attribute vector
+&#x9;WHILE (i &lt;= CARDINALITY(ElemAttrVector)) DO
+&#x9;&#x9;IF (ElemAttrVector[i].qualElem = prevElement) THEN
+&#x9;&#x9;&#x9;-- Determine if there is an attribute
+&#x9;&#x9;&#x9;IF (ElemAttrVector[i].qualAttr IS NOT NULL AND LENGTH(&apos;|&apos;||ElemAttrVector[i].qualAttr||&apos;|&apos;) &gt; 2) THEN
+&#x9;&#x9;&#x9;&#x9;-- Modify the Attribute
+&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:attribute name=&quot;&apos;||ElemAttrVector[i].qualAttr||&apos;&quot;&gt;&apos;|| TRIM(NVL(ElemAttrVector[i].inValue,&apos;  &apos;)) ||&apos;&lt;/xslt:attribute&gt;&apos;;
+&#x9;&#x9;&#x9;ELSE -- Element only
+&#x9;&#x9;&#x9;&#x9;-- Modify the element
+&#x9;&#x9;&#x9;&#x9;IF  (ElemAttrVector[i].inValue IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the element to xsi:nil=&quot;true&quot;
+&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:attribute name=&quot;xsi:nil&quot;&gt;true&lt;/xslt:attribute&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the element value
+&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:element&gt;&apos;|| TRIM(NVL(ElemAttrVector[i].inValue,&apos;  &apos;)) ||&apos;&lt;/xslt:element&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;IF (firstTime) THEN
+&#x9;&#x9;&#x9;&#x9;-- Create the starting Template
+&#x9;&#x9;&#x9;&#x9;set xsltTemplate = xsltTemplate  || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&lt;xslt:template match=&quot;&apos;||ElemAttrVector[i].qualElem||&apos;&quot;&gt;&apos; || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  &lt;xslt:element name=&quot;{name()}&quot;&gt;&apos;;
+
+&#x9;&#x9;&#x9;&#x9;-- Determine if there is an attribute
+&#x9;&#x9;&#x9;&#x9;IF (ElemAttrVector[i].qualAttr IS NOT NULL AND LENGTH(&apos;|&apos;||ElemAttrVector[i].qualAttr||&apos;|&apos;) &gt; 2) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Modify the Attribute
+&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:attribute name=&quot;&apos;||ElemAttrVector[i].qualAttr||&apos;&quot;&gt;&apos;|| TRIM(NVL(ElemAttrVector[i].inValue,&apos;  &apos;)) ||&apos;&lt;/xslt:attribute&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSE -- Element only
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Modify the element
+&#x9;&#x9;&#x9;&#x9;&#x9;IF  (ElemAttrVector[i].inValue IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the element to xsi:nil=&quot;true&quot;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:attribute name=&quot;xsi:nil&quot;&gt;true&lt;/xslt:attribute&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the element value
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:element&gt;&apos;|| TRIM(NVL(ElemAttrVector[i].inValue,&apos;  &apos;)) ||&apos;&lt;/xslt:element&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;set firstTime = false;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;-- Close out this template if when the element name changes except for the first time through
+&#x9;&#x9;&#x9;&#x9;set xsltTemplate = xsltTemplate || 
+&#x9;&#x9;&#x9;&#x9;&#x9;xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  &lt;/xslt:element&gt;&apos; || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&lt;/xslt:template&gt;&apos; || newline;
+
+&#x9;&#x9;&#x9;&#x9;-- If not the last entry in the vector then begin a new template grouping
+&#x9;&#x9;&#x9;&#x9;IF (i &lt;= CARDINALITY(ElemAttrVector)) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Create a new template
+&#x9;&#x9;&#x9;&#x9;&#x9;set xsltTemplate = xsltTemplate  || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&lt;xslt:template match=&quot;&apos;||ElemAttrVector[i].qualElem||&apos;&quot;&gt;&apos; || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  &lt;xslt:element name=&quot;{name()}&quot;&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = &apos;&apos;; -- Initialize the attributes for starting a new template
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Determine if there is an attribute
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (ElemAttrVector[i].qualAttr IS NOT NULL AND LENGTH(&apos;|&apos;||ElemAttrVector[i].qualAttr||&apos;|&apos;) &gt; 2) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Modify the Attribute
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:attribute name=&quot;&apos;||ElemAttrVector[i].qualAttr||&apos;&quot;&gt;&apos;|| TRIM(NVL(ElemAttrVector[i].inValue,&apos;  &apos;)) ||&apos;&lt;/xslt:attribute&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE -- Element only
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Modify the element
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF  (ElemAttrVector[i].inValue IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the element to xsi:nil=&quot;true&quot;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:attribute name=&quot;xsi:nil&quot;&gt;true&lt;/xslt:attribute&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the element value
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set xsltAttributes = xsltAttributes || newline ||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;xslt:element&gt;&apos;|| ElemAttrVector[i].inValue ||&apos;&lt;/xslt:element&gt;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;&#x9;&#x9;
+&#x9;&#x9;END IF;
+&#x9;&#x9;set prevElement = ElemAttrVector[i].qualElem;
+
+--call print(&apos;Element=&apos;||ElemAttrVector[i].qualElem);
+--call print(&apos;XSLT Template=&apos;||xsltTemplate);
+--call print(&apos;XSLT Attributes=&apos;||xsltAttributes);
+&#x9;&#x9;set i = i + 1;
+&#x9;END WHILE;
+&#x9;set xsltTemplate = xsltTemplate ||
+&#x9;&#x9;xsltAttributes || newline ||
+&#x9;&#x9;&apos;  &lt;/xslt:element&gt;&apos; || newline ||
+&#x9;&#x9;&apos;&lt;/xslt:template&gt;&apos;;
+
+&#x9;-- Create the baseline XSTL script that will parse and replace an element with attributes
+&#x9;set xsltExpr = 
+&apos;&lt;xslt:stylesheet version=&quot;1.0&quot;
+&#x9;xmlns:xslt=&quot;http://www.w3.org/1999/XSL/Transform&quot; 
+&#x9;xmlns:csw-xform=&quot;http://www.compositesw.com/2003/xform&quot; 
+&#x9;&apos;|| namespaces || &apos;&gt;
+
+  &lt;xslt:output method=&quot;xml&quot; version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; indent=&quot;yes&quot; /&gt;
+    
+  &lt;xslt:template match=&quot;node()&quot;&gt;
+    &lt;xslt:copy&gt;
+    &lt;xslt:apply-templates select=&quot;@*|node()&quot;/&gt;
+    &lt;/xslt:copy&gt;
+  &lt;/xslt:template&gt;
+&apos; || xsltTemplate ||&apos;
+
+  &lt;xslt:template match=&quot;@*|text()|comment()&quot;&gt;
+    &lt;xslt:copy&gt;
+      &lt;xslt:apply-templates select=&quot;@*|node()&quot;/&gt;
+    &lt;/xslt:copy&gt;
+  &lt;/xslt:template&gt;
+
+&lt;/xslt:stylesheet&gt;
+&apos;;
+&#x9;if (upper(debug) = &apos;Y&apos; or upper(debug) = &apos;T&apos;) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName, debug, &apos;XSLT=&apos;|| xsltExpr);&#x9;
+&#x9;end if;
+
+&#x9;-- Execute the XSLT against the incoming XML (KO/SDR) format
+&#x9;SET outXml = XSLT( inXml, xsltExpr );
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:2:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:3:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:4:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

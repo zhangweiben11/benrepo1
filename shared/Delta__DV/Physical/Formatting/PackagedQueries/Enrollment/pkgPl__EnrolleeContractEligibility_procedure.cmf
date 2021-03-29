@@ -1,0 +1,151 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_EnrolleeContractEligibility" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Enrollment/pkgPl_EnrolleeContractEligibility" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inContractID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inMemberID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="EnrolleeID">
+          <datatype name="VARCHAR" type="STRING" maxLength="27"/>
+        </element>
+        <element name="ContractID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="MemberID">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ContractEffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="ContractEndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="ContractTermReasonCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="4"/>
+        </element>
+        <element name="ContractTermReasonDESC">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="EligEndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EligEffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EligTermReasonCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="4"/>
+        </element>
+        <element name="EligTermReasonDESC">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="ContractTypeCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="4"/>
+        </element>
+        <element name="ContractTypeDESC">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="MBRClassCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="4"/>
+        </element>
+        <element name="MBRClassDESC">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="BenefitPkgID">
+          <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+        </element>
+        <element name="GroupType">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="ContractHolder">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="State">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="Product">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="ApplyWaitingPeriodIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/MTV" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT TRIM(ME.CONTRACT_ID) || ME.MEMBER_ID ENROLLEE_ID,
+       ME.CONTRACT_ID, 
+       ME.MEMBER_ID,
+       CTS.EFFECTIVE_DATE CONTRACT_EFF,
+       CTS.END_DATE CONTRACT_END,
+       CTS.DISENROLL_RESN_CD CONTRACT_TERM_REASON_CD,
+       DS1.REPORT_DESC CONTRACT_TERM_REASON_DESC,
+       ME.EFFECTIVE_DATE ELIG_EFF,
+       ME.END_DATE ELIG_END,
+       ME.DISENR_REASON_CD ELIG_TERM_REASON_CD,
+       DS2.REPORT_DESC ELIG_TERM_REASON_DESC,
+       CTS.CONTRACT_TYPE_CD,
+       CY.REPORT_DESC CONTRACT_TYPE_DESC, 
+       ME.CLASS_CODE MEMBER_CLASS_CD,
+       CL.REPORT_DESC MEMBER_CLASS_DESC,
+       CTS.EMPGRP_LVL_1_ID GROUP_ID,
+       CTS.EMPGRP_LVL_2_ID DIVISION_ID,
+       ME.BENEFIT_PKG_ID,
+       ME.BUS_LEVEL_4_ID,
+       ME.BUS_LEVEL_5_ID,
+       ME.BUS_LEVEL_6_ID,
+       ME.BUS_LEVEL_7_ID,
+       DECODE(ME.APPLY_WAIT_PD_FG, &apos;Y&apos;, &apos;true&apos;, &apos;false&apos;) APPLY_WAIT_PERIOD_IND
+FROM   MVPPPRD.COVERAGE_TYPE_SPAN CTS
+INNER JOIN MVPPPRD.MEMBER_ELIGIBILITY ME
+ON     CTS.CONTRACT_ID = ME.CONTRACT_ID
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE CY
+ON     CTS.CONTRACT_TYPE_CD = CY.CODE_VALUE_ID
+AND    CY.FK_CODE_CATG_ID = &apos;CY&apos;
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE CL
+ON     ME.CLASS_CODE = CL.CODE_VALUE_ID
+AND    CL.FK_CODE_CATG_ID = &apos;CL&apos;
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE DS1
+ON     CTS.DISENROLL_RESN_CD = DS1.CODE_VALUE_ID
+AND    DS1.FK_CODE_CATG_ID = &apos;DS&apos;
+LEFT OUTER JOIN MVPPPRD.CODE_VALUE DS2
+ON     ME.DISENR_REASON_CD = DS2.CODE_VALUE_ID
+AND    DS2.FK_CODE_CATG_ID = &apos;DS&apos;
+WHERE  CTS.CONTRACT_ID = &apos;{0}&apos;
+AND    {2} BETWEEN CTS.EFFECTIVE_DATE AND CTS.END_DATE
+AND    CTS.AUDIT_FLAG = &apos;N&apos; AND CTS.VOID_FLAG = &apos;N&apos;
+AND    ME.CONTRACT_ID = &apos;{0}&apos;
+AND    ME.MEMBER_ID = &apos;{1}&apos;
+AND    {2} BETWEEN ME.EFFECTIVE_DATE AND ME.END_DATE
+AND    ME.AUDIT_FLAG = &apos;N&apos; AND ME.VOID_FLAG = &apos;N&apos;
+</attribute>
+  <attribute name="creationDate" type="LONG">1609891152138</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609964803473</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/MTV</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1609891152138</attribute>
+</metadata>

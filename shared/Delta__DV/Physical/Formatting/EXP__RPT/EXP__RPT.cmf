@@ -1,0 +1,39 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="EXP_RPT" path="/shared/Delta_DV/Physical/Formatting/EXP_RPT" type="CONTAINER" subtype="FOLDER" changeToken="0">
+  <annotation><![CDATA[SELECT      cast(CURRENT_DATE as date) AS Report_Date
+            ,Queue_Name&#x9;&#x9;
+            ,SUM(DOCUMENT_COUNT) AS Ending_Inventory 
+&#x9;&#x9;&#x9;&#x9;&#x9;
+FROM (            &#x9;&#x9;&#x9;
+SELECT    wi.creation_date AS Creation_Date&#x9;&#x9;
+            ,qs.name AS Queue_Name&#x9;
+&#x9;&#x9;&#x9;,wfjd.document_id
+&#x9;&#x9;&#x9;,COUNT(wfjd.document_id) AS DOCUMENT_COUNT
+FROM   &#x9;&#x9;/shared/Delta_DV/Base_Views/EXP_RPT/work_items_vw wi
+LEFT OUTER JOIN    /shared/Delta_DV/Physical/Repositories/EXP_RPT_VIEWS/dbo/queues_vw qs  ON qs.queue_uid = wi.queue_uid&#x9;&#x9;&#x9;
+LEFT OUTER JOIN  /shared/Delta_DV/Physical/Repositories/EXP_RPT_VIEWS/dbo/wf_job_documents_vw wfjd  ON  wfjd.wf_job_uid = wi.wf_job_uid&#x9;&#x9;&#x9;
+WHERE 
+wi.work_item_status_uid = &apos;1&apos;&#x9;&#x9;&#x9;
+ AND   
+ qs.name in (&apos;ENT - PCS Provider Concierge Services&apos;)  
+&#x9;&#x9;&#x9;GROUP BY    
+&#x9;&#x9;&#x9;wi.creation_date 
+&#x9;&#x9;   ,qs.name
+           , wfjd.document_id
+&#x9;&#x9;   ,wi.work_item_status_uid&#x9;&#x9;&#x9;
+) Beginning_Inventory&#x9;&#x9;&#x9;
+GROUP BY Queue_Name]]></annotation>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="creationDate" type="LONG">1579848837522</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">1510101</attribute>
+  <attribute name="creatorUserName" type="STRING">dos88106</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">1510101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1579848837522</attribute>
+</metadata>

@@ -1,0 +1,88 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_ContactGroup" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_ContactGroup" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inContactID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inContactTypeCD" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="ContactID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="ContactLevelIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ContactTypeCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ContactRole">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="dateColumn">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="dateColumn2">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="ContactCategoryCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="FirstName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="MiddleName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="LastName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="ContactTitle">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="NameSuffix">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">            SELECT 
+                Contact.WHO_IDENTIFIER ContactID, 
+                Contact.WHO_TYPE_INDICATOR ContactLevelIND, 
+                Contact.CONTACT_TYPE_CODE ContactTypeCD, 
+                Contact.CONTACT_ROLE ContactRole, 
+                Contact.EFF_DATE EffDate, 
+                Contact.END_DATE EndDate, 
+                Contact.CONTACT_CATGRY_CD ContactCategoryCD, 
+                Contact.CMPLT_FIRST_NAME FirstName, 
+                Contact.CMPLT_MIDDLE_NAME MiddleName, 
+                Contact.CMPLT_LAST_NAME LastName, 
+                Contact.CMPLT_CONTACT_TITLE ContactTitle, 
+                Contact.CMPLT_NAME_SUFFIX NameSuffix
+            FROM      
+                [EDA_STAR_VIEWS].[dbo].[GROUP_CONTACT_VW] Contact
+            WHERE
+                Contact.WHO_IDENTIFIER = &apos;{0}&apos; AND
+                Contact.CONTACT_TYPE_CODE = COALESCE(NULLIF(&apos;{1}&apos;,&apos;null&apos;),Contact.CONTACT_TYPE_CODE)
+--OPTION (MAXDOP 16)</attribute>
+  <attribute name="creationDate" type="LONG">1598567632696</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1598567632696</attribute>
+</metadata>

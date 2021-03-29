@@ -1,0 +1,342 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="generatePDToolDeployableResourcePlanByLineage" path="/shared/Delta_DV/_scripts/Utilities/pdtool/generatePDToolDeployableResourcePlanByLineage" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[generatePDToolDeployableResourcePlanByLineage:
+&#x9;-- CIS Repository Helper Procedure --
+
+&#x9;&#x9;This procedure forms the basis by which to generate PDTool incremental deployment plans based on published resources.
+&#x9;&#x9;It provides the developers the control to create an deployment plan for only those resources that have changed based
+&#x9;&#x9;on a starting published resource.  A published resource is any resource found in &quot;/services/databases&quot; or 
+&#x9;&#x9;/services/webservices&quot;.
+
+&#x9;&#x9;This procedure will automatically insert &quot;createFolder&quot; actions to insure that the necessary folder path will exist
+&#x9;&#x9;when the resource is deployed from VCS.  If the folder does not exist on the target server, an error would be thrown.
+
+&#x9;&#x9;Any resource paths found in the exclude paths list &quot;excludePathsList&quot; will be excluded from the result.   
+&#x9;&#x9;Any resources that are not inclusive of the include base paths &quot;includeBasePath&quot; will be excluded from the result.
+
+&#x9;&#x9;PDTool (Promotion and Deployment Tool) is used to execute generated plan files.  If 
+&#x9;&#x9;you do not have PDTool on site, you may obtain it through a Professional Services engagement.
+
+&#x9;Input:
+&#x9;&#x9;planFilePath&#x9;&#x9;&#x9;&#x9;VARCHAR(1024)&#x9;- The path in the file system where the plan file will be generated on the Composite Server.
+&#x9;&#x9;bufferSize&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;&#x9;- Number of rows to buffer before writting out to the file.
+&#x9;&#x9;PDToolPlanTemplateVCS&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- This is a template line for the deployment plan for doing a VCS checkout.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;    It shows the use of variables for $RESOURCE_PATH and $RESOURCE_TYPE
+&#x9;&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;$RESOURCE_PATH&quot; &quot;$RESOURCE_TYPE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;&#x9;PDToolPlanTemplateFolders&#x9;LONGVARCHAR&#x9;&#x9;- This is a template line for the deployment plan for creating folders
+&#x9;&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;$RESOURCE_PATH&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;&#x9;resourcePathList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths to generate a plan for based on the lineage of all resources found.
+&#x9;&#x9;includeDependentTriggers&#x9;INTEGER&#x9;&#x9; &#x9;- 0=do not include, 1=include 1st level dependents
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- For each resource encountered, look to see if any dependent resources are triggers and include them if this variable is set to 1.
+&#x9;&#x9;includeBasePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;- If present, then include any resources found in this comma separated list of base paths and exclude all others.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;   It is intended to allow the user to specify a base path for published resources and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;   /shared project folder resources that are related project level resources but exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;   any other resources not associated with those base paths.
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;&#x9;inIgnoreResourceDoesNotExist INTEGER,&#x9;&#x9;-- Ignore any resources that do not exist
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 1 = Bypass the processing of that resource.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9; &#x9;- Y or N
+&#x9;Output:
+&#x9;&#x9;success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER -- 1=success, 0=failure
+
+&#x9;Exceptions: none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.301&#x9;07/30/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.4&#x9;&#x9;10/28/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Added parameter inIgnoreResourceDoesNotExist
+
+&#x9;Example Deployment plan:
+&#x9;# -----------------------------------------
+&#x9;# VCS Module: VCS Connection Properties version
+&#x9;# -----------------------------------------
+
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST&quot; &quot;DATA_SOURCE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST/LookupProduct&quot; &quot;LINK&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST/ViewSales&quot; &quot;LINK&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST/ViewSales2&quot; &quot;LINK&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;/shared/examples&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_inventory&quot; &quot;DATA_SOURCE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_inventory/products&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_orders&quot; &quot;DATA_SOURCE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_orders/orderdetails&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/LookupProduct&quot; &quot;PROCEDURE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/productCatalog_Transformation&quot; &quot;PROCEDURE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ViewSales&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;/shared/_regression&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/_regression/ViewSales2&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="planFilePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="bufferSize" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="PDToolPlanTemplateVCS" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="PDToolPlanTemplateFolders" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="resourcePathList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="includeDependentTriggers" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="includeBasePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludePathsList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="inIgnoreResourceDoesNotExist" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/TypeDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/createFileAscii" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="filePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="append" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="fileContent" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/pdtool/helpers/getDistinctDeployableResourceListByLineage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePathList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="includeDependentTriggers" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="includeBasePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="excludePathsList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inIgnoreResourceDoesNotExist" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="resourceTreeList" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*&#x9;generatePDToolDeployableResourcePlanByLineage:
+&#x9;-- CIS Repository Helper Procedure --
+
+&#x9;&#x9;This procedure forms the basis by which to generate PDTool incremental deployment plans based on published resources.
+&#x9;&#x9;It provides the developers the control to create an deployment plan for only those resources that have changed based
+&#x9;&#x9;on a starting published resource.  A published resource is any resource found in &quot;/services/databases&quot; or 
+&#x9;&#x9;/services/webservices&quot;.
+
+&#x9;&#x9;This procedure will automatically insert &quot;createFolder&quot; actions to insure that the necessary folder path will exist
+&#x9;&#x9;when the resource is deployed from VCS.  If the folder does not exist on the target server, an error would be thrown.
+
+&#x9;&#x9;Any resource paths found in the exclude paths list &quot;excludePathsList&quot; will be excluded from the result.   
+&#x9;&#x9;Any resources that are not inclusive of the include base paths &quot;includeBasePath&quot; will be excluded from the result.
+
+&#x9;&#x9;PDTool (Promotion and Deployment Tool) is used to execute generated plan files.  If 
+&#x9;&#x9;you do not have PDTool on site, you may obtain it through a Professional Services engagement.
+
+&#x9;Input:
+&#x9;&#x9;planFilePath&#x9;&#x9;&#x9;&#x9;VARCHAR(1024)&#x9;- The path in the file system where the plan file will be generated on the Composite Server.
+&#x9;&#x9;bufferSize&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;&#x9;- Number of rows to buffer before writting out to the file.
+&#x9;&#x9;PDToolPlanTemplateVCS&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- This is a template line for the deployment plan for doing a VCS checkout.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;    It shows the use of variables for $RESOURCE_PATH and $RESOURCE_TYPE
+&#x9;&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;$RESOURCE_PATH&quot; &quot;$RESOURCE_TYPE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;&#x9;PDToolPlanTemplateFolders&#x9;LONGVARCHAR&#x9;&#x9;- This is a template line for the deployment plan for creating folders
+&#x9;&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;$RESOURCE_PATH&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;&#x9;resourcePathList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths to generate a plan for based on the lineage of all resources found.
+&#x9;&#x9;includeDependentTriggers&#x9;INTEGER&#x9;&#x9; &#x9;- 0=do not include, 1=include 1st level dependents
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- For each resource encountered, look to see if any dependent resources are triggers and include them if this variable is set to 1.
+&#x9;&#x9;includeBasePath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;- If present, then include any resources found in this comma separated list of base paths and exclude all others.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;   It is intended to allow the user to specify a base path for published resources and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;   /shared project folder resources that are related project level resources but exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;   any other resources not associated with those base paths.
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;- A comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;&#x9;all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;&#x9;inIgnoreResourceDoesNotExist INTEGER,&#x9;&#x9;-- Ignore any resources that do not exist
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 1 = Bypass the processing of that resource.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9; &#x9;- Y or N
+&#x9;Output:
+&#x9;&#x9;success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER -- 1=success, 0=failure
+
+&#x9;Exceptions: none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.301&#x9;07/30/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.0.0&#x9;&#x9;&#x9;Created new
+&#x9;2013.4&#x9;&#x9;10/28/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Added parameter inIgnoreResourceDoesNotExist
+
+&#x9;Example Deployment plan:
+&#x9;# -----------------------------------------
+&#x9;# VCS Module: VCS Connection Properties version
+&#x9;# -----------------------------------------
+
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST&quot; &quot;DATA_SOURCE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST/LookupProduct&quot; &quot;LINK&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST/ViewSales&quot; &quot;LINK&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/services/databases/MYTEST/ViewSales2&quot; &quot;LINK&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;/shared/examples&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_inventory&quot; &quot;DATA_SOURCE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_inventory/products&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_orders&quot; &quot;DATA_SOURCE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ds_orders/orderdetails&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/LookupProduct&quot; &quot;PROCEDURE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/productCatalog_Transformation&quot; &quot;PROCEDURE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/examples/ViewSales&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;/shared/_regression&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;/shared/_regression/ViewSales2&quot; &quot;TABLE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE generatePDToolDeployableResourcePlanByLineage(
+&#x9;IN planFilePath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;IN bufferSize&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- number of rows to buffer
+&#x9;IN PDToolPlanTemplateVCS&#x9;&#x9;LONGVARCHAR,&#x9;-- this is a template line from the deployment plan with the use of variables for $RESOURCE_PATH and $RESOURCE_TYPE
+&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;vcsCheckout2  $SERVERID  $VCONN &quot;$RESOURCE_PATH&quot; &quot;$RESOURCE_TYPE&quot; HEAD &quot;$MODULE_HOME/VCSModule.xml&quot;  &quot;$MODULE_HOME/servers.xml&quot;
+&#x9;IN PDToolPlanTemplateFolders&#x9;LONGVARCHAR,
+&#x9;&#x9;-- example: PASS&#x9;TRUE&#x9;ExecuteAction  &#x9;createFolder  $SERVERID         &quot;$RESOURCE_PATH&quot; &quot;$MODULE_HOME/servers.xml&quot; true
+&#x9;IN resourcePathList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- a comma separated list of resource paths
+&#x9;IN includeDependentTriggers&#x9;&#x9;INTEGER, &#x9; &#x9;-- 0=do not include, 1=include 1st level dependents
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;-- For each resource encountered, look to see if any dependent resources are triggers and include them if this variable is set to 1.
+&#x9;IN includeBasePath&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;&#x9;-- If present, then include any resources found in this comma separated list of base paths and exclude all others.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;--   It is intended to allow the user to specify a base path for published resources and 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;--   /shared project folder resources that are related project level resources but exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;--   any other resources not associated with those base paths.
+&#x9;IN excludePathsList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- a comma separated list of resource paths or partials paths to exclude
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;&#x9;-- all paths or partial paths should end with a / to insure uniqueness of the path string.
+&#x9;IN inIgnoreResourceDoesNotExist&#x9;INTEGER,&#x9;&#x9;-- Ignore any resources that do not exist
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 1 = Bypass the processing of that resource.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- 0 = (default) Do not ignore any resources.  Throw an error that the resource does not exist.
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9; &#x9;-- Y or N
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER
+)
+BEGIN
+&#x9;DECLARE resourcePath &#x9;&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.pathType; -- actual resource path and not a folder path
+&#x9;DECLARE resourceType&#x9;&#x9;&#x9;VARCHAR DEFAULT null; -- The resource type
+&#x9;DECLARE bufferCount &#x9;&#x9;&#x9;INTEGER DEFAULT bufferSize;
+&#x9;DECLARE eol&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT CHR(13)||chr(10);
+&#x9;DECLARE dataRow&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT NULL;
+&#x9;DECLARE header&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE notEmpty&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE cisVersion&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;set success = 1;
+&#x9;set header = 
+&apos;# -----------------------------------------
+# VCS Module: VCS Connection Properties version
+# -----------------------------------------
+&apos;;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(planFilePath, 0, header);
+
+&#x9;-- Loop through the output records
+    for r as 
+        SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/pdtool/helpers/getDistinctDeployableResourceListByLineage(resourcePathList, includeDependentTriggers, includeBasePath, excludePathsList, inIgnoreResourceDoesNotExist, debug)
+&#x9;do
+&#x9;&#x9;if (dataRow is null) then
+&#x9;&#x9;&#x9;set dataRow = &apos;&apos;;
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;set dataRow = dataRow || eol;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Add to the dataRow buffer
+&#x9;&#x9;if (r.resType = &apos;CONTAINER&apos; and r.subtype = &apos;FOLDER_CONTAINER&apos;) then
+&#x9;&#x9;&#x9;set dataRow = dataRow || REPLACE(PDToolPlanTemplateFolders, &apos;$RESOURCE_PATH&apos;, r.resPath);
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;set dataRow = dataRow || REPLACE(REPLACE(PDToolPlanTemplateVCS, &apos;$RESOURCE_PATH&apos;, r.resPath), &apos;$RESOURCE_TYPE&apos;, r.resType);
+&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;if (bufferCount &gt; 0) then
+&#x9;&#x9;&#x9;set bufferCount = bufferCount - 1;
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(planFilePath, 1, dataRow);
+&#x9;&#x9;&#x9;set bufferCount = bufferSize;
+&#x9;&#x9;&#x9;set dataRow = null;
+&#x9;&#x9;end if;
+&#x9;end for;
+&#x9;-- Write out the final part of the buffer
+&#x9;if (dataRow is not null) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(planFilePath, 1, dataRow);
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

@@ -1,0 +1,672 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getDocResourceFormatImpl1" path="/shared/Delta_DV/_scripts/Utilities/documentation/implementations/getDocResourceFormatImpl1" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getDocResourceFormatImpl1:
+
+&#x9;This procedure provides an implementation to retrieve and format the documentation for all resources located in the passed in starting folder.
+
+&#x9;This procedure is invoked by the getAllDocumentationAPI.  
+&#x9;This procedure recursively loops through all of the resources found within the given starting folder (CONTAINER).
+&#x9;The output of this procedure provides the formatting for all CIS resource.  
+&#x9;The idea behind this procedure is that it provides a template for an implementation.  
+&#x9;A user of the documentation utilities may choose to copy and create a new implementation and then customize it for their project.  
+&#x9;Any new implementation “must” follow the input and output interface definitions as shown below.
+
+&#x9;Input:
+&#x9;&#x9;startingResourcePath&#x9;&#x9;The starting folder path from which to start formatting the documentation.  It is always of type CONTAINER.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: e.g. /shared/examples
+&#x9;&#x9;startingResourceType&#x9;&#x9;The resource type of the resource path.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: e.g. CONTAINER
+&#x9;&#x9;constantPath&#x9;&#x9;&#x9;&#x9;This is the path to the constants file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: e.g. /shared/ASAssets/Utilities/documentation/constants()
+&#x9;&#x9;switches&#x9;&#x9;&#x9;&#x9;&#x9;Provides guidance on what to print for documentation and save files.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The format is print_switch=[option1|{default_option2}|option3]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This is a space separate list with no spaces before or after the equal sign.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_containers=[{none}|all] - print the resource container (folder)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_annotations=[none|{all}|nonblank|blank] - print all annotations whether they are blank or not
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resource_projections=[none|{all}] - print the resource projections
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resources_used=[none|{all}] - print the immediate child resources used by the parent resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_accessed=[none|{all}] - print the data source accessed list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_lineage=[none|{all}] - print the data source lineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_time=[{no}|yes] - print the time it takes to retrieve the full documentation for each resource and the final time
+ &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file=[{no}|yes] - save the results to a file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file_intermediate=[{no}|yes] - save the file intermediately after each resource is completed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Example:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1) switches: when left blank or null then the defaults are taken
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: all documentation modules are printed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;2) switches: print_annotations=nonblank print_resource_projections=none print_resources_used=none print_datasource_lineage=none
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: only non-blank annotations are printed and nothing else
+&#x9;&#x9;excludeKeywordsInPathList&#x9;Exclude keywords in path, case insensitive.  Comma separated list.  These are whole words and not wild cards.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;A word is defined by what exists between folder separators &quot;/&quot;. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. &apos;analysis,archive&apos;
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;Exclude actual paths.  Double quotes are not required.  Comma separated list.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The exclude path list simply has to be present in any part of the resource path.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This means that it can be a partial path.
+&#x9;&#x9;filePath &#x9;&#x9;&#x9;&#x9;&#x9;The full file system path to generate the documentation file to.
+&#x9;Output: 
+&#x9;&#x9;formattedText - formatted text is out output complete with a separator at the beginning of the resource.
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;07/25/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Modified to print out timings and save to a file after each resource.
+&#x9;2018.1&#x9;&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/21/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed the use of VECTOR as it is not efficient.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="startingResourcePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="startingResourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="constantPath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="switches" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludeKeywordsInPathList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="excludePathsList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="filePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="formattedText">
+          <datatype name="Text" referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/documentation/helpers/getDocCounts" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="numResources" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numContainers" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numConnectors" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numDefinitionSets" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numTriggers" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numViews" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numProcs" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numTree" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numDatasources" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numPublished" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="numOtherType" direction="INOUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/documentation/helpers/parseDocSwitches" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="switches" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="command" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="commandOptionValue" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/documentation/implementations/getDocResourceFormatImpl1_resource" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="constantPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="switches" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="formattedText" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/createFileAscii" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="filePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="append" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="fileContent" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getResourceListRecursive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractTextList" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="preserveDoubleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveSingleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveParenthesis" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveQualifier" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="trimResults" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="textExpression">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/getConstantV2" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="constantsPath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="constantsName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="optionReturn" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="outValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getDocResourceFormatImpl1:
+
+&#x9;This procedure provides an implementation to retrieve and format the documentation for all resources located in the passed in starting folder.
+
+&#x9;This procedure is invoked by the getAllDocumentationAPI.  
+&#x9;This procedure recursively loops through all of the resources found within the given starting folder (CONTAINER).
+&#x9;The output of this procedure provides the formatting for all CIS resource.  
+&#x9;The idea behind this procedure is that it provides a template for an implementation.  
+&#x9;A user of the documentation utilities may choose to copy and create a new implementation and then customize it for their project.  
+&#x9;Any new implementation “must” follow the input and output interface definitions as shown below.
+
+&#x9;Input:
+&#x9;&#x9;startingResourcePath&#x9;&#x9;The starting folder path from which to start formatting the documentation.  It is always of type CONTAINER.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: e.g. /shared/examples
+&#x9;&#x9;startingResourceType&#x9;&#x9;The resource type of the resource path.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: e.g. CONTAINER
+&#x9;&#x9;constantPath&#x9;&#x9;&#x9;&#x9;This is the path to the constants file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: e.g. /shared/ASAssets/Utilities/documentation/constants()
+&#x9;&#x9;switches&#x9;&#x9;&#x9;&#x9;&#x9;Provides guidance on what to print for documentation and save files.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The format is print_switch=[option1|{default_option2}|option3]
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This is a space separate list with no spaces before or after the equal sign.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_containers=[{none}|all] - print the resource container (folder)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_annotations=[none|{all}|nonblank|blank] - print all annotations whether they are blank or not
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resource_projections=[none|{all}] - print the resource projections
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_resources_used=[none|{all}] - print the immediate child resources used by the parent resource
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_accessed=[none|{all}] - print the data source accessed list
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_datasource_lineage=[none|{all}] - print the data source lineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;print_time=[{no}|yes] - print the time it takes to retrieve the full documentation for each resource and the final time
+ &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file=[{no}|yes] - save the results to a file
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;save_file_intermediate=[{no}|yes] - save the file intermediately after each resource is completed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Example:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;1) switches: when left blank or null then the defaults are taken
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: all documentation modules are printed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;2) switches: print_annotations=nonblank print_resource_projections=none print_resources_used=none print_datasource_lineage=none
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   result: only non-blank annotations are printed and nothing else
+&#x9;&#x9;excludeKeywordsInPathList&#x9;Exclude keywords in path, case insensitive.  Comma separated list.  These are whole words and not wild cards.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;A word is defined by what exists between folder separators &quot;/&quot;. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. &apos;analysis,archive&apos;
+&#x9;&#x9;excludePathsList&#x9;&#x9;&#x9;Exclude actual paths.  Double quotes are not required.  Comma separated list.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;The exclude path list simply has to be present in any part of the resource path.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;This means that it can be a partial path.
+&#x9;&#x9;filePath &#x9;&#x9;&#x9;&#x9;&#x9;The full file system path to generate the documentation file to.
+&#x9;Output: 
+&#x9;&#x9;formattedText - formatted text is out output complete with a separator at the beginning of the resource.
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;07/25/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Modified to print out timings and save to a file after each resource.
+&#x9;2018.1&#x9;&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.200&#x9;05/21/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed the use of VECTOR as it is not efficient.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getDocResourceFormatImpl1(
+    IN startingResourcePath&#x9;&#x9;&#x9;LONGVARCHAR,  
+&#x9;IN startingResourceType&#x9;&#x9;&#x9;VARCHAR,
+&#x9;IN constantPath&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN switches&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN excludeKeywordsInPathList&#x9;LONGVARCHAR,
+&#x9;IN excludePathsList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN filePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PIPE (formattedText&#x9;/lib/util/System.Text)
+)
+BEGIN
+&#x9;DECLARE moduleName &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getDocResourceFormatImpl1&apos;;
+&#x9;DECLARE debug &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1);
+    DECLARE resourcePath&#x9;&#x9;&#x9; &#x9;LONGVARCHAR;
+    DECLARE resourceType &#x9;&#x9;&#x9;&#x9;VARCHAR(255);
+&#x9;DECLARE formattedText&#x9;&#x9;&#x9;&#x9;/lib/util/System.Text DEFAULT &apos;&apos;;
+&#x9;DECLARE resourceText&#x9;&#x9;&#x9;&#x9;/lib/util/System.Text;
+&#x9;DECLARE resPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resourceName&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE beginSeparator&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE endSeparator&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE minorSeparator &#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE eol&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE excludeKeywordList&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE excludePathList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE resourceList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE pathPart&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024);
+&#x9;DECLARE usePath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE numResources&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numContainers&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numConnectors &#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numDefinitionSets&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numTriggers&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numViews&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numProcs&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numTree&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numDatasources&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numPublished&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numOtherType&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE startTime&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+&#x9;DECLARE duration&#x9;&#x9;&#x9;&#x9;&#x9;INTERVAL DAY TO SECOND;
+&#x9;DECLARE parseDocSwitch&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pos1, pos2&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;debug&apos;, 1, debug);
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;beginSeparator&apos;, 1, beginSeparator);
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;endSeparator&apos;, 1, endSeparator);
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;minorSeparator&apos;, 1, minorSeparator);
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getConstantV2(constantPath, &apos;eol&apos;, 1, eol);
+
+&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Exclude Keyword List.  excludeKeywordsInPathList=&apos;||NVL(excludeKeywordsInPathList,&apos;null&apos;));
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Exclude Path List.  excludePathsList=&apos;||excludePathsList);
+&#x9;end if;
+
+&#x9;-- Add the single resource to the vector when it is not a CONTAINER or DATA_SOURCE
+&#x9;if (startingResourceType != &apos;CONTAINER&apos; and startingResourceType != &apos;DATA_SOURCE&apos;) then
+&#x9;&#x9;set resourceList = resourceList || startingResourcePath||&apos;::&apos;||startingResourceType||&apos;|&apos;;
+&#x9;else
+&#x9;&#x9;-- Ignore the resource itself if it is a CONTAINER (folder)
+&#x9;&#x9;if (startingResourceType &lt;&gt; &apos;CONTAINER&apos;) then
+&#x9;&#x9;&#x9;-- Add the resource itself to the vector if it is a DATA_SOURCE
+&#x9;&#x9;&#x9;set resourceList = resourceList || startingResourcePath||&apos;::&apos;||startingResourceType||&apos;|&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;-- Loop through and retrieve all the resources from a given starting resource path.
+&#x9;&#x9;for r as select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getResourceListRecursive(startingResourcePath, startingResourceType) do
+&#x9;&#x9;&#x9;-- set the full resource path
+&#x9;&#x9;&#x9;set resourceList = resourceList || r.resPath||&apos;::&apos;||r.resType||&apos;|&apos;;
+&#x9;&#x9;end for;
+&#x9;end if;
+&#x9;if (length(resourceList) &gt; 0) then
+&#x9;&#x9;set resourceList = &apos;|&apos;||resourceList;
+&#x9;end if;
+
+&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;resourceList=&apos;||NVL(resourceList,&apos;null&apos;));
+&#x9;end if;
+
+&#x9;set i = 0;
+&#x9;for r as 
+&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(resourceList, &apos;|&apos;,0,0,0,0,1)
+&#x9;&#x9;where textExpression is not null and length(trim(textExpression)) &gt; 0 
+&#x9;do
+&#x9;&#x9;set i = i + 1;
+&#x9;&#x9;set resourcePath = r.textExpression;
+&#x9;&#x9;set pos1 = INSTR(resourcePath, &apos;::&apos;);
+&#x9;&#x9;if (pos1 &gt; 0) then
+&#x9;&#x9;&#x9;set resourceType = SUBSTRING(resourcePath, pos1+2);
+&#x9;&#x9;&#x9;set resourcePath = SUBSTRING(resourcePath, 1, pos1-1);
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;set resourcePath = null;
+&#x9;&#x9;&#x9;set resourceType = null;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;i=&apos;||i||&apos;  resourceType=&apos;||NVL(resourceType,&apos;null&apos;)||&apos;  resourcePath=&apos;||NVL(resourcePath,&apos;null&apos;));
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- check for resource paths matching any portion of the exclude path list.  
+&#x9;&#x9;--&#x9;&#x9;The exclude path list simply has to be present in any part of the resource path.  This means that it can be a partial path.
+&#x9;&#x9;-- set the full resource path
+&#x9;&#x9;set usePath = true;
+&#x9;&#x9;if (excludePathsList is not null and length(excludePathsList) &gt; 0) then
+&#x9;&#x9;&#x9;set resPath = REPLACE(TRIM(resourcePath),&apos;&quot;&apos;,&apos;&apos;);
+&#x9;&#x9;&#x9;usePathLoop1:
+&#x9;&#x9;&#x9;for r as 
+&#x9;&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(excludePathsList, &apos;,&apos;,1,0,0,0,1)
+&#x9;&#x9;&#x9;&#x9;where textExpression is not null and length(trim(textExpression)) &gt; 0 
+&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;if (INSTR(resPath, r.textExpression) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set usePath = false;
+&#x9;&#x9;&#x9;&#x9;&#x9;leave usePathLoop1;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end for;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Check for keywords in the path
+&#x9;&#x9;if (usePath and excludeKeywordsInPathList is not null and length(excludeKeywordsInPathList) &gt; 0) then
+&#x9;&#x9;&#x9;usePathLoop2:
+&#x9;&#x9;&#x9;for s as 
+&#x9;&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(resourcePath, &apos;/&apos;,0,0,0,0,1)
+&#x9;&#x9;&#x9;&#x9;where textExpression is not null and length(trim(textExpression)) &gt; 0 
+&#x9;&#x9;&#x9;&#x9;  and LOWER(textExpression) not in (&apos;shared&apos;,&apos;services&apos;,&apos;databases&apos;,&apos;webservices&apos;)
+&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;set pathPart = REPLACE(s.textExpression,&apos;&quot;&apos;,&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;for r as 
+&#x9;&#x9;&#x9;&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(excludeKeywordsInPathList, &apos;,&apos;,0,0,0,0,1)
+&#x9;&#x9;&#x9;&#x9;&#x9;where textExpression is not null and length(trim(textExpression)) &gt; 0 
+&#x9;&#x9;&#x9;&#x9;do
+&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(pathPart) = UPPER(REPLACE(r.textExpression,&apos;&quot;&apos;,&apos;&apos;))) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set usePath = false;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;leave usePathLoop2;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;end for;
+&#x9;&#x9;&#x9;end for;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Only continue if this path should be used
+&#x9;&#x9;if (usePath) then
+&#x9;&#x9;&#x9;-- Count the number of resources, containers, views, procedures and published resources for the summary
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/getDocCounts(resourceType, numResources, numContainers, numConnectors, numDefinitionSets, numTriggers, numViews, numProcs, numTree, numDatasources, numPublished, numOtherType);
+
+&#x9;&#x9;&#x9;-- Format the resource
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/implementations/getDocResourceFormatImpl1_resource(resourcePath, resourceType, constantPath, switches, resourceText);
+&#x9;&#x9;&#x9;set formattedText = formattedText || resourceText;
+
+&#x9;&#x9;&#x9;/********************************
+&#x9;&#x9;&#x9; * Save File Intermediate
+&#x9;&#x9;&#x9; *******************************/
+&#x9;&#x9;&#x9;-- Save the documentation to the file if there is documentation and the file path is not empty and the switch save_file_intermediate=yes
+&#x9;&#x9;&#x9;&#x9;--  no=0 which means to overwrite the file because it was not saved previously.  Write it all at once at the end. 
+&#x9;&#x9;&#x9;&#x9;-- yes=1 which means append the contents since it has been saved intermediately along the way.
+&#x9;&#x9;&#x9;if ( (formattedText IS NOT NULL AND LENGTH(&apos;|&apos;||formattedText||&apos;|&apos;) &gt; 2) and
+&#x9;&#x9;&#x9;&#x9; (filePath IS NOT NULL AND LENGTH(&apos;|&apos;||filePath||&apos;|&apos;) &gt; 2) ) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file&apos;, parseDocSwitch);
+&#x9;&#x9;&#x9;&#x9;if (parseDocSwitch = 1) then
+&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file_intermediate&apos;, parseDocSwitch);
+&#x9;&#x9;&#x9;&#x9;&#x9;if (parseDocSwitch = 1) then&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(filePath,1,formattedText);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;if (UPPER(debug) = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;Resource documentation text has been saved.&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set formattedText = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set formattedText = formattedText || eol;
+&#x9;&#x9;&#x9;end if; 
+&#x9;&#x9;end if;
+&#x9;end for;
+&#x9;set duration = CURRENT_TIMESTAMP - startTime;
+
+&#x9;-- Add the summary of views processed
+&#x9;set formattedText = formattedText || beginSeparator || eol;
+&#x9;set formattedText = formattedText || &apos;---------------------&apos; || eol;
+&#x9;set formattedText = formattedText || &apos;Documentation Summary&apos; || eol;
+&#x9;set formattedText = formattedText || &apos;---------------------&apos; || eol;
+&#x9;set formattedText = formattedText || &apos;Starting Root Path: &apos; || NVL(startingResourcePath,&apos;null&apos;) || eol;
+&#x9;set formattedText = formattedText || &apos;Starting Path Type: &apos; || NVL(startingResourceType,&apos;null&apos;) || eol;
+&#x9;set formattedText = formattedText || &apos;---------------------------------------------------------&apos; || eol;
+&#x9;set formattedText = formattedText || &apos;Print Switches Input: &apos; || NVL(switches,&apos;null&apos;) || eol;
+&#x9;set formattedText = formattedText || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_containers&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;print_containers=&apos;||parseDocSwitch|| &apos;            Key:[{none}=0|all=1]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_annotations&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;print_annotations=&apos;||parseDocSwitch||&apos;            Key:[none=0|{all}=1|nonblank=2|blank=3]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_resource_projections&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;print_resource_projections=&apos;||parseDocSwitch||&apos;   Key:[none=0|{all}=1]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_resources_used&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;print_resources_used=&apos;||parseDocSwitch||&apos;         Key:[none=0|{all}=1]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_datasource_accessed&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;print_datasource_accessed=&apos;||parseDocSwitch||&apos;    Key:[none=0|{all}=1]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_datasource_lineage&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;print_datasource_lineage=&apos;||parseDocSwitch||&apos;     Key:[none=0|{all}=1]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_time&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;print_time=&apos;||parseDocSwitch||&apos;                   Key:[{no}=0|yes=1]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;save_file=&apos;||parseDocSwitch||&apos;                    Key:[{no}=0|yes=1]&apos; || eol;
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;save_file_intermediate&apos;, parseDocSwitch);
+&#x9;set formattedText = formattedText || &apos;save_file_intermediate=&apos;||parseDocSwitch||&apos;       Key:[{no}=0|yes=1]&apos; || eol;
+&#x9;set formattedText = formattedText || eol;
+&#x9;set formattedText = formattedText || &apos;---------------------------------------------------------&apos; || eol;
+&#x9;set formattedText = formattedText || &apos;Total Number of Resources:               &apos; || numResources || eol;
+&#x9;set formattedText = formattedText || &apos;---------------------------------------------------------&apos; || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Published    (LINK):           &apos; || numPublished || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Folders      (CONTAINER):      &apos; || numContainers || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Views        (TABLE):          &apos; || numViews || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Procedures   (PROCEDURE):      &apos; || numProcs || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Data Sources (DATA_SOURCE):    &apos; || numDatasources || eol;
+&#x9;set formattedText = formattedText || &apos;Number of XML          (TREE):           &apos; || numTree || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Triggers     (TRIGGER):        &apos; || numTriggers || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Connectors   (CONNECTOR):      &apos; || numConnectors || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Def. Sets    (DEFINITION_SET): &apos; || numDefinitionSets || eol;
+&#x9;set formattedText = formattedText || &apos;Number of Other resource type:           &apos; || numOtherType || eol;
+
+&#x9;-- Determine whether to print the timings for the entire documentation gathering process
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/documentation/helpers/parseDocSwitches(switches, &apos;print_time&apos;, parseDocSwitch);
+&#x9;if (parseDocSwitch = 1) then
+&#x9;&#x9;set formattedText = formattedText || &apos;---------------------------------------------------------&apos; || eol;
+&#x9;&#x9;set formattedText = formattedText || &apos;Documentation Generation Time=&apos;||cast(duration as varchar)||eol;
+&#x9;end if;
+&#x9;set formattedText = formattedText || endSeparator || eol;
+
+&#x9;-- Insert the results into the output pipe
+&#x9;insert into result values(formattedText);
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

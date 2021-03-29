@@ -1,0 +1,194 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="DefaultValues" path="/shared/Delta_DV/_scripts/Utilities/time/DefaultValues" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[DefaultValues:
+&#x9;DefaultValues is a vector of valid timestamp formats which is used by &quot;extractTimestamp&quot; to extract a 
+&#x9;date or timestamp from a string.   Add additional formats to the vector as needed.  Place the most 
+&#x9;common formats towards the top of the vector so that the extractTimestamp works as efficiently as it can.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Added &apos;dd MON yyyy&apos; entry in dateFormatVectorConst
+&#x9;2019.200&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;DEPRECATED:  Removed the use of VECTOR from invoking procedures [extractTime, extractDate and extractTimestamp].
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters></parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/* 
+&#x9;*** DEPRECATED ***
+&#x9;DO NOT USE THIS PROCEDURE.
+&#x9;All references live in the procedure that uses them.  
+
+&#x9;DefaultValues:
+&#x9;DefaultValues is a vector of valid timestamp formats which is used by &quot;extractTimestamp&quot; to extract a 
+&#x9;date or timestamp from a string.   Add additional formats to the vector as needed.  Place the most 
+&#x9;common formats towards the top of the vector so that the extractTimestamp works as efficiently as it can.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Added &apos;dd MON yyyy&apos; entry in dateFormatVectorConst
+&#x9;2019.200&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;DEPRECATED:  Removed the use of VECTOR from invoking procedures [extractTime, extractDate and extractTimestamp].
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE DefaultValues()
+BEGIN
+&#x9;-- Used by &lt;Datasource_Tier/Procedures/extractTimestamp
+&#x9;-- For most efficient processing, move the pattern(s) to the top of the list that are the most common for your datasource
+
+--&#x9;*** DEPRECATED ***
+--&#x9;DO NOT USE THIS PROCEDURE.
+&#x9;DECLARE PUBLIC timestampFormatVectorConst&#x9;&#x9;CONSTANT VECTOR(varchar) DEFAULT  VECTOR [
+                        &apos;yyyymmddhh24miss&apos;,
+                        &apos;yyyymmdd&apos;,
+                        &apos;yyyymmddhh24&apos;,
+                        &apos;yyyymmddhh24mi&apos;,
+                        &apos;yyyymmddhh24miss.ff&apos;,
+
+                        &apos;MON dd yyyy&apos;,
+                        &apos;MON dd yyyy hh24&apos;,
+                        &apos;MON dd yyyy hh24:mi&apos;,
+                        &apos;MON dd yyyy hh24:mi:ss&apos;,
+                        &apos;MON dd yyyy hh24:mi:ss.ff&apos;,
+
+                        &apos;MON dd, yyyy&apos;,
+                        &apos;MON dd, yyyy hh24&apos;,
+                        &apos;MON dd, yyyy hh24:mi&apos;,
+                        &apos;MON dd, yyyy hh24:mi:ss&apos;,
+                        &apos;MON dd, yyyy hh24:mi:ss.ff&apos;,
+
+                        &apos;yyyy mm dd&apos;,
+                        &apos;yyyy mm dd hh24&apos;,
+                        &apos;yyyy mm dd hh24:mi&apos;,
+                        &apos;yyyy mm dd hh24:mi:ss&apos;,
+                        &apos;yyyy mm dd hh24:mi:ss.ff&apos;,
+
+                        &apos;MONTH dd, yyyy&apos;,
+                        &apos;MONTH dd, yyyy hh24&apos;,
+                        &apos;MONTH dd, yyyy hh24:mi&apos;,
+                        &apos;MONTH dd, yyyy hh24:mi:ss&apos;,
+                        &apos;MONTH dd, yyyy hh24:mi:ss.ff&apos;,
+
+                        &apos;MONTH dd yyyy&apos;,
+                        &apos;MONTH dd yyyy hh24&apos;,
+                        &apos;MONTH dd yyyy hh24:mi&apos;,
+                        &apos;MONTH dd yyyy hh24:mi:ss&apos;,
+                        &apos;MONTH dd yyyy hh24:mi:ss.ff&apos;,
+
+                        &apos;yyyy-mm-dd&apos;,
+                        &apos;yyyy-mm-dd hh24&apos;,
+                        &apos;yyyy-mm-dd hh24:mi&apos;,
+                        &apos;yyyy-mm-dd hh24:mi:ss&apos;,
+                        &apos;yyyy-mm-dd hh24:mi:ss.ff&apos;,
+
+                        &apos;yyyy/mm/dd&apos;,
+                        &apos;yyyy/mm/dd hh24&apos;,
+                        &apos;yyyy/mm/dd hh24:mi&apos;,
+                        &apos;yyyy/mm/dd hh24:mi:ss&apos;,
+                        &apos;yyyy/mm/dd hh24:mi:ss.ff&apos;,
+
+                        &apos;mm/dd/yyyy&apos;,
+                        &apos;mm/dd/yyyy hh24&apos;,
+                        &apos;mm/dd/yyyy hh24:mi&apos;,
+                        &apos;mm/dd/yyyy hh24:mi:ss&apos;,
+                        &apos;mm/dd/yyyy hh24:mi:ss.ff&apos;,
+
+                        &apos;mm-dd-yyyy&apos;,
+                        &apos;mm-dd-yyyy hh24&apos;,
+                        &apos;mm-dd-yyyy hh24:mi&apos;,
+                        &apos;mm-dd-yyyy hh24:mi:ss&apos;,
+                        &apos;mm-dd-yyyy hh24:mi:ss.ff&apos;,
+
+                        &apos;mm dd yyyy&apos;,
+                        &apos;mm dd yyyy hh24&apos;,
+                        &apos;mm dd yyyy hh24:mi&apos;,
+                        &apos;mm dd yyyy hh24:mi:ss&apos;,
+                        &apos;mm dd yyyy hh24:mi:ss.ff&apos;,
+
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24:mi:ss.ff&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24:mi:ss&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24:mi&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24&apos;
+            ];
+--&#x9;*** DEPRECATED ***
+--&#x9;DO NOT USE THIS PROCEDURE.
+&#x9;DECLARE PUBLIC dateFormatVectorConst&#x9;&#x9;CONSTANT VECTOR(varchar) DEFAULT  VECTOR [
+                        &apos;yyyymmdd&apos;,
+                        &apos;dd MON yyyy&apos;,
+                        &apos;MON dd yyyy&apos;,
+                        &apos;MON dd, yyyy&apos;,
+                        &apos;yyyy mm dd&apos;,
+                        &apos;MONTH dd, yyyy&apos;,
+                        &apos;MONTH dd yyyy&apos;,
+                        &apos;yyyy-mm-dd&apos;,
+                        &apos;yyyy/mm/dd&apos;,
+                        &apos;mm/dd/yyyy&apos;,
+                        &apos;mm-dd-yyyy&apos;,
+                        &apos;mm dd yyyy&apos;
+             ];
+--&#x9;*** DEPRECATED ***
+--&#x9;DO NOT USE THIS PROCEDURE.
+&#x9;DECLARE PUBLIC timeFormatVectorConst&#x9;&#x9;CONSTANT VECTOR(varchar) DEFAULT  VECTOR [
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24:mi:ss.ff&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24:mi:ss&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24:mi&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;hh24&apos;
+            ];
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">1383622342302</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_constants" type="MAP">
+    <item>
+      <key type="STRING">timestampFormatVectorConst</key>
+      <value type="BYTE_ARRAY">ECMGAgAaAHQAaQBtAGUAcwB0AGEAbQBwAEYAbwByAG0AYQB0AFYAZQBjAHQAbwByAEMAbwBuAHMAdAMSAAABAwgZEBsGAgAEAEMASABBAFIDEgAAAQ4BOwAEBQAAAAAAAAAEBAQAAAAAAAAAHAETAf////8=</value>
+    </item>
+    <item>
+      <key type="STRING">timeFormatVectorConst</key>
+      <value type="BYTE_ARRAY">ECMGAgAVAHQAaQBtAGUARgBvAHIAbQBhAHQAVgBlAGMAdABvAHIAQwBvAG4AcwB0AxIAAAEDCBkQGwYCAAQAQwBIAEEAUgMSAAABDgE7AAQFAAAAAAAAAAQEBAAAAAAAAAANARMB/////w==</value>
+    </item>
+    <item>
+      <key type="STRING">dateFormatVectorConst</key>
+      <value type="BYTE_ARRAY">ECMGAgAVAGQAYQB0AGUARgBvAHIAbQBhAHQAVgBlAGMAdABvAHIAQwBvAG4AcwB0AxIAAAEDCBkQGwYCAAQAQwBIAEEAUgMSAAABDgE7AAQFAAAAAAAAAAgEBAAAAAAAAAAOARMB/////w==</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

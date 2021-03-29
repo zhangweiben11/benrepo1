@@ -1,0 +1,262 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getLockedResources" path="/shared/Delta_DV/_scripts/Utilities/repository/getLockedResources" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getLockedResources:
+
+        Gets the resources that are currently locked
+    &#x9;  
+    &#x9;Usage Note:
+    &#x9;  The calling user must have: 
+    &#x9;    - The ACCESS_TOOLS right 
+
+&#x9;Input:
+
+        detail: The level of detail of resources in the response.  
+    &#x9;&#x9;Values: &quot;NONE&quot;, &quot;SIMPLE&quot;, or &quot;FULL&quot;.
+    
+        includeOnlyUnlockableResources: If &quot;true&quot;, the response will only include resources
+                                        for which the caller has the right to unlock.
+    &#x9;&#x9;Values: TRUE or FALSE
+
+&#x9;Output:
+&#x9;    result     - A cursor containing the details about any locked resources
+
+&#x9;Exceptions:
+&#x9;  None
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.1&#x9;&#x9;12/12/2013&#x9;&#x9;Scott Neustein&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="detail" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="6"/>
+    </parameter>
+    <parameter name="includeOnlyUnlockableResources" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="name">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="path">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="type">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="id">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="changeId">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="version">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="introspectState">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="ownerDomain">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="ownerName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="impactLevel">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="impactMessage">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="enabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="annotation">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getLockedResourcesXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getLockedResources" direction="IN">
+        <datatype name="getLockedResources" extendedName="{http://www.compositesw.com/services/system/admin/resource}getLockedResources" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getLockedResources" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getLockedResources">
+          <schemaDatatype>
+            <datatype name="getLockedResources" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getLockedResourcesRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="includeOnlyUnlockableResources" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT" nullable="false">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="path">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="type">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="subtype">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="id">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="changeId">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="introspectState">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="ownerName">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="impactLevel">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="impactMessage">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="annotation">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    getLockedResources:
+
+        Gets the resources that are currently locked
+    &#x9;  
+    &#x9;Usage Note:
+    &#x9;  The calling user must have: 
+    &#x9;    - The ACCESS_TOOLS right 
+
+&#x9;Input:
+
+        detail: The level of detail of resources in the response.  
+    &#x9;&#x9;Values: &quot;NONE&quot;, &quot;SIMPLE&quot;, or &quot;FULL&quot;.
+    
+        includeOnlyUnlockableResources: If &quot;true&quot;, the response will only include resources
+                                        for which the caller has the right to unlock.
+    &#x9;&#x9;Values: TRUE or FALSE
+
+&#x9;Output:
+&#x9;    result     - A cursor containing the details about any locked resources
+
+&#x9;Exceptions:
+&#x9;  None
+&#x9;
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.1&#x9;&#x9;12/12/2013&#x9;&#x9;Scott Neustein&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getLockedResources(  
+&#x9;IN  detail VARCHAR(6),
+&#x9;IN  includeOnlyUnlockableResources VARCHAR(5),
+&#x9;OUT result CURSOR (
+        name VARCHAR(32768), 
+        &quot;path&quot; VARCHAR(32768), 
+        &quot;type&quot; VARCHAR(32768), 
+        subtype VARCHAR(32768), 
+        id VARCHAR(32768), 
+        changeId INTEGER, 
+        version VARCHAR(32768), 
+        introspectState VARCHAR(32768), 
+        ownerDomain VARCHAR(32768), 
+        ownerName VARCHAR(32768), 
+        impactLevel VARCHAR(32768), 
+        impactMessage VARCHAR(32768), 
+        enabled BIT, 
+        annotation VARCHAR(32768)
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE xmlDetail VARCHAR(6) DEFAULT &apos;SIMPLE&apos;;
+&#x9;DECLARE xmlIncludeOnlyUnlockableResources VARCHAR(5) DEFAULT &apos;false&apos;;
+
+&#x9;IF detail != NULL or length(detail) &gt; 0 THEN
+&#x9;&#x9;SET xmlDetail = detail;&#x9;
+&#x9;END IF;
+
+&#x9;IF includeOnlyUnlockableResources != NULL or length(includeOnlyUnlockableResources) &gt; 0 THEN
+&#x9;&#x9;SET xmlIncludeOnlyUnlockableResources = includeOnlyUnlockableResources;&#x9;
+&#x9;END IF;
+
+    OPEN result FOR 
+        SELECT 
+            *
+        FROM      
+            /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getLockedResourcesXSLT(
+&#x9;&#x9;&#x9;&#x9;&apos;&lt;resource:getLockedResources xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot; xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;resource:detail&gt;&apos; || xmlDetail || &apos;&lt;/resource:detail&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;resource:includeOnlyUnlockableResources&gt;&apos; || xmlIncludeOnlyUnlockableResources || &apos;&lt;/resource:includeOnlyUnlockableResources&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/resource:getLockedResources&gt;&apos;) getLockedResourcesXSLT;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1386870410227</attribute>
+  <attribute name="creatorUserDomain" type="STRING">conoco</attribute>
+  <attribute name="creatorUserName" type="STRING">neusts</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

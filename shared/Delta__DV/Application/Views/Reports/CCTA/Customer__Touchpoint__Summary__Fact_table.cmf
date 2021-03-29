@@ -1,0 +1,384 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Customer_Touchpoint_Summary_Fact" path="/shared/Delta_DV/Application/Views/Reports/CCTA/Customer_Touchpoint_Summary_Fact" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Call_Answered_Date" nullable="true">
+      <datatype type="DATE"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="IVR_Number_Of_Calls" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="IVR_Average_Time_Spent" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Genesys_Number_Of_Calls" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Genesys_Average_Time_Spent" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Number_Provider_Group_Web_Visits" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Average_Provider_Group_Web_Visit_Duration" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Number_Enrolle_Web_Visits" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Average_Enrolle_Web_Visit_Duration" nullable="true">
+      <datatype type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/CCTA/Enrollee_Web_Visit_Fact" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Web_Visit_Start_Date">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Web_Visit_Start_Time">
+        <datatype type="TIME"/>
+      </element>
+      <element name="Web_Visit_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Web_Visit_End_Date">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Web_Visit_End_Time">
+        <datatype type="TIME"/>
+      </element>
+      <element name="Session_Count">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Page_View_Count">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Session_Duration_Group">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Event_Duration">
+        <datatype type="STRING" minLength="1" maxLength="5" trailingSpaces="false"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/CCTA/Provider_Group_Web_Visit_Fact" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Provider_Web_Visit_Start_Date">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Provider_Web_Visit_Start_Time">
+        <datatype type="TIME"/>
+      </element>
+      <element name="Provider_Web_Visit_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Provider_Web_Visit_End_Date">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Provider_Web_Visit_End_Time">
+        <datatype type="TIME"/>
+      </element>
+      <element name="Provider_Group_Location_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Session_Count">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Page_View_Count">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Event_Duration">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Session_Duration">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Source_System_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Call_Event" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Call_Answered_Date_Time">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Call_Hangup_Date_Time">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Number_Of_Legs">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Source_System_Unique_Id">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Customer_Service_Call_Orgination_Type_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Customer_Service_Call_Disposition_Type_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Customer_Service_Caller_Type_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Customer_Service_Call_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Contact_Center_Routing_Unit_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Callback_Offered_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Callback_Declined_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Callback_Attempt_Count">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Callback_Requested_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_Call_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_IVR_Successful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_IVR_Unsuccessful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_Agent_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Payment_Agent_Questions_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Callback_Successful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Callback_Unsuccessful_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Customer_Call_Center_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Call_Leg" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Call_Leg_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Stakeholder_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Leg_Sequence_Number">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Answer_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Agent_Call_Hangup_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Agent_Time_To_Answer_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Talk_Time_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_On_Hold_Time_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Duration_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Name">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="IVR_Time_To_Answer_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IVR_Call_Time_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_Call_Transfer_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Agent_Call_Transfer_Same_Call_Center_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Agent_Call_Transfer_Different_Call_Center_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Score_Number">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="Quality_Monitored_Score_Percent">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="Quality_Monitored_Evaluator_Name">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Quality_Monitored_Classified_Correct_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Evaluation_Title_Text">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Quality_Monitored_Evaluation_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Quality_Monitored_Agent_Supervisor_Name">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_Form_Identifier">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Quality_Monitored_Incorrect_Classification_Form_Name">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Agent_Queue_Name">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Agent_Abandened_Indicator">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="Agent_Call_Escalation_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Customer_Service_Call_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Agent_Work_After_Call_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Agent_User_ID">
+        <datatype type="STRING" maxLength="250"/>
+      </element>
+      <element name="Quality_Monitored_Medicare_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Agent_Supervisor_NM">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Quality_Monitored_Classification_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Quality_Monitored_Correct_Classification_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Customer_Call_Center_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select {OPTION CASE_SENSITIVE=&quot;false&quot;}
+coalesce(CF.Call_Answered_Date,WS.Provider_Web_Visit_Start_Date,EW.Web_Visit_Start_Date) Call_Answered_Date,
+IVR_Number_Of_Calls,
+IVR_Average_Time_Spent,
+Genesys_Number_Of_Calls,
+Genesys_Average_Time_Spent,
+Number_Provider_Group_Web_Visits,
+Average_Provider_Group_Web_Visit_Duration,
+Number_Enrolle_Web_Visits,
+Average_Enrolle_Web_Visit_Duration
+--,
+--CF.Call_Answered_Date CF_Call_Answered_Date,
+ --WS.Provider_Web_Visit_Start_Date,
+--EW.Web_Visit_Start_Date  
+from
+(select Call_Answered_Date, max(IVR_Number_Of_Calls) IVR_Number_Of_Calls, max(IVR_Average_Time_Spent) IVR_Average_Time_Spent, max(Genesys_Number_Of_Calls) Genesys_Number_Of_Calls , 
+max(Genesys_Average_Time_Spent) Genesys_Average_Time_Spent from 
+(select {OPTION CASE_SENSITIVE=&quot;false&quot;}
+cast(CE.Call_Answered_Date_Time  as Date) Call_Answered_Date,
+CASE WHEN CE.Customer_Service_Call_Disposition_Type_Code = &apos;CIVR&apos; then  COUNT(distinct CL.Customer_Service_Call_Event_Key) END as IVR_Number_Of_Calls ,
+CASE WHEN CE.Customer_Service_Call_Disposition_Type_Code = &apos;CIVR&apos; then  AVG(CL.IVR_Call_Time_Seconds) END as IVR_Average_Time_Spent ,
+CASE WHEN CE.Customer_Service_Call_Disposition_Type_Code = &apos;AA&apos; then  COUNT(distinct CL.Customer_Service_Call_Event_Key) END as Genesys_Number_Of_Calls ,
+CASE WHEN CE.Customer_Service_Call_Disposition_Type_Code = &apos;AA&apos; then  AVG(CL.Agent_Call_Duration_Seconds) END as Genesys_Average_Time_Spent 
+FROM  /shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Call_Event CE
+inner join
+/shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Call_Leg CL
+on CL.Customer_Service_Call_Event_Key=CE.Customer_Service_Call_Event_Key and CE.Customer_Service_Call_Disposition_Type_Code in (&apos;CIVR&apos;,&apos;AA&apos;) 
+GROUP BY cast(CE.Call_Answered_Date_Time  as Date),
+CE.Customer_Service_Call_Disposition_Type_Code) new group by Call_Answered_Date ) CF
+full outer join 
+(Select  Provider_Group_Web_Visit_Fact.Provider_Web_Visit_Start_Date,
+COUNT(Provider_Group_Web_Visit_Fact.Provider_Web_Visit_Key ) as Number_Provider_Group_Web_Visits,
+AVG(Provider_Group_Web_Visit_Fact.Session_Duration) as Average_Provider_Group_Web_Visit_Duration
+FROM
+/shared/Delta_DV/Application/Views/Reports/CCTA/Provider_Group_Web_Visit_Fact  Provider_Group_Web_Visit_Fact
+Group BY Provider_Group_Web_Visit_Fact.Provider_Web_Visit_Start_Date) WS
+on CF.Call_Answered_Date = WS.Provider_Web_Visit_Start_Date
+full outer join 
+ (Select Enrollee_Web_Visit_Fact.Web_Visit_Start_Date,COUNT(Enrollee_Web_Visit_Fact.Web_Visit_Event_Key) as Number_Enrolle_Web_Visits,
+AVG(Enrollee_Web_Visit_Fact.Event_Duration) as Average_Enrolle_Web_Visit_Duration
+          From /shared/Delta_DV/Application/Views/Reports/CCTA/Enrollee_Web_Visit_Fact Enrollee_Web_Visit_Fact
+        group by Enrollee_Web_Visit_Fact.Web_Visit_Start_Date ) EW
+on CF.Call_Answered_Date = EW.Web_Visit_Start_Date
+
+
+</attribute>
+  <attribute name="creationDate" type="LONG">1609916361210</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609916369059</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89575</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1609916361210</attribute>
+</metadata>

@@ -1,0 +1,77 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_BenefitPkgSummaryValue" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Benefit/pkgPl_BenefitPkgSummaryValue" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inBenefitPkgID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+    </parameter>
+    <parameter name="inTreatmentCD" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="BenefitPkgID">
+          <datatype name="VARCHAR" type="STRING" maxLength="8"/>
+        </element>
+        <element name="TreatmentCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="MaximumCoverage">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+        </element>
+        <element name="MinimumCoverage">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+        </element>
+        <element name="NetworkCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="AMTType">
+          <datatype name="VARCHAR" type="STRING" maxLength="7"/>
+        </element>
+        <element name="OutOfNetworkMSG">
+          <datatype name="VARCHAR" type="STRING" maxLength="20"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT DISTINCT 
+       Summary.BENEFITPACKAGEID BenefitPackageID, 
+       Summary.TREATMENTCODE TreatmentCode, 
+       Summary.MAXIMUMCOVERAGE MaximumCoverage, 
+       Summary.MINIMUMCOVERAGE MinimumCoverage,
+&#x9;   --MAX(Summary.BENEFITCOVERAGELEVEL) OVER (PARTITION BY Summary.BENEFITPACKAGEID, Summary.TREATMENTCODE, Summary.NETWORKCODE) MaximumCoverage,
+&#x9;   --MIN(Summary.BENEFITCOVERAGELEVEL) OVER (PARTITION BY Summary.BENEFITPACKAGEID, Summary.TREATMENTCODE, Summary.NETWORKCODE) MinimumCoverage,
+       Summary.NETWORKCODE NetworkCode, 
+       Summary.AMOUNTTYPE AmountType, 
+       Summary.OUTOFNETWORKMESSAGE OutOfNetworkMessage
+  FROM [BENEFITS_VIEWS].[dbo].[PBC_PKGDTL_JSON_VW] Summary
+ WHERE Summary.BENEFITPACKAGEID = &apos;{0}&apos;
+   AND Summary.TREATMENTCODE = &apos;{1}&apos;
+   AND Summary.EFFDT &lt;= {2}
+   AND Summary.ENDDT &gt;= {2}
+ORDER BY Summary.NETWORKCODE
+--OPTION (MAXDOP 16)
+--OPTION(USE HINT(&apos;ENABLE_PARALLEL_PLAN_PREFERENCE&apos;))
+;
+</attribute>
+  <attribute name="creationDate" type="LONG">1594317052168</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1594317052168</attribute>
+</metadata>

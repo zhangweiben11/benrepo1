@@ -1,0 +1,147 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="RepositoryDefinitionsRecursive" path="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitionsRecursive" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[RepositoryDefinitionsRecursive:
+&#x9;Provides global type definitions for the recursive procedures in the /shared/ASAssets/Utilities/repository directory.
+
+&#x9;If an ***error*** is encountered in the &apos;RepositoryDefinitionsRecursive&apos; file and you get a java memory error when 
+&#x9;trying to save this file, it is because CIS cannot save the file due to the recursive nature of 
+&#x9;the procedure &apos;getResourceTreeList&apos;.  
+
+&#x9;Go to &apos;getResourceTreeList&apos; and read the comments in the procedure body regarding the temporary
+&#x9;commenting of the recursive section until you can properly save the &apos;RepositoryDefinitionsRecursive&apos; file.  
+&#x9;Once you save this file, you can then uncomment and save the &apos;getResourceTreeList&apos; procedure.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0+/6.1.0+&#x9;1) expanded columns for lineageTreeType, 2) moved getUsedResourcesResponseType to RepositoryDefinitions
+&#x9;2018.400&#x9;11/13/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added dataSourceType to lineageTreeType.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters></parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities" type="CONTAINER">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* RepositoryDefinitionsRecursive:
+&#x9;Provides global type definitions for the recursive procedures in the /shared/ASAssets/Utilities/repository directory.
+
+&#x9;If an ***error*** is encountered in the &apos;RepositoryDefinitionsRecursive&apos; file and you get a java memory error when 
+&#x9;trying to save this file, it is because CIS cannot save the file due to the recursive nature of 
+&#x9;the procedure &apos;getResourceTreeList&apos;.  
+
+&#x9;Go to &apos;getResourceTreeList&apos; and read the comments in the procedure body regarding the temporary
+&#x9;commenting of the recursive section until you can properly save the &apos;RepositoryDefinitionsRecursive&apos; file.  
+&#x9;Once you save this file, you can then uncomment and save the &apos;getResourceTreeList&apos; procedure.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0+/6.1.0+&#x9;1) expanded columns for lineageTreeType, 2) moved getUsedResourcesResponseType to RepositoryDefinitions
+&#x9;2018.400&#x9;11/13/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added dataSourceType to lineageTreeType.
+&#x9;2020.300&#x9;08/18/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added creation and modification attributes to the result set.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE RepositoryDefinitionsRecursive()
+BEGIN
+&#x9;PATH /shared/Delta_DV/&quot;_scripts&quot;/Utilities;
+
+&#x9;DECLARE PUBLIC TYPE resourceTreeType ROW (
+&#x9;&#x9;name&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;resPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),
+&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creationDate&#x9;&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;creationDateBigint&#x9;&#x9;BIGINT,
+&#x9;&#x9;creatorUserDomain&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedDate&#x9;&#x9;TIMESTAMP,
+&#x9;&#x9;lastModifiedDateBigint&#x9;BIGINT,
+&#x9;&#x9;lastModifiedUserDomain&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedUserName&#x9;VARCHAR(255)
+&#x9;);
+
+&#x9;DECLARE PUBLIC TYPE lineageTreeType ROW (
+&#x9;&#x9;seqNum&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;resourceID&#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;parentID&#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;resDepth&#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;treeType&#x9;&#x9;&#x9;&#x9;VARCHAR(255), -- Parent, Child
+&#x9;&#x9;resName &#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+&#x9;&#x9;resPath &#x9;&#x9;&#x9;&#x9;VARCHAR(4096),
+&#x9;&#x9;resType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;subType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;&#x9;dsID&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;dsResName&#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;dsResPath&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),
+&#x9;&#x9;dsResType &#x9;&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;dsResSubType&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;dsEnabled&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;&#x9;dsChildCount&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;dataSourceType&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creationDate&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creationDateBigint&#x9;&#x9;BIGINT,
+&#x9;&#x9;creatorUserDomain&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creatorUserId&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;creatorUserName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedDate&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedDateBigint&#x9;BIGINT,
+&#x9;&#x9;lastModifiedUserDomain&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedUserId&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;lastModifiedUserName&#x9;VARCHAR(255)
+&#x9;);
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_types" type="MAP">
+    <item>
+      <key type="STRING">resourceTreeType</key>
+      <value type="BYTE_ARRAY">EB8GAgAQAHIAZQBzAG8AdQByAGMAZQBUAHIAZQBlAFQAeQBwAGUGKQBbAC8AcwBoAGEAcgBlAGQALwBEAGUAbAB0AGEAXwBEAFYALwAiAF8AcwBjAHIAaQBwAHQAcwAiAC8AVQB0AGkAbABpAHQAaQBlAHMALwByAGUAcABvAHMAaQB0AG8AcgB5AC8AZABlAGYAaQBuAGkAdABpAG8AbgBzAC8AUgBlAHAAbwBzAGkAdABvAHIAeQBEAGUAZgBpAG4AaQB0AGkAbwBuAHMAUgBlAGMAdQByAHMAaQB2AGUGKgAQAHIAZQBzAG8AdQByAGMAZQBUAHIAZQBlAFQAeQBwAGUDEgAAAAEDEgAAAAEBEwEJFAAAAAwQIQYVAAQAbgBhAG0AZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAgZEBsGAgAHAFYAQQBSAEMASABBAFIDEgAAAAIEBAAAAAAAAAD/ARMB/////xAhBhUABwByAGUAcwBQAGEAdABoAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAACBkQGwYCAAcAVgBBAFIAQwBIAEEAUgMSAAAAAwQEAAAAAAAAEAABEwH/////ECEGFQAHAHIAZQBzAFQAeQBwAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAL//xAhBhUABwBzAHUAYgBUAHkAcABlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAC//8QIQYVAAwAYwByAGUAYQB0AGkAbwBuAEQAYQB0AGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAAIGRAWBgIACQBUAEkATQBFAFMAVABBAE0AUAMSAAAABP////8QIQYVABIAYwByAGUAYQB0AGkAbwBuAEQAYQB0AGUAQgBpAGcAaQBuAHQDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAAIGRAZBgIABgBCAEkARwBJAE4AVAMSAAAABQQHgAAAAAAAAAD/////ECEGFQARAGMAcgBlAGEAdABvAHIAVQBzAGUAcgBEAG8AbQBhAGkAbgMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAAv//ECEGFQAPAGMAcgBlAGEAdABvAHIAVQBzAGUAcgBOAGEAbQBlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAC//8QIQYVABAAbABhAHMAdABNAG8AZABpAGYAaQBlAGQARABhAHQAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAABP//ECEGFQAWAGwAYQBzAHQATQBvAGQAaQBmAGkAZQBkAEQAYQB0AGUAQgBpAGcAaQBuAHQDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAX//xAhBhUAFgBsAGEAcwB0AE0AbwBkAGkAZgBpAGUAZABVAHMAZQByAEQAbwBtAGEAaQBuAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAC//8QIQYVABQAbABhAHMAdABNAG8AZABpAGYAaQBlAGQAVQBzAGUAcgBOAGEAbQBlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAC/////w==</value>
+    </item>
+    <item>
+      <key type="STRING">lineageTreeType</key>
+      <value type="BYTE_ARRAY">EB8GAgAPAGwAaQBuAGUAYQBnAGUAVAByAGUAZQBUAHkAcABlBikAWwAvAHMAaABhAHIAZQBkAC8ARABlAGwAdABhAF8ARABWAC8AIgBfAHMAYwByAGkAcAB0AHMAIgAvAFUAdABpAGwAaQB0AGkAZQBzAC8AcgBlAHAAbwBzAGkAdABvAHIAeQAvAGQAZQBmAGkAbgBpAHQAaQBvAG4AcwAvAFIAZQBwAG8AcwBpAHQAbwByAHkARABlAGYAaQBuAGkAdABpAG8AbgBzAFIAZQBjAHUAcgBzAGkAdgBlBioADwBsAGkAbgBlAGEAZwBlAFQAcgBlAGUAVAB5AHAAZQMSAAAAAQMSAAAAAQETAQkUAAAAHBAhBhUABgBzAGUAcQBOAHUAbQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAgZEBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAIEB/////+AAAAABAYAAAAAf/////////8QIQYVAAoAcgBlAHMAbwB1AHIAYwBlAEkARAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAAv//ECEGFQAIAHAAYQByAGUAbgB0AEkARAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAAv//ECEGFQAIAHIAZQBzAEQAZQBwAHQAaAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAAv//ECEGFQAIAHQAcgBlAGUAVAB5AHAAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAgZEBsGAgAHAFYAQQBSAEMASABBAFIDEgAAAAMEBAAAAAAAAAD/ARMB/////xAhBhUABwByAGUAcwBOAGEAbQBlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVAAcAcgBlAHMAUABhAHQAaAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAgZEBsGAgAHAFYAQQBSAEMASABBAFIDEgAAAAQEBAAAAAAAABAAARMB/////xAhBhUABwByAGUAcwBUAHkAcABlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVAAcAcwB1AGIAVAB5AHAAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAA///ECEGFQAHAGUAbgBhAGIAbABlAGQDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAAIGRAZBgIAAwBCAEkAVAMSAAAABQQHAAAAAAAAAAAEBgAAAAAAAAAB/////xAhBhUABABkAHMASQBEAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAC//8QIQYVAAkAZABzAFIAZQBzAE4AYQBtAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAP//xAhBhUACQBkAHMAUgBlAHMAUABhAHQAaAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAABP//ECEGFQAJAGQAcwBSAGUAcwBUAHkAcABlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVAAwAZABzAFIAZQBzAFMAdQBiAFQAeQBwAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAP//xAhBhUACQBkAHMARQBuAGEAYgBsAGUAZAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAABf//ECEGFQAMAGQAcwBDAGgAaQBsAGQAQwBvAHUAbgB0Ay8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAC//8QIQYVAA4AZABhAHQAYQBTAG8AdQByAGMAZQBUAHkAcABlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVAAwAYwByAGUAYQB0AGkAbwBuAEQAYQB0AGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAP//xAhBhUAEgBjAHIAZQBhAHQAaQBvAG4ARABhAHQAZQBCAGkAZwBpAG4AdAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAgZEBkGAgAGAEIASQBHAEkATgBUAxIAAAAGBAeAAAAAAAAAAP////8QIQYVABEAYwByAGUAYQB0AG8AcgBVAHMAZQByAEQAbwBtAGEAaQBuAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVAA0AYwByAGUAYQB0AG8AcgBVAHMAZQByAEkAZAMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAA///ECEGFQAPAGMAcgBlAGEAdABvAHIAVQBzAGUAcgBOAGEAbQBlAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVABAAbABhAHMAdABNAG8AZABpAGYAaQBlAGQARABhAHQAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAMSAAAAA///ECEGFQAWAGwAYQBzAHQATQBvAGQAaQBmAGkAZQBkAEQAYQB0AGUAQgBpAGcAaQBuAHQDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAb//xAhBhUAFgBsAGEAcwB0AE0AbwBkAGkAZgBpAGUAZABVAHMAZQByAEQAbwBtAGEAaQBuAy8AAAABAxYAAAAAAxoAAAABAxsAAAABAyD/////AyIAAAAAAxIAAAAD//8QIQYVABIAbABhAHMAdABNAG8AZABpAGYAaQBlAGQAVQBzAGUAcgBJAGQDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAP//xAhBhUAFABsAGEAcwB0AE0AbwBkAGkAZgBpAGUAZABVAHMAZQByAE4AYQBtAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAADEgAAAAP/////</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

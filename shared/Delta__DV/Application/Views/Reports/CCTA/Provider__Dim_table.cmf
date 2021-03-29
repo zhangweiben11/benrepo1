@@ -1,0 +1,183 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Provider_Dim" path="/shared/Delta_DV/Application/Views/Reports/CCTA/Provider_Dim" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Provider_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Begin_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="End_Date" nullable="true">
+      <datatype type="NULL"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Given_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Middle_Name" nullable="true">
+      <datatype type="STRING" maxLength="1000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Family_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Prefix_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Suffix_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Additional_Name" nullable="true">
+      <datatype type="NULL"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="National_Provider_Index_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Birth_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Gender_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="XPKPROVIDER" type="UNKNOWN" unique="false">
+      <indexColumn name="End_Date" sortOrder="ASCENDING"/>
+      <indexColumn name="Gender_Type_Code" sortOrder="ASCENDING"/>
+      <indexColumn name="National_Provider_Index_Identifier" sortOrder="ASCENDING"/>
+      <indexColumn name="Begin_Date" sortOrder="ASCENDING"/>
+      <indexColumn name="Provider_Key" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Provider" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Provider_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Given_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Middle_Name">
+        <datatype type="STRING" maxLength="1000"/>
+      </element>
+      <element name="Family_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Suffix_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="National_Provider_Index_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Birth_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Gender_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Prefix_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="National_Provider_Index_Identifier_Type_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Preferred_Communication_Method_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Degree_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Type_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Ryan_White_Indicator">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Federal_Qualified_Health_Center_Indicator">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="DA_Case_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Medicaid_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Begin_Date">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    Provider.Provider_Key, 
+    Provider.Begin_Date, 
+NULL End_Date,
+
+    Provider.Given_Name, 
+    Provider.Middle_Name, 
+    Provider.Family_Name, 
+    Provider.Prefix_Name, 
+    Provider.Suffix_Name, 
+NULL Additional_Name,
+    Provider.National_Provider_Index_Identifier, 
+    Provider.Birth_Date, 
+    Provider.Gender_Type_Code 
+  
+FROM      
+    /shared/Delta_DV/Business/BusinessSemantic/EDP/Provider Provider</attribute>
+  <attribute name="creationDate" type="LONG">1607458330249</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1607458330249</attribute>
+</metadata>

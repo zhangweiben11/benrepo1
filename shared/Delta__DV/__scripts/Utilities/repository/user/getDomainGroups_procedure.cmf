@@ -1,0 +1,183 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getDomainGroups" path="/shared/Delta_DV/_scripts/Utilities/repository/user/getDomainGroups" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getDomainGroups:
+
+&#x9;This procedure returns the groups contained in a domain.
+
+
+&#x9;Input:
+&#x9;&#x9;inDomainName - The name of a domain defined in CIS.  
+&#x9;&#x9;&#x9;Values: Any text value
+
+
+&#x9;Output:
+&#x9;&#x9;result - A cursor containing the domain&apos;s groups
+
+
+&#x9;Exceptions:  none
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.1&#x9;&#x9;02/04/2014&#x9;&#x9;Scott Neustein&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inDomainName" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="name">
+          <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+        </element>
+        <element name="domainName">
+          <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+        </element>
+        <element name="id">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="explicitRights">
+          <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+        </element>
+        <element name="effectiveRights">
+          <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+        </element>
+        <element name="inheritedRights">
+          <datatype name="VARCHAR" type="STRING" maxLength="8192"/>
+        </element>
+        <element name="annotation">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getDomainGroupsXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getDomainGroups" direction="IN">
+        <datatype name="getDomainGroups" extendedName="{http://www.compositesw.com/services/system/admin/user}getDomainGroups" namespace="http://www.compositesw.com/services/system/admin/user" referenceDefinitionSet="/services/webservices/system/admin/user/operations/UserSchema" referenceType="{http://www.compositesw.com/services/system/admin/user}getDomainGroups" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/user}getDomainGroups">
+          <schemaDatatype>
+            <datatype name="getDomainGroups" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="getDomainGroupsRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/user" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="domainName" namespace="http://www.compositesw.com/services/system/admin/user">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="scope" namespace="http://www.compositesw.com/services/system/admin/user">
+                <datatype name="scopeValue" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT" nullable="false">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="domainName">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="explicitRights">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="effectiveRights">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="inheritedRights">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+  getDomainGroups:
+
+&#x9;This procedure returns the groups contained in a domain.
+
+&#x9;Input:
+&#x9;&#x9;inDomainName - The name of a domain defined in CIS.  
+&#x9;&#x9;&#x9;Values: Any text value
+
+&#x9;Output:
+&#x9;&#x9;result - A cursor containing the domain&apos;s groups
+
+&#x9;Exceptions:  none
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.1&#x9;&#x9;02/04/2014&#x9;&#x9;Scott Neustein&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2020.201&#x9;04/31/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified scope to use &quot;LOCAL_ONLY&quot; which is very fast.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;When the scope is &quot;ALL&quot;, it takes a long time because it has to go out to LDAP.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getDomainGroups(
+&#x9;IN  inDomainName &#x9;LONGVARCHAR,
+    OUT result &#x9;&#x9;&#x9;CURSOR (
+        name &#x9;&#x9;&#x9;VARCHAR(8192), 
+        domainName &#x9;&#x9;VARCHAR(8192), 
+        id &#x9;&#x9;&#x9;&#x9;INTEGER, 
+        explicitRights &#x9;VARCHAR(8192), 
+        effectiveRights VARCHAR(8192), 
+        inheritedRights VARCHAR(8192), 
+        annotation &#x9;&#x9;VARCHAR(32768)
+&#x9;)
+)
+BEGIN
+    OPEN result FOR 
+        SELECT *
+        FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getDomainGroupsXSLT(
+&#x9;&#x9;&#x9;&apos;&lt;user:getDomainGroups xmlns:user=&quot;http://www.compositesw.com/services/system/admin/user&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;user:domainName&gt;&apos; || CAST(XMLTEXT(inDomainName) AS LONGVARCHAR) || &apos;&lt;/user:domainName&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;user:scope&gt;LOCAL_ONLY&lt;/user:scope&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;&lt;/user:getDomainGroups&gt;&apos;);
+END</attribute>
+  <attribute name="creationDate" type="LONG">1391551687277</attribute>
+  <attribute name="creatorUserDomain" type="STRING">conoco</attribute>
+  <attribute name="creatorUserName" type="STRING">neusts</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

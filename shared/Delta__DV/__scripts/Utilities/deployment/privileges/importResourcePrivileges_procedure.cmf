@@ -1,0 +1,309 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="importResourcePrivileges" path="/shared/Delta_DV/_scripts/Utilities/deployment/privileges/importResourcePrivileges" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[importResourcePrivileges:
+
+&#x9;This procedure is typically invoked by the deployment script via the published datasource ASAssets to apply privileges 
+&#x9;&#x9;from the previously saved privileges.xml file that lives on the TDV server.
+&#x9;&#x9;A deployment shell script may execute the following
+&#x9;&#x9;&#x9;$DIRNAME/JdbcSample.sh $DATABASE $HOST $DBPORT $USER $PASSWORD $DOMAIN &quot;SELECT * FROM importResourcePrivileges(1, 0, 0, &apos;$PRIVSFILE&apos;, &apos;SET_EXACTLY&apos;)&quot;
+
+&#x9;Input:
+        recurseChildResources - A bit flag indicating whether the privileges of the resources in the
+                                resourcePrivsList should be recursively applied to any child resources 
+                                (assumes the resource is a container.)  
+            Values: 1=recurse children or 0=do not recurse
+
+        recurseDependencies - A bit flag indicating whether the privileges of the resources in the resourcePrivsList
+                              resourcePrivsList should be applied to any resources that they use.
+            Values: 1=recurse dependencies or 0=do not recurse
+
+        recurseDependents - A bit flag indicating whether the privileges of the resources in the resourcePrivsList
+                            resourcePrivsList should be applied to any resources that are used by them.
+            Values: 1=recurse dependents or 0=do not recurse
+
+&#x9;&#x9;fileName &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The TDV server file path to the privileges.xml file.
+&#x9;&#x9;mode &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- OVERWRITE_APPEND (default),  SET_EXACTLY
+
+&#x9;Output:
+&#x9;&#x9;createResponse &#x9;&#x9;&#x9;&#x9;&#x9;XML, &#x9;&#x9;-- the create response has no relevance.
+&#x9;&#x9;faultResponse &#x9;&#x9;&#x9;&#x9;&#x9;XML&#x9;&#x9;&#x9;-- if not null then there was an exception and appropriate action should be taken by the invoking program or procedure.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/16/2014      Jeremy Akers        6.2.6           Created new
+&#x9;2019.200&#x9;05/30/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="recurseChildResources" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="recurseDependencies" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="recurseDependents" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="privilegeFileName" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="mode" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="invalidPathList" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/Pause" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="timeInMilliSeconds" direction="IN">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/getFileContentsAscii" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="filePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="fileContent" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateResourcePrivilegesV2" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="setExactly" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="recurseChildResources" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="recurseDependencies" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="recurseDependents" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="inPrivilegeEntriesXML" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="invalidPathList" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;importResourcePrivileges:
+
+&#x9;This procedure is typically invoked by the deployment script via the published datasource ASAssets to apply privileges 
+&#x9;&#x9;from the previously saved privileges.xml file that lives on the TDV server.
+&#x9;&#x9;A deployment shell script may execute the following
+&#x9;&#x9;&#x9;$DIRNAME/JdbcSample.[sh|bat] $DATABASE $HOST $DBPORT $USER $PASSWORD $DOMAIN &quot;SELECT * FROM Utilities.deployment.importResourcePrivileges(&apos;N&apos;, 1, 0, 0, &apos;$PRIVSFILE&apos;, &apos;SET_EXACTLY&apos;)&quot;
+
+&#x9;Input:
+&#x9;&#x9;debug &#x9;&#x9;&#x9;&#x9;&#x9;- Y=debug on,  N=debug off.  Debug writes to CONSOLE and LOG.
+        recurseChildResources &#x9;- A bit flag indicating whether the privileges of the resources in the
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePrivsList should be recursively applied to any child resources 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(assumes the resource is a container.)  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: 1=recurse children or 0=do not recurse
+
+        recurseDependencies &#x9;- A bit flag indicating whether the privileges of the resources in the resourcePrivsList
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePrivsList should be applied to any resources that they use.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: 1=recurse dependencies or 0=do not recurse
+
+        recurseDependents &#x9;&#x9;- A bit flag indicating whether the privileges of the resources in the resourcePrivsList
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;resourcePrivsList should be applied to any resources that are used by them.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Values: 1=recurse dependents or 0=do not recurse
+
+&#x9;&#x9;privilegeFileName&#x9;&#x9;- The TDV server file path to the privileges.xml file.
+&#x9;&#x9;mode &#x9;&#x9;&#x9;&#x9;&#x9;- OVERWRITE_APPEND (default),  SET_EXACTLY
+
+&#x9;Output:
+&#x9;&#x9;result&#x9;&#x9;&#x9;&#x9;&#x9;- SUCCESS if no invalid paths, WARNING if invalid path list otherwise an exception is thrown.
+&#x9;&#x9;invalidPathList&#x9;&#x9;&#x9;- If not null, then a comma-separated list of paths [path:type] that are invalid as they do not exist and no privileges were applied.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;10/16/2014      Jeremy Akers        6.2.6           Created new
+&#x9;2019.200&#x9;05/30/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE importResourcePrivileges(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on,  N=debug off.  Debug writes to CONSOLE and LOG.
+&#x9;IN recurseChildResources&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=recurse children or 0=do not recurse
+&#x9;IN recurseDependencies&#x9;&#x9;&#x9; &#x9;BIT,&#x9;&#x9;&#x9;-- 1=recurse dependencies or 0=do not recurse
+&#x9;IN recurseDependents&#x9;&#x9; &#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- 1=recurse dependents or 0=do not recurse
+&#x9;IN privilegeFileName&#x9;&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- The full TDV server file path to the privileges.xml file.
+&#x9;IN mode &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- OVERWRITE_APPEND (default),  SET_EXACTLY
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SUCCESS if no invalid paths, WARNING if invalid path list otherwise an exception is thrown.
+&#x9;OUT invalidPathList&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- If not null, then a comma-separated list of paths [path:type] that are invalid as they do not exist and no privileges were applied.
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;importResourcePrivileges&apos;;
+&#x9;DECLARE privEntries &#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE setExactly&#x9;&#x9;&#x9;&#x9;&#x9;BIT DEFAULT 0;&#x9;-- 0=OVERWRITE_APPEND, 1=SET_EXACTLY
+&#x9;DECLARE success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT;
+    DECLARE createResponse &#x9;&#x9;&#x9;&#x9;XML;
+    DECLARE faultResponse &#x9;&#x9;&#x9;&#x9;LONGVARCHAR;&#x9;-- If not null then throw an exception and appropriate action should be taken by the invoking program or procedure.
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;IF (mode = &apos;SET_EXACTLY&apos;) then
+&#x9;&#x9;set setExactly = 1;
+&#x9;END IF;
+
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/getFileContentsAscii(privilegeFileName, privEntries);
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;SET message = moduleName||&#x9;&apos; :: BEGIN execute.&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    INPUT: &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;      recurseChildResources=&apos;||NVL(CAST(recurseChildResources AS VARCHAR),&apos;null&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;      recurseDependencies=&apos;||NVL(CAST(recurseDependencies AS VARCHAR),&apos;null&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;      recurseDependents=&apos;||NVL(CAST(recurseDependents AS VARCHAR),&apos;null&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;      mode=&apos;||NVL(mode,&apos;null&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;      privilegeFileName=&apos;||NVL(privilegeFileName,&apos;null&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;      privEntries:&apos;||CHR(10)||NVL(privEntries,&apos;null&apos;)||CHR(10);
+&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;CALL LOG(message);
+&#x9;&#x9;CALL PAUSE(500);
+&#x9;END IF;
+
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateResourcePrivilegesV2(
+&#x9;&#x9;setExactly,
+&#x9;&#x9;recurseChildResources,
+&#x9;&#x9;recurseDependencies,
+&#x9;&#x9;recurseDependents,
+&#x9;&#x9;privEntries,
+&#x9;&#x9;success,
+&#x9;&#x9;faultResponse,
+&#x9;&#x9;invalidPathList
+&#x9;&#x9;);
+&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;RAISE ex VALUE faultResponse;
+&#x9;END IF;
+
+&#x9;IF (invalidPathList IS NOT NULL) THEN
+&#x9;&#x9;SET message = moduleName||&#x9;&apos; :: END WARNING: invalid path list=&apos;||invalidPathList;
+&#x9;&#x9;SET result = &apos;WARNING&apos;;
+&#x9;ELSE
+&#x9;&#x9;SET message = moduleName||&#x9;&apos; :: END sucessfully executed.&apos;;
+&#x9;&#x9;SET result = &apos;SUCCESS&apos;;
+&#x9;END IF;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(message);
+&#x9;&#x9;CALL LOG(message);
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1381455664206</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:5:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/115</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/114</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/87</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/88</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>Pause</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/86</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

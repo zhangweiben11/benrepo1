@@ -1,0 +1,472 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="createOrUpdateConnector" path="/shared/Delta_DV/_scripts/Utilities/repository/createOrUpdateConnector" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[createOrUpdateConnector:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure is used to create or update a connector.
+
+&#x9;Input:
+&#x9;&#x9;debug - Y or N
+&#x9;&#x9;forceNullUpdate&#x9;- 1=force null input values to be passed through, 0=ignore null values.
+   &#x9;&#x9;name - connector name
+&#x9;&#x9;groupName - group name
+&#x9;&#x9;jmsClientID - jms client id
+&#x9;&#x9;annotation - annotation
+&#x9;&#x9;jndiContextFactory - JNDI Initial Context Factory 
+&#x9;&#x9;jndiProperties - XML string representing the jndi properties.  
+&#x9;&#x9;&#x9;Example:
+&#x9;&#x9;&#x9;&lt;jndiProperties&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;name&gt;prop2&lt;/name&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;type&gt;STRING&lt;/type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;value&gt;value2&lt;/value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;name&gt;prop1&lt;/name&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;type&gt;STRING&lt;/type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;value&gt;value1&lt;/value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/attribute&gt;
+&#x9;&#x9;&#x9;&lt;/jndiProperties&gt;
+&#x9;&#x9;jndiProviderUrl - JNDI URL
+&#x9;&#x9;jndiUser - JNDI user
+&#x9;&#x9;jndiPassword - JNDI password
+&#x9;&#x9;queueConnectionFactory - Queue factor
+&#x9;&#x9;minPool - min pool
+&#x9;&#x9;maxPool - max pool
+&#x9;&#x9;poolTimeout - pool timeout
+&#x9;Output:
+
+&#x9;Exceptions:  Exception may be thrown.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;04/15/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="forceNullUpdate" direction="IN" nullable="true">
+      <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+    </parameter>
+    <parameter name="name" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+    </parameter>
+    <parameter name="groupName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+    </parameter>
+    <parameter name="jmsClientID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="annotation" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="jndiContextFactory" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="jndiProperties" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="jndiProviderUrl" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="jndiUser" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+    <parameter name="jndiPassword" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+    <parameter name="queueConnectionFactory" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1024"/>
+    </parameter>
+    <parameter name="minPool" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+    <parameter name="maxPool" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+    <parameter name="poolTimeout" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/createConnector" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="name" direction="IN">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="groupName" direction="IN">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="jmsClientID" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="annotation" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="jndiContextFactory" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="jndiProperties" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="jndiProviderUrl" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="jndiUser" direction="IN">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="jndiPassword" direction="IN">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="queueConnectionFactory" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="minPool" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="maxPool" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="poolTimeout" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getConnectors" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="name" direction="IN">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="connectorType">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="groupName">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="jmsClientID">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="jndiContextFactory">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="jndiProperties">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="jndiProviderUrl">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="jndiUser">
+            <datatype type="STRING" maxLength="50"/>
+          </element>
+          <element name="jndiPassword">
+            <datatype type="STRING" maxLength="50"/>
+          </element>
+          <element name="maxPool">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="minPool">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="poolTimeout">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="queueConnectionFactory">
+            <datatype type="STRING" maxLength="1024"/>
+          </element>
+          <element name="useJNDI">
+            <datatype type="STRING" maxLength="50"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/updateConnector" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="name" direction="IN">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="groupName" direction="IN">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="jmsClientID" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="annotation" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="jndiContextFactory" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="jndiProperties" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="jndiProviderUrl" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="jndiUser" direction="IN">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="jndiPassword" direction="IN">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="queueConnectionFactory" direction="IN">
+        <datatype type="STRING" maxLength="1024"/>
+      </element>
+      <element name="minPool" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="maxPool" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="poolTimeout" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* createOrUpdateConnector:
+&#x9;-- CIS Repository Helper Procedure --
+&#x9;This procedure is used to create or update a connector.
+
+&#x9;Input:
+&#x9;&#x9;debug - Y or N
+&#x9;&#x9;forceNullUpdate&#x9;- 1=force null input values to be passed through, 0=ignore null values.
+   &#x9;&#x9;name - connector name
+&#x9;&#x9;groupName - group name
+&#x9;&#x9;jmsClientID - jms client id
+&#x9;&#x9;annotation - annotation
+&#x9;&#x9;jndiContextFactory - JNDI Initial Context Factory 
+&#x9;&#x9;jndiProperties - XML string representing the jndi properties.  
+&#x9;&#x9;&#x9;Example:
+&#x9;&#x9;&#x9;&lt;jndiProperties&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;name&gt;prop2&lt;/name&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;type&gt;STRING&lt;/type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;value&gt;value2&lt;/value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;attribute&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;name&gt;prop1&lt;/name&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;type&gt;STRING&lt;/type&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&lt;value&gt;value1&lt;/value&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/attribute&gt;
+&#x9;&#x9;&#x9;&lt;/jndiProperties&gt;
+&#x9;&#x9;jndiProviderUrl - JNDI URL
+&#x9;&#x9;jndiUser - JNDI user
+&#x9;&#x9;jndiPassword - JNDI password
+&#x9;&#x9;queueConnectionFactory - Queue factor
+&#x9;&#x9;minPool - min pool
+&#x9;&#x9;maxPool - max pool
+&#x9;&#x9;poolTimeout - pool timeout
+&#x9;Output:
+
+&#x9;Exceptions:  Exception may be thrown.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.3&#x9;&#x9;04/15/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE createOrUpdateConnector(
+&#x9;IN debug &#x9;&#x9;&#x9;&#x9;CHAR(1),-- e.g. Y or N
+&#x9;IN forceNullUpdate&#x9;&#x9;SMALLINT, -- force null input values to be passed through instead of ignoring them.
+&#x9;IN name &#x9;&#x9;&#x9;&#x9;VARCHAR(100),
+&#x9;IN groupName&#x9;&#x9;&#x9;VARCHAR(100),
+&#x9;IN jmsClientID&#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;IN annotation&#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;IN jndiContextFactory&#x9;VARCHAR(1024), -- e.g. com.tibco.tibjms.naming.TibjmsInitialContextFactory
+&#x9;IN jndiProperties &#x9;&#x9;LONGVARCHAR, -- XML string value for jndi properties
+&#x9;IN jndiProviderUrl&#x9;&#x9;VARCHAR(1024),
+&#x9;IN jndiUser &#x9;&#x9;&#x9;VARCHAR(50),
+&#x9;IN jndiPassword&#x9;&#x9;&#x9;VARCHAR(50),
+&#x9;IN queueConnectionFactory VARCHAR(1024),
+&#x9;IN minPool&#x9; &#x9;&#x9;&#x9;VARCHAR(50),
+&#x9;IN maxPool&#x9; &#x9;&#x9;&#x9;VARCHAR(50),
+&#x9;IN poolTimeout&#x9; &#x9;&#x9;VARCHAR(50)
+)
+BEGIN
+&#x9;DECLARE moduleName &#x9;&#x9;VARCHAR DEFAULT &apos;createOrUpdateConnector&apos;;
+&#x9;DECLARE foundConnector&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE foundProp&#x9;&#x9;BOOLEAN;
+  &#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE TYPE connectorType&#x9;ROW (
+&#x9;&#x9;name &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;&#x9;annotation &#x9;&#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;&#x9;connectorType &#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;&#x9;groupName &#x9;&#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;&#x9;jmsClientID&#x9;&#x9;&#x9;&#x9;VARCHAR(1024),
+&#x9;&#x9;jndiContextFactory &#x9;&#x9;VARCHAR(1024),
+ &#x9;  &#x9;jndiProperties &#x9;&#x9;&#x9;LONGVARCHAR,
+ &#x9;  &#x9;jndiProviderUrl &#x9;&#x9;VARCHAR(1024),
+&#x9;&#x9;jndiUser &#x9;&#x9;&#x9;&#x9;VARCHAR(50),
+&#x9;&#x9;jndiPassword&#x9;&#x9;&#x9;VARCHAR(50),
+&#x9;&#x9;maxPool &#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;minPool &#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;poolTimeout &#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;queueConnectionFactory &#x9;VARCHAR(1024),
+&#x9;&#x9;useJNDI &#x9;&#x9;&#x9;&#x9;VARCHAR(50)
+&#x9;);
+&#x9;DECLARE c&#x9;&#x9;&#x9;&#x9;&#x9;connectorType;
+
+&#x9;selectLoop:
+&#x9;for r as select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getConnectors(debug, name) do
+&#x9;&#x9;if (name = r.name) then
+&#x9;&#x9;&#x9;set foundConnector = true;
+&#x9;&#x9;&#x9;set c = r;
+&#x9;&#x9;&#x9;leave selectLoop;
+&#x9;&#x9;end if;
+&#x9;end for;
+&#x9;
+&#x9;if (foundConnector) then
+&#x9;&#x9;-- Set the variables that are not null
+&#x9;&#x9;if (groupName is not null or length(groupName) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.groupName = groupName;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (jmsClientID is not null or length(jmsClientID) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.jmsClientID = jmsClientID;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (annotation is not null or length(annotation) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.annotation = annotation;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (jndiContextFactory is not null or length(jndiContextFactory) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.jndiContextFactory = jndiContextFactory;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (jndiProperties is not null or length(jndiProperties) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.jndiProperties = jndiProperties;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (jndiProviderUrl is not null or length(jndiProviderUrl) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.jndiProviderUrl = jndiProviderUrl;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (jndiUser is not null or length(jndiUser) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.jndiUser = jndiUser;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (jndiPassword is not null or length(jndiPassword) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.jndiPassword = jndiPassword;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (queueConnectionFactory is not null or length(queueConnectionFactory) = 0 or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.queueConnectionFactory = queueConnectionFactory;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (minPool is not null or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.minPool = minPool;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (maxPool is not null or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.maxPool = maxPool;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (poolTimeout is not null or forceNullUpdate = 1) then
+&#x9;&#x9;&#x9;set c.poolTimeout = poolTimeout;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;-- Update the Connector
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/updateConnector(
+&#x9;&#x9;&#x9;debug,
+&#x9;&#x9;&#x9;c.name,
+&#x9;&#x9;&#x9;c.groupName,
+&#x9;&#x9;&#x9;c.jmsClientID,
+&#x9;&#x9;&#x9;c.annotation,
+&#x9;&#x9;&#x9;c.jndiContextFactory,
+&#x9;&#x9;&#x9;c.jndiProperties,
+&#x9;&#x9;&#x9;c.jndiProviderUrl,
+&#x9;&#x9;&#x9;c.jndiUser,
+&#x9;&#x9;&#x9;c.jndiPassword,
+&#x9;&#x9;&#x9;c.queueConnectionFactory,
+&#x9;&#x9;&#x9;c.minPool,
+&#x9;&#x9;&#x9;c.maxPool,
+&#x9;&#x9;&#x9;c.poolTimeout);
+&#x9;else
+&#x9;&#x9;-- Create the Connector
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/createConnector(
+&#x9;&#x9;&#x9;debug,
+&#x9;&#x9;&#x9;name,
+&#x9;&#x9;&#x9;groupName,
+&#x9;&#x9;&#x9;jmsClientID,
+&#x9;&#x9;&#x9;annotation,
+&#x9;&#x9;&#x9;jndiContextFactory,
+&#x9;&#x9;&#x9;jndiProperties,
+&#x9;&#x9;&#x9;jndiProviderUrl,
+&#x9;&#x9;&#x9;jndiUser,
+&#x9;&#x9;&#x9;jndiPassword,
+&#x9;&#x9;&#x9;queueConnectionFactory,
+&#x9;&#x9;&#x9;minPool,
+&#x9;&#x9;&#x9;maxPool,
+&#x9;&#x9;&#x9;poolTimeout);
+&#x9;end if;
+
+&#x9;EXCEPTION
+&#x9;  ELSE
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug, NVL(CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR),&apos;null&apos;));
+&#x9;&#x9;raise ex value CURRENT_EXCEPTION.TRACE;
+END
+</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

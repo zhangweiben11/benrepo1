@@ -1,0 +1,424 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="HLP_Case_Complaint_vw" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_Case_Complaint_vw" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Case_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Managed_By_Stakeholder" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Client_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Database_Partition_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Created_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Resolved_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Case_Fact" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Case_Category_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Case_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Case_Resolution_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Case_Rationale_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Case_Resolution_Summary">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="Complaint_Case_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="External_Appeal_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Resolution_Turn_Around_Time_Calendar_Days">
+        <datatype type="DECIMAL" maxDigits="5" maxFractionalDigits="0"/>
+      </element>
+      <element name="Auto_Pay_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Extension_Required_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Review_Type_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Acknowledgement_Turn_Around_Time_Calendar_Days">
+        <datatype type="DECIMAL" maxDigits="5" maxFractionalDigits="0"/>
+      </element>
+      <element name="Extension_Date">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Complaint_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Dental_Consultant_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Issue_With_Code">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="Independent_Review_Organization_Case_Identifier">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="Expedited_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Patient_Quality_Issue_Score_Value">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="CMS_Fair_Hearing_Decision">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="CMS_Fair_Hearing_Case_Identifier">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="External_Peer_Review_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Performance_Guarantee_Distinct_Category_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Member_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Provider_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Complaint_Case_Type">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Appeal_Level_Number">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" minLength="6" maxLength="6" trailingSpaces="false"/>
+      </element>
+      <element name="Resolution_Turn_Around_Time_Hours">
+        <datatype type="DECIMAL" maxDigits="6" minFractionalDigits="1" maxFractionalDigits="1"/>
+      </element>
+      <element name="Verbal_Notification_Of_Resolution_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Written_Notification_Of_Resolution_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Request_For_Information_Process_Needed_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Initiating_Regulatory_Agency_Resolution_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Initiating_Regulatory_Agency_Resolution">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Performance_Guarantee_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Resolution_Deadline_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Fact" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Client_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Initiator_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Intake_Summary">
+        <datatype type="STRING" maxLength="500"/>
+      </element>
+      <element name="Provider_Group_Location_Postal_Address_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Provider_Group_Location_Postal_Address_Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Group_Location_Postal_Address_Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Plan_Sponsor_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Complaint_Intake_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Complaint_Duplicate_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Not_Grievance_Appeal_Complaint_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Resolution_Turn_Around_Time_Calendar_Days">
+        <datatype type="DECIMAL" maxDigits="5" maxFractionalDigits="0"/>
+      </element>
+      <element name="Member_CMS_Identifier">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="Plan_Sponsor_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Plan_Sponsor_Identifier">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="Plan_Sponsor_Identifier_Source_System_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Self_Funded_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Submitter_Given_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Submitter_Family_Name">
+        <datatype type="STRING" minLength="18" maxLength="18"/>
+      </element>
+      <element name="Provider_Specialty_Type_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Complaint_Line_Of_Business_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Product_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Provider_Contract_Active_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Provider_In_Out_Network_Code">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="Member_Source_System_Contract_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Member_Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Member_Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Service_Type_Text">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+      <element name="Makes_Final_Decision_Code">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="Executive_Complaint_Escalation_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Database_Partition_Time">
+        <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      </element>
+      <element name="Member_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Provider_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Plan_State_Province_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Regulatory_Agency_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Accounting_Partition_Identifier">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="Accounting_Partition_Identifier_Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Insurance_Plan_Accounting_Partition_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Single_Licensed_Entity_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Case_State" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Case_State_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="State_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Complaint_Case_State_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_Surrogate_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Complaint_Case_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="State_Reason">
+        <datatype type="STRING" maxLength="500"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Complaint_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_State" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Case_State_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="State_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Complaint_Event_State_Type_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="State_Reason_TXT">
+        <datatype type="STRING" maxLength="500"/>
+      </element>
+      <element name="Database_Partition_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+    a.Complaint_Case_Key Case_Key,
+    a.Complaint_Case_Type_Code,
+    a.Workforce_Participant_Key as Managed_By_Stakeholder,
+    b.Complaint_Client_Code,
+    a.Database_Partition_Date
+    --Triager Case Created date derived from Complaint_Case_State
+    ,
+    (select { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+        State_DateTime
+    from /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Case_State b
+    where b.Complaint_Case_State_Type_Code = &apos;CREATED&apos; and a.Complaint_Case_Key = b.Complaint_Case_Key) as Created_Date
+    --Case Resolved date dervived from Complaint_case_state
+    ,
+    (select { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+        State_DateTime
+    from /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Case_State b
+    where b.Complaint_Case_State_Type_Code in (&apos;RESOL-AOR&apos;, &apos;RESOL-UNT&apos;, &apos;RESOL-ARE&apos;, &apos;RESOL-REA&apos;, &apos;RESOL-MNF&apos;, &apos;RESOLVED&apos;) and a.Complaint_Case_Key = b.Complaint_Case_Key) as Resolved_Date
+from /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Case_Fact a inner join 
+        /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Fact b
+    on a.Complaint_Event_Key = b.Complaint_Event_Key
+union
+SELECT { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+    a.Complaint_Event_Key Case_Key,
+    &apos;COMPLAINT&apos; Complaint_Case_Type_Code,
+    a.Workforce_Participant_Key as Managed_By_Stakeholder,
+    a.Complaint_Client_Code,
+    a.Database_Partition_Date
+    --Complaint Created date derived from complaint_event_state
+    ,
+    (select { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+        State_DTM
+    from /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_State b
+    where b.Complaint_Event_State_Type_CD = &apos;CREATED&apos; and a.Complaint_Event_Key = b.Event_SKEY) as Created_Date
+    --Case Resolved date dervived from Complaint_case_state
+    ,
+    (select { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+        State_DTM
+    from /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_State b
+    where b.Complaint_Event_State_Type_CD = &apos;RESOLVED&apos; and a.Complaint_Event_Key = b.Event_SKEY) as Resolved_Date
+from /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Fact a</attribute>
+  <attribute name="creationDate" type="LONG">1610944246917</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612114859357</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1610944246917</attribute>
+</metadata>

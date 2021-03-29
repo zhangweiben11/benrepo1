@@ -1,0 +1,119 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Complaint_Event_Queue_Fact" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Queue_Fact" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Complaint_Event_Queue_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Queue_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Placed_In_Queue_DateTime" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_Key" nullable="true">
+      <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Key" nullable="true">
+      <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Database_Partition_Date" nullable="true">
+      <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Removed_From_Queue_DateTime" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_Queue" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Queue_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Appeals_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Inquiry_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Grievance_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Queue_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Placed_In_Queue_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Removed_From_Queue_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    Complaint_Event_Queue.Complaint_Event_Queue_Key,
+    Complaint_Event_Queue.Queue_Name,
+    Complaint_Event_Queue.Placed_In_Queue_DateTime,
+    Complaint_Event_Queue.Complaint_Event_Key,
+    Case 
+        when Complaint_Appeals_Event_Key is not null then Complaint_Appeals_Event_Key
+        when Complaint_Inquiry_Event_Key is not null then Complaint_Inquiry_Event_Key
+        else Complaint_Grievance_Event_Key
+    end as Complaint_Case_Key,
+    &apos;&apos; Member_Key, --Complaint_Event_Fact.Member_Key,
+    &apos;&apos; Provider_Key, --Complaint_Event_Fact.Provider_Key,
+    &apos;&apos; Database_Partition_Date, --Complaint_Event_Fact.Database_Partition_Date,
+    Complaint_Event_Queue.Removed_From_Queue_DateTime
+from /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_Queue Complaint_Event_Queue </attribute>
+  <attribute name="creationDate" type="LONG">1611807689118</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611884077562</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611807689118</attribute>
+</metadata>

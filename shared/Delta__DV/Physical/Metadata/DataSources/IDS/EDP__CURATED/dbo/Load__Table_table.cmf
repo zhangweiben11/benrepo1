@@ -1,0 +1,66 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Load_Table" path="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/Load_Table" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="Table_Name" nullable="false">
+      <datatype name="nvarchar" extendedName="nvarchar(80)" subType="DATASOURCE_TYPE" type="STRING" maxLength="80"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Table_Type" nullable="false">
+      <datatype name="nvarchar" extendedName="nvarchar(80)" subType="DATASOURCE_TYPE" type="STRING" maxLength="80"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="SubjectArea" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="XPKLoad_Table" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="Table_Name" sortOrder="ASCENDING"/>
+      <indexColumn name="Table_Type" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="R_136" primaryKeyName="XPKTable_Type" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/Table_Type">
+      <foreignKeyColumn primaryColumnName="Table_Type" foreignColumnName="Table_Type"/>
+    </foreignKey>
+    <foreignKey name="R_135" primaryKeyName="XPKLoad_Tables" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/Load_Tables">
+      <foreignKeyColumn primaryColumnName="Table_Name" foreignColumnName="Table_Name"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/Load_Tables" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/Table_Type" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Table_Type" nullable="false">
+        <datatype type="STRING" maxLength="80"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1610467816445</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5681189</attribute>
+  <attribute name="creatorUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1610467816445</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5681189</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1610467816445</attribute>
+</metadata>

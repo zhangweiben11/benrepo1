@@ -1,0 +1,79 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Customer_Service_Survey_Response" path="/shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Survey_Response" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Customer_Service_Survey_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Service_Survey_Repsonse_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Survey_Question_Text" nullable="true">
+      <datatype type="STRING" maxLength="256"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Answer_Text" nullable="true">
+      <datatype type="STRING" maxLength="1000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Survey_Question_Number" nullable="true">
+      <datatype type="STRING" maxLength="24"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/EDP_CURATED/CUSTOMER_SERVICE_SURVEY_RESPONSE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Survey_Repsonse_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Survey_Question_TXT">
+        <datatype type="STRING" maxLength="256"/>
+      </element>
+      <element name="Answer_TXT">
+        <datatype type="STRING" maxLength="1000"/>
+      </element>
+      <element name="Survey_Question_NBR_TXT">
+        <datatype type="STRING" maxLength="24"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    sr.Event_SKEY AS Customer_Service_Survey_Event_Key,
+    sr.Customer_Service_Survey_Repsonse_SKEY AS Customer_Service_Survey_Repsonse_Key,
+    sr.Survey_Question_TXT AS Survey_Question_Text,
+    sr.Answer_TXT AS Answer_Text,
+    sr.Survey_Question_NBR_TXT AS Survey_Question_Number
+  --  sr.Start_Date
+FROM /shared/Delta_DV/Physical/Formatting/EDP_CURATED/CUSTOMER_SERVICE_SURVEY_RESPONSE sr</attribute>
+  <attribute name="creationDate" type="LONG">1602189176954</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5240223</attribute>
+  <attribute name="creatorUserName" type="STRING">dca90031</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5240223</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1602189176954</attribute>
+</metadata>

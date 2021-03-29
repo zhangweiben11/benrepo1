@@ -1,0 +1,431 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="prcBI_GetFacetSearch" path="/shared/Delta_DV/Business/BusinessSemantic/Billing/Procedures/prcBI_GetFacetSearch" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[InvoiceSearch API for EbillPay:BI level script to call invoice JSON request and create the J
+the JSON  response fields]]></annotation>
+  <parameters>
+    <parameter name="inJson" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="5000"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="billToGroupName">
+          <datatype name="VARCHAR" type="STRING" maxLength="200"/>
+        </element>
+        <element name="invoiceNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="200"/>
+        </element>
+        <element name="legalEntity">
+          <datatype name="VARCHAR" type="STRING" maxLength="200"/>
+        </element>
+        <element name="billToId">
+          <datatype name="VARCHAR" type="STRING" maxLength="200"/>
+        </element>
+        <element name="billerId">
+          <datatype name="VARCHAR" type="STRING" maxLength="200"/>
+        </element>
+        <element name="billToGroupNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="200"/>
+        </element>
+        <element name="reconNoteExists">
+          <datatype name="VARCHAR" type="STRING" maxLength="1"/>
+        </element>
+        <element name="reconLineItemExists">
+          <datatype name="VARCHAR" type="STRING" maxLength="1"/>
+        </element>
+        <element name="facetField">
+          <datatype name="VARCHAR" type="STRING" maxLength="1000"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Billing/Procedures/prcBI_FacetRequest" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inSearchJson" direction="IN">
+        <datatype type="STRING" maxLength="50000"/>
+      </element>
+      <element name="outPaymentSearch" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="SearchDetails">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="FacetField">
+            <datatype type="STRING" maxLength="500"/>
+          </element>
+          <element name="BillToGroupName">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="BillToGroupNumber">
+            <datatype type="STRING" maxLength="200"/>
+          </element>
+          <element name="BillToId">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="BillerId">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="Brand">
+            <datatype type="STRING" maxLength="20"/>
+          </element>
+          <element name="InvoiceDateStart">
+            <datatype type="DATE"/>
+          </element>
+          <element name="InvoiceDateEnd">
+            <datatype type="DATE"/>
+          </element>
+          <element name="InvoiceNumber">
+            <datatype type="STRING" maxLength="200"/>
+          </element>
+          <element name="InvoiceStatus">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="InvoiceType">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="LegalEntity">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="ReconNoteExists">
+            <datatype type="STRING" maxLength="1"/>
+          </element>
+          <element name="ReconLineItemExists">
+            <datatype type="STRING" maxLength="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Billing/Procedures/prcBI_FacetSearch" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inBillToGroupName" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="inBillToGroupNumber" direction="IN">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="inBillToId" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="inBillerId" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="inBrand" direction="IN">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+      <element name="inInvoiceDateStart" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="inInvoiceDateEnd" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="inInvoiceNumber" direction="IN">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="inInvoiceStatus" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="inInvoiceType" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="inLegalEntity" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="inReconNoteExists" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="inReconLineItemExists" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="billToGroupName">
+            <datatype type="STRING" maxLength="400"/>
+          </element>
+          <element name="invoiceNumber">
+            <datatype type="STRING" maxLength="200"/>
+          </element>
+          <element name="legalEntity">
+            <datatype type="STRING" maxLength="200"/>
+          </element>
+          <element name="billToId">
+            <datatype type="STRING" maxLength="200"/>
+          </element>
+          <element name="billerId">
+            <datatype type="STRING" maxLength="200"/>
+          </element>
+          <element name="billToGroupNumber">
+            <datatype type="STRING" maxLength="400"/>
+          </element>
+          <element name="reconNoteExists">
+            <datatype type="STRING" maxLength="1"/>
+          </element>
+          <element name="reconLineItemexists">
+            <datatype type="STRING" maxLength="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE prcBI_GetFacetSearch(IN inJson VARCHAR(5000), 
+OUT result cursor(
+ &#x9;billToGroupName VARCHAR(200),
+  &#x9;invoiceNumber VARCHAR(200),
+   &#x9;legalEntity VARCHAR(200), 
+   &#x9;billToId VARCHAR(200), 
+   &#x9;billerId VARCHAR(200), 
+&#x9;billToGroupNumber VARCHAR(200), 
+   &#x9;reconNoteExists VARCHAR(1),
+   &#x9;reconLineItemExists VARCHAR(1),
+&#x9;facetField VARCHAR(1000)
+ ))
+BEGIN
+DECLARE curPaymentJSONSearch CURSOR(
+SearchDetails VARCHAR(4000),
+FacetField VARCHAR(500),
+BillToGroupName VARCHAR(4000),
+BillToGroupNumber VARCHAR(200),
+BillToId VARCHAR(4000),
+BillerId VARCHAR(4000),
+Brand VARCHAR(20),
+InvoiceDateStart DATE,
+InvoiceDateEnd DATE,
+InvoiceNumber VARCHAR(200),
+InvoiceStatus VARCHAR(4000),
+InvoiceType VARCHAR(4000),
+LegalEntity VARCHAR(4000),
+ReconNoteExists VARCHAR(1),
+ReconLineItemExists VARCHAR(1)
+);
+
+DECLARE rowPaymentJSONSearch ROW(
+SearchDetails VARCHAR(4000),
+FacetField VARCHAR(500),
+BillToGroupName VARCHAR(4000),
+BillToGroupNumber VARCHAR(200),
+BillToId VARCHAR(4000),
+BillerId VARCHAR(4000),
+Brand VARCHAR(20),
+InvoiceDateStart DATE,
+InvoiceDateEnd DATE,
+InvoiceNumber VARCHAR(200),
+InvoiceStatus VARCHAR(4000),
+InvoiceType VARCHAR(4000),
+LegalEntity VARCHAR(4000),
+ReconNoteExists VARCHAR(1),
+ReconLineItemExists VARCHAR(1)
+);
+
+DECLARE varSortField VARCHAR(500);
+DECLARE varFacetField VARCHAR(500);
+DECLARE varSearchDetails VARCHAR(4000);
+DECLARE varBillToGroupName VARCHAR(4000);
+DECLARE varBillToGroupNumber VARCHAR(200);
+DECLARE varBillToId VARCHAR(4000);
+DECLARE varBillerId VARCHAR(4000);
+DECLARE varBrand VARCHAR(20);
+DECLARE varInvoiceDateStart DATE;
+DECLARE varInvoiceDateEnd DATE;
+DECLARE varInvoiceNumber VARCHAR(200);
+DECLARE varInvoiceStatus VARCHAR(4000);
+DECLARE varInvoiceType VARCHAR(4000);
+DECLARE varLegalEntity VARCHAR(4000);
+DECLARE varReconNoteExists VARCHAR(1);
+DECLARE varReconLineItemExists VARCHAR(1);
+
+CALL /shared/Delta_DV/Business/Logical/Billing/Procedures/prcBI_FacetRequest(inJson, curPaymentJSONSearch);
+        pInvoiceSearch:BEGIN
+            LOOP
+                FETCH curPaymentJSONSearch INTO
+                    rowPaymentJSONSearch;
+                IF NOT curPaymentJSONSearch.FOUND THEN
+                    LEAVE pInvoiceSearch;
+                END IF;
+                SET varBillToGroupName = case 
+                    when rowPaymentJSONSearch.BillToGroupName = &apos;[]&apos; then NULL
+                    else rowPaymentJSONSearch.BillToGroupName
+                end;
+
+&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;&#x9;SET varBillToId = case 
+                    when rowPaymentJSONSearch.BillToId = &apos;[]&apos; then NULL
+                    else rowPaymentJSONSearch.BillToId
+                end;
+
+&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;&#x9;SET varBillerId = case 
+                    when rowPaymentJSONSearch.BillerId = &apos;[]&apos; then NULL
+                    else rowPaymentJSONSearch.BillerId
+                end;
+
+&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;&#x9;SET varInvoiceStatus = case 
+                    when rowPaymentJSONSearch.InvoiceStatus = &apos;[]&apos; then NULL
+                    else rowPaymentJSONSearch.InvoiceStatus
+                end;
+
+&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;&#x9;SET varInvoiceType = case 
+                    when rowPaymentJSONSearch.InvoiceType = &apos;[]&apos; then NULL
+                    else rowPaymentJSONSearch.InvoiceType
+                end;
+
+&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;&#x9;SET varLegalEntity = case 
+                    when rowPaymentJSONSearch.LegalEntity = &apos;[]&apos; then NULL
+                    else rowPaymentJSONSearch.LegalEntity
+                end;
+
+              
+&#x9;&#x9;&#x9;&#x9;SET varSearchDetails=replace(rowPaymentJSONSearch.SearchDetails,&apos;&quot;&apos;,&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET varBillToGroupNumber = rowPaymentJSONSearch.BillToGroupNumber;
+&#x9;&#x9;&#x9;&#x9;SET varBrand = rowPaymentJSONSearch.Brand;
+&#x9;&#x9;&#x9;&#x9;SET varInvoiceDateStart = rowPaymentJSONSearch.InvoiceDateStart;
+                SET varInvoiceDateEnd = rowPaymentJSONSearch.InvoiceDateEnd;
+&#x9;&#x9;&#x9;&#x9;SET varInvoiceNumber = rowPaymentJSONSearch.InvoiceNumber;
+&#x9;&#x9;&#x9;&#x9;SET varReconNoteExists = rowPaymentJSONSearch.reconNoteExists;
+&#x9;&#x9;&#x9;&#x9;SET varReconLineItemExists = rowPaymentJSONSearch.reconLineItemExists;
+&#x9;&#x9;&#x9;&#x9;SET varFacetField = rowPaymentJSONSearch.FacetField;
+             END LOOP;
+            CLOSE curPaymentJSONSearch;
+        END;
+        
+                call print(varBillToGroupName);
+                call print(varBillToId);
+                call print(varBillerId);
+                call print(varInvoiceStatus);
+                call print(varInvoiceType);
+                call print(varLegalEntity);
+&#x9;&#x9;&#x9;&#x9;call print(varBillToGroupName);
+&#x9;&#x9;&#x9;&#x9;call print(varBillToGroupNumber);
+&#x9;&#x9;&#x9;&#x9;call print(varBillToId);
+&#x9;&#x9;&#x9;&#x9;call print(varBillerId);
+&#x9;&#x9;&#x9;&#x9;call print(varBrand);
+
+            OPEN result FOR SELECT 
+&#x9;&#x9;&#x9;&#x9;&#x9;billToGroupName,
+                  &#x9;invoiceNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;legalEntity, 
+&#x9;&#x9;&#x9;&#x9;&#x9;billToId, 
+&#x9;&#x9;&#x9;&#x9;&#x9;billerId,
+&#x9;&#x9;&#x9;&#x9;&#x9;billToGroupNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;reconNoteExists,
+&#x9;&#x9;&#x9;&#x9;&#x9;reconLineItemExists,
+varFacetField
+                from /shared/Delta_DV/Business/Logical/Billing/Procedures/prcBI_FacetSearch(
+&#x9;&#x9;&#x9;&#x9;varBillToGroupName,varBillToGroupNumber,varBillToId,varBillerId, 
+&#x9;&#x9;&#x9;&#x9;varBrand,varInvoiceDateStart,varInvoiceDateEnd,varInvoiceNumber, varInvoiceStatus,
+&#x9;&#x9;&#x9;&#x9;varInvoiceType,varLegalEntity,varReconNoteExists,varReconLineItemExists);
+       END</attribute>
+  <attribute name="creationDate" type="LONG">1611781410787</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2850169</attribute>
+  <attribute name="creatorUserName" type="STRING">dca32905</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612894771610</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2850169</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89313</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">22/129</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">22/128</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/134</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/133</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/132</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/131</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/130</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">22/125</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">22/124</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">22/127</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">22/126</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611781410787</attribute>
+</metadata>

@@ -1,0 +1,159 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Workforce_Participant_Dim" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Dim" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="User_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Given_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Family_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Current_Role_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Create_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Workforce_Participant_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Workforce_Participant_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Parent_Workforce_Participant_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Active_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Production_Target_Case" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="XIE1WORKFORCE_PARTICIPANT" type="UNKNOWN" unique="false">
+      <indexColumn name="Workforce_Participant_Type_Code" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="Workforce_Participant_Type_Code" primaryKeyName="" primaryKeyTableName="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Type_Dim">
+      <foreignKeyColumn primaryColumnName="Workforce_Participant_Type_Code" foreignColumnName="Workforce_Participant_Type_Code"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Type_Dim" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Workforce_Participant" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="User_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Given_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Family_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Current_Role_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Create_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Workforce_Participant_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Parent_Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Active_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Production_Target_Case">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select 
+    User_Identifier User_Identifier,
+    Given_Name Given_Name,
+    Family_Name Family_Name,
+    Current_Role_Name,
+    Source_System_Identifier Source_System_Identifier,
+    Source_System_Name Source_System_Name,
+    Create_Date Create_Date,
+    Workforce_Participant_Key Workforce_Participant_Key,
+    Workforce_Participant_Type_Code Workforce_Participant_Type_Code,
+    Parent_Workforce_Participant_Key,
+    Active_Indicator,
+    Production_Target_Case
+from /shared/Delta_DV/Business/BusinessSemantic/EDP/Workforce_Participant</attribute>
+  <attribute name="creationDate" type="LONG">1608773892505</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611808603645</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608773892505</attribute>
+</metadata>

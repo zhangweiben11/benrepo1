@@ -1,0 +1,54 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkpPI_InvoicePaymentStatus" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Billing/pkpPI_InvoicePaymentStatus" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[InvoiceSearch API for EbillPay:This query extracts the payment status and balance due from EFS]]></annotation>
+  <parameters>
+    <parameter name="billToGroupNumber" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="invoiceNumber" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="invoiceNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="billToGroupNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="invoicePaidStatus">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="invoicebalancedue">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/efs" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select cons_billing_number invoiceNumber,bill_to_group billToGroupNumber,
+Invoice_paid_status invoicePaidStatus,balance_due invoicebalancedue
+ from apps.XXDD_AR_INV_STATUS_V where bill_to_group=&apos;{0}&apos; and
+cons_billing_number=&apos;{1}&apos;
+
+
+
+</attribute>
+  <attribute name="creationDate" type="LONG">1611628362855</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2850169</attribute>
+  <attribute name="creatorUserName" type="STRING">dca32905</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612474090553</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2850169</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca32905</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/efs</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611628362855</attribute>
+</metadata>

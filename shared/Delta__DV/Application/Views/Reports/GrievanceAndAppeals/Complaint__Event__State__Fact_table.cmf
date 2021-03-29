@@ -1,0 +1,703 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Complaint_Event_State_Fact" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_State_Fact" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="State_DTM" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Event_State_Type_CD" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Stakeholder_Role_Cross_Reference_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="State_Reason_Text" nullable="true">
+      <datatype type="STRING" maxLength="500"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Database_Partition_Date" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_Key" nullable="true">
+      <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Key" nullable="true">
+      <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Workforce_Participant_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="XIF1COMPLAINT_EVENT_STATE" type="UNKNOWN" unique="false">
+      <indexColumn name="Complaint_Event_State_Type_CD" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF2COMPLAINT_EVENT_STATE" type="UNKNOWN" unique="false">
+      <indexColumn name="Stakeholder_Role_Cross_Reference_Key" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF3COMPLAINT_EVENT_STATE" type="UNKNOWN" unique="false">
+      <indexColumn name="Database_Partition_Date" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIE2COMPLAINT_EVENT_STATE" type="UNKNOWN" unique="false">
+      <indexColumn name="Workforce_Participant_Key" sortOrder="ASCENDING"/>
+      <indexColumn name="Provider_Key" sortOrder="ASCENDING"/>
+      <indexColumn name="Member_Key" sortOrder="ASCENDING"/>
+      <indexColumn name="Database_Partition_Date" sortOrder="ASCENDING"/>
+      <indexColumn name="Complaint_Event_Key" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="Complaint_Event_Key" primaryKeyName="" primaryKeyTableName="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Fact">
+      <foreignKeyColumn primaryColumnName="Complaint_Event_Key" foreignColumnName="Complaint_Event_Key"/>
+    </foreignKey>
+    <foreignKey name="Database_Partition_Date" primaryKeyName="" primaryKeyTableName="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Date_Dim">
+      <foreignKeyColumn primaryColumnName="Datekey" foreignColumnName="Database_Partition_Date"/>
+    </foreignKey>
+    <foreignKey name="Member_Key" primaryKeyName="" primaryKeyTableName="/shared/Delta_DV/Application/Views/Reports/CCTA/Member_Dim">
+      <foreignKeyColumn primaryColumnName="Member_Key" foreignColumnName="Member_Key"/>
+    </foreignKey>
+    <foreignKey name="Provider_Key" primaryKeyName="" primaryKeyTableName="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Provider_Dim">
+      <foreignKeyColumn primaryColumnName="Provider_Key" foreignColumnName="Provider_Key"/>
+    </foreignKey>
+    <foreignKey name="Workforce_Participant_Key" primaryKeyName="" primaryKeyTableName="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Dim">
+      <foreignKeyColumn primaryColumnName="User_Identifier" foreignColumnName="Workforce_Participant_Key"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/CCTA/Member_Dim" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Member_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Ethinicity_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Preferred_Communication_Method_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Race_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Member_Number">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+      <element name="Given_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Middle_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Family_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Prefix_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Suffix_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Additional_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Birth_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Death_Date">
+        <datatype type="NULL"/>
+      </element>
+      <element name="Dental_No_Prior_Coverage_Indicator">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Medical_No_Prior_Coverage_Indicator">
+        <datatype type="NULL"/>
+      </element>
+      <element name="Gender_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Written_Language_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Primary_Language_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Begin_Date">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Event_Fact" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Client_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Initiator_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Intake_Summary">
+        <datatype type="STRING" maxLength="500"/>
+      </element>
+      <element name="Provider_Group_Location_Postal_Address_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Provider_Group_Location_Postal_Address_Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Group_Location_Postal_Address_Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Plan_Sponsor_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Complaint_Intake_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Complaint_Duplicate_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Not_Grievance_Appeal_Complaint_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Resolution_Turn_Around_Time_Calendar_Days">
+        <datatype type="DECIMAL" maxDigits="5" maxFractionalDigits="0"/>
+      </element>
+      <element name="Member_CMS_Identifier">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="Plan_Sponsor_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Plan_Sponsor_Identifier">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="Plan_Sponsor_Identifier_Source_System_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Self_Funded_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Submitter_Given_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Submitter_Family_Name">
+        <datatype type="STRING" minLength="18" maxLength="18"/>
+      </element>
+      <element name="Provider_Specialty_Type_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Complaint_Line_Of_Business_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Product_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Provider_Contract_Active_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Provider_In_Out_Network_Code">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="Member_Source_System_Contract_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Member_Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Member_Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Service_Type_Text">
+        <datatype type="STRING" maxLength="20"/>
+      </element>
+      <element name="Makes_Final_Decision_Code">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="Executive_Complaint_Escalation_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Database_Partition_Time">
+        <datatype type="STRING" maxLength="1" trailingSpaces="false"/>
+      </element>
+      <element name="Member_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Provider_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Plan_State_Province_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Regulatory_Agency_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Accounting_Partition_Identifier">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="Accounting_Partition_Identifier_Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Insurance_Plan_Accounting_Partition_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Single_Licensed_Entity_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Date_Dim" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Datekey">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TheDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="FiscalYearBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalYearEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalQuarter">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalQuarterBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalQuarterEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalMonth">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalMonthBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalMonthEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalWeek">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="FiscalWeekBeginDtae">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalWeekEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CalenderYearBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderYearEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderQuarter">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="CalenderQuarterBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderQuarterEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderMonth">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CalenderMonthBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderMonthEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderWeek">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CalenderWeekBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderWeekEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Rolling30Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling60Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling90Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling120Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling3Month">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling6Month">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling12Month">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="DayName">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="MonthName">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalYearName">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="DAY_OF_WEEK_IN_MONTH">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DayOfWeek">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DayOfMonth">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DayOfYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DaysLeftInYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DaysBeforeChristmas">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IsWeekend">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="IsNewYearsDay">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalYearMonth">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Claim_Payment_Year">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Claim_Payment_Month">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Claim_Payment_Week">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IsHolidayUSA">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="HolidayUSA">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="IsHolidayMexico">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="HolidayMexico">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="IsHolidayPuertoRico">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="HolidayPuertoRico">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Provider_Dim" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Provider_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Given_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Middle_Name">
+        <datatype type="STRING" maxLength="1000"/>
+      </element>
+      <element name="Family_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Suffix_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="National_Provider_Index_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Birth_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Gender_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Prefix_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="National_Provider_Index_Identifier_Type_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Preferred_Communication_Method_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Degree_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_Type_Code">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Ryan_White_Indicator">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Federal_Qualified_Health_Center_Indicator">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="DA_Case_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Medicaid_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Begin_Date">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Dim" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="User_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Given_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Family_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Current_Role_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Create_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Workforce_Participant_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Parent_Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Active_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Production_Target_Case">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_State" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Case_State_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="State_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Complaint_Event_State_Type_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="State_Reason_TXT">
+        <datatype type="STRING" maxLength="500"/>
+      </element>
+      <element name="Database_Partition_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Stakeholder_Role_Cross_Reference_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Stakeholder_Role_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Stakeholder_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Stakeholder_Role_Id">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Create_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Created_By_Identifier">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Last_Updated_By_Identifier">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Last_Update_DateTime">
+        <datatype type="STRING"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Stakeholder_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT {OPTION CASE_SENSITIVE=&quot;false&quot;} 
+
+&#x9;a.State_DTM State_DTM,
+&#x9;a.Complaint_Event_State_Type_CD Complaint_Event_State_Type_CD ,
+&#x9;a.Stakeholder_Role_Cross_Reference_SKEY Stakeholder_Role_Cross_Reference_Key,
+&#x9;a.State_Reason_TXT State_Reason_Text,
+    a.Event_SKEY Complaint_Event_Key,
+&#x9;
+       (Select b.DateKey
+&#x9;     From /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Date_Dim b
+&#x9;&#x9;Where CAST(a.Database_Partition_DTM AS DATE) = b.TheDate) as Database_Partition_Date,
+       (Select {OPTION CASE_SENSITIVE=&quot;false&quot;} c.Stakeholder_Role_Id
+&#x9;&#x9; From 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event b, 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference c
+&#x9;&#x9;Where a.Event_SKEY = b.Event_Key
+&#x9;&#x9;And   b.Stakeholder_Role_Cross_Reference_Key = c.Stakeholder_Role_Cross_Reference_Key
+&#x9;&#x9;And   c.Stakeholder_Role_Type_Code = &apos;MEMBR&apos;) as Member_Key,
+
+       (Select {OPTION CASE_SENSITIVE=&quot;false&quot;} c.Stakeholder_Role_Id
+&#x9;&#x9; From 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event b, 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference c
+&#x9;&#x9;Where a.Event_SKEY = b.Event_Key
+&#x9;&#x9;And   b.Stakeholder_Role_Cross_Reference_Key = c.Stakeholder_Role_Cross_Reference_Key
+&#x9;&#x9;And   c.Stakeholder_Role_Type_Code = &apos;PRVDR&apos;) as Provider_Key,
+       Workforce_Participant_Key as Workforce_Participant_Key
+
+
+FROM /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_State a
+
+
+
+/**inner joins
+mbr.Stakeholder_Role_Id Member_Key,
+prv.Stakeholder_Role_Id Provider_Key,
+wrk.Stakeholder_Role_Id Workforce_Participant_Key
+
+ &#x9;&#x9;
+  FROM /shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_State a
+inner join /shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event b on a.Event_SKEY = b.Event_Key
+left join /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference mbr on b.Stakeholder_Role_Cross_Reference_Key = mbr.Stakeholder_Role_Cross_Reference_Key
+and mbr.Stakeholder_Role_Type_Code = &apos;MEMBR&apos;
+left join /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference prv on b.Stakeholder_Role_Cross_Reference_Key = mbr.Stakeholder_Role_Cross_Reference_Key
+and mbr.Stakeholder_Role_Type_Code = &apos;PRVDR&apos;
+left join /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference wrk on b.Stakeholder_Role_Cross_Reference_Key = mbr.Stakeholder_Role_Cross_Reference_Key
+and mbr.Stakeholder_Role_Type_Code = &apos;Workforce_Participant&apos;
+
+**/</attribute>
+  <attribute name="creationDate" type="LONG">1608775608779</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1610946496393</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608775608779</attribute>
+</metadata>

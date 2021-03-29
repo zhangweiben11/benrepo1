@@ -1,0 +1,253 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="prcBl_AllContactTypeByLevel" path="/shared/Delta_DV/Business/Logical/Group/Procedures/prcBl_AllContactTypeByLevel" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[/* Description:
+This procedure returns all contact types for the request level (GROUP, DIVISION, OR PERSON)
+
+For request level GROUP vwContact.ContactID CHAR(25) is foreign key to vwGroup.GroupSurrogateID (INTEGER)
+We need to cast SurrogateID to CHAR(25) in order to use index
+
+For request level DIVISION vwContact.ContactID CHAR(25) is foreign key to vwDivision.DivisionSurrogateID (INTERGER).
+We need to cast SurrogateID to CHAR(25) in order to use index
+
+vwContact.ContactID CHAR(25) is foreign key to vwPeron.PersonID
+*/
+
+/* Input: 
+ContactID, ContactLevel
+*/
+
+/* Output:
+All columns from vwContact
+*/
+
+/* Revisions:
+Author&#x9;&#x9;Date of Revisions&#x9;Reason for change
+Kim Pham&#x9;2020-06-01&#x9;&#x9;&#x9;Initial creation
+*/]]></annotation>
+  <parameters>
+    <parameter name="inContactID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inContactLevelIND" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="ContactID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="ContactLevelIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ContactTypeCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ContactRole">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="EffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="ContactCategoryCD">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="FirstName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="MiddleName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="LastName">
+          <datatype name="VARCHAR" type="STRING" maxLength="125"/>
+        </element>
+        <element name="ContactTitle">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="NameSuffix">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/util/SetWebSourceProperty" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="variableName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="value" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="WebSourcePropertyValue" type="STRING" maxLength="8192"/>
+      </element>
+      <element name="category" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="WebSourcePropertyCategory" type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Common/prcPl_DateStringToDate" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inDateStr" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="outDate" direction="OUT">
+        <datatype type="DATE"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_Contact" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inContactID" direction="IN">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="inContactLevelIND" direction="IN">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="inContactTypeCD" direction="IN">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="ContactID">
+            <datatype type="STRING" maxLength="25"/>
+          </element>
+          <element name="ContactLevelIND">
+            <datatype type="STRING" maxLength="2"/>
+          </element>
+          <element name="ContactTypeCD">
+            <datatype type="STRING" maxLength="2"/>
+          </element>
+          <element name="ContactRole">
+            <datatype type="STRING" maxLength="30"/>
+          </element>
+          <element name="EffDate">
+            <datatype type="DATE"/>
+          </element>
+          <element name="EndDate">
+            <datatype type="DATE"/>
+          </element>
+          <element name="ContactCategoryCD">
+            <datatype type="STRING" maxLength="2"/>
+          </element>
+          <element name="FirstName">
+            <datatype type="STRING" maxLength="125"/>
+          </element>
+          <element name="MiddleName">
+            <datatype type="STRING" maxLength="125"/>
+          </element>
+          <element name="LastName">
+            <datatype type="STRING" maxLength="125"/>
+          </element>
+          <element name="ContactTitle">
+            <datatype type="STRING" maxLength="30"/>
+          </element>
+          <element name="NameSuffix">
+            <datatype type="STRING" maxLength="30"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/system/customfunctions/prcPl_DateStringToDate" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE prcBl_AllContactTypeByLevel(
+    IN inContactID VARCHAR(25),
+    IN inContactLevelIND VARCHAR(50), 
+    IN inAsOfDate DATE,
+    OUT result PIPE (
+        ContactID VARCHAR(25), 
+        ContactLevelIND VARCHAR(2), 
+        ContactTypeCD VARCHAR(2), 
+        ContactRole VARCHAR(30), 
+        EffDate DATE, 
+        EndDate DATE, 
+        ContactCategoryCD VARCHAR(2), 
+        FirstName VARCHAR(125), 
+        MiddleName VARCHAR(125), 
+        LastName VARCHAR(125), 
+        ContactTitle VARCHAR(30), 
+        NameSuffix VARCHAR(30)
+        )
+    )
+    BEGIN
+        DECLARE invalid_contact_level EXCEPTION;
+        
+        DECLARE varContactLevelIND VARCHAR(2);
+
+        DECLARE curContact CURSOR (
+        ContactID VARCHAR(25), 
+        ContactLevelIND VARCHAR(2), 
+        ContactTypeCD VARCHAR(2), 
+        ContactRole VARCHAR(30), 
+        EffDate DATE, 
+        EndDate DATE, 
+        ContactCategoryCD VARCHAR(2), 
+        FirstName VARCHAR(125), 
+        MiddleName VARCHAR(125), 
+        LastName VARCHAR(125), 
+        ContactTitle VARCHAR(30), 
+        NameSuffix VARCHAR(30)
+        );
+
+        IF UPPER(inContactLevelIND) = &apos;GROUP&apos; THEN
+            SET varContactLevelIND = &apos;G1&apos;;
+        ELSEIF UPPER(inContactLevelIND) = &apos;DIVISION&apos; THEN
+            SET varContactLevelIND = &apos;G2&apos;;
+        ELSEIF UPPER(inContactLevelIND) = &apos;PERSON&apos; THEN
+            SET varContactLevelIND = &apos;PS&apos;;
+        ELSE
+            RAISE invalid_contact_level VALUE &apos;Expect values for inContactLevelIND are (GROUP, DIVISION or PERSON) but received [&apos; || nvl2(inContactLevelIND,inContactLevelIND,&apos;NULL&apos;) || &apos;]&apos;;
+        END IF;
+
+
+        CALL /shared/Delta_DV/Physical/Formatting/PackagedQueries/&quot;Group&quot;/pkgPl_Contact(inContactID, varContactLevelIND, NULL, curContact);
+        FOR rowContact AS curContact DO
+            IF inAsOfDate &gt;= CASE
+                                 WHEN rowContact.ContactTypeCD IN (&apos;Z2&apos;,&apos;ZG&apos;) AND TRIM(rowContact.ContactTitle) &lt;&gt; &apos;&apos; THEN 
+                                      NVL(prcPl_DateStringToDate(rowContact.ContactTitle),rowContact.EffDate)
+                                 ELSE rowContact.EffDate
+                              END
+            AND inAsOfDate &lt;= CASE
+                                 WHEN rowContact.ContactTypeCD IN (&apos;Z2&apos;,&apos;ZG&apos;) AND TRIM(rowContact.NameSuffix) &lt;&gt; &apos;&apos; THEN 
+                                      NVL(prcPl_DateStringToDate(rowContact.NameSuffix),rowContact.EndDate)
+                                 ELSE rowContact.EndDate
+                              END 
+            THEN 
+                INSERT INTO result VALUES (rowContact.ContactID, rowContact.ContactLevelIND, rowContact.ContactTypeCD, rowContact.ContactRole, rowContact.EffDate, rowContact.EndDate, rowContact.ContactCategoryCD, rowContact.FirstName, 
+                                           rowContact.MiddleName, rowContact.LastName, rowContact.ContactTitle, rowContact.NameSuffix);
+            END IF;
+        END FOR;
+
+    EXCEPTION
+        WHEN invalid_contact_level THEN
+&#x9;&#x9;&#x9;CALL /lib/util/SetWebSourceProperty(&apos;STATUS&apos;,&apos;404&apos;,&apos;SERVICE.SETHTTPHEADER&apos;);
+            RAISE VALUE SUBSTR(CURRENT_EXCEPTION.MESSAGE,1,255);
+        ELSE
+            IF LENGTH(CURRENT_EXCEPTION.MESSAGE)&gt;1 THEN
+               RAISE VALUE SUBSTR(CURRENT_EXCEPTION.MESSAGE,1,255);
+            ELSE
+               RAISE VALUE SUBSTR(CURRENT_EXCEPTION.NAME,1,255);
+            END IF;
+    END</attribute>
+  <attribute name="creationDate" type="LONG">1591989846176</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612915898925</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1591989846176</attribute>
+</metadata>

@@ -1,0 +1,121 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_MemberIdentifier" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Enrollment/pkgPl_MemberIdentifier" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="PersonId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="NetworkId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="NetworkFlag" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="EnroleeContractFRMT" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="EnroleeMemberFRMT" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+    </parameter>
+    <parameter name="ContractId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="AltID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="AltIDFlag" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+    </parameter>
+    <parameter name="GenericIDFieldIND" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="GenericId" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="GenericIdContractFRMT" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="GenericIdMemberFRMT" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="Name">
+          <datatype name="VARCHAR" type="STRING" maxLength="4"/>
+        </element>
+        <element name="AlternateID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="ContractID">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="EffDate">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="EndDate">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT * FROM (select DISTINCT
+               mbr_alternate_id.alternat_id_typ_cd AS Name,
+               RTRIM(mbr_alternate_id.ALTERNATE_ID) AS AlternateID,
+               RTRIM(mbr_alternate_id.CVG_CONTRACT_ID) AS ContractID,
+               format(mbr_alternate_id.EFFECTIVE_DATE,&apos;MM/dd/yyyy&apos;) AS EffDate,
+               format(mbr_alternate_id.END_DATE,&apos;MM/dd/yyyy&apos;) AS EndDate
+FROM     [MTV_VIEWS].[dbo].[MEMBER_VW] MEMBER
+INNER JOIN  [MTV_VIEWS].[dbo].[MEMBER_ELIGIBILITY_VW] MEMBER_ELIGIBILITY
+                                      ON MEMBER_ELIGIBILITY.CONTRACT_ID=MEMBER.CONTRACT_ID
+                                      AND MEMBER.MEMBER_ID=MEMBER_ELIGIBILITY.MEMBER_ID
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  AND  MEMBER_ELIGIBILITY.VOID_FLAG = &apos;N&apos;
+                                      AND MEMBER_ELIGIBILITY.AUDIT_FLAG = &apos;N&apos; 
+                                      AND MEMBER.AUDIT_FLAG = &apos;N&apos; 
+INNER JOIN [MTV_VIEWS].[dbo].[MBR_ALTERNATE_ID_VW] mbr_alternate_id 
+                                      on MEMBER.CONTRACT_ID=mbr_alternate_id.CVG_CONTRACT_ID 
+                                       and MEMBER.MEMBER_ID= mbr_alternate_id.member_id
+                                        and mbr_alternate_id.AUDIT_FLAG=&apos;N&apos; and 
+                                       mbr_alternate_id.VOID_FLAG=&apos;N&apos;
+WHERE MEMBER.PERSON_ID=&apos;{0}&apos;  
+AND (MEMBER_ELIGIBILITY.CONTRACT_ID=COALESCE(NULLIF(&apos;{3}&apos;,&apos;NULL&apos;), MEMBER_ELIGIBILITY.CONTRACT_ID) and MEMBER_ELIGIBILITY.MEMBER_ID=COALESCE(NULLIF(&apos;{4}&apos;,&apos;NULL&apos;), MEMBER_ELIGIBILITY.MEMBER_ID)) --EnrolleeId
+AND MEMBER_ELIGIBILITY.CONTRACT_ID=COALESCE(NULLIF(&apos;{5}&apos;,&apos;NULL&apos;), MEMBER_ELIGIBILITY.CONTRACT_ID) --ContractID
+and ((mbr_alternate_id.ALTERNATE_ID=&apos;{6}&apos; or &apos;{6}&apos;=&apos;NULL&apos;) and (mbr_alternate_id.ALTERNAT_ID_TYP_CD=&apos;{7}&apos; OR &apos;{7}&apos;=&apos;NULL&apos;))----All AltID(SUPP,ASN,CASE,RFC)
+--Generic ID filter-start---------------
+and( 
+({8}=1 and MEMBER_ELIGIBILITY.CONTRACT_ID=&apos;{9}&apos; )-----------GENERICID_FILTER ON CONTRACT
+or 
+({8}=1 and (MEMBER_ELIGIBILITY.CONTRACT_ID=&apos;{10}&apos; and MEMBER_ELIGIBILITY.MEMBER_ID=&apos;{11}&apos;))----------GENERICID_FILTER ON ENROLEEID
+or 
+({8}=1 and mbr_alternate_id.ALTERNATE_ID=&apos;{9}&apos;)----------GENERICID_FILTER ON ALTERNATE_ID
+or 
+({8}=0)-------Scenario where GENERIC_ID is not passed in Search/Scenario where Generic ID passed is Either PERSONID or SSN
+)
+--Generic ID filter-end---------------
+and 
+( ( {2}=1 AND(MEMBER_ELIGIBILITY.BUS_LEVEL_7_ID like &apos;{1}&apos; OR &apos;{1}&apos; =&apos;XX&apos; ))---DCUSA , DI and  null Condition
+      OR
+  (  {2}=2  AND MEMBER_ELIGIBILITY.BUS_LEVEL_7_ID NOT like &apos;%D%CARE%&apos; AND MEMBER_ELIGIBILITY.BUS_LEVEL_7_ID NOT LIKE &apos;%DNTG%&apos;  )--DD condition
+)
+)A  ORDER BY ContractID,convert(DATE,EndDate) desc     
+--order by 3,5 DESC
+OPTION (MAXDOP 16)
+--OPTION(USE HINT(&apos;ENABLE_PARALLEL_PLAN_PREFERENCE&apos;))
+;</attribute>
+  <attribute name="creationDate" type="LONG">1597391540289</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3980101</attribute>
+  <attribute name="creatorUserName" type="STRING">dos59246</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3980101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1597391540289</attribute>
+</metadata>

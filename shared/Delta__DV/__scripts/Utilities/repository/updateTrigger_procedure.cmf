@@ -1,0 +1,1652 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="updateTrigger" path="/shared/Delta_DV/_scripts/Utilities/repository/updateTrigger" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[updateTrigger:
+
+&#x9;Update the definition of a Trigger resource.  This procedure now supports the full capabilities of the trigger by introducing the &quot;triggerAttrVect&quot;.
+&#x9;This vector contains a series of name/value pairs that contain attributes for Condition Types and Action Types.  It is now possible to configure
+&#x9;a vector with any condition and any action.
+ 
+&#x9;Input:
+&#x9;&#x9;fullResourcePath&#x9;LONGVARCHAR,&#x9;&#x9;&#x9;-- Full path to the trigger resource.
+&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;&#x9;&#x9;-- 1=enabled, 0=disabled
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When only performing the enable or disable for a trigger, leave conditionType and actionType null. 
+&#x9;&#x9;-- Condition Type: [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED]
+&#x9;&#x9;conditionType&#x9;&#x9;VARCHAR, &#x9;&#x9;&#x9;&#x9;-- NULL or one of [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED] determines the trigger condition.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When NULL, then only perform the enable or disable of the trigger and not other updates.
+&#x9;&#x9;-- Action Type: [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL]
+&#x9;&#x9;actionType&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;&#x9;&#x9;-- NOT NULL and [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL] - One of these determines what type of action to take.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When NULL, then only perform the enable or disable of the trigger and not other updates.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When conditionType is NOT NULL, there must be an actionType.
+&#x9;&#x9;triggerAttrVect&#x9;&#x9;VECTOR(TriggerType),&#x9;-- Name/Value pair list containing only the necessary &quot;Condition Type&quot;, &quot;Action Type&quot; and &quot;General Type&quot; attributes.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For Condition Type names, see triggerAttrVect: CONDITION TYPE ATTRIBUTES below.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For Action Type names, see triggerAttrVect: ACTION TYPE ATTRIBUTES below.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For General Type names, see triggerAttrVect: GENERAL TYPE ATTRIBUTES below.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Example of setting a timer to cal a procedure:
+&#x9;&#x9;&#x9;&#x9;&#x9;SET triggerAttrVect = VECTOR[
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerStartTime&apos;, &#x9;&#x9;&#x9;CAST(timerStartTime AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerPeriod&apos;, &#x9;&#x9;&#x9;timerPeriod),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerPeriodQty&apos;, &#x9;&#x9;&#x9;CAST(timerPeriodQty AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerRecurringDay&apos;, &#x9;&#x9;timerRecurringDay),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerFromTimeInADay&apos;, &#x9;CAST(timerFromTimeInADay AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerEndTimeInADay&apos;, &#x9;&#x9;CAST(timerEndTimeInADay AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;procedurePath&apos;, &#x9;&#x9;&#x9;procedurePath),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;procedureParams&apos;, &#x9;&#x9;procedureParams),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;procedureExhaustCursors&apos;, &apos;0&apos;),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;maxEventsQueued&apos;, &#x9;&#x9;&apos;1&apos;),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;annotation&apos;, &#x9;&#x9;&#x9;&#x9;triggerAnnotation)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;];
+
+&#x9;&#x9;attributeVect&#x9;&#x9;/shared/ASAssets/Utilities/repository/definitions/RepositoryDefinitions.AttributeVectorType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The Attribute Vectory Type is a vector of type AttributeType as follows:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrType&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrValue&#x9;&#x9;VARCHAR(255)
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;&#x9;&#x9;Values: 1 or 0
+&#x9;&#x9;createResponse - XML response representing what was created.
+&#x9;&#x9;&#x9;Values: Create Response XML value
+&#x9;&#x9;faultResponse - null if succesful otherwise contains a fault resposne.
+&#x9;&#x9;&#x9;Values: Fault Resposne XML value
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+&#x9;2014.4&#x9;&#x9;11/12/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.1.0&#x9;&#x9;&#x9;Removed single quote from around parameter string as it was causing the parameters to be invalid after update.
+&#x9;2014.4&#x9;&#x9;10/20/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Added the rest of the parameters to make updateTrigger a full featured capability.
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="fullResourcePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="enabled" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="conditionType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="actionType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="triggerAttrVect" direction="IN" nullable="true">
+      <datatype name="triggerAttrVect" type="ARRAY">
+        <itemDatatype>
+          <datatype name="TriggerType" type="TREE" refId="257">
+            <element name="trName">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="trValue">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="attributeVect" direction="IN" nullable="true">
+      <datatype name="AttributeVectorType" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions" referenceType="AttributeVectorType" type="ARRAY">
+        <itemDatatype>
+          <datatype name="AttributeType" type="TREE" refId="257">
+            <element name="attrName">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="attrType">
+              <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+            </element>
+            <element name="attrValue">
+              <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+            </element>
+          </datatype>
+        </itemDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="success" direction="OUT" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="createResponse" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="faultResponse" direction="OUT" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/updateTrigger" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="updateTrigger" direction="IN">
+        <datatype name="updateTrigger" extendedName="{http://www.compositesw.com/services/system/admin/resource}updateTrigger" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}updateTrigger" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}updateTrigger">
+          <schemaDatatype>
+            <datatype name="updateTrigger" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="updateTriggerRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="enabled" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+              <element name="conditionType" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="conditionSchedule" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="schedule" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="scheduleMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="startTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                  </element>
+                  <element name="fromTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                  </element>
+                  <element name="endTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                  </element>
+                  <element name="recurringDay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="interval" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="period" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="calendarPeriod" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="count" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="isCluster" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                </datatype>
+              </element>
+              <element name="conditionAttributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="attributeList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="attribute" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="attribute" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="attributeTypeValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                            <datatype name="attributeTypeValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                              <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="1281"/>
+                              </element>
+                              <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeTypeValueMap" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                                  <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                      <element name="key" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1537"/>
+                                      </element>
+                                      <element name="value" namespace="http://www.compositesw.com/services/system/util/common">
+                                        <reference refId="1537"/>
+                                      </element>
+                                    </datatype>
+                                  </element>
+                                </datatype>
+                              </element>
+                              <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                                  <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="1793"/>
+                      </element>
+                      <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <reference refId="2305"/>
+                      </element>
+                      <element name="unset" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="actionType" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="actionAttributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <reference refId="769"/>
+              </element>
+              <element name="maxEventsQueued" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+              </element>
+              <element name="annotation" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <reference refId="769"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="updateTriggerResponse" direction="OUT">
+        <datatype name="updateTriggerResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}updateTriggerResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}updateTriggerResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}updateTriggerResponse">
+          <schemaDatatype>
+            <datatype name="updateTriggerResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="updateTriggerResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="2561">
+              <element name="resources" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="resourceList" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                  <element name="resource" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="resource" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3073">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="subtype" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="resourceSubType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="id" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="changeId" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                      </element>
+                      <element name="version" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="introspectState" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="introspectState" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="ownerDomain" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="ownerName" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="impactLevel" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="impactLevel" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="impactMessage" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="enabled" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                      </element>
+                      <element name="lockState" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="lockState" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3329">
+                          <element name="lockOwnerDomain" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="lockOwnerName" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="lockCreateTime" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                          </element>
+                          <element name="lockParentPath" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="hints" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="3585">
+                          <element name="hint" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                            <reference refId="1025"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="annotation" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <reference refId="769"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="3841">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="4097">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/conversions/convertBoolean" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="request" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="response" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/definitions/RepositoryDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* updateTrigger:
+
+&#x9;Update the definition of a Trigger resource.  This procedure now supports the full capabilities of the trigger by introducing the &quot;triggerAttrVect&quot;.
+&#x9;This vector contains a series of name/value pairs that contain attributes for Condition Types and Action Types.  It is now possible to configure
+&#x9;a vector with any condition and any action.
+ 
+&#x9;Input:
+&#x9;&#x9;fullResourcePath&#x9;LONGVARCHAR,&#x9;&#x9;&#x9;-- Full path to the trigger resource.
+&#x9;&#x9;enabled&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;&#x9;&#x9;-- 1=enabled, 0=disabled
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When only performing the enable or disable for a trigger, leave conditionType and actionType null. 
+&#x9;&#x9;-- Condition Type: [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED]
+&#x9;&#x9;conditionType&#x9;&#x9;VARCHAR, &#x9;&#x9;&#x9;&#x9;-- NULL or one of [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED] determines the trigger condition.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When NULL, then only perform the enable or disable of the trigger and not other updates.
+&#x9;&#x9;-- Action Type: [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL]
+&#x9;&#x9;actionType&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;&#x9;&#x9;-- NOT NULL and [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL] - One of these determines what type of action to take.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When NULL, then only perform the enable or disable of the trigger and not other updates.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When conditionType is NOT NULL, there must be an actionType.
+&#x9;&#x9;triggerAttrVect&#x9;&#x9;VECTOR(TriggerType),&#x9;-- Name/Value pair list containing only the necessary &quot;Condition Type&quot;, &quot;Action Type&quot; and &quot;General Type&quot; attributes.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For Condition Type names, see triggerAttrVect: CONDITION TYPE ATTRIBUTES below.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For Action Type names, see triggerAttrVect: ACTION TYPE ATTRIBUTES below.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- For General Type names, see triggerAttrVect: GENERAL TYPE ATTRIBUTES below.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Example of setting a timer to cal a procedure:
+&#x9;&#x9;&#x9;&#x9;&#x9;SET triggerAttrVect = VECTOR[
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerStartTime&apos;, &#x9;&#x9;&#x9;CAST(timerStartTime AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerPeriod&apos;, &#x9;&#x9;&#x9;timerPeriod),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerPeriodQty&apos;, &#x9;&#x9;&#x9;CAST(timerPeriodQty AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerRecurringDay&apos;, &#x9;&#x9;timerRecurringDay),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerFromTimeInADay&apos;, &#x9;CAST(timerFromTimeInADay AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerEndTimeInADay&apos;, &#x9;&#x9;CAST(timerEndTimeInADay AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;timerIsCluster&apos;,&#x9;&#x9;&#x9;CAST(timerIsCluster AS VARCHAR)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;procedurePath&apos;, &#x9;&#x9;&#x9;procedurePath),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;procedureParams&apos;, &#x9;&#x9;procedureParams),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;procedureExhaustCursors&apos;, &apos;0&apos;),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;maxEventsQueued&apos;, &#x9;&#x9;&apos;1&apos;),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(&apos;annotation&apos;, &#x9;&#x9;&#x9;&#x9;triggerAnnotation)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;];
+
+&#x9;&#x9;attributeVect&#x9;&#x9;/shared/ASAssets/Utilities/repository/definitions/RepositoryDefinitions.AttributeVectorType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The Attribute Vectory Type is a vector of type AttributeType as follows:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrType&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrValue&#x9;&#x9;VARCHAR(255)
+&#x9;Output:
+&#x9;&#x9;success&#x9;- true(1) or false(0)
+&#x9;&#x9;&#x9;Values: 1 or 0
+&#x9;&#x9;createResponse - XML response representing what was created.
+&#x9;&#x9;&#x9;Values: Create Response XML value
+&#x9;&#x9;faultResponse - null if succesful otherwise contains a fault resposne.
+&#x9;&#x9;&#x9;Values: Fault Resposne XML value
+&#x9;Exceptions:  none
+&#x9;&#x9;
+**********************************************
+triggerAttrVect: CONDITION TYPE ATTRIBUTES:
+**********************************************
+&#x9;&#x9;-- When conditionType=TIMER set these variables
+&#x9;&#x9;timerStartTime&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, &#x9;-- NULL=mode=NONE or the timestamp the trigger should start.    Format = YYYY-MM-DD HH24:MM:SS
+&#x9;&#x9;timerPeriod&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR, &#x9;-- One of [MINUTE|HOUR|DAY|WEEK|MONTH|YEAR]
+&#x9;&#x9;timerPeriodQty&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;-- Quantity of the period
+&#x9;&#x9;timerRecurringDay &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- NULL or a list of one or more items: [SUN, MON, TUE, WED, THU, FRI, SAT].  May be space or comma delimited.
+&#x9;&#x9;timerFromTimeInADay&#x9;&#x9;&#x9;&#x9;TIME,&#x9;&#x9;-- NULL or The time of day to start the trigger.  Format = HH24:MM:SS
+&#x9;&#x9;timerEndTimeInADay&#x9;&#x9;&#x9;&#x9;TIME,&#x9;&#x9;-- NULL or The time of day to end the trigger.   Format = HH24:MM:SS
+&#x9;&#x9;timerIsCluster&#x9;&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;-- NULL or 0=not once per cluster, 1=only once per cluster
+&#x9;&#x9;-- When conditionType=JMS set these variables
+&#x9;&#x9;jmsDestination&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The JMS Destination
+&#x9;&#x9;jmsSelector&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The JMS Selector
+&#x9;&#x9;jmsConnection&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The JMS Connection string
+&#x9;&#x9;-- When conditionType=SYSTEM_EVENT set these variables
+&#x9;&#x9;systemEventName&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- One of [CacheRefreshFailure|CacheRefreshSuccess|ClusterServerJoined|ClusterServerConnected|ClusterServerDisconnected|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--        ClusterServerShunned|DataSourceDown|DataSourceUp|RequestFailure|RequestInactive|RequestRunForTooLong|ResourceLock
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--        ResourceUnlock|RequestsSpike|ErrorsSpike|FailedLoginSpike|StatisticsGatheringFailure|ServerStart|ServerStop|TransactionFailure]
+&#x9;&#x9;-- When conditionType=USER_DEFINED set these variables
+&#x9;&#x9;userDefinedName&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- A user defined event
+
+**********************************************
+triggerAttrVect: ACTION TYPE ATTRIBUTES:
+**********************************************
+&#x9;&#x9;-- When actionType=PROCEDURE set these variables.  Execute a procedure.
+&#x9;&#x9;procedurePath&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The procdure path to execute
+&#x9;&#x9;procedureParams&#x9; &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- Procedure parameters in a comma separated list.  Single quotes around string values.
+&#x9;&#x9;procedureExhaustCursors&#x9;&#x9;&#x9;BIT,&#x9;&#x9;--
+&#x9;&#x9;-- When actionType=STATISTICS set these variables.  Gather statistics on a data source.
+&#x9;&#x9;statisticsDSPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The path to the datasource for gathering statistics
+&#x9;&#x9;-- When actionType=REINTROSPECT set these variables.  Reintrospect a data source and send an email.
+&#x9;&#x9;reintrospectDSPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The path to the datasource to reintrospect
+&#x9;&#x9;reintrospectEmailTo&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The TO to send email for reintrospection
+&#x9;&#x9;reintrospectEmailCC&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The CC to send email for reintrospection
+&#x9;&#x9;reintrospectEmailBCC&#x9;&#x9;&#x9;LONGVARCHAR,-- The BCC to send email for reintrospection
+&#x9;&#x9;reintrospectEmailReplyTo&#x9;&#x9;LONGVARCHAR,-- The REPLYTO to send email for reintrospection
+&#x9;&#x9;reintrospectEmailSubject&#x9;&#x9;LONGVARCHAR,-- The subject line to send email for reintrospection
+&#x9;&#x9;reintrospectEmailContent&#x9;&#x9;LONGVARCHAR,-- The content to send email for reintrospection
+&#x9;&#x9;reintrospectEmailSkipNoResults &#x9;BIT,&#x9;&#x9;-- The skip if no results flag to send email for reintrospection
+&#x9;&#x9;reintrospectEmailNoCommit&#x9;&#x9;BIT,&#x9;&#x9;-- The no commit flag to send email for reintrospection
+&#x9;&#x9;-- When actionType=EMAIL set these variables.  Execute a procedure or view and send results via email.
+&#x9;&#x9;execEmailResourcePath&#x9;&#x9;&#x9;LONGVARCHAR,-- Path of resources (Procedure or View) to execute
+&#x9;&#x9;execEmailResourceParam&#x9; &#x9;&#x9;LONGVARCHAR,-- Procedure parameters &#x9;a comma separated list.  Single quotes around string values.
+&#x9;&#x9;execEmailTo&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The TO to send email for reintrospect
+&#x9;&#x9;execEmailCC&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The CC to send email for reintrospect
+&#x9;&#x9;execEmailBCC&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The BCC to send email for reintrospect
+&#x9;&#x9;execEmailReplyTo&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The REPLYTO to send email for reintrospect
+&#x9;&#x9;execEmailSubject&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The subject line to send email for reintrospect
+&#x9;&#x9;execEmailContent&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- The Content to send email for reintrospect
+&#x9;&#x9;execEmailSkipNoResults &#x9;&#x9;&#x9;BIT,&#x9;&#x9;-- The skip if no results flag to send email for reintrospect
+&#x9;&#x9;execEmailIncludeSummary&#x9;&#x9;&#x9;BIT,&#x9;&#x9;-- The include summary flag to send email for reintrospect
+
+**********************************************
+triggerAttrVect: GENERAL ATTRIBUTES:
+**********************************************
+   &#x9;&#x9;maxEventsQueued &#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;-- (optional): The maximum number of triggering events to queue.
+    &#x9;annotation &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,-- (optional): A description of the resource.  If not provided, the annotation will be left unaltered.
+
+**********************************************
+conditionType XML Input:
+**********************************************
+&#x9;===========================
+&#x9;conditionType=TIMER:
+&#x9;===========================
+      &lt;resource:conditionType&gt;TIMER&lt;/resource:conditionType&gt;
+      &lt;resource:conditionSchedule&gt;
+----|-B When mode is INTERVAL
+        &lt;resource:mode&gt;INTERVAL&lt;/resource:mode&gt;
+        &lt;resource:startTime&gt;2014-10-18T08:25:00.000Z&lt;/resource:startTime&gt;
+        &lt;resource:interval&gt;2880&lt;/resource:interval&gt;
+or CALENDAR
+        &lt;resource:mode&gt;CALENDAR&lt;/resource:mode&gt;
+        &lt;resource:startTime&gt;2014-10-18T08:25:00.000Z&lt;/resource:startTime&gt;
+        &lt;resource:period&gt;MONTH&lt;/resource:period&gt;
+        &lt;resource:count&gt;48&lt;/resource:count&gt;
+----|-E
+----|-B When recurrence restriction is enabled
+        &lt;resource:fromTimeInADay&gt;0&lt;/resource:fromTimeInADay&gt;
+        &lt;resource:endTimeInADay&gt;1410&lt;/resource:endTimeInADay&gt;
+        &lt;resource:recurringDay&gt;96&lt;/resource:recurringDay&gt;
+or disabled
+        &lt;resource:fromTimeInADay&gt;-1&lt;/resource:fromTimeInADay&gt;
+        &lt;resource:endTimeInADay&gt;-1&lt;/resource:endTimeInADay&gt;
+        &lt;resource:recurringDay&gt;-1&lt;/resource:recurringDay&gt;
+----|-E
+        &lt;resource:isCluster&gt;true&lt;/resource:isCluster&gt;
+      &lt;/resource:conditionSchedule&gt;
+
+&#x9;===========================
+&#x9;conditionType=JMS:
+&#x9;===========================
+      &lt;resource:conditionType&gt;JMS&lt;/resource:conditionType&gt;
+      &lt;resource:conditionAttributes&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;JMS_DESTINATION&lt;/common:name&gt;
+          &lt;common:type&gt;NULL&lt;/common:type&gt;
+          &lt;common:value/&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;JMS_SELECTOR&lt;/common:name&gt;
+          &lt;common:type&gt;NULL&lt;/common:type&gt;
+          &lt;common:value/&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;JMS_CONNECTOR&lt;/common:name&gt;
+          &lt;common:type&gt;NULL&lt;/common:type&gt;
+          &lt;common:value/&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:conditionAttributes&gt;
+
+&#x9;===========================
+&#x9;conditionType=SYSTEM_EVENT:
+&#x9;===========================
+      &lt;resource:conditionType&gt;SYSTEM_EVENT&lt;/resource:conditionType&gt;
+      &lt;resource:conditionAttributes&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;EVENT_NAME&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;CacheRefreshSuccess&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:conditionAttributes&gt;
+
+&#x9;===========================
+&#x9;conditionType=USER_DEFINED:
+&#x9;===========================
+      &lt;resource:conditionType&gt;USER_DEFINED&lt;/resource:conditionType&gt;
+      &lt;resource:conditionAttributes&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;NAME&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;EVENT1&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:conditionAttributes&gt;
+
+**********************************************
+actionType XML Input:
+**********************************************
+&#x9;actionType=PROCEDURE:
+&#x9;===========================
+      &lt;resource:actionType&gt;PROCEDURE&lt;/resource:actionType&gt;
+      &lt;resource:actionAttributes&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;EXHAUST_CURSORS&lt;/common:name&gt;
+          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;
+          &lt;common:value&gt;false&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;PARAMETERS&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;&apos;/users/composite/admin/CacheFrameworkTest/ApplicationOracleScripts/Views/V_TEST_INCR_HYB_MT1&apos;&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;PATH&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;/users/composite/admin/CacheFrameworkTest/ApplicationOracle/Execute/RefreshCache&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:actionAttributes&gt;
+
+&#x9;===========================
+&#x9;actionType=STATISTICS:
+&#x9;===========================
+      &lt;resource:actionType&gt;STATISTICS&lt;/resource:actionType&gt;
+      &lt;resource:actionAttributes&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;PATH&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;/users/composite/admin/Cache_RepoORA&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:actionAttributes&gt;
+
+&#x9;===========================
+&#x9;actionType=REINTROSPECT:
+&#x9;===========================
+      &lt;resource:actionType&gt;REINTROSPECT&lt;/resource:actionType&gt;
+      &lt;resource:actionAttributes&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;SUBJECT&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;test&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;BCC&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;bcc@gmail.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;SKIP_IF_NO_RESULTS&lt;/common:name&gt;
+          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;
+          &lt;common:value&gt;true&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;CONTENT&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;data source re-instrospected&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;CC&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;cc@gmail.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;TO&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;to@gmail.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;PATH&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;/users/composite/admin/Cache_RepoORA&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;REPLYTO&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;replyto@gmail.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;NO_COMMIT&lt;/common:name&gt;
+          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;
+          &lt;common:value&gt;false&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:actionAttributes&gt;
+
+&#x9;===========================
+&#x9;actionType=EMAIL:
+&#x9;===========================
+      &lt;resource:actionType&gt;EMAIL&lt;/resource:actionType&gt;
+      &lt;resource:actionAttributes&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;SUBJECT&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;Results&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;SUMMARY&lt;/common:name&gt;
+          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;
+          &lt;common:value&gt;false&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;BCC&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;bcc@gamil.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;SKIP_IF_NO_RESULTS&lt;/common:name&gt;
+          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;
+          &lt;common:value&gt;true&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;CONTENT&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;resource execution results&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;CC&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;cc@gmail.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;PARAMETERS&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;&apos;/users/composite/admin/CacheFrameworkTest/ApplicationOracleScripts/Views/V_TEST_INCR_HYB_MT1&apos;&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;TO&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;to@gmail.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;PATH&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;/users/composite/admin/CacheFrameworkTest/ApplicationOracle/Execute/RefreshCache&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;REPLYTO&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;replyto@gmail.com&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+          &lt;common:name&gt;TYPE&lt;/common:name&gt;
+          &lt;common:type&gt;STRING&lt;/common:type&gt;
+          &lt;common:value&gt;PROCEDURE&lt;/common:value&gt;
+        &lt;/common:attribute&gt;
+      &lt;/resource:actionAttributes&gt;
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+&#x9;2014.4&#x9;&#x9;11/12/2013&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.1.0&#x9;&#x9;&#x9;Removed single quote from around parameter string as it was causing the parameters to be invalid after update.
+&#x9;2014.4&#x9;&#x9;10/20/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Added the rest of the parameters to make updateTrigger a full featured capability.
+&#x9;2018.100&#x9;03/01/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced /shared/ASAssets/Utilities/repository/resourceExists with /lib/resource/ResourceExists
+&#x9;2018.100&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE updateTrigger(
+&#x9;IN fullResourcePath&#x9;&#x9;LONGVARCHAR,&#x9;&#x9;-- Full path to the trigger resource.
+&#x9;IN enabled&#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;&#x9;-- 1=enabled, 0=disabled
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When only performing the enable or disable for a trigger, leave conditionType and actionType null. 
+&#x9;-- Condition Type: [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED]
+&#x9;IN conditionType&#x9;&#x9;VARCHAR, &#x9;&#x9;&#x9;-- NULL or one of [TIMER|JMS|SYSTEM_EVENT|USER_DEFINED] determines the trigger condition.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When NULL, then only perform the enable or disable of the trigger and not other updates.
+&#x9;-- Action Type: [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL]
+&#x9;IN actionType&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;&#x9;-- NOT NULL and [PROCEDURE|STATISTICS|REINTROSPECT|EMAIL] - One of these determines what type of action to take.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When NULL, then only perform the enable or disable of the trigger and not other updates.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When conditionType is NOT NULL, there must be an actionType.
+&#x9;IN triggerAttrVect&#x9;&#x9;VECTOR(TriggerType),-- Name/Value pair list containing only the necessary &quot;Condition Type&quot; and &quot;Action Type&quot; attributes.
+
+&#x9;IN attributeVect&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/definitions/RepositoryDefinitions.AttributeVectorType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- The Attribute Vectory Type is a vector of type AttributeType as follows:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrName&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrType&#x9;&#x9;&#x9;VARCHAR(255),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- attrValue&#x9;&#x9;VARCHAR(255)
+&#x9;OUT success&#x9;&#x9;&#x9;&#x9;BIT,
+&#x9;OUT createResponse &#x9;&#x9;XML,
+&#x9;OUT faultResponse&#x9;&#x9;XML
+)
+BEGIN
+    DECLARE PROC_NAME   &#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;repository/updateTrigger&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+    DECLARE PUBLIC TYPE TriggerType ROW (
+        trName &#x9;&#x9;VARCHAR, 
+        trValue &#x9;LONGVARCHAR
+    );
+-- CONDITION TYPE ATTRIBUTES:
+&#x9;-- When conditionType=TIMER set these variables
+&#x9;DECLARE timerStartTime&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP; &#x9;-- NULL=mode=NONE or the timestamp the trigger should start.    Format = YYYY-MM-DD HH24:MM:SS
+&#x9;DECLARE timerPeriod&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR; &#x9;-- One of [MINUTE|HOUR|DAY|WEEK|MONTH|YEAR]
+&#x9;DECLARE timerPeriodQty&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER; &#x9;-- Quantity of the period
+&#x9;DECLARE timerRecurringDay &#x9;&#x9;&#x9;&#x9;VARCHAR;&#x9;-- NULL or a list of one or more items: [SUN, MON, TUE, WED, THU, FRI, SAT].  May be space or comma delimited.
+&#x9;DECLARE timerFromTimeInADay&#x9;&#x9;&#x9;&#x9;TIME;&#x9;&#x9;-- NULL or The time of day to start the trigger.  Format = HH24:MM:SS
+&#x9;DECLARE timerEndTimeInADay&#x9;&#x9;&#x9;&#x9;TIME;&#x9;&#x9;-- NULL or The time of day to end the trigger.   Format = HH24:MM:SS
+&#x9;DECLARE timerIsCluster&#x9;&#x9;&#x9;&#x9;&#x9;BIT;&#x9;&#x9;-- NULL or 0=not once per cluster, 1=only once per cluster
+&#x9;-- When conditionType=JMS set these variables
+&#x9;DECLARE jmsDestination&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The JMS Destination
+&#x9;DECLARE jmsSelector&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The JMS Selector
+&#x9;DECLARE jmsConnection&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The JMS Connection string
+&#x9;-- When conditionType=SYSTEM_EVENT set these variables
+&#x9;DECLARE systemEventName&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- One of [CacheRefreshFailure|CacheRefreshSuccess|ClusterServerJoined|ClusterServerConnected|ClusterServerDisconnected|
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--        ClusterServerShunned|DataSourceDown|DataSourceUp|RequestFailure|RequestInactive|RequestRunForTooLong|ResourceLock
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--        ResourceUnlock|RequestsSpike|ErrorsSpike|FailedLoginSpike|StatisticsGatheringFailure|ServerStart|ServerStop|TransactionFailure]
+&#x9;-- When conditionType=USER_DEFINED set these variables
+&#x9;DECLARE userDefinedName&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- A user defined event
+
+-- ACTION TYPE ATTRIBUTES:
+&#x9;-- When actionType=PROCEDURE set these variables.  Execute a procedure.
+&#x9;DECLARE procedurePath&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The procdure path to execute
+&#x9;DECLARE procedureParam&#x9; &#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- Procedure parameters in a comma separated list.  Single quotes around string values.
+&#x9;DECLARE procedureExhaustCursors&#x9;&#x9;&#x9;BIT;&#x9;&#x9;--
+&#x9;-- When actionType=STATISTICS set these variables.  Gather statistics on a data source.
+&#x9;DECLARE statisticsDSPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The path to the datasource for gathering statistics
+&#x9;-- When actionType=REINTROSPECT set these variables.  Reintrospect a data source and send an email.
+&#x9;DECLARE reintrospectDSPath&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The path to the datasource to reintrospect
+&#x9;DECLARE reintrospectEmailTo&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The TO to send email for reintrospection
+&#x9;DECLARE reintrospectEmailCC&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The CC to send email for reintrospection
+&#x9;DECLARE reintrospectEmailBCC&#x9;&#x9;&#x9;LONGVARCHAR;-- The BCC to send email for reintrospection
+&#x9;DECLARE reintrospectEmailReplyTo&#x9;&#x9;LONGVARCHAR;-- The REPLYTO to send email for reintrospection
+&#x9;DECLARE reintrospectEmailSubject&#x9;&#x9;LONGVARCHAR;-- The subject line to send email for reintrospection
+&#x9;DECLARE reintrospectEmailContent&#x9;&#x9;LONGVARCHAR;-- The content to send email for reintrospection
+&#x9;DECLARE reintrospectEmailSkipNoResults &#x9;BIT;&#x9;&#x9;-- The skip if no results flag to send email for reintrospection
+&#x9;DECLARE reintrospectEmailNoCommit&#x9;&#x9;BIT;&#x9;&#x9;-- The no commit flag to send email for reintrospection
+&#x9;-- When actionType=EMAIL set these variables.  Execute a procedure or view and send results via email.
+&#x9;DECLARE execEmailResourcePath&#x9;&#x9;&#x9;LONGVARCHAR;-- Path of resources (Procedure or View) to execute
+&#x9;DECLARE execEmailResourceParam&#x9; &#x9;&#x9;LONGVARCHAR;-- Procedure parameters in a comma separated list.  Single quotes around string values.
+&#x9;DECLARE execEmailTo&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The TO to send email for reintrospect
+&#x9;DECLARE execEmailCC&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The CC to send email for reintrospect
+&#x9;DECLARE execEmailBCC&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The BCC to send email for reintrospect
+&#x9;DECLARE execEmailReplyTo&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The REPLYTO to send email for reintrospect
+&#x9;DECLARE execEmailSubject&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The subject line to send email for reintrospect
+&#x9;DECLARE execEmailContent&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- The Content to send email for reintrospect
+&#x9;DECLARE execEmailSkipNoResults &#x9;&#x9;&#x9;BIT;&#x9;&#x9;-- The skip if no results flag to send email for reintrospect
+&#x9;DECLARE execEmailIncludeSummary&#x9;&#x9;&#x9;BIT;&#x9;&#x9;-- The include summary flag to send email for reintrospect
+
+-- GENERAL ATTRIBUTES:
+    DECLARE maxEventsQueued &#x9;&#x9;&#x9;&#x9;INTEGER;&#x9;-- (optional): The maximum number of triggering events to queue.
+    DECLARE annotation &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;-- (optional): A description of the resource.  If not provided, the annotation will be left unaltered.
+
+&#x9;-- Procedure Parameters
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE attrName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE attrValue&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE createInput &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE conditionSchedule&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE conditionAttributes&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE actionTypeAttributes&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE resourceAttributes&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE remainingInput&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE timerMode&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR; &#x9;-- [INTERVAL|CALENDAR] - Derived ffrom timerPeriod.  INTERVAL=MINUTE, CALENDAR=HOUR|DAY|WEEK|MONTH|YEAR
+&#x9;DECLARE fromTimeInADay&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT -1;
+&#x9;DECLARE endTimeInADay&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT -1;
+&#x9;DECLARE recurringDay&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE dayOfWeek&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE emailResourceType&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE resourceExists&#x9;&#x9;&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE boolResponse1&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE boolResponse2&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Assign attributes to variables
+&#x9;SET i = 1;
+&#x9;WHILE (i &lt;= CARDINALITY(triggerAttrVect)) DO
+&#x9;&#x9;SET attrName = TRIM(triggerAttrVect[i].trName);
+&#x9;&#x9;SET attrValue = TRIM(triggerAttrVect[i].trValue);
+
+&#x9;&#x9;IF (attrName IS NOT NULL AND LENGTH(attrName) &gt; 0) THEN
+
+&#x9;&#x9;&#x9;CASE attrName
+&#x9;&#x9;&#x9;-- CONDITION TYPE ATTRIBUTES:
+&#x9;&#x9;&#x9;&#x9;-- When conditionType=TIMER set these variables
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;timerStartTime&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET timerStartTime = CAST(attrValue AS TIMESTAMP);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;timerPeriod&apos; &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;THEN SET timerPeriod = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;timerPeriodQty&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET timerPeriodQty = CAST(attrValue AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;timerRecurringDay&apos; &#x9;&#x9;&#x9;&#x9;THEN SET timerRecurringDay = CAST(attrValue AS VARCHAR);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;timerFromTimeInADay&apos; &#x9;&#x9;&#x9;&#x9;THEN SET timerFromTimeInADay = CAST(attrValue AS TIME);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;timerEndTimeInADay&apos; &#x9;&#x9;&#x9;&#x9;THEN SET timerEndTimeInADay = CAST(attrValue AS TIME);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;timerIsCluster&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET timerIsCluster = CAST(attrValue AS BIT);
+&#x9;&#x9;&#x9;&#x9;-- When conditionType=JMS set these variables
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;jmsDestination&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET jmsDestination = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;jmsSelector&apos; &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;THEN SET jmsSelector = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;jmsConnection&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET jmsConnection = attrValue;
+&#x9;&#x9;&#x9;&#x9;-- When conditionType=SYSTEM_EVENT set these variables
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;systemEventName&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET systemEventName = attrValue;
+&#x9;&#x9;&#x9;&#x9;-- When conditionType=USER_DEFINED set these variables
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;userDefinedName&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET userDefinedName = attrValue;
+
+&#x9;&#x9;&#x9;-- ACTION TYPE ATTRIBUTES:
+&#x9;&#x9;&#x9;&#x9;-- When actionType=PROCEDURE set these variables.  Execute a procedure.
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;procedurePath&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET procedurePath = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;procedureParams&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET procedureParam = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;procedureExhaustCursors&apos;&#x9;&#x9;&#x9;THEN SET procedureExhaustCursors = CAST(attrValue AS BIT);
+&#x9;&#x9;&#x9;&#x9;-- When actionType=STATISTICS set these variables.  Gather statistics on a data source.
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;statisticsDSPath&apos; &#x9;&#x9;&#x9;&#x9;THEN SET statisticsDSPath = attrValue;
+&#x9;&#x9;&#x9;&#x9;-- When actionType=REINTROSPECT set these variables.  Reintrospect a data source and send an email.
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectDSPath&apos; &#x9;&#x9;&#x9;&#x9;THEN SET reintrospectDSPath = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailTo&apos; &#x9;&#x9;&#x9;&#x9;THEN SET reintrospectEmailTo = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailCC&apos; &#x9;&#x9;&#x9;&#x9;THEN SET reintrospectEmailCC = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailBCC&apos; &#x9;&#x9;&#x9;THEN SET reintrospectEmailBCC = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailReplyTo&apos; &#x9;&#x9;THEN SET reintrospectEmailReplyTo = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailSubject&apos; &#x9;&#x9;THEN SET reintrospectEmailSubject = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailContent&apos; &#x9;&#x9;THEN SET reintrospectEmailContent = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailSkipNoResults&apos;&#x9;THEN SET reintrospectEmailSkipNoResults = CAST(attrValue AS BIT);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;reintrospectEmailNoCommit&apos; &#x9;&#x9;THEN SET reintrospectEmailNoCommit = CAST(attrValue AS BIT);
+&#x9;&#x9;&#x9;&#x9;-- When actionType=EMAIL set these variables.  Execute a procedure or view and send results via email.
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailResourcePath&apos; &#x9;&#x9;&#x9;THEN SET execEmailResourcePath = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailResourceParam&apos; &#x9;&#x9;&#x9;THEN SET execEmailResourceParam = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailTo&apos; &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;THEN SET execEmailTo = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailCC&apos; &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;THEN SET execEmailCC = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailBCC&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET execEmailBCC = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailReplyTo&apos; &#x9;&#x9;&#x9;&#x9;THEN SET execEmailReplyTo = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailSubject&apos; &#x9;&#x9;&#x9;&#x9;THEN SET execEmailSubject = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailContent&apos; &#x9;&#x9;&#x9;&#x9;THEN SET execEmailContent = attrValue;
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailSkipNoResults&apos;&#x9;&#x9;&#x9;THEN SET execEmailSkipNoResults = CAST(attrValue AS BIT);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;execEmailIncludeSummary&apos; &#x9;&#x9;&#x9;THEN SET execEmailIncludeSummary = CAST(attrValue AS BIT);
+&#x9;&#x9;&#x9;-- GENERAL ATTRIBUTES:
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;maxEventsQueued&apos; &#x9;&#x9;&#x9;&#x9;&#x9;THEN SET maxEventsQueued = CAST(attrValue AS INTEGER);
+&#x9;&#x9;&#x9;&#x9;WHEN &apos;annotation&apos; &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;THEN SET annotation = attrValue;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;END CASE;
+&#x9;&#x9;END IF; 
+&#x9;&#x9;set i = i + 1;
+&#x9;END WHILE;
+
+&#x9;-- Validate enabled
+&#x9;IF (enabled IS NULL) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The enabled parameter may not be null or empty.&apos;;&#x9;
+&#x9;END IF;
+
+&#x9;-- Validate conditionType and associated values
+&#x9;IF (conditionType IS NOT NULL AND (LENGTH(conditionType) = 0 OR UPPER(TRIM(conditionType)) NOT IN (&apos;TIMER&apos;,&apos;JMS&apos;,&apos;SYSTEM_EVENT&apos;,&apos;USER_DEFINED&apos;))) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The conditionType=[&apos;||NVL(conditionType,&apos;null&apos;)||&apos;] is not valid.&apos;;
+&#x9;END IF;
+&#x9;IF (conditionType IS NOT NULL AND TRIM(conditionType) = &apos;TIMER&apos;) THEN
+&#x9;&#x9;IF (timerStartTime IS NOT NULL AND (timerPeriod IS NULL OR LENGTH(timerPeriod) = 0)) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The timerPeriod=[&apos;||NVL(timerPeriod,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (timerPeriod IS NOT NULL AND UPPER(TRIM(timerPeriod)) NOT IN (&apos;MINUTE&apos;,&apos;HOUR&apos;,&apos;DAY&apos;,&apos;WEEK&apos;,&apos;MONTH&apos;,&apos;YEAR&apos;)) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The timerPeriod=[&apos;||NVL(timerPeriod,&apos;null&apos;)||&apos;] is not valid.&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (timerPeriod IS NOT NULL AND timerPeriodQty IS NULL) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The timerPeriodQty=[&apos;||NVL(CAST(timerPeriodQty AS VARCHAR),&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(REPLACE(timerRecurringDay,&apos; &apos;,&apos;,&apos;), &apos;,&apos;,0,0,0,1,0)
+&#x9;&#x9;&#x9;&#x9;WHERE object IS NOT NULL and LENGTH(object) &gt; 0 
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;SET dayOfWeek = r.object;
+&#x9;&#x9;&#x9;IF (UPPER(TRIM(dayOfWeek)) NOT IN (&apos;SUN&apos;,&apos;MON&apos;,&apos;TUE&apos;,&apos;WED&apos;,&apos;THU&apos;,&apos;FRI&apos;,&apos;SAT&apos;,&apos;SUN&apos;)) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The timerRecurringDay[&apos;||NVL(timerRecurringDay,&apos;null&apos;)||&apos;] contains an invalid entry...dayOfWeek=[&apos;||dayOfWeek||&apos;].&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+&#x9;END IF;
+&#x9;IF (conditionType IS NOT NULL AND TRIM(conditionType) = &apos;JMS&apos;) THEN
+&#x9;&#x9;IF (jmsDestination IS NULL OR LENGTH(jmsDestination) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The jmsDestination=[&apos;||NVL(jmsDestination,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (jmsSelector IS NULL OR LENGTH(jmsSelector) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The jmsSelector=[&apos;||NVL(jmsSelector,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (jmsConnection IS NULL OR LENGTH(jmsConnection) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The jmsConnection=[&apos;||NVL(jmsConnection,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+&#x9;IF (conditionType IS NOT NULL AND TRIM(conditionType) = &apos;SYSTEM_EVENT&apos;) THEN
+&#x9;&#x9;IF (systemEventName IS NULL OR LENGTH(systemEventName) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The systemEventName=[&apos;||NVL(systemEventName,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+&#x9;IF (conditionType IS NOT NULL AND TRIM(conditionType) = &apos;USER_DEFINED&apos;) THEN
+&#x9;&#x9;IF (userDefinedName IS NULL OR LENGTH(userDefinedName) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The userDefinedName=[&apos;||NVL(userDefinedName,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;-- Validate the actionType and associated values
+&#x9;IF (conditionType IS NOT NULL AND (actionType IS NULL OR LENGTH(actionType) = 0)) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The actionType may not be null or empty.&apos;;
+&#x9;END IF;
+&#x9;IF (actionType IS NOT NULL AND (LENGTH(actionType) = 0 OR UPPER(TRIM(actionType)) NOT IN (&apos;PROCEDURE&apos;,&apos;STATISTICS&apos;,&apos;REINTROSPECT&apos;,&apos;EMAIL&apos;))) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The actionType=[&apos;||NVL(actionType,&apos;null&apos;)||&apos;] is not valid.&apos;;
+&#x9;END IF;
+&#x9;IF (actionType IS NOT NULL AND TRIM(actionType) = &apos;PROCEDURE&apos;) THEN
+&#x9;&#x9;IF (procedurePath IS NULL OR LENGTH(procedurePath) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The procedurePath=[&apos;||NVL(procedurePath,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;CALL /lib/resource/ResourceExists(procedurePath, &apos;PROCEDURE&apos;, null, resourceExists);
+&#x9;&#x9;&#x9;IF (NOT resourceExists) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The procedurePath=[&apos;||NVL(procedurePath,&apos;null&apos;)||&apos;] does not exist.&apos;;&#x9;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+&#x9;IF (actionType IS NOT NULL AND TRIM(actionType) = &apos;STATISTICS&apos;) THEN
+&#x9;&#x9;IF (statisticsDSPath IS NULL OR LENGTH(statisticsDSPath) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The statisticsDSPath=[&apos;||NVL(statisticsDSPath,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;CALL /lib/resource/ResourceExists(statisticsDSPath, &apos;DATA_SOURCE&apos;, null, resourceExists);
+&#x9;&#x9;&#x9;IF (NOT resourceExists) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The statisticsDSPath=[&apos;||NVL(statisticsDSPath,&apos;null&apos;)||&apos;] does not exist.&apos;;&#x9;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+&#x9;IF (actionType IS NOT NULL AND TRIM(actionType) = &apos;REINTROSPECT&apos;) THEN
+&#x9;&#x9;IF (reintrospectDSPath IS NULL OR LENGTH(reintrospectDSPath) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The reintrospectDSPath=[&apos;||NVL(reintrospectDSPath,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;CALL /lib/resource/ResourceExists(reintrospectDSPath, &apos;DATA_SOURCE&apos;, null, resourceExists);
+&#x9;&#x9;&#x9;IF (NOT resourceExists) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The reintrospectDSPath=[&apos;||NVL(reintrospectDSPath,&apos;null&apos;)||&apos;] does not exist.&apos;;&#x9;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (reintrospectEmailTo IS NULL OR LENGTH(reintrospectEmailTo) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The reintrospectEmailTo=[&apos;||NVL(reintrospectEmailTo,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+&#x9;IF (actionType IS NOT NULL AND TRIM(actionType) = &apos;EMAIL&apos;) THEN
+&#x9;&#x9;IF (execEmailResourcePath IS NULL OR LENGTH(execEmailResourcePath) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The execEmailResourcePath=[&apos;||NVL(execEmailResourcePath,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SELECT &quot;type&quot; INTO emailResourceType FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor(execEmailResourcePath, NULL);
+&#x9;&#x9;&#x9;CALL /lib/resource/ResourceExists(execEmailResourcePath, emailResourceType, null, resourceExists);
+&#x9;&#x9;&#x9;IF (NOT resourceExists) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The execEmailResourcePath=[&apos;||NVL(execEmailResourcePath,&apos;null&apos;)||&apos;] does not exist.&apos;;&#x9;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (execEmailTo IS NULL OR LENGTH(execEmailTo) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The execEmailTo=[&apos;||NVL(execEmailTo,&apos;null&apos;)||&apos;] parameter may not be null or empty.&apos;;&#x9;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;SET success = 1;
+ &#x9;CALL /lib/resource/ResourceExists(fullResourcePath, &apos;TRIGGER&apos;, null, resourceExists);
+&#x9;IF (resourceExists) THEN
+&#x9;&#x9;IF (conditionType IS NULL) THEN
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(CAST(enabled AS VARCHAR), boolResponse1);
+&#x9;&#x9;&#x9;set createInput = 
+&#x9;&#x9;&#x9;&#x9;&apos;&lt;resource:updateTrigger &apos;||CHR(10)||
+                &apos;    xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; &apos;||CHR(10)||
+                &apos;    xmlns:ns1=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:path&gt;&apos;||CAST(XMLTEXT(fullResourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:enabled&gt;&apos;||boolResponse1||&apos;&lt;/resource:enabled&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:detail&gt;SIMPLE&lt;/resource:detail&gt;&apos;||CHR(10)||
+                &apos;&lt;/resource:updateTrigger&gt;&apos;;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the TIMER condition values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(conditionType) = &apos;TIMER&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;-- Set the timer mode
+&#x9;&#x9;&#x9;&#x9;SET timerMode = &apos;CALENDAR&apos;;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(TRIM(timerPeriod)) = &apos;MINUTE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET timerMode = &apos;INTERVAL&apos;; 
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (timerStartTime IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET timerMode = &apos;NONE&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Set the recurring day value
+&#x9;&#x9;&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;&#x9;&#x9;SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(REPLACE(timerRecurringDay,&apos; &apos;,&apos;,&apos;), &apos;,&apos;,0,0,0,1,0)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHERE object IS NOT NULL and LENGTH(object) &gt; 0 
+&#x9;&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;&#x9;SET dayOfWeek = UPPER(r.object);
+&#x9;&#x9;&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;SUN&apos; THEN set recurringDay = recurringDay + 1; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;MON&apos; THEN set recurringDay = recurringDay + 2; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;TUE&apos; THEN set recurringDay = recurringDay + 4; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;WED&apos; THEN set recurringDay = recurringDay + 8; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;THU&apos; THEN set recurringDay = recurringDay + 16; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;FRI&apos; THEN set recurringDay = recurringDay + 32; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN dayOfWeek = &apos;SAT&apos; THEN set recurringDay = recurringDay + 64; 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;END CASE;
+&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;IF (recurringDay = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET recurringDay = -1;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;-- Set and validate recurrence restriction timer
+&#x9;&#x9;&#x9;&#x9;IF (timerFromTimeInADay IS NOT NULL AND timerEndTimeInADay IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the from time in a day value
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (timerFromTimeInADay IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set fromTimeInADay = EXTRACT(HOUR FROM timerFromTimeInADay) * 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (EXTRACT(MINUTE FROM timerFromTimeInADay) &gt;= 30) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set fromTimeInADay = fromTimeInADay + 30;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Set the end time in a day value
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (timerEndTimeInADay IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set endTimeInADay = EXTRACT(HOUR FROM timerEndTimeInADay) * 60;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IF (EXTRACT(MINUTE FROM timerEndTimeInADay) &gt;= 30) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set endTimeInADay = endTimeInADay + 30;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;SET conditionSchedule = 
+                &apos;    &lt;resource:conditionType&gt;TIMER&lt;/resource:conditionType&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:conditionSchedule&gt;&apos;||CHR(10)||
+                &apos;        &lt;resource:mode&gt;&apos;||CAST(XMLTEXT(timerMode) AS VARCHAR)||&apos;&lt;/resource:mode&gt;&apos;||CHR(10);
+
+&#x9;&#x9;&#x9;&#x9;IF (timerMode != &apos;NONE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET conditionSchedule = conditionSchedule || 
+                &apos;        &lt;resource:startTime&gt;&apos;||CAST(XMLTEXT(timerStartTime) AS VARCHAR)||&apos;&lt;/resource:startTime&gt;&apos;||CHR(10);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;SET conditionSchedule = conditionSchedule||
+                &apos;        &lt;resource:fromTimeInADay&gt;&apos;||CAST(XMLTEXT(fromTimeInADay) AS VARCHAR)||&apos;&lt;/resource:fromTimeInADay&gt;&apos;||CHR(10)||
+                &apos;        &lt;resource:endTimeInADay&gt;&apos;||CAST(XMLTEXT(endTimeInADay) AS VARCHAR)||&apos;&lt;/resource:endTimeInADay&gt;&apos;||CHR(10)||
+                &apos;        &lt;resource:recurringDay&gt;&apos;||CAST(XMLTEXT(recurringDay) AS VARCHAR)||&apos;&lt;/resource:recurringDay&gt;&apos;||CHR(10);
+
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (timerMode = &apos;INTERVAL&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET conditionSchedule = conditionSchedule||
+                &apos;        &lt;resource:interval&gt;&apos;||CAST(XMLTEXT(timerPeriodQty * 60) AS VARCHAR)||&apos;&lt;/resource:interval&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (timerMode = &apos;CALENDAR&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET conditionSchedule = conditionSchedule||
+                &apos;        &lt;resource:period&gt;&apos;||CAST(XMLTEXT(UPPER(timerPeriod)) AS VARCHAR)||&apos;&lt;/resource:period&gt;&apos;||CHR(10)||
+                &apos;        &lt;resource:count&gt;&apos;||CAST(XMLTEXT(timerPeriodQty) AS VARCHAR)||&apos;&lt;/resource:count&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(NVL(CAST(timerIsCluster AS VARCHAR), &apos;0&apos;), boolResponse1);
+&#x9;&#x9;&#x9;&#x9;SET conditionSchedule = conditionSchedule||
+                &apos;        &lt;resource:isCluster&gt;&apos;||boolResponse1||&apos;&lt;/resource:isCluster&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:conditionSchedule&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the JMS condition values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(conditionType) = &apos;JMS&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET conditionAttributes = 
+                &apos;    &lt;resource:conditionType&gt;JMS&lt;/resource:conditionType&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:conditionAttributes&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:name&gt;JMS_DESTINATION&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(jmsDestination,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;       &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:name&gt;JMS_SELECTOR&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(jmsSelector,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;       &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:name&gt;JMS_CONNECTOR&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(jmsConnection,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;       &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:conditionAttributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the SYSTEM_EVENT condition values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(conditionType) = &apos;SYSTEM_EVENT&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET conditionAttributes = 
+                &apos;    &lt;resource:conditionType&gt;SYSTEM_EVENT&lt;/resource:conditionType&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:conditionAttributes&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:name&gt;EVENT_NAME&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(systemEventName) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;       &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:conditionAttributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the USER_DEFINED condition values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(conditionType) = &apos;USER_DEFINED&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET conditionAttributes = 
+                &apos;    &lt;resource:conditionType&gt;USER_DEFINED&lt;/resource:conditionType&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:conditionAttributes&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:name&gt;NAME&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(userDefinedName) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;       &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:conditionAttributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- BEGIN actionType --
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the PROCEDURE action attribute values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(actionType) = &apos;PROCEDURE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(NVL(CAST(procedureExhaustCursors AS VARCHAR), &apos;0&apos;), boolResponse1);
+&#x9;&#x9;&#x9;&#x9;SET actionTypeAttributes = 
+                &apos;    &lt;resource:actionType&gt;PROCEDURE&lt;/resource:actionType&gt;&apos;||CHR(10)||
+                &apos;      &lt;resource:actionAttributes&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;PATH&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(procedurePath,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;PARAMETERS&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;|| CAST(XMLTEXT(TRIM(NVL(procedureParam,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;EXHAUST_CURSORS&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||boolResponse1||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:actionAttributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the STATISTICS action attribute values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(actionType) = &apos;STATISTICS&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET actionTypeAttributes = 
+                &apos;    &lt;resource:actionType&gt;STATISTICS&lt;/resource:actionType&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:actionAttributes&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:name&gt;PATH&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;            &lt;common:value&gt;&apos;||CAST(XMLTEXT(statisticsDSPath) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:actionAttributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the REINTROSPECT action attribute values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(actionType) = &apos;REINTROSPECT&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(NVL(CAST(reintrospectEmailSkipNoResults AS VARCHAR), &apos;0&apos;), boolResponse1);
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(NVL(CAST(reintrospectEmailNoCommit AS VARCHAR), &apos;0&apos;), boolResponse2);
+&#x9;&#x9;&#x9;&#x9;SET actionTypeAttributes = 
+                &apos;    &lt;resource:actionType&gt;REINTROSPECT&lt;/resource:actionType&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:actionAttributes&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;PATH&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(reintrospectDSPath) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;TO&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(reintrospectEmailTo,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;CC&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(reintrospectEmailCC,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;BCC&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(reintrospectEmailBCC,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;REPLYTO&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(reintrospectEmailReplyTo,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;SUBJECT&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(reintrospectEmailSubject,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;CONTENT&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(reintrospectEmailContent,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;SKIP_IF_NO_RESULTS&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||boolResponse1||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;NO_COMMIT&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||boolResponse2||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:actionAttributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Set the EMAIL action attribute values
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;IF (TRIM(actionType) = &apos;EMAIL&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(NVL(CAST(execEmailSkipNoResults AS VARCHAR), &apos;0&apos;), boolResponse1);
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(NVL(CAST(execEmailIncludeSummary AS VARCHAR), &apos;0&apos;), boolResponse2);
+&#x9;&#x9;&#x9;&#x9;SET actionTypeAttributes = 
+                &apos;    &lt;resource:actionType&gt;EMAIL&lt;/resource:actionType&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:actionAttributes&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;PATH&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;|| CAST(XMLTEXT(execEmailResourcePath) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;PARAMETERS&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(execEmailResourceParam,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;TYPE&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(emailResourceType,&apos;  &apos;))) AS VARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;TO&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(execEmailTo,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;CC&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(execEmailCC,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;BCC&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(execEmailBCC,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;REPLYTO&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(execEmailReplyTo,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;SUBJECT&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(execEmailSubject,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;CONTENT&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;STRING&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(execEmailContent,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;SKIP_IF_NO_RESULTS&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||boolResponse1||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;SUMMARY&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||boolResponse2||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10)||
+                &apos;    &lt;/resource:actionAttributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Set the remaining input values
+&#x9;&#x9;&#x9;IF (maxEventsQueued IS NOT NULL AND maxEventsQueued &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET remainingInput = remainingInput ||CHR(10)||
+                &apos;    &lt;resource:maxEventsQueued&gt;&apos;||CAST(XMLTEXT(maxEventsQueued) AS LONGVARCHAR)||&apos;&lt;/resource:maxEventsQueued&gt;&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (annotation IS NOT NULL AND LENGTH(annotation) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET remainingInput = remainingInput ||CHR(10)||
+                &apos;    &lt;resource:annotation&gt;&apos;||CAST(XMLTEXT(annotation) AS LONGVARCHAR)||&apos;&lt;/resource:annotation&gt;&apos;;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Set the resource attributes
+&#x9;&#x9;&#x9;IF (attributeVect IS NOT NULL AND CARDINALITY(attributeVect) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET resourceAttributes = resourceAttributes || CHR(10)||
+                &apos;    &lt;resource:attributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;SET i = 1;
+&#x9;&#x9;&#x9;&#x9;WHILE (i &lt;= CARDINALITY(attributeVect)) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resourceAttributes = resourceAttributes ||
+                &apos;        &lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:name&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(attributeVect[i].attrName,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:name&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:type&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(attributeVect[i].attrType,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:type&gt;&apos;||CHR(10)||
+                &apos;          &lt;common:value&gt;&apos;||CAST(XMLTEXT(TRIM(NVL(attributeVect[i].attrValue,&apos;  &apos;))) AS LONGVARCHAR)||&apos;&lt;/common:value&gt;&apos;||CHR(10)||
+                &apos;        &lt;/common:attribute&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;&#x9;END WHILE;
+&#x9;&#x9;&#x9;&#x9;SET resourceAttributes = resourceAttributes ||CHR(10)|| 
+                &apos;     &lt;/resource:attributes&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;/*******************************************
+&#x9;&#x9;&#x9; * Create the Input XML for updateTrigger
+&#x9;&#x9;&#x9; *******************************************/
+&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/conversions/convertBoolean(CAST(enabled AS VARCHAR), boolResponse1);
+&#x9;&#x9;&#x9;set createInput = 
+                &apos;&lt;resource:updateTrigger &apos;||CHR(10)||
+                &apos;    xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; &apos;||CHR(10)||
+                &apos;    xmlns:ns1=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:path&gt;&apos;||CAST(XMLTEXT(fullResourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:enabled&gt;&apos;||boolResponse1||&apos;&lt;/resource:enabled&gt;&apos;||CHR(10)||
+                &apos;    &lt;resource:detail&gt;FULL&lt;/resource:detail&gt;&apos; ||
+&#x9;&#x9;&#x9;&#x9;&#x9;conditionSchedule ||
+&#x9;&#x9;&#x9;&#x9;&#x9;conditionAttributes ||
+&#x9;&#x9;&#x9;&#x9;&#x9;actionTypeAttributes||
+&#x9;&#x9;&#x9;&#x9;&#x9;remainingInput || 
+&#x9;&#x9;&#x9;&#x9;&#x9;resourceAttributes || 
+                &apos;&lt;/resource:updateTrigger&gt;&apos;;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;  &#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(PROC_NAME, debug, createInput);
+&#x9;&#x9;END IF;
+&#x9;&#x9;CALL /services/webservices/system/admin/resource/operations/updateTrigger(createInput, createResponse, faultResponse);
+&#x9;&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;&#x9;SET success = 0;
+&#x9;&#x9;end if;
+&#x9;ELSE
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(PROC_NAME, debug, &apos;Resource does not exist: &apos;||fullResourcePath);
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET success = 0;
+&#x9;END IF;
+END
+/*
+UpdateTrigger:
+
+&lt;resource:updateTriggerResponse xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&gt;
+&lt;resource:resources&gt;
+&lt;resource:resource xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:type=&quot;resource:triggerResource&quot;&gt;
+&lt;resource:name&gt;notifyIcdlOfHISTORICALDataTrigger&lt;/resource:name&gt;
+&lt;resource:path&gt;/shared/ICDL_SDK/Datasource_Tier/ExampleFileSource/Triggers/notifyIcdlOfHISTORICALDataTrigger&lt;/resource:path&gt;
+&lt;resource:type&gt;TRIGGER&lt;/resource:type&gt;
+&lt;resource:subtype&gt;NONE&lt;/resource:subtype&gt;
+&lt;resource:id&gt;993598&lt;/resource:id&gt;
+&lt;resource:changeId&gt;26941&lt;/resource:changeId&gt;
+&lt;resource:ownerDomain&gt;composite&lt;/resource:ownerDomain&gt;
+&lt;resource:ownerName&gt;admin&lt;/resource:ownerName&gt;
+&lt;resource:impactLevel&gt;NONE&lt;/resource:impactLevel&gt;
+&lt;resource:enabled&gt;true&lt;/resource:enabled&gt;
+&lt;resource:conditionType&gt;TIMER&lt;/resource:conditionType&gt;
+&lt;resource:conditionSchedule&gt;
+&lt;resource:mode&gt;NONE&lt;/resource:mode&gt;
+&lt;resource:startTime&gt;2009-07-02T18:00:00.000Z&lt;/resource:startTime&gt;
+&lt;fromTimeInADay&gt;-1&lt;/fromTimeInADay&gt;
+&lt;endTimeInADay&gt;-1&lt;/endTimeInADay&gt;
+&lt;recurringDay&gt;-1&lt;/recurringDay&gt;
+&lt;isCluster&gt;true&lt;/isCluster&gt;
+&lt;/resource:conditionSchedule&gt;
+&lt;resource:actionType&gt;PROCEDURE&lt;/resource:actionType&gt;
+&lt;resource:actionAttributes&gt;
+&lt;ns1:attribute xmlns:ns1=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+&lt;ns1:name&gt;PARAMETERS&lt;/ns1:name&gt;
+&lt;ns1:type&gt;STRING&lt;/ns1:type&gt;
+&lt;ns1:value&gt;&apos;ExampleFileSource&apos;&lt;/ns1:value&gt;
+&lt;/ns1:attribute&gt;
+&lt;ns1:attribute xmlns:ns1=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+&lt;ns1:name&gt;PATH&lt;/ns1:name&gt;
+&lt;ns1:type&gt;STRING&lt;/ns1:type&gt;
+&lt;ns1:value&gt;/shared/ICDL_SDK/IandR_Tier/Dispatcher/BatchComposition/notifyIcdlOfHistoricalDataWrapper&lt;/ns1:value&gt;
+&lt;/ns1:attribute&gt;
+&lt;/resource:actionAttributes&gt;
+&lt;/resource:resource&gt;
+&lt;/resource:resources&gt;
+&lt;/resource:updateTriggerResponse&gt;
+*/</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:4:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:5:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:6:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:7:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="p:8:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="public_types" type="MAP">
+    <item>
+      <key type="STRING">TriggerType</key>
+      <value type="BYTE_ARRAY">EB8GAgALAFQAcgBpAGcAZwBlAHIAVAB5AHAAZQYpAD4ALwBzAGgAYQByAGUAZAAvAEQAZQBsAHQAYQBfAEQAVgAvACIAXwBzAGMAcgBpAHAAdABzACIALwBVAHQAaQBsAGkAdABpAGUAcwAvAHIAZQBwAG8AcwBpAHQAbwByAHkALwB1AHAAZABhAHQAZQBUAHIAaQBnAGcAZQByBioACwBUAHIAaQBnAGcAZQByAFQAeQBwAGUDEgAAAAEDEgAAAAEBEwEJFAAAAAIQIQYVAAYAdAByAE4AYQBtAGUDLwAAAAEDFgAAAAADGgAAAAEDGwAAAAEDIP////8DIgAAAAAIGRAbBgIABwBWAEEAUgBDAEgAQQBSAxIAAAACBAQAAAAAAAAA/wETAf////8QIQYVAAcAdAByAFYAYQBsAHUAZQMvAAAAAQMWAAAAAAMaAAAAAQMbAAAAAQMg/////wMiAAAAAAgZEBsGAgALAEwATwBOAEcAVgBBAFIAQwBIAEEAUgMSAAAAAwQEAAAAAH////8BEwH///////8=</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

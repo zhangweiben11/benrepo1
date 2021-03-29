@@ -1,0 +1,203 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="COMPLAINT_CASE_CLAIM" path="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CASE_CLAIM" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="Complaint_Case_Claim_SKEY" nullable="false">
+      <datatype name="bigint" extendedName="bigint" subType="DATASOURCE_TYPE" type="INTEGER"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Claim_Source_System_Unique_ID" nullable="false">
+      <datatype name="varchar" extendedName="varchar(128)" subType="DATASOURCE_TYPE" type="STRING" maxLength="128"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Claim_Source_System_NM" nullable="true">
+      <datatype name="varchar" extendedName="varchar(50)" subType="DATASOURCE_TYPE" type="STRING" maxLength="50"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Total_Allowed_AMT" nullable="true">
+      <datatype name="decimal" extendedName="decimal(9,2)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="9" maxFractionalDigits="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Total_Paid_AMT" nullable="true">
+      <datatype name="decimal" extendedName="decimal(9,2)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="9" maxFractionalDigits="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_SKEY" nullable="false">
+      <datatype name="bigint" extendedName="bigint" subType="DATASOURCE_TYPE" type="INTEGER"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="PK__COMPLAIN__9039AECE805E72D8" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="Complaint_Case_Claim_SKEY" sortOrder="ASCENDING"/>
+    </index>
+    <index name="XIF1COMPLAINT_CASE_CLAIM" type="OTHER" unique="false">
+      <indexColumn name="Complaint_Case_SKEY" sortOrder="ASCENDING"/>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="FK__COMPLAINT__Compl__5A1103C7" primaryKeyName="PK__COMPLAIN__19C61771997930E0" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CASE">
+      <foreignKeyColumn primaryColumnName="Complaint_Case_SKEY" foreignColumnName="Complaint_Case_SKEY"/>
+    </foreignKey>
+    <foreignKey name="FK__COMPLAINT__Compl__0F78F03F" primaryKeyName="XIF17COMPLAINT_CASE" primaryKeyTableName="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CASE">
+      <foreignKeyColumn primaryColumnName="Complaint_Case_SKEY" foreignColumnName="Complaint_Case_SKEY"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/EDP_CURATED/dbo/COMPLAINT_CASE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Case_Category_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Case_Resolution_Type_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Case_Rationale_Type_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Case_Resolution_Summary_TXT">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="Complaint_Case_Type_CD" nullable="false">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Resolution_Turn_Around_TM_Calendar_Days_QTY">
+        <datatype type="DECIMAL" maxDigits="5" maxFractionalDigits="0"/>
+      </element>
+      <element name="Auto_Pay_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Extension_Required_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Review_Type_NM">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Acknowledgement_Turn_Around_TM_Calendar_Days_QTY">
+        <datatype type="DECIMAL" maxDigits="5" maxFractionalDigits="0"/>
+      </element>
+      <element name="Extension_DT">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Dental_Consultant_NM">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Issue_With_CD">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="Independent_Review_Organization_Case_ID">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="Expedited_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Patient_Quality_Issue_Score_VAL">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="External_Appeal_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="CMS_Fair_Hearing_Decision_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="CMS_Fair_Hearing_Case_ID">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="External_Peer_Review_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Performance_Guarantee_Distinct_Category_NM">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Database_Partition_DTM" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Complaint_Case_SKEY" nullable="false">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Inquiry_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Appeals_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Grievance_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Managed_By_Workforce_Participant_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Resolution_Turn_Around_Time_Hours_QTY">
+        <datatype type="DECIMAL" maxDigits="6" minFractionalDigits="1" maxFractionalDigits="1"/>
+      </element>
+      <element name="Verbal_Notification_Of_Resolution_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Written_Notification_Of_Resolution_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Request_For_Information_Process_Needed_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Initiating_Regulatory_Agency_Resolution_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Initiating_Regulatory_Agency_Resolution_TXT">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Performance_Guarantee_IND" nullable="false">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Resolution_Deadline_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:3:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:4:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:5:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1609175756634</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5681189</attribute>
+  <attribute name="creatorUserName" type="STRING">introspectadmin</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5681189</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1609175756634</attribute>
+</metadata>

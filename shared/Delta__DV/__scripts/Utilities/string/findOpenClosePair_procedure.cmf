@@ -1,0 +1,341 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="findOpenClosePair" path="/shared/Delta_DV/_scripts/Utilities/string/findOpenClosePair" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[findOpenClosePair:
+
+&#x9;Search through the sql script to find the corresponding right close character ) for the starting left open character (
+&#x9;This assumes there is only a single outer () pair such as P1(  P2 ( ) ).  This pattern is not supported in this context: P1 ( )  P2 ( )
+&#x9;By finding the logical end to the analytical function part 1, is insures that the follow-on searches will have no issues 
+&#x9;&#x9;with embedded commas or other search text that might interfere with the rest of the searches.
+ 
+&#x9;Input:
+&#x9;&#x9;sqlScript&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;&#x9;-- The sql script or expression to parse
+&#x9;&#x9;begPos&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;&#x9;-- The position to start searching for the first open/close pair P1 ( expression )
+&#x9;&#x9;codingList&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;&#x9;-- The optional coding list to use to encode the return value.  If null then no encoding is done.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Examples of a coding list derived from the constants tab in the encodedValues resource:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &apos; &apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;encodedSpace=_0020
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;+    -        **       *     /     %     !
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;codingListArithmetic=_002B,_002D,_002A_002A,_002A,_002F,_0025,_0021
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   !=         &lt;&gt;         &gt;=         &lt;=         &gt;          &lt;          =
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;codingListComparisonOperators=_003C_003E,_0021_003D,_003E_003D,_003C_003D,_003E_0000,_003C_0000,_003D_0000
+&#x9;&#x9;openingDelim&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The opening character such as left paren ( or left bracket [
+&#x9;&#x9;closingDelim&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The closing character such as right paren ) or right bracket ].  The opening and closing character cannot be the same.
+&#x9;&#x9;trimText&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- Trim the extractedScript. 0 do not trim, 1=do trim.
+&#x9;Output:
+&#x9;&#x9;openingDelimPos&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The position of the left open character for the pair.
+&#x9;&#x9;closingDelimPos&#x9;&#x9;&#x9;INTEGER&#x9;&#x9;&#x9;-- The position of the right close character for the pair.
+&#x9;&#x9;extractedScript&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- This is the first extracted &quot;expression&quot; between the opening and closing pair P1 ( expression ).
+&#x9;&#x9;sqlScriptEncoded&#x9;&#x9;LONGVARCHAR, &#x9;-- This is the encoded original sqlScript that was passed in.  If no codingList was passed in then it is the original script as is.
+&#x9;&#x9;extractedScriptBefore&#x9;LONGVARCHAR, &#x9;-- This is the first extracted &quot;expression&quot; before the opening pair &quot;exp_before P1 ( expression ) exp_after&quot;.
+&#x9;&#x9;extractedScriptAfter&#x9;LONGVARCHAR &#x9;-- This is the first extracted &quot;expression&quot; after the closing pair &quot;exp_before P1 ( expression ) exp_after&quot;.
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2017.2&#x9;&#x9;03/09/2017&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.4&#x9;&#x9;&#x9;Created new
+&#x9;2019.200&#x9;04/19/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Migrated from KPImetrics to Utilities
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="sqlScript" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="begPos" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="codingList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="openingDelim" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="closingDelim" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="trimText" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="openingDelimPos" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="closingDelimPos" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="extractedScript" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="sqlScriptEncoded" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="extractedScriptBefore" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="extractedScriptAfter" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/_debug" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/getCodedString" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inCodingType" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inEncodingActions" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="codingList" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inModuleNameInvoking" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inDebug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inModuleQualifer" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="outString" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;findOpenClosePair:
+
+&#x9;Search through the sql script to find the corresponding right close character ) for the starting left open character (
+&#x9;This assumes there is only a single outer () pair such as P1(  P2 ( ) ).  This pattern is not supported in this context: P1 ( )  P2 ( )
+&#x9;By finding the logical end to the analytical function part 1, is insures that the follow-on searches will have no issues 
+&#x9;&#x9;with embedded commas or other search text that might interfere with the rest of the searches.
+ 
+&#x9;Input:
+&#x9;&#x9;sqlScript&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;&#x9;-- The sql script or expression to parse
+&#x9;&#x9;begPos&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;&#x9;-- The position to start searching for the first open/close pair P1 ( expression )
+&#x9;&#x9;codingList&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;&#x9;-- The optional coding list to use to encode the return value.  If null then no encoding is done.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- Examples of a coding list derived from the constants tab in the encodedValues resource:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  &apos; &apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;encodedSpace=_0020
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;+    -        **       *     /     %     !
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;codingListArithmetic=_002B,_002D,_002A_002A,_002A,_002F,_0025,_0021
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   !=         &lt;&gt;         &gt;=         &lt;=         &gt;          &lt;          =
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;codingListComparisonOperators=_003C_003E,_0021_003D,_003E_003D,_003C_003D,_003E_0000,_003C_0000,_003D_0000
+&#x9;&#x9;openingDelim&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The opening character such as left paren ( or left bracket [
+&#x9;&#x9;closingDelim&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The closing character such as right paren ) or right bracket ].  The opening and closing character cannot be the same.
+&#x9;&#x9;trimText&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- Trim the extractedScript. 0 do not trim, 1=do trim.
+&#x9;Output:
+&#x9;&#x9;openingDelimPos&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The position of the left open character for the pair.
+&#x9;&#x9;closingDelimPos&#x9;&#x9;&#x9;INTEGER&#x9;&#x9;&#x9;-- The position of the right close character for the pair.
+&#x9;&#x9;extractedScript&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- This is the first extracted &quot;expression&quot; between the opening and closing pair P1 ( expression ).
+&#x9;&#x9;sqlScriptEncoded&#x9;&#x9;LONGVARCHAR, &#x9;-- This is the encoded original sqlScript that was passed in.  If no codingList was passed in then it is the original script as is.
+&#x9;&#x9;extractedScriptBefore&#x9;LONGVARCHAR, &#x9;-- This is the first extracted &quot;expression&quot; before the opening pair &quot;exp_before P1 ( expression ) exp_after&quot;.
+&#x9;&#x9;extractedScriptAfter&#x9;LONGVARCHAR &#x9;-- This is the first extracted &quot;expression&quot; after the closing pair &quot;exp_before P1 ( expression ) exp_after&quot;.
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2017.2&#x9;&#x9;03/09/2017&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.4&#x9;&#x9;&#x9;Created new
+&#x9;2019.200&#x9;04/19/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Migrated from KPImetrics to Utilities
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE findOpenClosePair(
+&#x9;IN&#x9;sqlScript&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The sql script or expression to parse
+&#x9;IN&#x9;begPos&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The position to start searching for the first open/close pair P1 ( expression )
+&#x9;IN&#x9;codingList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- The optional coding list to use to encode the return value.  If null then no encoding is done.
+&#x9;IN&#x9;openingDelim&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The opening delimiter such as left paren ( or left bracket [
+&#x9;IN&#x9;closingDelim&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The closing delimiter such as right paren ) or right bracket ].  The opening and closing character cannot be the same.
+&#x9;IN &#x9;trimText&#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- Trim the extractedScript. 0 do not trim, 1=do trim.
+&#x9;OUT openingDelimPos&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The position of the left open character for the pair.
+&#x9;OUT closingDelimPos&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The position of the right close character for the pair.
+&#x9;OUT extractedScript&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- This is the first extracted &quot;expression&quot; between the opening and closing pair P1 ( expression ).
+&#x9;OUT sqlScriptEncoded&#x9;&#x9;LONGVARCHAR, &#x9;-- This is the encoded original sqlScript that was passed in.  If no codingList was passed in then it is the original script as is.
+&#x9;OUT extractedScriptBefore&#x9;LONGVARCHAR, &#x9;-- This is the first extracted &quot;expression&quot; before the opening pair &quot;exp_before P1 ( expression ) exp_after&quot;.
+&#x9;OUT extractedScriptAfter&#x9;LONGVARCHAR &#x9;-- This is the first extracted &quot;expression&quot; after the closing pair &quot;exp_before P1 ( expression ) exp_after&quot;.
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;findOpenClosePair&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/&quot;_debug&quot;.debug;
+&#x9;DECLARE debug4&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT &apos;N&apos;;
+&#x9;DECLARE debugPrintSize&#x9;&#x9;&#x9;INTEGER DEFAULT 60000;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE len&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pairCount&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE ch&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE validOpeningDelimList&#x9;VARCHAR DEFAULT &apos;(,{,[,&lt;,/&apos;;
+&#x9;DECLARE validClosingDelimList&#x9;VARCHAR DEFAULT &apos;),},],&gt;,\&apos;;
+&#x9;DECLARE INVALID_DELIMITER&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE EX_NULL_VALUE&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE EX_SAME_VALUE&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Initialize parameters
+&#x9;set extractedScript = null;
+&#x9;set sqlScriptEncoded = sqlScript;
+&#x9;set extractedScriptBefore = null;
+&#x9;set extractedScriptAfter = null;
+&#x9;set openingDelimPos = 0;
+&#x9;set closingDelimPos = 0;
+&#x9;if (debug = &apos;Y&apos;) then
+&#x9;&#x9;call print(moduleName||&apos; :  begPos=&apos;||begPos||&apos;  openingDelim=&apos;||TRIM(NVL(openingDelim,&apos;  &apos;))||&apos;  closingDelim=&apos;||TRIM(NVL(closingDelim,&apos;  &apos;))||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  sqlScript=[&apos;||SUBSTRING(RTRIM(NVL(sqlScript,&apos;  &apos;)),1,debugPrintSize));
+&#x9;end if;
+&#x9;if (openingDelim is null or length(trim(openingDelim)) = 0) then
+&#x9;&#x9;raise INVALID_DELIMITER value moduleName||&apos; : The input variable &quot;openingDelim&quot; cannot be null or blank.&apos;;
+&#x9;end if;
+&#x9;if (closingDelim is null or length(trim(closingDelim)) = 0) then
+&#x9;&#x9;raise INVALID_DELIMITER value moduleName||&apos; : The input variable &quot;closingDelim&quot; cannot be null or blank.&apos;;
+&#x9;end if;
+&#x9;if (openingDelim = closingDelim) then
+&#x9;&#x9;raise INVALID_DELIMITER value moduleName||&apos; : The input variables &quot;openingDelim&quot;=&quot;&apos;||openingDelim||&apos;&quot; and &quot;closingDelim&quot;=&quot;&apos;||closingDelim||&apos;&quot; cannot be the same.&apos;;
+&#x9;end if;
+&#x9;-- Determine if the opening delimiter is valid
+&#x9;set i = 1;
+&#x9;set len = LENGTH(openingDelim);
+&#x9;while (i &lt;= len) do
+&#x9;&#x9;set ch = SUBSTRING(openingDelim,i,1);
+&#x9;&#x9;if (INSTR(validOpeningDelimList, ch) = 0) then
+&#x9;&#x9;&#x9;raise INVALID_DELIMITER value &apos;The opening delimiter=&quot;&apos;||openingDelim||&apos;&quot; contains 1 or more characters that are not members of the valid opening list: &quot;&apos;||validOpeningDelimList||&apos;&quot;&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;set i = i + 1;
+&#x9;end while;
+&#x9;-- Determine if the closing delimiter is valid
+&#x9;set i = 1;
+&#x9;set len = LENGTH(closingDelim);
+&#x9;while (i &lt;= len) do
+&#x9;&#x9;set ch = SUBSTRING(closingDelim,i,1);
+&#x9;&#x9;if (INSTR(validClosingDelimList, ch) = 0) then
+&#x9;&#x9;&#x9;raise INVALID_DELIMITER value &apos;The closing delimiter=&quot;&apos;||closingDelim||&apos;&quot; contains 1 or more characters that are not members of the valid closing list: &quot;&apos;||validClosingDelimList||&apos;&quot;&apos;;
+&#x9;&#x9;end if;
+&#x9;&#x9;set i = i + 1;
+&#x9;end while;
+
+&#x9;-- Extract the script text
+&#x9;if (sqlScript IS NOT NULL AND LENGTH(TRIM(sqlScript)) &gt; 0) then
+&#x9;&#x9;-- Search through the sql script to find the corresponding right paren ) for the starting left paren (
+&#x9;&#x9;-- This assumes there is only a single outer () pair such as P1(  P2 ( ) ).  
+&#x9;&#x9;-- This pattern is not supported in this context: P1 ( )  P2 ( )
+&#x9;&#x9;set extractedScript = &apos;&apos;;
+&#x9;&#x9;set i = begPos;
+&#x9;&#x9;set pairCount = -1;
+&#x9;&#x9;parseLoop:
+&#x9;&#x9;while (i &lt;= LENGTH(sqlScript)) do
+&#x9;&#x9;&#x9;set ch = substring(sqlScript,i,1);
+&#x9;&#x9;&#x9;if (ch = openingDelim) then
+&#x9;&#x9;&#x9;&#x9;if (pairCount &lt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set pairCount = 0;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;set pairCount = pairCount + 1;
+&#x9;&#x9;&#x9;&#x9;if (openingDelimPos = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set openingDelimPos = i;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;if (ch = closingDelim) then
+&#x9;&#x9;&#x9;&#x9;set pairCount = pairCount - 1;
+&#x9;&#x9;&#x9;&#x9;if (pairCount = 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set closingDelimPos = i;
+&#x9;&#x9;&#x9;&#x9;&#x9;leave parseLoop;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set i = i + 1;
+&#x9;&#x9;end while;
+&#x9;&#x9;if (debug4 = &apos;Y&apos;) then
+&#x9;&#x9;&#x9;call print(moduleName||&apos; :  begPos=&apos;||begPos||&apos;  openingDelimPos=&apos;||openingDelimPos||&apos;  closingDelimPos=&apos;||closingDelimPos);
+&#x9;&#x9;end if;
+
+&#x9;&#x9;if (openingDelimPos &gt; 0 and closingDelimPos &gt; 0) then
+&#x9;&#x9;&#x9;set extractedScript = SUBSTRING(sqlScript, openingDelimPos+1, closingDelimPos-openingDelimPos-1);
+&#x9;&#x9;&#x9;if (trimText is not null and trimText = 1) then
+&#x9;&#x9;&#x9;&#x9;set extractedScript = TRIM(extractedScript);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set extractedScriptBefore = SUBSTRING(sqlScript, 1, openingDelimPos-1);
+&#x9;&#x9;&#x9;set extractedScriptAfter = SUBSTRING(sqlScript, closingDelimPos+1);
+
+&#x9;&#x9;&#x9;-- Encode the coding list within opening and closing characters
+&#x9;&#x9;&#x9;if (codingList is not null and length(trim(codingList)) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/getCodedString(&apos;E&apos;, &apos;N&apos;, codingList, extractedScript, moduleName, debug4, &apos;extractedScript&apos;, extractedScript);
+&#x9;&#x9;&#x9;&#x9;if (openingDelimPos = 1) then
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlScriptEncoded = extractedScript||SUBSTRING(sqlScript,closingDelimPos);
+&#x9;&#x9;&#x9;&#x9;&#x9;set closingDelimPos = length(extractedScript) + 1;
+&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlScriptEncoded = SUBSTRING(sqlScript, 1, openingDelimPos)||extractedScript||SUBSTRING(sqlScript,closingDelimPos);
+&#x9;&#x9;&#x9;&#x9;&#x9;set closingDelimPos = openingDelimPos + length(extractedScript) + 1;
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1489071144247</attribute>
+  <attribute name="creatorUserDomain" type="STRING">ldap</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4005</attribute>
+  <attribute name="creatorUserName" type="STRING">zkxl6un</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4005</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/154</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/91</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1489071144247</attribute>
+</metadata>

@@ -1,0 +1,259 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getNodeFromXML" path="/shared/Delta_DV/_scripts/Utilities/xml/getNodeFromXML" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getNodeFromXML:
+&#x9;Given a qualified XPath, extract the node tree from the incoming XML.
+ 
+&#x9;Input:
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;&#x9;namespaces - any string with the valid namespaces for the incoming XML  
+&#x9;&#x9;&#x9;Values: e.g. xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;
+&#x9;&#x9;&#x9;&#x9;     xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot; 
+&#x9;&#x9;&#x9;&#x9;     xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;
+&#x9;&#x9;inXpath - xpath statement used to extract the value at that location in the XML 
+&#x9;&#x9;&#x9;Values: e.g. /Book/Chapter
+&#x9;&#x9;iteration&#x9;&#x9;0=get all iterations, 1=get 1st occurrence only
+&#x9;&#x9;inXml - any XML document
+&#x9;&#x9;&#x9;Values: e.g. &lt;Book xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;sam:Name sam:isbn=&quot;12-3456-123&quot;&gt;Test&lt;/sam:Name&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Chapter&gt;Test Data&lt;/Chapter&gt;
+&#x9;&#x9;&#x9;&#x9;     &#x9;&lt;/Book&gt;
+&#x9;Output:
+&#x9;&#x9;outValue - text value from the XML document as directed by the XPath.  Empty String returned if node not found.
+&#x9;&#x9;&#x9;Values: &lt;Chapter&gt;Test Data&lt;/Chapter&gt;
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;09/01/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="namespaces" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="inXpath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="iteration" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inXml" direction="IN" nullable="true">
+      <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+    <parameter name="outValue" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/TypeDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="moduleName" direction="IN">
+        <datatype referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="messageText" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/returnFolderNameAndFolderPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="mode" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="folderName" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="folderPath" direction="OUT">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/findString" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="searchString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="stringToSearch" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="direction" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="pos" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getNodeFromXML:
+&#x9;Given a qualified XPath, extract the node tree from the incoming XML.
+ 
+&#x9;Input:
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;&#x9;namespaces - any string with the valid namespaces for the incoming XML  
+&#x9;&#x9;&#x9;Values: e.g. xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;
+&#x9;&#x9;&#x9;&#x9;     xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot; 
+&#x9;&#x9;&#x9;&#x9;     xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;
+&#x9;&#x9;inXpath - xpath statement used to extract the value at that location in the XML 
+&#x9;&#x9;&#x9;Values: e.g. /Book/Chapter
+&#x9;&#x9;iteration&#x9;&#x9;0=get all iterations, 1=get 1st occurrence only
+&#x9;&#x9;inXml - any valid XML document
+&#x9;&#x9;&#x9;Values: e.g. &lt;Book xmlns:sam=&quot;http://www.compositesw.com/samples/mynamespace/v1.0&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;sam:Name sam:isbn=&quot;12-3456-123&quot;&gt;Test&lt;/sam:Name&gt;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&lt;Chapter&gt;Test Data&lt;/Chapter&gt;
+&#x9;&#x9;&#x9;&#x9;     &#x9;&lt;/Book&gt;
+&#x9;Output:
+&#x9;&#x9;outValue - text value from the XML document as directed by the XPath.  Empty String returned if node not found.
+&#x9;&#x9;&#x9;Values: &lt;Chapter&gt;Test Data&lt;/Chapter&gt;
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;09/01/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new.
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getNodeFromXML(
+&#x9;IN debug&#x9;&#x9;&#x9;CHAR(1),
+&#x9;IN namespaces&#x9;&#x9;LONGVARCHAR,
+&#x9;IN inXpath&#x9;&#x9;&#x9;LONGVARCHAR,
+&#x9;IN iteration&#x9;&#x9;INTEGER, -- 0=get all iterations, 1=get 1st occurrence only
+&#x9;IN inXml&#x9;&#x9;&#x9;XML,
+&#x9;OUT outValue&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;VARCHAR DEFAULT &apos;getNodeFromXML()&apos;;
+&#x9;DECLARE&#x9;xsltExpr &#x9;&#x9;VARCHAR(2048);
+&#x9;DECLARE outXML&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE enclosingNode&#x9;VARCHAR(255);
+&#x9;DECLARE enclosingNodeLen INTEGER;
+&#x9;DECLARE beginPos&#x9;&#x9;INTEGER;
+&#x9;DECLARE endPos&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE emptyNodePos&#x9;INTEGER;
+&#x9;DECLARE tempPath&#x9;&#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.pathType;
+&#x9;DECLARE copy_options&#x9;VARCHAR DEFAULT &apos;@*|node()&apos;; -- get all attributes and nodes and return empty ones also
+&#x9;DECLARE direction&#x9;&#x9;CHAR(1);
+
+&#x9;-- extract the enclosing node for the XML being retrieved.
+&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/returnFolderNameAndFolderPath(inXpath, &apos;E&apos;, enclosingNode, tempPath);
+&#x9;set enclosingNode = REPLACE(enclosingNode, &apos;@&apos;, &apos;&apos;); -- remove any attribute designations
+
+&#x9;set xsltExpr = 
+&apos;&lt;xsl:stylesheet version=&quot;1.0&quot;
+&#x9;xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; 
+&#x9;&apos;|| namespaces || &apos;&gt;
+ &lt;xsl:template match=&quot;&apos; || inXpath ||&apos;&quot;&gt;
+    &lt;xsl:copy copy-namespaces=&quot;yes&quot;&gt;
+      &lt;xsl:copy-of select=&quot;&apos;||copy_options||&apos;&quot;/&gt;
+    &lt;/xsl:copy&gt;
+ &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+&apos;;
+&#x9;if (upper(debug) = &apos;Y&apos; or upper(debug) = &apos;T&apos;) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;XSLT=&apos;||xsltExpr);
+&#x9;end if;&#x9;
+&#x9;set outXML = XSLT( inXml, xsltExpr );
+&#x9;set outValue = cast(outXML as longvarchar);
+&#x9;if (upper(debug) = &apos;Y&apos; or upper(debug) = &apos;T&apos;) then
+--&#x9;&#x9;call /shared/Utilities/log/logDebugMessage(moduleName,debug,&apos;outValue after XSLT=&apos;||outValue);
+&#x9;end if;
+&#x9;if (outValue IS NOT NULL AND LENGTH(&apos;|&apos;||outValue||&apos;|&apos;) &gt; 2) then
+&#x9;&#x9;-- set the direction to search for the enclosing node
+&#x9;&#x9;if (iteration = 0) then
+&#x9;&#x9;&#x9;set direction = &apos;R&apos;; -- get all of the interations
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;set direction = &apos;F&apos;; -- get the first iteration only
+&#x9;&#x9;end if;
+&#x9;&#x9;set beginPos = POSITION(&apos;&lt;&apos;||enclosingNode in outValue);
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/findString(&apos;&lt;/&apos;||enclosingNode||&apos;&gt;&apos;, outValue, direction, endPos);
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/findString(&apos;/&gt;&apos;, outValue, direction, emptyNodePos);
+&#x9;if (upper(debug) = &apos;Y&apos; or upper(debug) = &apos;T&apos;) then
+--&#x9;&#x9;&#x9;call /shared/Utilities/log/logDebugMessage(moduleName,debug,&apos;beginPos=&apos;||beginPos||&apos;  endPos=&apos;||endPos||&apos;  emptyNodePos=&apos;||emptyNodePos);&#x9;
+&#x9;&#x9;end if;
+&#x9;&#x9;if (beginPos = 0) then
+&#x9;&#x9;&#x9;set outValue = &apos;&apos;; -- return empty if begin enclosing node not found
+&#x9;&#x9;else
+&#x9;&#x9;&#x9;if (endPos &gt; emptyNodePos) then
+&#x9;&#x9;&#x9;&#x9;set enclosingNodeLen = LENGTH(&apos;&lt;/&apos;||enclosingNode||&apos;&gt;&apos;);
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;if (direction = &apos;F&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;if (endPos &lt; emptyNodePos and endPos &lt;&gt; 0) then
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set enclosingNodeLen = LENGTH(&apos;&lt;/&apos;||enclosingNode||&apos;&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set endPos = emptyNodePos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set enclosingNodeLen = LENGTH(&apos;/&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;set endPos = emptyNodePos;
+&#x9;&#x9;&#x9;&#x9;&#x9;set enclosingNodeLen = LENGTH(&apos;/&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;set outValue = substring(outValue, beginPos, endPos-beginPos + enclosingNodeLen);
+&#x9;&#x9;end if;
+&#x9;end if;
+&#x9;if (upper(debug) = &apos;Y&apos; or upper(debug) = &apos;T&apos;) then
+&#x9;&#x9;call /shared/Delta_DV/&quot;_scripts&quot;/Utilities/log/logDebugMessage(moduleName,debug,&apos;XPath=&apos;||inXpath || &apos;    NODE VALUE: [&apos;||NVL(outValue,&apos;null&apos;)||&apos;]&apos;);&#x9;
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="p:4:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

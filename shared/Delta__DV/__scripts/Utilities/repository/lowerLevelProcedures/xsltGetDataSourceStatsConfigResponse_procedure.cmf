@@ -1,0 +1,464 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="xsltGetDataSourceStatsConfigResponse" path="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/xsltGetDataSourceStatsConfigResponse" type="PROCEDURE" subtype="XSLT_TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[xsltGetDataSourceStatsConfigResponse:
+
+    This XSLT Transformation will retrieve the statistics configuration for a given data source
+
+
+    Input:
+        path - the path to the resource for which to get statistics gathering configuration 
+            Values: a character value
+
+        type - the type of resource which the path referrs to  
+            Values: DATA_SOURCE, etc.
+
+
+    Output:
+        configured - the statistics gathering process is configured
+            Values: 1 for yes, 0 for no
+
+        useEnabled - the statistics gathering process is enabled
+            Values: 1 for yes, 0 for no
+
+        tableGatherDefault - contains the default gathering mode for tables in this data source
+            Values: &apos;NONE&apos;, &apos;TABLE_BOUNDARY&apos;, &apos;COLUMN_BOUNDARY&apos;, or &apos;ALL&apos;
+
+        numThreads - the number of concurrent threads/queries that may be used for gathering
+            Values: Any integer value
+
+        maxTime - the number of minutes after which a thread/query will be considered failed
+            Values: Any integer value
+
+        refreshMode - the refresh mode
+            Values: &apos;MANUAL&apos;, or kicked off by the user, or &apos;SCHEDULED&apos;, or running periodically
+
+        scheduleMode - The schedule mode used for refresh
+            Values: &apos;INTERVAL&apos; if the statistics are refreshed every X minutes/hours/weeks/etc,
+                    &apos;CALENDAR&apos; if the statistics are refreshed at some set date and time
+
+        startTime - when the first gathering should occurr
+            Values: any timestamp value
+
+        fromTimeInADay - an integer representing the start of a processing window
+            Values: any integer value representing time
+
+        endTimeInADay - an integer representing the end of a processing window
+            Values: any integer value representing time
+
+        recurringDay - the day of the week on which this schedule is effective
+            Values: any integer representing a day of the week
+
+        interval - the number of periods between statistics refreshes
+            Values: any integer value
+
+        period - the unit of measure for the refresh interval
+            Values: &quot;HOUR&quot;, &quot;DAY&quot;, &quot;WEEK&quot;, or &quot;MONTH&quot;
+
+        count - the number of executions
+            Values: any integer value
+
+        isCluster - a flag which indicates these statistics are used in a cluster
+            Values: 0 for false, 1 for true
+
+
+    Exceptions:  none
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+    2014.3&#x9;&#x9;07/01/2014      Tony Young          6.2.6.0.48      Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="getDataSourceStatisticsConfig" direction="IN" nullable="true">
+      <datatype name="getDataSourceStatisticsConfig" extendedName="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfig" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfig" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfig">
+        <schemaDatatype>
+          <datatype name="getDataSourceStatisticsConfig" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getDataSourceStatisticsConfigRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+            <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+              <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="outputs" direction="OUT" nullable="false">
+      <datatype name="outputs" type="TABLE" refId="256">
+        <element name="configured">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="useEnabled">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="tableGatherDefault">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="numThreads">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="maxTime">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="refreshMode">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="scheduleMode">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="startTime">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="fromTimeInADay">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="endTimeInADay">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="recurringDay">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="interval">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="period">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="count">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="isCluster">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/services/webservices/system/admin/resource/operations/ResourceSchema" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/getDataSourceStatisticsConfig" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getDataSourceStatisticsConfig" direction="IN">
+        <datatype name="getDataSourceStatisticsConfig" extendedName="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfig" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfig" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfig">
+          <schemaDatatype>
+            <datatype name="getDataSourceStatisticsConfig" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getDataSourceStatisticsConfigRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="getDataSourceStatisticsConfigResponse" direction="OUT">
+        <datatype name="getDataSourceStatisticsConfigResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfigResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfigResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getDataSourceStatisticsConfigResponse">
+          <schemaDatatype>
+            <datatype name="getDataSourceStatisticsConfigResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getDataSourceStatisticsConfigResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="513">
+              <element name="dataSourceStatisticsConfig" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="dataSourceStatisticsConfig" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="configured" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="useEnabled" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="tableGatherDefault" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="statsDataSourceDefault" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="numThreads" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="maxTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="refresh" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="refresh" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="refreshMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="schedule" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                        <datatype name="schedule" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="scheduleMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="startTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                          </element>
+                          <element name="fromTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                          </element>
+                          <element name="endTimeInADay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="long" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="integer" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER"/>
+                          </element>
+                          <element name="recurringDay" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="interval" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="period" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="calendarPeriod" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="count" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="isCluster" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="1537">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1403611070859</attribute>
+  <attribute name="creatorUserDomain" type="STRING">vodacom</attribute>
+  <attribute name="creatorUserName" type="STRING">youngw</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="sourcePath" type="STRING">/services/webservices/system/admin/resource/operations/getDataSourceStatisticsConfig</attribute>
+  <attribute name="sourceType" type="SHORT">3</attribute>
+  <attribute name="transformModel" type="BYTE_ARRAY">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</attribute>
+  <attribute name="xqueryModel" type="NULL"/>
+  <attribute name="xslt" type="STRING">
+&lt;xslt:stylesheet version=&quot;2.0&quot; xmlns:csw-xform=&quot;http://www.compositesw.com/2003/xform&quot; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/resource&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:xslt=&quot;http://www.w3.org/1999/XSL/Transform&quot;&gt;
+  &lt;xslt:template match=&quot;/&quot;&gt;
+    &lt;xslt:variable name=&quot;_configured&quot;/&gt;
+    &lt;xslt:variable name=&quot;_useEnabled&quot;/&gt;
+    &lt;xslt:variable name=&quot;_tableGatherDefault&quot;/&gt;
+    &lt;xslt:variable name=&quot;_numThreads&quot;/&gt;
+    &lt;xslt:variable name=&quot;_maxTime&quot;/&gt;
+    &lt;xslt:variable name=&quot;_refreshMode&quot;/&gt;
+    &lt;xslt:variable name=&quot;_scheduleMode&quot;/&gt;
+    &lt;xslt:variable name=&quot;_startTime&quot;/&gt;
+    &lt;xslt:variable name=&quot;_fromTimeInADay&quot;/&gt;
+    &lt;xslt:variable name=&quot;_endTimeInADay&quot;/&gt;
+    &lt;xslt:variable name=&quot;_recurringDay&quot;/&gt;
+    &lt;xslt:variable name=&quot;_interval&quot;/&gt;
+    &lt;xslt:variable name=&quot;_period&quot;/&gt;
+    &lt;xslt:variable name=&quot;_count&quot;/&gt;
+    &lt;xslt:variable name=&quot;_isCluster&quot;/&gt;
+    &lt;xslt:element name=&quot;results&quot;&gt;
+      &lt;xslt:for-each select=&quot;ns1:getDataSourceStatisticsConfigResponse&quot;&gt;
+        &lt;xslt:for-each select=&quot;ns1:dataSourceStatisticsConfig&quot;&gt;
+          &lt;xslt:variable name=&quot;_configured&quot; select=&quot;ns1:configured&quot;/&gt;
+          &lt;xslt:variable name=&quot;_useEnabled&quot; select=&quot;ns1:useEnabled&quot;/&gt;
+          &lt;xslt:variable name=&quot;_tableGatherDefault&quot; select=&quot;ns1:tableGatherDefault&quot;/&gt;
+          &lt;xslt:variable name=&quot;_numThreads&quot; select=&quot;ns1:numThreads&quot;/&gt;
+          &lt;xslt:variable name=&quot;_maxTime&quot; select=&quot;ns1:maxTime&quot;/&gt;
+          &lt;xslt:for-each select=&quot;ns1:refresh&quot;&gt;
+            &lt;xslt:variable name=&quot;_refreshMode&quot; select=&quot;ns1:mode&quot;/&gt;
+            &lt;xslt:for-each select=&quot;ns1:schedule&quot;&gt;
+              &lt;xslt:variable name=&quot;_scheduleMode&quot; select=&quot;ns1:mode&quot;/&gt;
+              &lt;xslt:variable name=&quot;_startTime&quot; select=&quot;ns1:startTime&quot;/&gt;
+              &lt;xslt:variable name=&quot;_fromTimeInADay&quot; select=&quot;ns1:fromTimeInADay&quot;/&gt;
+              &lt;xslt:variable name=&quot;_endTimeInADay&quot; select=&quot;ns1:endTimeInADay&quot;/&gt;
+              &lt;xslt:variable name=&quot;_recurringDay&quot; select=&quot;ns1:recurringDay&quot;/&gt;
+              &lt;xslt:variable name=&quot;_interval&quot; select=&quot;ns1:interval&quot;/&gt;
+              &lt;xslt:variable name=&quot;_period&quot; select=&quot;ns1:period&quot;/&gt;
+              &lt;xslt:variable name=&quot;_count&quot; select=&quot;ns1:count&quot;/&gt;
+              &lt;xslt:variable name=&quot;_isCluster&quot; select=&quot;ns1:isCluster&quot;/&gt;
+              &lt;xslt:element name=&quot;result&quot;&gt;
+                &lt;xslt:element name=&quot;configured&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_configured&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;useEnabled&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_useEnabled&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;tableGatherDefault&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_tableGatherDefault&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;numThreads&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_numThreads&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;maxTime&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_maxTime&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;refreshMode&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_refreshMode&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;scheduleMode&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_scheduleMode&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;startTime&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_startTime&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;fromTimeInADay&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_fromTimeInADay&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;endTimeInADay&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_endTimeInADay&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;recurringDay&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_recurringDay&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;interval&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_interval&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;period&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_period&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;count&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_count&quot;/&gt;
+                &lt;/xslt:element&gt;
+                &lt;xslt:element name=&quot;isCluster&quot;&gt;
+                  &lt;xslt:value-of select=&quot;$_isCluster&quot;/&gt;
+                &lt;/xslt:element&gt;
+              &lt;/xslt:element&gt;
+            &lt;/xslt:for-each&gt;
+            &lt;xslt:element name=&quot;result&quot;&gt;
+              &lt;xslt:element name=&quot;configured&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_configured&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;useEnabled&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_useEnabled&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;tableGatherDefault&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_tableGatherDefault&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;numThreads&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_numThreads&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;maxTime&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_maxTime&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;refreshMode&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_refreshMode&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;scheduleMode&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_scheduleMode&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;startTime&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_startTime&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;fromTimeInADay&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_fromTimeInADay&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;endTimeInADay&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_endTimeInADay&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;recurringDay&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_recurringDay&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;interval&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_interval&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;period&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_period&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;count&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_count&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;isCluster&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_isCluster&quot;/&gt;
+              &lt;/xslt:element&gt;
+            &lt;/xslt:element&gt;
+          &lt;/xslt:for-each&gt;
+          &lt;xslt:element name=&quot;result&quot;&gt;
+            &lt;xslt:element name=&quot;configured&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_configured&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;useEnabled&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_useEnabled&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;tableGatherDefault&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_tableGatherDefault&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;numThreads&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_numThreads&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;maxTime&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_maxTime&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;refreshMode&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_refreshMode&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;scheduleMode&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_scheduleMode&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;startTime&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_startTime&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;fromTimeInADay&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_fromTimeInADay&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;endTimeInADay&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_endTimeInADay&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;recurringDay&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_recurringDay&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;interval&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_interval&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;period&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_period&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;count&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_count&quot;/&gt;
+            &lt;/xslt:element&gt;
+            &lt;xslt:element name=&quot;isCluster&quot;&gt;
+              &lt;xslt:value-of select=&quot;$_isCluster&quot;/&gt;
+            &lt;/xslt:element&gt;
+          &lt;/xslt:element&gt;
+        &lt;/xslt:for-each&gt;
+      &lt;/xslt:for-each&gt;
+    &lt;/xslt:element&gt;
+  &lt;/xslt:template&gt;
+&lt;/xslt:stylesheet&gt;</attribute>
+</metadata>

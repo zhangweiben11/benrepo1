@@ -1,0 +1,82 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Complaint_Case_Type_Reason_Association" path="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Case_Type_Reason_Association" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Complaint_Case_Surrogate_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Complaint_Type_Association_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Reason_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Reason_Type_Association_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/Logical/EDP/COMPLAINT_CASE_REASON_TYPE_ASSOCIATION" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Case_Reason_Type_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Complaint_Case_Reason_Type_Association_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Database_Partition_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Complaint_Case_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Case_Complaint_Type_Association_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select&#x9;Complaint_Case_SKEY Complaint_Case_Surrogate_Key,
+&#x9;    Complaint_Case_Complaint_Type_Association_SKEY Complaint_Case_Complaint_Type_Association_Key,
+&#x9;&#x9;Complaint_Case_Reason_Type_CD Complaint_Case_Reason_Type_Code,
+&#x9;&#x9;Complaint_Case_Reason_Type_Association_SKEY Complaint_Case_Reason_Type_Association_Key
+from /shared/Delta_DV/Business/Logical/EDP/COMPLAINT_CASE_REASON_TYPE_ASSOCIATION</attribute>
+  <attribute name="creationDate" type="LONG">1608772137181</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1610568955418</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1608772137181</attribute>
+</metadata>

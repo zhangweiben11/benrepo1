@@ -1,0 +1,454 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getExportResourceList" path="/shared/Delta_DV/_scripts/Utilities/archive/getExportResourceList" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="optionType" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="resourcePathList" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="resourceNum" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="resourceDate" direction="IN" nullable="true">
+      <datatype name="TIMESTAMP" type="DATETIME"/>
+    </parameter>
+    <parameter name="excludePaths" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="includeChildren" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="resourceListXML" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getResourcesByDate" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="optionType" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceNum" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="resourceDate" direction="IN">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="excludePaths" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractTextList" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="preserveDoubleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveSingleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveParenthesis" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveQualifier" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="trimResults" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="textExpression">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    getExportResourceList:
+
+    Construct the list of resources to be exported into a well-formatted XML ready for export.
+&#x9;This procedure is used in conjunction with exportArchiveFile.
+
+    Input:
+&#x9;IN  optionType&#x9;&#x9;INTEGER,
+&#x9;&#x9;&#x9;-- 0: Export a single resource, folder, or double-piped resource list with or without children as per the input variable &quot;includeChildren&quot;
+&#x9;&#x9;&#x9;-- 1: Find the n most recent modified resources in the path (default of n is 1).  results are not ordered
+&#x9;&#x9;&#x9;-- 2: Find the n least recent modified resources in the path (default of n is 1). results are not ordered
+&#x9;&#x9;&#x9;-- 3: Find all resources modified after the passed in resource date
+&#x9;&#x9;&#x9;-- 4: Find all resources modifed before the passed in resource date
+&#x9;&#x9;&#x9;-- 5: Find all resources created after the passed in resource date
+&#x9;&#x9;&#x9;-- 6: Find all resources created before the passed in resource date
+&#x9;&#x9;&#x9;-- 7: [Lineage + modification date] Find the lineage of the passed in resource path where the modification date is after the passed in resource date and exclude paths if applicable.
+
+&#x9;&#x9;resourcePathList - May be an explicit single resource, a container path, a data source path, a published path or a double pipe-separated list of resources to export.
+&#x9;&#x9;&#x9;Example 1: single resource:  &#x9;&#x9;&#x9;&#x9;/shared/test00/CisResources/my_view_1
+&#x9;&#x9;&#x9;Example 2: folder resource: &#x9;&#x9;&#x9;&#x9;/shared/test00/CisResources
+&#x9;&#x9;&#x9;Example 3: data source:&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/shared/test00/DataSources/ds_orders
+&#x9;&#x9;&#x9;Example 4: published web service: &#x9;&#x9;&#x9;/services/webservices/CustomerWS
+&#x9;&#x9;&#x9;Example 5: published table:&#x9;&#x9;&#x9;&#x9;&#x9;/services/databases/MYTEST/CAT1/SCH2/ViewSales
+&#x9;&#x9;&#x9;Example 6: Multiple resources [path||path]:&#x9;/services/databases/MYTEST/CAT1/SCH2||/shared/test00/DataSources||/shared/test00/CisResources
+
+&#x9;&#x9;resourceNum&#x9;- The number of resources to return in the list for optionType 1 or 2.  The default is 1
+
+&#x9;&#x9;resourceDate - A timestamp to compare with the various resources for optionType 3-7.
+
+&#x9;&#x9;excludePaths - A comma-separated list of paths to exclude from the output.  The INSTR function is used so that the paths can be partial paths.  Used by option 7.
+&#x9;&#x9;&#x9;&#x9;&#x9; &#x9;&#x9;Values: e.g. /shared/lab0/Physical/Metadata/   -- Exclude all physical metadata resources
+
+&#x9;&#x9;includeChildren&#x9;- true(default) or false.  If the resource path is a CONTAINER or DATA_SOURCE then includeChildren=true will bring all children of that resource.
+&#x9;&#x9;&#x9;All subfolders of a parent container are also exported.  If the resource path contains multiple double-piped paths, the includeChildren will be applied as provided
+&#x9;&#x9;&#x9;to each path.
+
+    Output:
+        resourceListXML - An XML formatted list of resources ready for archive export.
+&#x9;&#x9;&#x9;&lt;archive:resource&gt;
+&#x9;&#x9;&#x9;  &lt;resource:path&gt;/shared/test00/Business/Logical&lt;/resource:path&gt;
+&#x9;&#x9;&#x9;  &lt;resource:type&gt;CONTAINER&lt;/resource:type&gt;
+&#x9;&#x9;&#x9;  &lt;archive:includeChildren&gt;true&lt;/archive:includeChildren&gt;
+&#x9;&#x9;&#x9;&lt;/archive:resource&gt;
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2020.300&#x9;08/26/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new to assist with exportArchiveFile
+&#x9;2020.400&#x9;10/15/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added XML escape characters for paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getExportResourceList(
+&#x9;IN  debug&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;IN  optionType&#x9;&#x9;&#x9;INTEGER,
+&#x9;&#x9;&#x9;-- 0: Export a single resource, folder, or double-piped resource list with or without children as per the input variable &quot;includeChildren&quot;
+&#x9;&#x9;&#x9;-- 1: Find the n most recent modified resources in the path (default of n is 1).  results are not ordered
+&#x9;&#x9;&#x9;-- 2: Find the n least recent modified resources in the path (default of n is 1). results are not ordered
+&#x9;&#x9;&#x9;-- 3: Find all resources modified after the passed in resource date
+&#x9;&#x9;&#x9;-- 4: Find all resources modifed before the passed in resource date
+&#x9;&#x9;&#x9;-- 5: Find all resources created after the passed in resource date
+&#x9;&#x9;&#x9;-- 6: Find all resources created before the passed in resource date
+&#x9;&#x9;&#x9;-- 7: [Lineage + modification date] Find the lineage of the passed in resource path where the modification date is after the passed in resource date and exclude paths if applicable.
+&#x9;IN  resourcePathList&#x9;LONGVARCHAR,&#x9;-- May be an explicit single resource, a container path, a data source path, a published path or a double pipe-separated list of resources to export.
+&#x9;IN  resourceNum&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The number of resources to return in the list for optionType 1 or 2.  The default is 1
+&#x9;IN  resourceDate&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- A timestamp to compare with the various resources for optionType 3-7.
+&#x9;IN&#x9;excludePaths &#x9;&#x9;LONGVARCHAR,&#x9;-- A comma-separated list of paths to exclude from the output.  The INSTR function is used so that the paths can be partial paths.  Used by option 7.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Values: e.g. /shared/lab0/Physical/Metadata/   -- Exclude all physical metadata resources
+&#x9;IN includeChildren&#x9;&#x9;VARCHAR, &#x9;&#x9;-- true(default) or false.  If the resource path is a CONTAINER or DATA_SOURCE then includeChildren=true will bring all children of that resource.
+&#x9;OUT resourceListXML&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE indent10 &#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;          &apos;;
+&#x9;DECLARE published&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE resourcePath&#x9;&#x9;VARCHAR(4096);
+&#x9;DECLARE resourceType&#x9;&#x9;VARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;SET resourceListXML = &apos;&apos;;
+&#x9;FOR r AS 
+&#x9;&#x9;SELECT textExpression resourcePath FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(resourcePathList, &apos;||&apos;, 0,0,0,0,1)
+&#x9;&#x9;WHERE textExpression IS NOT NULL AND LENGTH(TRIM(textExpression)) &gt; 0
+&#x9;DO
+&#x9;&#x9;SET resourcePath = r.resourcePath;
+&#x9;&#x9;-- Determine the resource type
+&#x9;&#x9;SET published = INSTR(LOWER(resourcePath), &apos;/services/&apos;);
+&#x9;&#x9;-- If the resource path is published then INSTR must retrun a 1 otherwise the phrase /services/ is found within the string and thus it cannot be published if that is the case.
+&#x9;&#x9;IF (published &gt; 1) THEN
+&#x9;&#x9;&#x9;SET published = 0;
+&#x9;&#x9;END IF;
+&#x9;&#x9;getType:
+&#x9;&#x9;FOR r AS SELECT &quot;path&quot;, &quot;type&quot; FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor(resourcePath, null) DO
+&#x9;&#x9;&#x9;IF (published = 1) THEN
+&#x9;&#x9;&#x9;&#x9;IF (r.&quot;type&quot; = &apos;LINK&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resourceType = r.&quot;type&quot;;
+&#x9;&#x9;&#x9;&#x9;&#x9;LEAVE getType;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET resourceType = r.&quot;type&quot;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET resourceType = r.&quot;type&quot;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;-- Export a single resource or folder with or without children as per the input
+&#x9;&#x9;IF (optionType = 0) THEN
+&#x9;&#x9;&#x9;&#x9;-- Construct the resource XML
+&#x9;&#x9;&#x9;&#x9;SET resourceListXML = resourceListXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;&lt;archive:resource&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;  &lt;resource:path&gt;&apos;||CAST(XMLTEXT(resourcePath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;  &lt;resource:type&gt;&apos;||resourceType||&apos;&lt;/resource:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;  &lt;archive:includeChildren&gt;&apos;||NVL(LOWER(includeChildren),&apos;true&apos;)||&apos;&lt;/archive:includeChildren&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;&lt;/archive:resource&gt;&apos;||CHR(10);
+&#x9;&#x9;ELSEIF (optionType &gt;=1 AND optionType &lt;= 7) THEN
+&#x9;&#x9;&#x9;FOR r AS SELECT resPath, resType FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getResourcesByDate(debug, optionType, resourcePath, resourceType, resourceNum, resourceDate, excludePaths) DO
+&#x9;&#x9;&#x9;&#x9;-- Construct the resource XML
+&#x9;&#x9;&#x9;&#x9;SET resourceListXML = resourceListXML ||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;&lt;archive:resource&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;  &lt;resource:path&gt;&apos;||CAST(XMLTEXT(r.resPath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;  &lt;resource:type&gt;&apos;||r.resType||&apos;&lt;/resource:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;  &lt;archive:includeChildren&gt;&apos;||NVL(LOWER(includeChildren),&apos;true&apos;)||&apos;&lt;/archive:includeChildren&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;indent10||&apos;&lt;/archive:resource&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The &quot;optionType&quot;=&apos;||NVL(CAST(optionType AS VARCHAR),&apos;null&apos;)||&apos; is not valie.&apos;;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1597781685482</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1597781685482</attribute>
+</metadata>

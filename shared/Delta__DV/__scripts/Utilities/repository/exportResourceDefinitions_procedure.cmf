@@ -1,0 +1,325 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="exportResourceDefinitions" path="/shared/Delta_DV/_scripts/Utilities/repository/exportResourceDefinitions" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[exportResourceDefinitions
+
+    This procedure generates a complete export of the definitions for all resources defined in 
+    CIS under shared and its subdirectories.  
+
+    A complete export of the definitions for all view and procedure resources contained under 
+    the folder /shared are written under the starting folder on the CIS host indicated by the 
+    input parameter outputDirectory in a folder structure that matches the structure of the
+    namespace tree. Resource definitions are exported to files with a name matching the exported 
+    resource. The file extension of the output file is set by the input parameter outputFileExtension.
+
+    Directories and files are written using the credentials of the account that the CIS server 
+    is running under. Attempts to export resource definitions to directories that the CIS app 
+    account does not have sufficient rights to read and write to will fail.
+
+    Please note that the underlying CIS system tables used by this procedure require the ACCESS_TOOLS 
+    right to query, so this procedure will not work successfully if the invoking user does not
+    have ACCESS_TOOLS. Only resources that the user has the READ privilege on will be exported.
+
+&#x9;Also note that this view will not expose the java code for CJP procedures. Java source code 
+    must be provided by the author.
+
+    Input:
+        outputDirectory - The path to the output folder that the code exporter should write 
+                          exported resource definitons to. The procedure will throw an exception 
+                          if this parameter is not populated, the directory does not exist or CIS 
+                          cannot write to the target directory.
+
+                          Note that additional validation to confirm that the directory path is 
+                          valid and the directory exists is not performed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;outputFileExtension - The extension to use when writing output files. If the extension does 
+                              not have a &apos;.&apos; at the beginning of the string the procedure will 
+                              automatically add one. The procedure will throw an exception if this 
+                              parameter is not populated.
+
+                              Note that additional validation to confirm that the file extension is 
+                              valid (such as checking for invalid characters) is not performed
+
+    Output:
+        result - Parameter contains the result of execution. The value will be &apos;SUCCESS&apos; if the 
+                 export completed without errors and &apos;FAILURE&apos; otherwise. Note that some export 
+                 files may still be generated in the event of a failure.
+
+    Exceptions:  
+        /lib/util/System.IllegalArgumentException - Exception is raised if either of the input parameters do not pass validation.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+    2014.3&#x9;&#x9;05/29/2014      Matthew Lee         6.2.6           Created new
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="outputDirectory" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="outputFileExtension" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/services/databases/system/ALL_RESOURCES" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="RESOURCE_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="RESOURCE_NAME">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="RESOURCE_TYPE">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="ANNOTATION">
+        <datatype type="STRING" maxLength="65535"/>
+      </element>
+      <element name="DEFINITION">
+        <datatype type="STRING" maxLength="16777215"/>
+      </element>
+      <element name="OWNER_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="OWNER">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="PARENT_PATH">
+        <datatype type="STRING" maxLength="65535"/>
+      </element>
+      <element name="GUID">
+        <datatype type="STRING" maxLength="65535"/>
+      </element>
+      <element name="RESOURCE_SUBTYPE">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/createFileAscii" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="filePath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="append" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="fileContent" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/existsDir" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="dirPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/file/FileProcessingCJP/makeDirs" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="dirPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+    exportResourceDefinitions
+
+    This procedure generates a complete export of the definitions for all resources defined in 
+    CIS under shared and its subdirectories.  
+
+    A complete export of the definitions for all view and procedure resources contained under 
+    the folder /shared are written under the starting folder on the CIS host indicated by the 
+    input parameter outputDirectory in a folder structure that matches the structure of the
+    namespace tree. Resource definitions are exported to files with a name matching the exported 
+    resource. The file extension of the output file is set by the input parameter outputFileExtension.
+
+    Directories and files are written using the credentials of the account that the CIS server 
+    is running under. Attempts to export resource definitions to directories that the CIS app 
+    account does not have sufficient rights to read and write to will fail.
+
+    Please note that the underlying CIS system tables used by this procedure require the ACCESS_TOOLS 
+    right to query, so this procedure will not work successfully if the invoking user does not
+    have ACCESS_TOOLS. Only resources that the user has the READ privilege on will be exported.
+
+&#x9;Also note that this view will not expose the java code for CJP procedures. Java source code 
+    must be provided by the author.
+
+    Input:
+        outputDirectory - The path to the output folder that the code exporter should write 
+                          exported resource definitons to. The procedure will throw an exception 
+                          if this parameter is not populated, the directory does not exist or CIS 
+                          cannot write to the target directory.
+
+                          Note that additional validation to confirm that the directory path is 
+                          valid and the directory exists is not performed
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;outputFileExtension - The extension to use when writing output files. If the extension does 
+                              not have a &apos;.&apos; at the beginning of the string the procedure will 
+                              automatically add one. The procedure will throw an exception if this 
+                              parameter is not populated.
+
+                              Note that additional validation to confirm that the file extension is 
+                              valid (such as checking for invalid characters) is not performed
+
+    Output:
+        result - Parameter contains the result of execution. The value will be &apos;SUCCESS&apos; if the 
+                 export completed without errors and &apos;FAILURE&apos; otherwise. Note that some export 
+                 files may still be generated in the event of a failure.
+
+    Exceptions:  
+        /lib/util/System.IllegalArgumentException - Exception is raised if either of the input parameters do not pass validation.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+    2014.3&#x9;&#x9;05/29/2014      Matthew Lee         6.2.6           Created new
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE exportResourceDefinitions(
+    IN outputDirectory LONGVARCHAR, 
+    IN outputFileExtension VARCHAR(10), 
+    OUT result VARCHAR
+)
+BEGIN
+
+&#x9;DECLARE currentFolder &#x9;LONGVARCHAR DEFAULT NULL;
+&#x9;DECLARE filePath &#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resources &#x9;&#x9;CURSOR(
+        PARENT_PATH &#x9;&#x9;VARCHAR(65535), 
+        RESOURCE_NAME &#x9;&#x9;VARCHAR(255), 
+        FULL_RESOURCE_PATH &#x9;VARCHAR(65791), 
+        RESOURCE_TYPE &#x9;&#x9;VARCHAR(255), 
+        DEFINITION &#x9;&#x9;&#x9;VARCHAR(16777215)
+    );
+&#x9;--Store the output file extension
+&#x9;DECLARE outputExt &#x9;&#x9;VARCHAR(10);
+&#x9;DECLARE dirExists &#x9;&#x9;BOOLEAN;
+&#x9;DECLARE success &#x9;&#x9;BOOLEAN;
+&#x9;DECLARE ex &#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;--Assume that the export will fail until it completes
+&#x9;SET result = &apos;FAILURE&apos;;
+
+&#x9;--Add logic to validate the input values here
+&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/existsDir(outputDirectory, dirExists);
+&#x9;IF (outputDirectory IS NULL OR LENGTH(outputDirectory) = 0) THEN
+&#x9;&#x9;--The outputDirectory property is either null or empty
+&#x9;&#x9;RAISE /lib/util/System.IllegalArgumentException VALUE &apos;The input parameter outputDirectory cannot be empty&apos;;
+&#x9;ELSEIF NOT dirExists THEN
+&#x9;&#x9;--The output directory either doesn&apos;t exist or isn&apos;t visible to the CIS server&apos;s account
+&#x9;&#x9;RAISE /lib/util/System.IllegalArgumentException VALUE &apos;The directory specified in the parameter outputDirectory does not exist or is not visible to the CIS account&apos;;
+&#x9;END IF;
+
+&#x9;IF (outputFileExtension IS NULL OR LENGTH(outputFileExtension) = 0) THEN
+&#x9;&#x9;RAISE /lib/util/System.IllegalArgumentException VALUE &apos;The input parameter outputFileExtension cannot be empty&apos;;
+&#x9;END IF;
+
+&#x9;--If there is no &apos;.&apos; at the start of the file extension then add one
+&#x9;--Fix this to look at the first character
+&#x9;IF SUBSTRING(outputFileExtension,1,1) &lt;&gt; &apos;.&apos; THEN
+&#x9;&#x9;SET outputExt = &apos;.&apos; || outputFileExtension;
+&#x9;ELSE
+&#x9;&#x9;SET outputExt = outputFileExtension;&#x9;
+&#x9;END IF;
+
+&#x9;-- Retrieve the resource definitions and paths from the CIS system table ALL_RESOURCES
+&#x9;OPEN resources FOR 
+&#x9;&#x9;SELECT 
+&#x9;&#x9;    ALL_RESOURCES.PARENT_PATH, 
+&#x9;&#x9;    ALL_RESOURCES.RESOURCE_NAME, 
+&#x9;&#x9;    ALL_RESOURCES.PARENT_PATH || &apos;/&apos; || ALL_RESOURCES.RESOURCE_NAME FULL_RESOURCE_PATH, 
+&#x9;&#x9;    ALL_RESOURCES.RESOURCE_TYPE, 
+&#x9;&#x9;    ALL_RESOURCES.DEFINITION
+&#x9;&#x9;FROM      
+&#x9;&#x9;    /services/databases/system/ALL_RESOURCES ALL_RESOURCES
+&#x9;&#x9;WHERE
+&#x9;&#x9;    ALL_RESOURCES.PARENT_PATH LIKE &apos;/shared%&apos; AND 
+&#x9;&#x9;&#x9;ALL_RESOURCES.RESOURCE_TYPE IN (&apos;TABLE&apos;, &apos;PROCEDURE&apos;) AND 
+&#x9;&#x9;    ALL_RESOURCES.DEFINITION IS NOT NULL
+&#x9;&#x9;ORDER BY 
+&#x9;&#x9;    ALL_RESOURCES.PARENT_PATH ASC;
+
+&#x9;FOR resource AS resources DO
+
+&#x9;&#x9;--A new folder has been encountered. Create the folder if it doesn&apos;t exist in the file system
+&#x9;&#x9;IF currentFolder IS NULL OR currentFolder &lt;&gt; resource.PARENT_PATH THEN
+&#x9;&#x9;&#x9;SET currentFolder = resource.PARENT_PATH;
+&#x9;&#x9;
+&#x9;&#x9;&#x9;--If the directory does not exist then create it
+&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/existsDir(outputDirectory || &apos;/&apos; || currentFolder, dirExists);
+&#x9;&#x9;&#x9;IF NOT dirExists THEN
+&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/makeDirs(outputDirectory || &apos;/&apos; || currentFolder, success);
+&#x9;&#x9;&#x9;&#x9;IF NOT success THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;--If we get to this point then the folder couldn&apos;t be created for some reason
+&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The file system directory [&apos;||outputDirectory || &apos;/&apos; || currentFolder||&apos; could not be created.&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;--Build the full path for the output file. Note that this may not work correctly for anything with special characters in the resource name / resource path.
+&#x9;&#x9;SET filePath = outputDirectory || currentFolder || &apos;/&apos; || resource.RESOURCE_NAME || outputExt;
+
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/file/FileProcessingCJP/createFileAscii(filePath, 0, resource.DEFINITION );
+
+&#x9;END FOR;
+
+&#x9;SET result = &apos;SUCCESS&apos;;
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">1401377828726</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">mlee07</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

@@ -1,0 +1,187 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="HLP_Productivity_vw" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_Productivity_vw" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Complaint_Event_Case_State_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_State_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="State_DateTime" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Emp_Fname" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Emp_Lname" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Production_Target_Case" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Current_Role_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Supervisor_FName" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Supervisor_Lname" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Case_State_Fact" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_Case_State_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="State_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Complaint_Case_State_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="State_Reason">
+        <datatype type="STRING" maxLength="500"/>
+      </element>
+      <element name="Database_Partition_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Complaint_Case_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Member_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Provider_Key">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Dim" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="User_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Given_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Family_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Current_Role_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Create_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Workforce_Participant_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Parent_Workforce_Participant_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Active_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Production_Target_Case">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+CCSF.Complaint_Event_Case_State_Key,
+CCSF.Complaint_Event_Key,
+CCSF.Complaint_Case_Key,
+CCSF.Complaint_Case_State_Type_Code,
+CCSF.State_DateTime,
+WPD.Given_Name Emp_Fname,
+WPD.Family_Name Emp_Lname,
+WPD.Production_Target_Case,
+WPD.Current_Role_Name ,
+SUP.Given_Name Supervisor_FName,
+SUP.FAMILY_NAME Supervisor_Lname
+from     
+/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Complaint_Case_State_Fact CCSF
+inner join /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Dim WPD on 
+      WPD.Workforce_Participant_Key=CCSF.Workforce_Participant_Key
+inner join /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Workforce_Participant_Dim SUP on 
+      SUP.Workforce_Participant_Key=WPD.Parent_Workforce_Participant_Key
+where CCSF.Complaint_Case_State_Type_Code in (&apos;RESOL-AOR&apos;, &apos;RESOL-UNT&apos;, &apos;RESOL-ARE&apos;, &apos;RESOL-REA&apos;, &apos;RESOL-MNF&apos;, &apos;RESOLVED&apos;)</attribute>
+  <attribute name="creationDate" type="LONG">1611877570819</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611882998945</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611877570819</attribute>
+</metadata>

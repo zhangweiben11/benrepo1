@@ -1,0 +1,196 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getPaymentSearch_v1.1" path="/shared/Delta_DV/Application/Published/Billing/getPaymentSearch_v1.1" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[Ebillpay :This is an Xquery transformation which has an input as JSON request and the
+JSON response is all coming from pgetpaymentserach procedure.This
+ Xquery has a lineage and model and ,service can be deployed with 1 this Xquery deployemnt.
+]]></annotation>
+  <parameters>
+    <parameter name="root" direction="OUT" nullable="true">
+      <datatype name="root" referenceDefinitionSet="/shared/Delta_DV/Application/DefinitionSets/Billing/defxAI_PaymentSearch" referenceType="root" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="root">
+        <schemaDatatype>
+          <datatype name="root" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="paymentSearchDetails" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="invoiceNumber">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentNumber">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="cashReceiptId">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="invoiceDate">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="billToId">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentInitiateDate">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentDate">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentType">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentStatus">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="originalInvoiceAmount">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+                <element name="amountApplied">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+                <element name="outstandBalance">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+                <element name="adjustment">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+                <element name="creditMemo">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+                <element name="paymentAmount">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+                <element name="paymentTotal">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+              </datatype>
+            </element>
+            <element name="paymentHeader" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                <element name="cashReceiptId">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentNumber">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentTotal">
+                  <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+                </element>
+                <element name="userInitiatePayment">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="paymentInitiateDate">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="confirmationEmailSent">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+              </datatype>
+            </element>
+            <element name="metadata">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                <element name="numberOfMatchingRows">
+                  <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                </element>
+                <element name="numberOfPages">
+                  <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                </element>
+                <element name="perPage">
+                  <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                </element>
+                <element name="currentPage">
+                  <datatype name="byte" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="short" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-128" maxValue="127"/>
+                </element>
+              </datatype>
+            </element>
+            <element name="query">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                <element name="search">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="sort">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="inJson" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="5000"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/DefinitionSets/Billing/defxAI_PaymentSearch" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/Billing/Procedures/prcBI_GetPaymentSearch" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1602616994801</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2850169</attribute>
+  <attribute name="creatorUserName" type="STRING">dca32905</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2850169</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1602616994801</attribute>
+  <attribute name="transformModel" type="NULL"/>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare variable $inJson external;
+
+&lt;root xmlns:ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+  let $nodes := (
+    let $inputs := (if (empty($inJson)) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$inJson), &quot;&apos;&quot;) cast as xs:string)
+    let $query := concat( &quot;select invoiceNumber,paymentNumber,invoiceDate,billToID,paymentInitiateDate,paymentDate,paymentType,paymentStatus,originalInvoiceAmount,amountApplied,outstandBalance,adjustment,creditMemo,paymentAmount,paymentTotal,TotalRows,TotalPages,NumberOfRowsPerPage,PageNumber from /shared/Delta_DV/Business/BusinessSemantic/Billing/Procedures/prcBI_GetPaymentSearch(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+    let $pgetPaymentSearch1 := composite:executeQuery($query)//result
+    for $pgetPaymentSearch in $pgetPaymentSearch1
+    return
+    element root {
+      for $pgetPaymentSearch in $pgetPaymentSearch1
+      return 
+      element paymentSearchDetails {
+        element invoiceNumber {$pgetPaymentSearch/invoiceNumber/text()},
+        element paymentNumber {$pgetPaymentSearch/paymentNumber/text()},
+        element invoiceDate {$pgetPaymentSearch/invoiceDate/text()},
+        element billToId {$pgetPaymentSearch/billToID/text()},
+        element paymentInitiateDate {$pgetPaymentSearch/paymentInitiateDate/text()},
+        element paymentDate {$pgetPaymentSearch/paymentDate/text()},
+        element paymentType {$pgetPaymentSearch/paymentType/text()},
+        element paymentStatus {$pgetPaymentSearch/paymentStatus/text()},
+        element originalInvoiceAmount {$pgetPaymentSearch/originalInvoiceAmount/text()},
+        element amountApplied {$pgetPaymentSearch/amountApplied/text()},
+        element outstandBalance {$pgetPaymentSearch/outstandBalance/text()},
+        element adjustment {$pgetPaymentSearch/adjustment/text()},
+        element creditMemo {$pgetPaymentSearch/creditMemo/text()},
+        element paymentAmount {$pgetPaymentSearch/paymentAmount/text()},
+        element paymentTotal {$pgetPaymentSearch/paymentTotal/text()}
+      },
+      let $nodes := (
+        element metadata {
+          element numberOfMatchingRows {$pgetPaymentSearch/TotalRows/text()},
+          element numberOfPages {$pgetPaymentSearch/TotalPages/text()},
+          element perPage {$pgetPaymentSearch/NumberOfRowsPerPage/text()},
+          element currentPage {$pgetPaymentSearch/PageNumber/text()}
+        }
+      )
+      return
+      $nodes[1],
+      let $nodes := (
+        element query {
+          element search {&apos; &apos;},
+          element sort {&apos; &apos;}
+        }
+      )
+      return
+      $nodes[1]
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/root</attribute>
+  <attribute name="xqueryModel" type="BYTE_ARRAY">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</attribute>
+</metadata>

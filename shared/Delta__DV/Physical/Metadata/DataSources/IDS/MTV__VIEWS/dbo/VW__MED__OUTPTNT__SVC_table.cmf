@@ -1,0 +1,1324 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="VW_MED_OUTPTNT_SVC" path="/shared/Delta_DV/Physical/Metadata/DataSources/IDS/MTV_VIEWS/dbo/VW_MED_OUTPTNT_SVC" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="OUTPATIENT_TYPE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PROJ_CLM_PYMT_DATE" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PAY_TO_PROVIDER_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SERVICING_PROVIDER" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_TYPE_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_SPECIALTY" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ANESTHESIA_UNITS" nullable="true">
+      <datatype name="numeric" extendedName="numeric(5,2)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="5" minFractionalDigits="2" maxFractionalDigits="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_CONT_ID" nullable="true">
+      <datatype name="numeric" extendedName="numeric(12,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LAG_DAYS_NUM" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ALT_PCP_PROV_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ALT_PROV_TYPE_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ALT_PROV_SPEC_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_PROVIDER_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_PROV_TYPE_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_PROV_SPECIALTY" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_CONTRACT" nullable="true">
+      <datatype name="numeric" extendedName="numeric(12,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAGN_CODE_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAGN_CLASS_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="XS_COPAY_USED_AMT" nullable="true">
+      <datatype name="numeric" extendedName="numeric(9,2)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="9" minFractionalDigits="2" maxFractionalDigits="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FINAL_APG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ANCIL_PKG_FLAG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CONSOLIDATION_FLAG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="APG_DISCT_PCT_NUM" nullable="true">
+      <datatype name="numeric" extendedName="numeric(7,4)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="7" minFractionalDigits="4" maxFractionalDigits="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PROCD_APG_TYPE_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="APG_STATUS_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FK_CLAIM_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(15)" subType="DATASOURCE_TYPE" type="STRING" maxLength="15"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FK_SVC_NUM" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FK_SVC_SEQ_NUM" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EMPGRP_LEVEL_1_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EMPGRP_LVL1_EFF_DT" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EMPGRP_LEVEL_2_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EMPGRP_LVL2_EFF_DT" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CVG_CONT_EFF_DATE" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CONT_TYPE_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MBR_CLASS_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MBR_STAT_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MBR_EFF_DATE" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MBR_END_DATE" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ALT_PCP_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="APG_ALLOWED_BEFORE" nullable="true">
+      <datatype name="numeric" extendedName="numeric(9,2)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="9" minFractionalDigits="2" maxFractionalDigits="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="APG_DISBURSE_PCT" nullable="true">
+      <datatype name="numeric" extendedName="numeric(5,4)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="5" minFractionalDigits="4" maxFractionalDigits="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LO_RANGE_TOOTH_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="HI_RANGE_TOOTH_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="OCCLUSAL_SURF_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="INCISAL_SURF_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FACIAL_SURF_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="BUCCAL_SURF_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LINGUAL_SURF_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DISTAL_SURF_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEDIAL_SURF_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EMPGRP_LEVEL_4_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EMPGRP_LEVEL_3_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TAX_IDENTIFIER" nullable="true">
+      <datatype name="int" extendedName="int" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PRV_CNTCT_QLID" nullable="true">
+      <datatype name="numeric" extendedName="numeric(12,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PRV_BUS_CNT_ID" nullable="true">
+      <datatype name="numeric" extendedName="numeric(12,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_CNTR_QUAL_ID" nullable="true">
+      <datatype name="numeric" extendedName="numeric(12,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_BUS_LVL_CNTRID" nullable="true">
+      <datatype name="numeric" extendedName="numeric(12,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PRV_NETWORK_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEMBER_NETWORK_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_STAT_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_REGION_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_CLASS_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_MED_SVCA_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_AREA_BLK_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_PAY_LES_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_PAY_CLS_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_EX_PYCLS_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_FFS_EQUVLNT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_CAP_ARG_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PR_BRD_CERT_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_PROV_STAT_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_PR_CLASS_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_MED_SVC_AR_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_CAP_ARRG_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_BOARD_CERT_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_ROLE_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PCP_PROV_ROLE_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="REFILL_NUMBER" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DAYS_SUPPLY_COUNT" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRSCPTN_WRITTN_DTE" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="AUTH_REFILL_NUMBER" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="QTY_PRESCRIBED" nullable="true">
+      <datatype name="numeric" extendedName="numeric(10,3)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="10" minFractionalDigits="3" maxFractionalDigits="3"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="UNIT_OF_MEASURE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DISPENSING_STATUS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FORMULARY_STATUS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DRUG_TYPE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PRV_TXNMY_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="REFRRING_PROV_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="RFRRNG_PRV_TXMY_CD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(10)" subType="DATASOURCE_TYPE" type="STRING" maxLength="10"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAG_CODE_ID_2" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAG_CODE_ID_3" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAG_CODE_ID_4" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRDTRMTN_OF_BEN_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(15)" subType="DATASOURCE_TYPE" type="STRING" maxLength="15"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="HLD_MBR_HRMLS_FLAG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="QUANTITY_DISPENSED" nullable="true">
+      <datatype name="numeric" extendedName="numeric(10,3)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="10" minFractionalDigits="3" maxFractionalDigits="3"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="GROUP_TYPE_CODE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(4)" subType="DATASOURCE_TYPE" type="STRING" maxLength="4"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ALTERNATE_PAYEE_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="COB_RSV_ACCUM_PD" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="COB_RSV_EFF_DT" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="COB_RSV_END_DT" nullable="true">
+      <datatype name="datetime2" extendedName="datetime2" subType="DATASOURCE_TYPE" type="DATETIME"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PROV_SPLT_BILL_DY" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PRV_PAR_ST_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CTRCT_SRCH_PRV_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ATND_PRV_2_SRV_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ROW_LOCATION" nullable="false">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PAY2_PROV_INVLD_FG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PROV_INVLD_FG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DX_CODE_INVALID_FG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DX_CD_2_INVALID_FG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DX_CD_3_INVALID_FG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DX_CD_4_INVALID_FG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRECERT_ENTERED_FG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRECERTIFICATN_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SVC_PRV_PRAC_LOC" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRE_CNVRSN_DIAGNOSIS_CODE_ID" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRE_CNVRSN_DIAGNOSIS_CODE_ID_2" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRE_CNVRSN_DIAGNOSIS_CODE_ID_3" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PRE_CNVRSN_DIAGNOSIS_CODE_ID_4" nullable="true">
+      <datatype name="varchar" extendedName="varchar(8)" subType="DATASOURCE_TYPE" type="STRING" maxLength="8"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAGNOSIS_CODE_ID_CD_SET_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAGNOSIS_CODE_ID_2_CD_SET_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAGNOSIS_CODE_ID_3_CD_SET_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DIAGNOSIS_CODE_ID_4_CD_SET_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="AGENCY_EDITS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(40)" subType="DATASOURCE_TYPE" type="STRING" maxLength="40"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="BILATERAL_DISCOUNTNG_IND" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CLINCL_SIGNPROC_CNSL_IND" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FINAL_EAPG_CATEGORY" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LINE_ITEM_ACTION_FG_USED" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LINE_ITEM_ADJ_EAPG_WGHT" nullable="true">
+      <datatype name="numeric" extendedName="numeric(9,6)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="9" minFractionalDigits="6" maxFractionalDigits="6"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LINE_ITEM_FULL_EAPG_WGHT" nullable="true">
+      <datatype name="numeric" extendedName="numeric(9,6)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="9" minFractionalDigits="6" maxFractionalDigits="6"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MULTI_SGNF_PROCDSCNT_IND" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PACKAGED_PER_DIEM_IND" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="REPT_ANCILLARY_DSCNT_IND" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TERM_PROC_DSCNT_IND" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ACUITY_INDICATOR" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DEVICE_MODIFR_DISCNT_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DME_MODIFER_PRESENT_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PREVENTIVE_SERVICE_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEDICAL_VISIT_DIAGNOSIS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(7)" subType="DATASOURCE_TYPE" type="STRING" maxLength="7"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LINES_PER_VISIT" nullable="true">
+      <datatype name="varchar" extendedName="varchar(3)" subType="DATASOURCE_TYPE" type="STRING" maxLength="3"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="OVERALL_VISIT_TYPE" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PREVENTIVE_MEDICINE_DIAG" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PROCEDURE_CODE_EDITS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(120)" subType="DATASOURCE_TYPE" type="STRING" maxLength="120"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PROCEDURE_SPECL_PYMT_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PROCEDURE_UNIT_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PROFESSIONAL_SRVICE_EXCL" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="RECURRING_SERVICES_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="RELATIONSHIP_EDITS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(64)" subType="DATASOURCE_TYPE" type="STRING" maxLength="64"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="REVENUE_CODE_EDITS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(12)" subType="DATASOURCE_TYPE" type="STRING" maxLength="12"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SERVICE_DATE_EDITS" nullable="true">
+      <datatype name="varchar" extendedName="varchar(16)" subType="DATASOURCE_TYPE" type="STRING" maxLength="16"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EAPG_UNASSIGNED_IND" nullable="true">
+      <datatype name="varchar" extendedName="varchar(2)" subType="DATASOURCE_TYPE" type="STRING" maxLength="2"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EAPG_VST_PROCESSED_WARN" nullable="true">
+      <datatype name="varchar" extendedName="varchar(5)" subType="DATASOURCE_TYPE" type="STRING" maxLength="5"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_TEXT_1_19" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_TEXT_1_20" nullable="true">
+      <datatype name="varchar" extendedName="varchar(1)" subType="DATASOURCE_TYPE" type="STRING" maxLength="1"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_1" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_2" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_3" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_4" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_5" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_6" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_7" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_8" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_9" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="FILLER_NUM_1_10" nullable="true">
+      <datatype name="smallint" extendedName="smallint" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <attribute name="mandatory" type="BOOLEAN">false</attribute>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <attribute name="c:0:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:100:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:101:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:102:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:103:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:104:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:105:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:106:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:107:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:108:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:109:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:10:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:110:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:111:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:112:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:113:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:114:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:115:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:116:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:117:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:118:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:119:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:11:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:120:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:121:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:122:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:123:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:124:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:125:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:126:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:127:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:128:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:129:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:12:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:130:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:131:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:132:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:133:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:134:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:135:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:136:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:137:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:138:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:139:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:13:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:140:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:141:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:142:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:143:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:144:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:145:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:146:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:147:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:148:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:149:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:14:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:150:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:151:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:152:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:153:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:154:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:155:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:156:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:157:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:158:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:159:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:15:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:160:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:161:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:162:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:16:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:17:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:18:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:19:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:1:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:20:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:21:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:22:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:23:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:24:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:25:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:26:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:27:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:28:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:29:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:2:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:30:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:31:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:32:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:33:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:34:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:35:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:36:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:37:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:38:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:39:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:3:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:40:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:41:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:42:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:43:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:44:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:45:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:46:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:47:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:48:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:49:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:4:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:50:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:51:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:52:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:53:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:54:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:55:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:56:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:57:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:58:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:59:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:5:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:60:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:61:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:62:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:63:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:64:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:65:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:66:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:67:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:68:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:69:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:6:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:70:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:71:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:72:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:73:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:74:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:75:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:76:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:77:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:78:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:79:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:7:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:80:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:81:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:82:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:83:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:84:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:85:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:86:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:87:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:88:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:89:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:8:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:90:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:91:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:92:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:93:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:94:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:95:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:96:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:97:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:98:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:99:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="c:9:mandatory" type="BOOLEAN">false</attribute>
+  <attribute name="creationDate" type="LONG">1593471693540</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1593471693540</attribute>
+</metadata>

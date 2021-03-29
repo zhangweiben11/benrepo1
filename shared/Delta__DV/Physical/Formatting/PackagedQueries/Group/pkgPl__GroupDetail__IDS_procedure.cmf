@@ -1,0 +1,103 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pkgPl_GroupDetail_IDS" path="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_GroupDetail_IDS" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="GroupNBR">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="GroupName">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="GroupSurrogateID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="GroupSurrogateIDChar">
+          <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+        </element>
+        <element name="NetworkID">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="DeltaCareIND">
+          <datatype name="VARCHAR" type="STRING" maxLength="1"/>
+        </element>
+        <element name="CustomerCareNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Metadata/DataSources/IDS" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT GRP.IDENTIFIER GroupID, RTRIM(GRP.IDENTIFIER) GroupNBR, RTRIM(GRP.UC_NAME) GroupName,
+       GRP.SURROGATE_ID GroupSurrogateID, CAST(GRP.SURROGATE_ID AS CHAR(25)) GroupSurrogateIDChar,
+       BL.NETWORK_ID NetworkID, BL.DC_IND DeltaCareIND, DC.PHONE_NUMBER PhoneNumber
+FROM   [MTV_VIEWS].[dbo].EMP_GRP_LVL_1_VW GRP
+INNER JOIN [MTV_VIEWS].[dbo].EMP_GRP_LEVEL_SPAN_VW SPN
+ON     GRP.IDENTIFIER = SPN.EMPGRP_LEVEL_1_ID
+LEFT OUTER JOIN (SELECT DISTINCT E.EMPGRP_LEVEL_1_ID, E.DC_IND,
+                        STUFF((SELECT DISTINCT &apos;,&apos;+ CAST(RTRIM(A.NETWORK_ID) AS VARCHAR(12))
+                               FROM   [MTV_VIEWS].[dbo].[EMPGRP_LVL_BUS_LVL_VW] A
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   INNER JOIN [MTV_VIEWS].dbo.EMP_GRP_LEVEL_SPAN_VW B
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   ON     A.EMPGRP_LEVEL_1_ID = B.EMPGRP_LEVEL_1_ID
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   AND    A.EMPGRP_LEVEL_2_ID = B.EMPGRP_LEVEL_2_ID
+                               WHERE  A.EMPGRP_LEVEL_1_ID = E.EMPGRP_LEVEL_1_ID
+&#x9;&#x9;&#x9;                   AND    A.EMP_GRP_LEVEL = &apos;2&apos;
+&#x9;                           AND    {1} BETWEEN A.EFFECTIVE_DATE AND A.END_DATE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   AND    B.EMPGRP_LEVEL = &apos;2&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   AND    {1} BETWEEN B.EFFECTIVE_DATE AND B.END_DATE
+                               For XML PATH(&apos;&apos;)
+&#x9;&#x9;&#x9;                  ),1,1,&apos;&apos;) NETWORK_ID
+                 FROM (SELECT DISTINCT C.EMPGRP_LEVEL_1_ID, 
+                              MAX(CASE
+&#x9;&#x9;&#x9;                         WHEN C.BUS_LEVEL_5_ID = &apos;DDIC DHMO&apos; THEN &apos;T&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;                 ELSE &apos;F&apos;
+&#x9;&#x9;&#x9;                      END
+&#x9;&#x9;&#x9;&#x9;                 ) OVER (PARTITION BY C.EMPGRP_LEVEL_1_ID) DC_IND
+                       FROM   [MTV_VIEWS].[dbo].[EMPGRP_LVL_BUS_LVL_VW] C
+&#x9;&#x9;&#x9;&#x9;       INNER JOIN [MTV_VIEWS].[dbo].[EMP_GRP_LEVEL_SPAN_VW] D
+                       ON     C.EMPGRP_LEVEL_1_ID = D.EMPGRP_LEVEL_1_ID
+                       AND    C.EMPGRP_LEVEL_2_ID = D.EMPGRP_LEVEL_2_ID
+&#x9;                   WHERE  C.EMPGRP_LEVEL_1_ID = &apos;{0}&apos;
+&#x9;                   AND    C.EMP_GRP_LEVEL = &apos;2&apos;
+&#x9;                   AND    {1} BETWEEN C.EFFECTIVE_DATE AND C.END_DATE
+&#x9;&#x9;&#x9;&#x9;&#x9;   AND    D.EMPGRP_LEVEL = &apos;2&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;   AND    {1} BETWEEN D.EFFECTIVE_DATE AND D.END_DATE
+&#x9;&#x9;&#x9;&#x9;&#x9;  ) E
+                ) BL
+ON     GRP.IDENTIFIER = BL.EMPGRP_LEVEL_1_ID
+LEFT OUTER JOIN [A3_VIEWS].[DELTA].[ID_CARD_CONTACT_VW] CC
+ON     RTRIM(GRP.IDENTIFIER) = CC.GROUP_ID
+LEFT OUTER JOIN [A3_VIEWS].[DELTA].[DELTA_CONTACT_VW] DC
+ON     CC.CONTACT_ID = DC.ID
+WHERE  GRP.IDENTIFIER = &apos;{0}&apos;
+AND    SPN.EMPGRP_LEVEL_1_ID = &apos;{0}&apos;
+AND    SPN.EMPGRP_LEVEL = &apos;1&apos;
+AND    {1} BETWEEN SPN.EFFECTIVE_DATE AND SPN.END_DATE
+</attribute>
+  <attribute name="creationDate" type="LONG">1600209657740</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612390583104</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/Delta_DV/Physical/Metadata/DataSources/IDS</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1600209657740</attribute>
+</metadata>

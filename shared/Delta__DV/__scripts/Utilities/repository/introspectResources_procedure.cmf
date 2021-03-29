@@ -1,0 +1,2367 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="introspectResources" path="/shared/Delta_DV/_scripts/Utilities/repository/introspectResources" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[introspectResources:
+
+&#x9;This script is used to provide a consistent and generic interface for introspecting Relational datasources,
+&#x9;&#x9;CSV files and Excel Non-ODBC files.
+&#x9;It creates a necessary transaction around introspectResourcesTask and introspectResourcesResult.
+&#x9;Since the output variable &quot;introspectionResult&quot; is a string result, the invoker of this procedure
+&#x9;may also invoke &quot;/shared/ASAssets/Utilities/repository/introspectResourcesResultCursor&quot; to extract the
+&#x9;results into a cursor format.
+
+&#x9;Input:
+&#x9;&#x9;IN  dsPath &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;/lib/resource/ResourceDefs.ResourcePath,&#x9;-- mandatory.   Full path to datasource
+&#x9;&#x9;IN  catalogName &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- optional (null) - 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Relational Database - database catalog Name if applicable.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - leave this null as it is not applicable
+&#x9;&#x9;IN  schemaNames&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional (null) -  NULL=no specified schema list OR one or more comma separated schemas to introspect.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;Note: If a list of schema names are provided and a list of table names are provided the list of table names
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;  will be applied in total to each schema name.  It is not currently in scope to correlate a list of tables to a list of schemas. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Relational Database - schema name or list of schema names.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - the excel file name or list of file names.
+&#x9;&#x9;IN  schemaTablePatterns&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all tables starting with D, E and F or
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of table patterns associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaTablePatterns=[M%]   [P%]&#x9;&#x9;- The 1st set of bracketed table patterns goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of table patterns goes with the 2nd schema 
+&#x9;&#x9;IN  tableNames &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional.  NULL=no specified table list OR one or more comma separated table namess to introspect or&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of table names associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;tableNames=&#x9;&#x9;[T1,T2][T3,T4]&#x9;- The 1st set of bracketed tables goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of tables goes with the 2nd schema
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Relational Database - When NULL, all tables for the schema are introspected, otherwise the list of tables provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;CSV - When NULL, all CSV files are introspected, otherwise the list of files provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - When NULL, all sheets are introspected, otherwise the list of sheets provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Table names with spaces may be use double quotes to enclose the name but it is not necessary as spaces are preserved.
+&#x9;&#x9;IN  schemaProcedurePatterns&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new procedure patterns starting with D, E and F or
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of procedure patterns associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;&#x9;&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaProcedurePatterns=[N%]   [O%]&#x9;&#x9;- The 1st set of bracketed procedure patterns goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of procedure patterns goes with the 2nd schema 
+&#x9;&#x9;IN  procedureNames &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional. NULL=no specified procedure list OR 1 or more comma separated procedure names to introspect or 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of procedure names associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;procedureNames=&#x9;[P1][P2,P3,P4]&#x9;- The 1st set of bracketed procedures goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of procedures goes with the 2nd schema
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Relational Database - When NULL, all procedures are introspected, otherwise the list of procedures provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Procedure names with spaces may be use double quotes to enclose the name but it is not necessary as spaces are preserved.
+&#x9;&#x9;IN&#x9;separator&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Default=,  The separator used to separate lists for the input parameters: tableNames, schemaTablePatterns, schemaProcedurePatterns and procedureNames.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;The separator value should not exist within the tableNames or procedureNames variable.
+&#x9;&#x9;IN  inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off.
+
+&#x9;Output:
+&#x9;&#x9;OUT errStatus &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SUCCESS or FAILED
+&#x9;&#x9;OUT errMessage &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Error message if errStatus=FAILED, otherwise null
+&#x9;&#x9;OUT introspectionResult &#x9;&#x9;LONGVARCHAR,&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;&#x9;OUT dataSourceType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;&#x9;OUT dataSourceSubtype&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The subtype of data source that was introspected.
+
+&#x9;Evaluate the results from IntrospectResourcesResult()
+&#x9;&#x9;&#x9;Values: CURSOR (
+                        status                  VARCHAR(32768),
+                        introspectorVersion     INTEGER,
+                        startTime               TIMESTAMP,
+                        endTime                 TIMESTAMP,
+                        addedCount              INTEGER,
+                        removedCount            INTEGER,
+                        updatedCount            INTEGER,
+                        skippedCount            INTEGER,
+                        totalCompletedCount     INTEGER,
+                        toBeAddedCount          INTEGER,
+                        toBeRemovedCount        INTEGER,
+                        toBeUpdatedCount        INTEGER,
+                        totalToBeCompletedCount INTEGER,
+                        warningCount            INTEGER,
+                        errorCount              INTEGER,
+                        &quot;path&quot;                  VARCHAR(4096),
+                        &quot;type&quot;                  VARCHAR(40),
+                        subtype                 VARCHAR(40),
+                        &quot;action&quot;                VARCHAR(32768),
+                        durationMs              INTEGER,
+                        entryStatus             VARCHAR(32768),
+                        code                    VARCHAR(32768),
+                        name                    VARCHAR(32768),
+                        message                 LONGVARCHAR,
+                        detail                  VARCHAR(32768),
+                        severity                VARCHAR(32768),
+                    )
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.1&#x9;&#x9;01/20/2014&#x9;&#x9;Manny Bhatia&#x9;&#x9;6.2.5&#x9;&#x9;&#x9;Created new
+&#x9;2014.4&#x9;&#x9;09/25/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Modified to make cache framework generic. 
+&#x9;2015.1&#x9;&#x9;02/12/2015&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Modified to make a generic introspection utility.
+&#x9;2018.100&#x9;02/20/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Adapted and modified for usage with the Utilities as a generic procedure.
+&#x9;2019.200&#x9;05/13/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed use of VECTOR parameters for introspection and copy privileges as vector parameters are associated with memory leaks.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Removed use of lowerLevelProcedures/introspectResourcesTask and consolidated into this procedure.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Removed use of lowerLevelProcedures/introspectResourcesResult and consolidated into this procedure.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Added the ability to define a resource name, type and subtype in the tableNames or procedureNames input list using this format: name(TYPE:SUBTYPE).
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="dsPath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="catalogName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="schemaNames" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="schemaTablePatterns" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="tableNames" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="schemaProcedurePatterns" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="procedureNames" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="separator" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inDebug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="errStatus" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="errMessage" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="introspectionResult" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="dataSourceType" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="dataSourceSubtype" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/copyResourcePrivileges" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="copyResourcePrivileges" direction="IN">
+        <datatype name="copyResourcePrivileges" extendedName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivileges" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivileges" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivileges">
+          <schemaDatatype>
+            <datatype name="copyResourcePrivileges" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="copyResourcePrivilegesRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="updateRecursively" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+              <element name="copyPrivilegeEntries" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="copyPrivilegeEntry" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="copyPrivilegeEntryType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                      <element name="srcResource" namespace="http://www.compositesw.com/services/system/admin/resource">
+                        <datatype name="pathTypeOrColumnPair" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                          <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="resourceOrColumnType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                        </datatype>
+                      </element>
+                      <element name="dstResource" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647">
+                        <reference refId="1025"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="mode" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="updatePrivilegesMode" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="copyResourcePrivilegesResponse" direction="OUT">
+        <datatype name="copyResourcePrivilegesResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivilegesResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivilegesResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}copyResourcePrivilegesResponse">
+          <schemaDatatype>
+            <datatype name="copyResourcePrivilegesResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="copyResourcePrivilegesResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="1281"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="1537">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/getMostRecentIntrospectionStatus" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getMostRecentIntrospectionStatus" direction="IN">
+        <datatype name="getMostRecentIntrospectionStatus" extendedName="{http://www.compositesw.com/services/system/admin/resource}getMostRecentIntrospectionStatus" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getMostRecentIntrospectionStatus" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getMostRecentIntrospectionStatus">
+          <schemaDatatype>
+            <datatype name="getMostRecentIntrospectionStatus" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getMostRecentIntrospectionStatusRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="getMostRecentIntrospectionStatusResponse" direction="OUT">
+        <datatype name="getMostRecentIntrospectionStatusResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}getMostRecentIntrospectionStatusResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}getMostRecentIntrospectionStatusResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}getMostRecentIntrospectionStatusResponse">
+          <schemaDatatype>
+            <datatype name="getMostRecentIntrospectionStatusResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="getMostRecentIntrospectionStatusResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="513">
+              <element name="status" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <datatype name="introspectionStatus" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="status" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="operationStatus" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="introspectorVersion" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="startTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                  </element>
+                  <element name="endTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                  </element>
+                  <element name="addedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="removedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="updatedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="skippedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="totalCompletedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="toBeAddedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="toBeRemovedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="toBeUpdatedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="totalToBeCompletedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="warningCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="errorCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="report" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="introspectionChangeEntryList" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="entry" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="introspectionChangeEntry" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="subtype" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="resourceSubType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="action" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="introspectionAction" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="durationMs" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="status" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="messages" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="messageEntryList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                              <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="2049">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <reference refId="1793"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/resource/operations/introspectResourcesResult" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="introspectResourcesResult" direction="IN">
+        <datatype name="introspectResourcesResult" extendedName="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesResult" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesResult" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesResult">
+          <schemaDatatype>
+            <datatype name="introspectResourcesResult" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="introspectResourcesResultRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="taskId" namespace="http://www.compositesw.com/services/system/util/common">
+                <datatype name="taskId" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="block" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+              <element name="page" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                <datatype name="page" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="size" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="start" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+              <element name="detail" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="detailLevel" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="introspectResourcesResultResponse" direction="OUT">
+        <datatype name="introspectResourcesResultResponse" extendedName="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesResultResponse" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesResultResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesResultResponse">
+          <schemaDatatype>
+            <datatype name="introspectResourcesResultResponse" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="introspectResourcesResultResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="769">
+              <element name="taskId" namespace="http://www.compositesw.com/services/system/util/common">
+                <datatype name="taskId" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="totalResults" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+              </element>
+              <element name="completed" namespace="http://www.compositesw.com/services/system/util/common">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+              <element name="status" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="introspectionStatus" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                  <element name="status" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="operationStatus" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="introspectorVersion" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="startTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                  </element>
+                  <element name="endTime" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="dateTime" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATETIME"/>
+                  </element>
+                  <element name="addedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="removedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="updatedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="skippedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="totalCompletedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="toBeAddedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="toBeRemovedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="toBeUpdatedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="totalToBeCompletedCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="warningCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="errorCount" namespace="http://www.compositesw.com/services/system/admin/resource">
+                    <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                  </element>
+                  <element name="report" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="introspectionChangeEntryList" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                      <element name="entry" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="introspectionChangeEntry" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                          <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="subtype" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="resourceSubType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="action" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="introspectionAction" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="durationMs" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                          </element>
+                          <element name="status" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="messages" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="messageEntryList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                              <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="2305">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <reference refId="2049"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getBasicResourceCursor" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/introspectResourcesResultXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inXML" direction="IN">
+        <datatype name="XML" referenceType="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT" nullable="false">
+        <datatype type="TABLE" refId="256">
+          <element name="status">
+            <datatype namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="introspectorVersion">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="startTime">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="endTime">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="addedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="removedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="updatedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="skippedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="totalCompletedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="toBeAddedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="toBeRemovedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="toBeUpdatedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="totalToBeCompletedCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="warningCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="errorCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="path">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="4096"/>
+          </element>
+          <element name="type">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="40"/>
+          </element>
+          <element name="subtype">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="40"/>
+          </element>
+          <element name="action">
+            <datatype namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="durationMs">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="entryStatus">
+            <datatype namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="code">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="name">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="message">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="detail">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="severity">
+            <datatype namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/introspectResourcesTaskXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="introspectResourcesTask" direction="IN">
+        <datatype name="introspectResourcesTask" extendedName="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesTask" namespace="http://www.compositesw.com/services/system/admin/resource" referenceDefinitionSet="/services/webservices/system/admin/resource/operations/ResourceSchema" referenceType="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesTask" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/resource}introspectResourcesTask">
+          <schemaDatatype>
+            <datatype name="introspectResourcesTask" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="introspectResourcesTaskRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="plan" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="introspectionPlan" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                  <element name="updateAllIntrospectedResources" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="failFast" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="commitOnFailure" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="autoRollback" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="scanForNewResourcesToAutoAdd" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                  </element>
+                  <element name="entries" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                    <datatype name="introspectionPlanEntries" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                      <element name="entry" namespace="http://www.compositesw.com/services/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+                        <datatype name="introspectionPlanEntry" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                          <element name="resourceId" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="pathTypeSubtype" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                              <element name="path" namespace="http://www.compositesw.com/services/system/admin/resource">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="type" namespace="http://www.compositesw.com/services/system/admin/resource">
+                                <datatype name="resourceType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="subtype" namespace="http://www.compositesw.com/services/system/admin/resource">
+                                <datatype name="resourceSubType" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </element>
+                          <element name="action" namespace="http://www.compositesw.com/services/system/admin/resource">
+                            <datatype name="introspectionPlanAction" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                          </element>
+                          <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                            <datatype name="attributeList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                              <element name="attribute" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                <datatype name="attribute" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                    <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                  <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="attributeTypeValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2049">
+                                      <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                        <datatype name="attributeTypeValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                                          <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                            <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                          </element>
+                                          <element name="value" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                            <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                          </element>
+                                          <element name="valueList" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                            <reference refId="2049"/>
+                                          </element>
+                                          <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                            <datatype name="attributeTypeValueMap" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="2561">
+                                              <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                                <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2817">
+                                                  <element name="key" namespace="http://www.compositesw.com/services/system/util/common">
+                                                    <reference refId="2305"/>
+                                                  </element>
+                                                  <element name="value" namespace="http://www.compositesw.com/services/system/util/common">
+                                                    <reference refId="2305"/>
+                                                  </element>
+                                                </datatype>
+                                              </element>
+                                            </datatype>
+                                          </element>
+                                          <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                            <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="3073">
+                                              <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                              </element>
+                                            </datatype>
+                                          </element>
+                                        </datatype>
+                                      </element>
+                                    </datatype>
+                                  </element>
+                                  <element name="valueMap" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <reference refId="2561"/>
+                                  </element>
+                                  <element name="valueArray" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <reference refId="3073"/>
+                                  </element>
+                                  <element name="unset" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                    <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+              <element name="runInBackgroundTransaction" namespace="http://www.compositesw.com/services/system/admin/resource">
+                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+              </element>
+              <element name="attributes" namespace="http://www.compositesw.com/services/system/admin/resource" minOccurs="0">
+                <reference refId="1537"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT" nullable="false">
+        <datatype type="TABLE" refId="256">
+          <element name="taskId">
+            <datatype namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="totalResults">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+          </element>
+          <element name="completed">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractDelimitedText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputString" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="delimiter" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="occurrence" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseInputText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="reverseOutput" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="trimText" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="includeDelimiter" direction="IN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="object">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/xml/getValueFromXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="namespaces" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inXpath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="inXml" direction="IN">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outValue" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;introspectResources:
+
+&#x9;This script is used to provide a consistent and generic interface for introspecting the following datasource:
+&#x9;&#x9;Relational, CSV files, Excel Non-ODBC files and XML files.
+&#x9;It creates a necessary transaction around introspectResourcesTaskXSLT and introspectResourcesResult.
+&#x9;It will copy privileges with SET_EXACTLY from the datasource down to specified catalog, schema and tables where applicable.
+
+&#x9;Genericaly, this procedure has the ability to define a resource name, type and subtype in the tableNames or procedureNames 
+&#x9;&#x9;input list using this format: name(TYPE:SUBTYPE).  For example when introspecting an XML file that also contains a
+&#x9;&#x9;definition set, the user may request in the tableNames parameter the following: 
+&#x9;&#x9;&#x9;productCatalog.xml,productCatalogDefinitions(DEFINITION_SET:XML_SCHEMA_DEFINITION_SET)
+&#x9;&#x9;In the above example, productCatalog.xml is not explicitly defined because it uses the default settings
+&#x9;&#x9;&#x9;for an XML datasource which are TYPE=TRE and SUBTYPE=XML_FILE_TREE.
+
+&#x9;Since the output variable &quot;introspectionResult&quot; is a string result, the invoker of this procedure
+&#x9;may also invoke &quot;/shared/ASAssets/Utilities/repository/introspectResourcesResultCursor&quot; to extract the
+&#x9;results into a cursor format.
+
+&#x9;Input:
+&#x9;&#x9;IN  dsPath &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- mandatory.   Full path to datasource
+&#x9;&#x9;IN  catalogName &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- optional (null) - 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Relational Database - database catalog Name if applicable.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - leave this null as it is not applicable
+&#x9;&#x9;IN  schemaNames&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional (null) -  NULL=no specified schema list OR one or more comma separated schemas to introspect.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;Note: If a list of schema names are provided and a list of table names are provided the list of table names
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;  will be applied in total to each schema name.  It is not currently in scope to correlate a list of tables to a list of schemas. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Relational Database - schema name or list of schema names.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - the excel file name or list of file names.
+&#x9;&#x9;IN  schemaTablePatterns&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all tables starting with D, E and F or
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of table patterns associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaTablePatterns=[M%]   [P%]&#x9;&#x9;- The 1st set of bracketed table patterns goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of table patterns goes with the 2nd schema 
+&#x9;&#x9;IN  tableNames &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional.  NULL=no specified table list OR one or more comma separated table namess to introspect or&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of table names associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;tableNames=&#x9;&#x9;[T1,T2][T3,T4]&#x9;- The 1st set of bracketed tables goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of tables goes with the 2nd schema
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Relational Database - When NULL, all tables for the schema are introspected, otherwise the list of tables provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;CSV - When NULL, all CSV files are introspected, otherwise the list of files provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - When NULL, all sheets are introspected, otherwise the list of sheets provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;XML Files - When NULL, all XML files are introspected, otherwise the list of files provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;To introspect the definition set specify the definition set name in this format:  name(TYPE:SUBTYPE)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Example: productCatalog.xml,productCatalogDefinitions(DEFINITION_SET:XML_SCHEMA_DEFINITION_SET)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Table names with spaces may be use double quotes to enclose the name but it is not necessary as spaces are preserved.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Generically, any resource name type and subtype can be overridden using this format:  name(TYPE:SUBTYPE).
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;The invoking program is required to know the valid TYPE and SUBTYPE combinations.
+&#x9;&#x9;IN  schemaProcedurePatterns&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new procedure patterns starting with D, E and F or
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of procedure patterns associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;&#x9;&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaProcedurePatterns=[N%]   [O%]&#x9;&#x9;- The 1st set of bracketed procedure patterns goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of procedure patterns goes with the 2nd schema 
+&#x9;&#x9;IN  procedureNames &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional. NULL=no specified procedure list OR 1 or more comma separated procedure names to introspect or 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of procedure names associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;procedureNames=&#x9;[P1][P2,P3,P4]&#x9;- The 1st set of bracketed procedures goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of procedures goes with the 2nd schema
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Relational Database - When NULL, all procedures are introspected, otherwise the list of procedures provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Procedure names with spaces may be use double quotes to enclose the name but it is not necessary as spaces are preserved.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Generically, any resource name type and subtype can be overridden using this format:  name(TYPE:SUBTYPE).
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;The invoking program is required to know the valid TYPE and SUBTYPE combinations.
+&#x9;&#x9;IN&#x9;separator&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Default=,  The separator used to separate lists for the input parameters: tableNames, schemaTablePatterns, schemaProcedurePatterns and procedureNames.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;The separator value should not exist within the tableNames or procedureNames variable.
+&#x9;&#x9;IN  inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off.
+
+&#x9;Output:
+&#x9;&#x9;OUT errStatus &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SUCCESS or FAILED
+&#x9;&#x9;OUT errMessage &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Error message if errStatus=FAILED, otherwise null
+&#x9;&#x9;OUT introspectionResult &#x9;&#x9;LONGVARCHAR,&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;&#x9;OUT dataSourceType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;&#x9;OUT dataSourceSubtype&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The subtype of data source that was introspected.
+
+&#x9;Evaluate the results from IntrospectResourcesResult()
+&#x9;&#x9;&#x9;Values: CURSOR (
+                        status                  VARCHAR(32768),
+                        introspectorVersion     INTEGER,
+                        startTime               TIMESTAMP,
+                        endTime                 TIMESTAMP,
+                        addedCount              INTEGER,
+                        removedCount            INTEGER,
+                        updatedCount            INTEGER,
+                        skippedCount            INTEGER,
+                        totalCompletedCount     INTEGER,
+                        toBeAddedCount          INTEGER,
+                        toBeRemovedCount        INTEGER,
+                        toBeUpdatedCount        INTEGER,
+                        totalToBeCompletedCount INTEGER,
+                        warningCount            INTEGER,
+                        errorCount              INTEGER,
+                        &quot;path&quot;                  VARCHAR(4096),
+                        &quot;type&quot;                  VARCHAR(40),
+                        subtype                 VARCHAR(40),
+                        &quot;action&quot;                VARCHAR(32768),
+                        durationMs              INTEGER,
+                        entryStatus             VARCHAR(32768),
+                        code                    VARCHAR(32768),
+                        name                    VARCHAR(32768),
+                        message                 LONGVARCHAR,
+                        detail                  VARCHAR(32768),
+                        severity                VARCHAR(32768),
+                    )
+
+ &#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.1&#x9;&#x9;01/20/2014&#x9;&#x9;Manny Bhatia&#x9;&#x9;6.2.5&#x9;&#x9;&#x9;Created new
+&#x9;2014.4&#x9;&#x9;09/25/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Modified to make cache framework generic. 
+&#x9;2015.1&#x9;&#x9;02/12/2015&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Modified to make a generic introspection utility.
+&#x9;2018.100&#x9;02/20/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Adapted and modified for usage with the Utilities as a generic procedure.
+&#x9;2019.200&#x9;05/13/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed use of VECTOR parameters for introspection and copy privileges as vector parameters are associated with memory leaks.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Removed use of lowerLevelProcedures/introspectResourcesTask and consolidated into this procedure.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Removed use of lowerLevelProcedures/introspectResourcesResult and consolidated into this procedure.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Added the ability to define a resource name, type and subtype in the tableNames or procedureNames input list using this format: name(TYPE:SUBTYPE).
+&#x9;2020.400&#x9;10/15/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Added XML escape characters for dsPath.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE introspectResources(
+&#x9;IN  dsPath &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- mandatory.   Full path to datasource
+&#x9;IN  catalogName &#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- optional (null) - 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Relational Database - database catalog Name if applicable.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - leave this null as it is not applicable
+&#x9;IN  schemaNames&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional (null) -  NULL=no specified schema list OR one or more comma separated schemas to introspect.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;Note: If a list of schema names are provided and a list of table names are provided the list of table names
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;  will be applied in total to each schema name.  It is not currently in scope to correlate a list of tables to a list of schemas. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Relational Database - schema name or list of schema names.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - the excel file name or list of file names.
+&#x9;IN  schemaTablePatterns&#x9;&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all tables starting with D, E and F or
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of table patterns associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaTablePatterns=[M%]   [P%]&#x9;&#x9;- The 1st set of bracketed table patterns goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of table patterns goes with the 2nd schema 
+&#x9;IN  tableNames &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional.  NULL=no specified table list OR one or more comma separated table namess to introspect or&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of table names associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;tableNames=&#x9;&#x9;[T1,T2][T3,T4]&#x9;- The 1st set of bracketed tables goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of tables goes with the 2nd schema
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Relational Database - When NULL, all tables for the schema are introspected, otherwise the list of tables provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;CSV - When NULL, all CSV files are introspected, otherwise the list of files provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - When NULL, all sheets are introspected, otherwise the list of sheets provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;XML Files - When NULL, all XML files are introspected, otherwise the list of files provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;To introspect the definition set specify the definition set name in this format:  name(TYPE:SUBTYPE)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;Example: productCatalog.xml,productCatalogDefinitions(DEFINITION_SET:XML_SCHEMA_DEFINITION_SET)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Table names with spaces may be use double quotes to enclose the name but it is not necessary as spaces are preserved.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Generically, any resource name type and subtype can be overridden using this format:  name(TYPE:SUBTYPE).
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;The invoking program is required to know the valid TYPE and SUBTYPE combinations.
+&#x9;IN  schemaProcedurePatterns&#x9;&#x9;VARCHAR(4096),&#x9;-- comma separated list of patterns such as D%, E%, F%.    Introspect all new procedure patterns starting with D, E and F or
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of procedure patterns associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;&#x9;&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaProcedurePatterns=[N%]   [O%]&#x9;&#x9;- The 1st set of bracketed procedure patterns goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of procedure patterns goes with the 2nd schema 
+&#x9;IN  procedureNames &#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- optional. NULL=no specified procedure list OR 1 or more comma separated procedure names to introspect or 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;a bracketed correlated and comma-separated list of procedure names associated with each schema:
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;schemaNames=&#x9;SCHEMA1,SCHEMA2&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;procedureNames=&#x9;[P1][P2,P3,P4]&#x9;- The 1st set of bracketed procedures goes with the 1st schema.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;- The 2nd bracketed set of procedures goes with the 2nd schema
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Relational Database - When NULL, all procedures are introspected, otherwise the list of procedures provided are introspected.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;CSV - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Excel Non-ODBC - leave this null as it is not applicable
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;Procedure names with spaces may be use double quotes to enclose the name but it is not necessary as spaces are preserved.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- &#x9;&#x9;Generically, any resource name type and subtype can be overridden using this format:  name(TYPE:SUBTYPE).
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&#x9;The invoking program is required to know the valid TYPE and SUBTYPE combinations.
+&#x9;IN&#x9;separator&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Default=,  The separator used to separate lists for the input parameters: tableNames, schemaTablePatterns, schemaProcedurePatterns and procedureNames.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;The separator value should not exist within the tableNames or procedureNames variable.
+&#x9;IN  inDebug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on, N=debug off.
+&#x9;OUT errStatus &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SUCCESS or FAILED
+&#x9;OUT errMessage &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR,&#x9;-- Error message if errStatus=FAILED, otherwise null
+&#x9;OUT introspectionResult &#x9;&#x9;LONGVARCHAR,&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;OUT dataSourceType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;OUT dataSourceSubtype&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The subtype of data source that was introspected.
+)
+BEGIN
+&#x9;DECLARE moduleName &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255) DEFAULT &apos;introspectResources&apos;;-- name of SQL Script
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT NVL(UPPER(inDebug),&apos;N&apos;);
+&#x9;DECLARE debug2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(2) DEFAULT &apos;N&apos;; -- 2nd level of debug
+&#x9;DECLARE debugSize&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 63900;
+&#x9;DECLARE sep&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT NVL(separator,&apos;,&apos;);
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resultMessage&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE taskId &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(3000000000);
+&#x9;DECLARE totalResults &#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE isCompleted &#x9;&#x9;&#x9;&#x9;&#x9;BIT;
+&#x9;DECLARE vDSAttributesXML&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE vSchemaAttributesXML&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE instrospectEntryXML&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE vTablesEntitiesXML&#x9;&#x9;&#x9;&#x9;LONGVARCHAR &#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE introspectionEntry &#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE schemaName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE tableName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE schemaTableNameList&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE schemaTablePatternList&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE schemaProcedureNameList&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE schemaProcedurePatternList&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE procedureName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE currentPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024);
+&#x9;DECLARE previousPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024)&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE currentSubtype&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE numSchemas&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE i, j&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pos1, pos2, pos3&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE object&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024);
+&#x9;DECLARE objectList1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+
+&#x9;-- Variables for introspection of data source
+&#x9;DECLARE schemaEntryPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE catalogEntryType&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE catalogEntrySubtype&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE schemaEntryType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE schemaEntrySubtype&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE defaultTableEntryType&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE defaultTableEntrySubtype&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE defaultProcEntryType&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE defaultProcEntrySubtype&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE tableEntryPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE tableEntryType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE tableEntrySubtype&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE procEntryPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE procEntryType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE procEntrySubtype&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;&apos;;
+    DECLARE updateAllIntrospectedResources&#x9;BIT &#x9;&#x9;&#x9;DEFAULT 0;
+    DECLARE failFast&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT &#x9;&#x9;&#x9;DEFAULT 1;
+    DECLARE commitOnFailure&#x9;&#x9;&#x9;&#x9;&#x9;BIT &#x9;&#x9;&#x9;DEFAULT 1;
+    DECLARE autoRollback&#x9;&#x9;&#x9;&#x9;&#x9;BIT &#x9;&#x9;&#x9;DEFAULT 0;
+    DECLARE scanForNewResourcesToAutoAdd&#x9;BIT &#x9;&#x9;&#x9;DEFAULT 0;
+    DECLARE runInBackgroundTransaction&#x9;&#x9;BIT &#x9;&#x9;&#x9;DEFAULT 0;
+    DECLARE block     &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT &#x9;&#x9;&#x9;DEFAULT 1;
+    DECLARE pageSize  &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;&#x9;DEFAULT 1;
+    DECLARE pageStart &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;&#x9;DEFAULT 1;
+&#x9;DECLARE namespaces&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024) DEFAULT &apos;xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot; xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&apos;;
+&#x9;DECLARE xpath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1024) DEFAULT &apos;/resource:getMostRecentIntrospectionStatusResponse/resource:status/resource:status&apos;;
+&#x9;DECLARE status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT null;
+&#x9;DECLARE response2XML&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+
+&#x9;-- Variables for applying privileges
+&#x9;DECLARE dsPathExists&#x9;&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT false; -- false=does not exist, true=exists
+&#x9;DECLARE catalogPathExists&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT false; -- false=does not exist, true=exists
+&#x9;DECLARE schemaPathExists&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT false; -- false=does not exist, true=exists
+&#x9;DECLARE targetPathExists&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT false; -- false=does not exist, true=exists
+&#x9;DECLARE currContainer&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE prevContainer&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE catalogPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE schemaPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE updatePrivilegesRecursively&#x9;&#x9;BIT DEFAULT 1;
+&#x9;&#x9;-- 0=do not apply recursively.  Only apply on specified resource
+&#x9;&#x9;-- 1=do apply recursively to children
+&#x9;DECLARE copyPrivilegeMode&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;SET_EXACTLY&apos;;
+&#x9;&#x9;-- flag indicating the mode in which to copy privileges
+&#x9;&#x9;-- &quot;OVERWRITE_APPEND&quot; - merges and does not update privileges for users or groups not mentioned.
+&#x9;&#x9;-- &quot;SET_EXACTLY&quot; - makes privileges look exactly like those provided in the call.
+&#x9;DECLARE numResponses&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE privlegePathReady&#x9;&#x9;&#x9;&#x9;BOOLEAN DEFAULT false;
+    DECLARE requestXML &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE dstResourceXML&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT;
+&#x9;DECLARE responseXML &#x9;&#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE createResponse&#x9;&#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE faultResponse &#x9;&#x9;&#x9;&#x9;&#x9;XML;
+
+&#x9;-- Exception variables
+&#x9;DECLARE exResourceNotFound&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE exNotNullParameter&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE exIntrospectionError&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE exCopyPrivilegeError&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE exInvalidSubtype&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : INPUT:&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   dsPath=[&apos;||NVL(dsPath,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   catalogName=[&apos;||NVL(catalogName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaNames=[&apos;||NVL(schemaNames,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaTablePatterns=[&apos;||NVL(schemaTablePatterns,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   tableNames=[&apos;||NVL(tableNames,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaProcedurePatterns=[&apos;||NVL(schemaProcedurePatterns,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   procedureNames=[&apos;||NVL(procedureNames,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   separator=[&apos;||NVL(separator,&apos;null&apos;)||&apos;]&apos;);
+&#x9;END IF;
+
+&#x9;BEGIN INDEPENDENT TRANSACTION
+
+&#x9;IF (dsPath IS NULL) THEN
+&#x9;&#x9;RAISE exResourceNotFound VALUE &apos;The input variable &quot;dsPath&quot; may not be null or empty.&apos;;
+&#x9;END IF;
+&#x9;CALL /lib/resource/ResourceExists(dsPath, &apos;DATA_SOURCE&apos;, null, dsPathExists);
+&#x9;IF (NOT dsPathExists) THEN
+&#x9;&#x9;RAISE exResourceNotFound VALUE &apos;Data source not found path=&apos;||dsPath;
+&#x9;END IF;
+
+&#x9;/*****************************************************
+&#x9; * STEP 1: Get the data source subtype
+&#x9; *****************************************************/
+&#x9;SET dataSourceType = null;
+&#x9;FOR r AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getBasicResourceCursor(dsPath, &apos;DATA_SOURCE&apos;) DO
+&#x9;&#x9;SET dataSourceSubtype = r.subtype;
+&#x9;&#x9;SET dataSourceType = r.dataSourceType;
+&#x9;END FOR;
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : DERIVED:&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   dataSourceSubtype=[&apos;||NVL(dataSourceSubtype,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   dataSourceType=[&apos;||NVL(dataSourceType,&apos;null&apos;)||&apos;]&apos;);
+&#x9;END IF;
+
+&#x9;IF (dataSourceSubtype IS NULL) THEN
+&#x9;&#x9;RAISE exInvalidSubtype VALUE &apos;This type of data source is not supported for introspection subtype=null  dsPath=&apos;||dsPath;
+&#x9;END IF;
+&#x9;CASE
+&#x9;&#x9;WHEN dataSourceSubtype = &apos;RELATIONAL_DATA_SOURCE&apos; THEN
+&#x9;&#x9;&#x9;SET catalogEntryType = &apos;CONTAINER&apos;;
+&#x9;&#x9;&#x9;SET catalogEntrySubtype = &apos;CATALOG_CONTAINER&apos;;
+&#x9;&#x9;&#x9;SET schemaEntryType = &apos;CONTAINER&apos;;
+&#x9;&#x9;&#x9;SET schemaEntrySubtype = &apos;SCHEMA_CONTAINER&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntryType = &apos;TABLE&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntrySubtype = &apos;DATABASE_TABLE&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntryType = &apos;PROCEDURE&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntrySubtype = &apos;DATABASE_PROCEDURE&apos;;
+
+&#x9;&#x9;WHEN dataSourceSubtype = &apos;FILE_DATA_SOURCE&apos; THEN
+&#x9;&#x9;&#x9;SET catalogEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET catalogEntrySubtype = &apos;&apos;;
+&#x9;&#x9;&#x9;SET schemaEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET schemaEntrySubtype = &apos;&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntryType = &apos;TABLE&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntrySubtype = &apos;DELIMITED_FILE_TABLE&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntrySubtype = &apos;&apos;;
+
+&#x9;&#x9;WHEN dataSourceSubtype = &apos;POI_EXCEL_DATA_SOURCE&apos; THEN
+&#x9;&#x9;&#x9;SET catalogEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET catalogEntrySubtype = &apos;&apos;;
+&#x9;&#x9;&#x9;SET schemaEntryType = &apos;CONTAINER&apos;;
+&#x9;&#x9;&#x9;SET schemaEntrySubtype = &apos;DIRECTORY_CONTAINER&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntryType = &apos;TABLE&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntrySubtype = &apos;EXCEL_NON_ODBC_POI&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntrySubtype = &apos;&apos;;
+
+&#x9;&#x9;WHEN dataSourceSubtype = &apos;XML_FILE_DATA_SOURCE&apos; THEN
+&#x9;&#x9;&#x9;SET catalogEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET catalogEntrySubtype = &apos;&apos;;
+&#x9;&#x9;&#x9;SET schemaEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET schemaEntrySubtype = &apos;&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntryType = &apos;TREE&apos;;
+&#x9;&#x9;&#x9;SET defaultTableEntrySubtype = &apos;XML_FILE_TREE&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntryType = &apos;&apos;;
+&#x9;&#x9;&#x9;SET defaultProcEntrySubtype = &apos;&apos;;
+
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;RAISE exInvalidSubtype VALUE &apos;This type of data source is not supported for introspection subtype=&apos;||dataSourceSubtype||&apos;  dsPath=&apos;||dsPath;
+&#x9;END CASE;
+
+&#x9;/*****************************************************
+&#x9; * STEP 2: Set input XML values for Introspection 
+&#x9; *****************************************************/
+&#x9;SET vDSAttributesXML = 
+&apos;          &lt;common:attribute&gt;
+            &lt;common:name&gt;autoAddChildren&lt;/common:name&gt;
+            &lt;common:type&gt;BOOLEAN&lt;/common:type&gt;
+            &lt;common:value&gt;true&lt;/common:value&gt;
+          &lt;/common:attribute&gt;
+          &lt;common:attribute&gt;
+            &lt;common:name&gt;patternSeparator&lt;/common:name&gt;
+            &lt;common:type&gt;STRING&lt;/common:type&gt;
+            &lt;common:value&gt;,&lt;/common:value&gt;
+          &lt;/common:attribute&gt;&apos;||CHR(10);
+
+&#x9;-- Add catalog entry if applicable
+&#x9;IF (catalogName IS NOT NULL AND LENGTH(catalogName) &gt; 0) THEN
+&#x9;&#x9;SET schemaEntryPath = schemaEntryPath || catalogName;
+&#x9;&#x9;SET catalogPath = dsPath || &apos;/&apos; || schemaEntryPath;
+&#x9;&#x9;CALL /lib/resource/ResourceExists(catalogPath, &apos;CONTAINER&apos;, null, catalogPathExists);
+&#x9;&#x9;SET vTablesEntitiesXML = 
+&apos;     &lt;resource:entry&gt;
+        &lt;resource:resourceId&gt;
+          &lt;resource:path&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaEntryPath, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+          &lt;resource:type&gt;&apos; || CAST(XMLTEXT(COALESCE(catalogEntryType, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;
+          &lt;resource:subtype&gt;&apos; || CAST(XMLTEXT(COALESCE(catalogEntrySubtype, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:subtype&gt;
+        &lt;/resource:resourceId&gt;
+        &lt;resource:action&gt;ADD_OR_UPDATE&lt;/resource:action&gt;
+     &lt;/resource:entry&gt;&apos;||CHR(10);
+&#x9;END IF;
+
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : INTROSPECT BUILD CATALOG:&apos;);
+&#x9;&#x9;CALL PRINT(moduleName||&apos; :   vTablesEntitiesXML:&apos;||CHR(10)||NVL(vTablesEntitiesXML,&apos;null&apos;));
+&#x9;END IF;
+
+&#x9;-- Add table and procedures entries if applicable
+&#x9;/****  
+&#x9;&#x9;Apply the list of tables and/or procedures associated with each schema in the schemaNames list. 
+&#x9;&#x9;The correlation of tables to schema uses the following format:
+&#x9;&#x9;schemaNames=&#x9;&#x9;&#x9;SCHEMA1,SCHEMA2&#x9;&#x9;- This is the list of comma-separated schemas 
+&#x9;&#x9;tableNames=&#x9;&#x9;&#x9;&#x9;[T1,T2][T3,T4,T5]&#x9;- The 1st set of bracketed table names goes with the 1st schema.  The 2nd bracketed set of table names goes with the 2nd schema
+&#x9;&#x9;schemaTablePatterns=&#x9;[M%]   [P%]&#x9;&#x9;&#x9;- The 1st set of bracketed table patterns goes with the 1st schema.  The 2nd bracketed set of table patterns goes with the 2nd schema 
+&#x9;&#x9;procedureNames=&#x9;&#x9;&#x9;[P1][P2,P3,P4]&#x9;&#x9;- The 1st set of bracketed procedure names goes with the 1st schema.  The 2nd bracketed set of procedure names goes with the 2nd schema
+&#x9;&#x9;schemaProcedurePatterns=[N%]   [O%]&#x9;&#x9;&#x9;- The 1st set of bracketed procedure patterns goes with the 1st schema.  The 2nd bracketed set of procedure patterns goes with the 2nd schema 
+&#x9;****/
+&#x9;-- Extract the object from the list of schemas
+&#x9;IF (schemaNames IS NOT NULL AND LENGTH(schemaNames) &gt; 0) THEN
+&#x9;&#x9;SET objectList1 = schemaNames;
+&#x9;ELSE
+&#x9;&#x9;-- There needs to be at least 1 object in the list in order to force processing of the tableNames list
+&#x9;&#x9;SET objectList1 = &apos;*****DUMMY*****&apos;;
+&#x9;END IF;
+&#x9;SET numSchemas = 0;
+&#x9;-- Extract the object from the list of schemas
+&#x9;FOR o AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(objectList1, sep, 0, 0, 0, 1, 0) DO
+&#x9;&#x9;SET schemaName = o.object;
+&#x9;&#x9;SET numSchemas = numSchemas + 1;
+&#x9;&#x9;SET instrospectEntryXML = &apos;&apos;;
+&#x9;&#x9;SET vSchemaAttributesXML = &apos;&apos;;
+
+&#x9;&#x9;-- Get the table &quot;name&quot; list associated with the extracted schema as identified by &quot;numSchemas&quot; occurrence
+&#x9;&#x9;SET schemaTableNameList = null;
+&#x9;&#x9;FOR l AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(tableNames, &apos;]&apos;, numSchemas, 0, 0, 1, 0) DO
+&#x9;&#x9;&#x9;SET schemaTableNameList = l.object;
+&#x9;&#x9;&#x9;-- Remove the beginning &apos;[&apos; delimiter from the list.  Then end &apos;]&apos; delimiter was removed by the extractDelimitedText
+&#x9;&#x9;&#x9;IF (SUBSTRING(schemaTableNameList, 1, 1) = &apos;[&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaTableNameList = SUBSTRING(schemaTableNameList, 2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (LENGTH(TRIM(schemaTableNameList)) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaTableNameList = null;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;-- Get the table &quot;pattern&quot; list associated with the extracted schema as identified by &quot;numSchemas&quot; occurrence
+&#x9;&#x9;SET schemaTablePatternList = null;
+&#x9;&#x9;FOR l AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(schemaTablePatterns, &apos;]&apos;, numSchemas, 0, 0, 1, 0) DO
+&#x9;&#x9;&#x9;SET schemaTablePatternList = l.object;
+&#x9;&#x9;&#x9;-- Remove the beginning &apos;[&apos; delimiter from the list.  Then end &apos;]&apos; delimiter was removed by the extractDelimitedText
+&#x9;&#x9;&#x9;IF (SUBSTRING(schemaTablePatternList, 1, 1) = &apos;[&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaTablePatternList = SUBSTRING(schemaTablePatternList, 2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (LENGTH(TRIM(schemaTablePatternList)) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaTablePatternList = null;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;-- Get the procedure list associated with the extracted schema as identified by &quot;numSchemas&quot; occurrence
+&#x9;&#x9;SET schemaProcedureNameList = null;
+&#x9;&#x9;FOR l AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(procedureNames, &apos;]&apos;, numSchemas, 0, 0, 1, 0) DO
+&#x9;&#x9;&#x9;SET schemaProcedureNameList = l.object;
+&#x9;&#x9;&#x9;-- Remove the beginning &apos;[&apos; delimiter from the list.  Then end &apos;]&apos; delimiter was removed by the extractDelimitedText
+&#x9;&#x9;&#x9;IF (SUBSTRING(schemaProcedureNameList, 1, 1) = &apos;[&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaProcedureNameList = SUBSTRING(schemaProcedureNameList, 2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (LENGTH(TRIM(schemaProcedureNameList)) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaProcedureNameList = null;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;-- Get the procedure &quot;pattern&quot; list associated with the extracted schema as identified by &quot;numSchemas&quot; occurrence
+&#x9;&#x9;SET schemaProcedurePatternList = null;
+&#x9;&#x9;FOR l AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(schemaProcedurePatterns, &apos;]&apos;, numSchemas, 0, 0, 1, 0) DO
+&#x9;&#x9;&#x9;SET schemaProcedurePatternList = l.object;
+&#x9;&#x9;&#x9;-- Remove the beginning &apos;[&apos; delimiter from the list.  Then end &apos;]&apos; delimiter was removed by the extractDelimitedText
+&#x9;&#x9;&#x9;IF (SUBSTRING(schemaProcedurePatternList, 1, 1) = &apos;[&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaProcedurePatternList = SUBSTRING(schemaProcedurePatternList, 2);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (LENGTH(TRIM(schemaProcedurePatternList)) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaProcedurePatternList = null;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;IF (debug2 = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : INTROSPECT BUILD SCHEMA:&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; :   numSchemas[&apos;||numSchemas||&apos;]&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaName[&apos;||NVL(schemaName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaTableNameList[&apos;||NVL(schemaTableNameList,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaTablePatternList[&apos;||NVL(schemaTablePatternList,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaProcedureNameList[&apos;||NVL(schemaProcedureNameList,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; :   schemaProcedurePatternList[&apos;||NVL(schemaProcedurePatternList,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Construct the schema entry path for each table
+&#x9;&#x9;SET schemaEntryPath = &apos;&apos;;
+&#x9;&#x9;IF (schemaName &lt;&gt; &apos;*****DUMMY*****&apos;) THEN
+&#x9;&#x9;&#x9;IF (catalogName IS NOT NULL AND LENGTH(catalogName) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET schemaEntryPath = catalogName || &apos;/&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET schemaEntryPath = schemaEntryPath || schemaName || &apos;/&apos;;
+
+&#x9;&#x9;&#x9;-- Set the schema table patterns
+&#x9;&#x9;&#x9;IF (schemaTablePatternList IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET vSchemaAttributesXML = vSchemaAttributesXML ||
+&apos;          &lt;common:attribute&gt;
+            &lt;common:name&gt;tablePatterns&lt;/common:name&gt;
+            &lt;common:type&gt;STRING&lt;/common:type&gt;
+            &lt;common:value&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaTablePatternList, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/common:value&gt;
+          &lt;/common:attribute&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Set the schema procedure patterns
+&#x9;&#x9;&#x9;IF (schemaProcedurePatternList IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET vSchemaAttributesXML = vSchemaAttributesXML ||
+&apos;          &lt;common:attribute&gt;
+            &lt;common:name&gt;procedurePatterns&lt;/common:name&gt;
+            &lt;common:type&gt;STRING&lt;/common:type&gt;
+            &lt;common:value&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaProcedurePatternList, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/common:value&gt;
+          &lt;/common:attribute&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Determine the &quot;action&quot; to take based on whether there are any table names, procedure names or schema attributes present
+&#x9;&#x9;&#x9;IF (schemaTableNameList IS NOT NULL OR schemaProcedureNameList IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET instrospectEntryXML = instrospectEntryXML ||
+&apos;     &lt;resource:entry&gt;
+        &lt;resource:resourceId&gt;
+          &lt;resource:path&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaEntryPath, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+          &lt;resource:type&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaEntryType, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;
+          &lt;resource:subtype&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaEntrySubtype, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:subtype&gt;
+        &lt;/resource:resourceId&gt;
+        &lt;resource:action&gt;ADD_OR_UPDATE&lt;/resource:action&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET instrospectEntryXML = instrospectEntryXML ||
+&apos;     &lt;resource:entry&gt;
+        &lt;resource:resourceId&gt;
+          &lt;resource:path&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaEntryPath, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+          &lt;resource:type&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaEntryType, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;
+          &lt;resource:subtype&gt;&apos; || CAST(XMLTEXT(COALESCE(schemaEntrySubtype, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:subtype&gt;
+        &lt;/resource:resourceId&gt;
+        &lt;resource:action&gt;ADD_OR_UPDATE_RECURSIVELY&lt;/resource:action&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Add the Schema Attributes into the Table Entity XML
+&#x9;&#x9;&#x9;SET instrospectEntryXML = instrospectEntryXML || vSchemaAttributesXML;
+
+&#x9;&#x9;&#x9;SET instrospectEntryXML = instrospectEntryXML ||
+&apos;     &lt;/resource:entry&gt;&apos;||CHR(10);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;/***** ADD TABLES *****/
+&#x9;&#x9;-- Add the list of tables for the extracted schema
+&#x9;&#x9;FOR t AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(schemaTableNameList, sep, 0, 0, 0, 0, 0) DO
+&#x9;&#x9;&#x9;SET tableName = t.object;
+
+&#x9;&#x9;&#x9;-- Set the table entry type
+&#x9;&#x9;&#x9;SET tableEntryType = defaultTableEntryType;
+&#x9;&#x9;&#x9;SET tableEntrySubtype = defaultTableEntrySubtype;
+&#x9;&#x9;&#x9;-- Extract the table name, type and subtype if applicable from the format: table(TYPE:SUBTYPE)
+&#x9;&#x9;&#x9;SET pos1 = INSTR(tableName, &apos;(&apos;);
+&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(tableName, &apos;:&apos;, pos1);
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(tableName, &apos;)&apos;, pos1);
+&#x9;&#x9;&#x9;&#x9;IF (pos2 &gt; 0 AND pos3 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tableEntryType = SUBSTRING(tableName, pos1+1, pos2-pos1-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tableEntrySubtype = SUBSTRING(tableName, pos2+1, pos3-pos2-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET tableName = SUBSTRING(tableName, 1, pos1-1);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Construct the table name path
+&#x9;&#x9;&#x9;SET tableEntryPath = schemaEntryPath || tableName;
+&#x9;&#x9;&#x9;-- Set up the table entry XML
+&#x9;&#x9;&#x9;SET instrospectEntryXML = instrospectEntryXML ||
+&apos;     &lt;resource:entry&gt;
+        &lt;resource:resourceId&gt;
+          &lt;resource:path&gt;&apos; || CAST(XMLTEXT(COALESCE(tableEntryPath, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+          &lt;resource:type&gt;&apos; || CAST(XMLTEXT(COALESCE(tableEntryType, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;
+          &lt;resource:subtype&gt;&apos; || CAST(XMLTEXT(COALESCE(tableEntrySubtype, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:subtype&gt;
+        &lt;/resource:resourceId&gt;
+        &lt;resource:action&gt;ADD_OR_UPDATE&lt;/resource:action&gt;
+     &lt;/resource:entry&gt;&apos;||CHR(10);
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;/***** ADD PROCEDURES *****/
+&#x9;&#x9;-- Add the list of procedures for the extracted schema
+&#x9;&#x9;FOR o AS SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractDelimitedText(schemaProcedureNameList, sep, 0, 0, 0, 0, 0) DO
+&#x9;&#x9;&#x9;SET procedureName = o.object;
+
+&#x9;&#x9;&#x9;-- Set the procedure entry type
+&#x9;&#x9;&#x9;SET procEntryType = defaultProcEntryType;
+&#x9;&#x9;&#x9;SET procEntrySubtype = defaultProcEntrySubtype;
+&#x9;&#x9;&#x9;-- Extract the procedure name, type and subtype if applicable from the format: procedure(TYPE:SUBTYPE)
+&#x9;&#x9;&#x9;SET pos1 = INSTR(procedureName, &apos;(&apos;);
+&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET pos2 = INSTR(procedureName, &apos;:&apos;, pos1);
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(procedureName, &apos;)&apos;, pos1);
+&#x9;&#x9;&#x9;&#x9;IF (pos2 &gt; 0 AND pos3 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET procEntryType = SUBSTRING(procedureName, pos1+1, pos2-pos1-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET procEntrySubtype = SUBSTRING(procedureName, pos2+1, pos3-pos2-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET procedureName = SUBSTRING(procedureName, 1, pos1-1);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Construct the table name path
+&#x9;&#x9;&#x9;IF (LENGTH(schemaEntryPath) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET procEntryPath = schemaEntryPath || procedureName;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET procEntryPath = procedureName;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET instrospectEntryXML = instrospectEntryXML ||
+&apos;     &lt;resource:entry&gt;
+        &lt;resource:resourceId&gt;
+          &lt;resource:path&gt;&apos; || CAST(XMLTEXT(COALESCE(procEntryPath, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+          &lt;resource:type&gt;&apos; || CAST(XMLTEXT(COALESCE(procEntryType, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:type&gt;
+          &lt;resource:subtype&gt;&apos; || CAST(XMLTEXT(COALESCE(procEntrySubtype, &apos;&apos;)) AS LONGVARCHAR) || &apos;&lt;/resource:subtype&gt;
+        &lt;/resource:resourceId&gt;
+        &lt;resource:action&gt;ADD_OR_UPDATE&lt;/resource:action&gt;
+     &lt;/resource:entry&gt;&apos;||CHR(10);
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;IF (debug2 = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : INTROSPECT BUILD SCHEMA ENTRY:&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; :   instrospectEntryXML:&apos;||CHR(10)||NVL(instrospectEntryXML,&apos;null&apos;));
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Add the Introspect Entry into the Introspect Entities XML
+&#x9;&#x9;SET vTablesEntitiesXML = vTablesEntitiesXML || instrospectEntryXML;
+&#x9;END FOR;
+
+&#x9;-- If there are no table entries then use the default to introspect the data source with ADD_OR_UPDATE_RECURSIVELY
+&#x9;IF (vTablesEntitiesXML IS NULL OR LENGTH(vTablesEntitiesXML) = 0) THEN
+&#x9;&#x9;SET vTablesEntitiesXML = vTablesEntitiesXML ||
+&apos;     &lt;resource:entry&gt;
+        &lt;resource:resourceId&gt;
+          &lt;resource:path&gt;&lt;/resource:path&gt;
+          &lt;resource:type&gt;DATA_SOURCE&lt;/resource:type&gt;
+          &lt;resource:subtype&gt;NONE&lt;/resource:subtype&gt;
+        &lt;/resource:resourceId&gt;
+        &lt;resource:action&gt;ADD_OR_UPDATE_RECURSIVELY&lt;/resource:action&gt;
+     &lt;/resource:entry&gt;&apos;||CHR(10);
+&#x9;END IF;
+
+&#x9;/*****************************************************
+&#x9; * STEP 3: Start the introspection task transaction
+&#x9; *****************************************************/
+    SET requestXML = 
+&apos;&lt;resource:introspectResourcesTask xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+  &lt;resource:path&gt;&apos; || CAST(XMLTEXT(dsPath) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;
+  &lt;resource:plan&gt;&apos;||CHR(10);
+
+    IF (updateAllIntrospectedResources IS NOT NULL) THEN
+        SET requestXML = requestXML ||
+&apos;    &lt;resource:updateAllIntrospectedResources&gt;&apos; || updateAllIntrospectedResources || &apos;&lt;/resource:updateAllIntrospectedResources&gt;&apos;||CHR(10);
+    END IF;
+
+    IF (failFast IS NOT NULL) THEN
+        SET requestXML = requestXML ||
+&apos;    &lt;resource:failFast&gt;&apos; || failFast || &apos;&lt;/resource:failFast&gt;&apos;||CHR(10);
+    END IF;
+
+    IF (commitOnFailure IS NOT NULL) THEN
+        SET requestXML = requestXML ||
+&apos;    &lt;resource:commitOnFailure&gt;&apos; || commitOnFailure || &apos;&lt;/resource:commitOnFailure&gt;&apos;||CHR(10);
+    END IF;
+
+    IF (autoRollback IS NOT NULL) THEN
+        SET requestXML = requestXML ||
+&apos;    &lt;resource:autoRollback&gt;&apos; || autoRollback || &apos;&lt;/resource:autoRollback&gt;&apos;||CHR(10);
+    END IF;
+
+    IF (scanForNewResourcesToAutoAdd IS NOT NULL) THEN
+        SET requestXML = requestXML ||
+&apos;    &lt;resource:scanForNewResourcesToAutoAdd&gt;&apos; || scanForNewResourcesToAutoAdd || &apos;&lt;/resource:scanForNewResourcesToAutoAdd&gt;&apos;||CHR(10);
+    END IF;
+
+    SET requestXML = requestXML ||
+&apos;    &lt;resource:entries&gt;&apos;||CHR(10);
+
+&#x9;-- Add the table entries XML
+&#x9;IF (vTablesEntitiesXML IS NOT NULL AND LENGTH(vTablesEntitiesXML) &gt; 0) THEN
+        SET requestXML = requestXML ||
+&#x9;&#x9;&#x9;vTablesEntitiesXML;
+&#x9;END IF;
+
+    SET requestXML = requestXML ||
+&apos;    &lt;/resource:entries&gt;
+  &lt;/resource:plan&gt;
+  &lt;resource:runInBackgroundTransaction&gt;&apos; || runInBackgroundTransaction || &apos;&lt;/resource:runInBackgroundTransaction&gt;&apos;||CHR(10);
+
+&#x9;-- Add the datasource attributes XML
+    IF (vDSAttributesXML IS NOT NULL AND LENGTH(vDSAttributesXML) &gt; 0) THEN
+        SET requestXML = requestXML ||
+&apos;  &lt;resource:attributes&gt;&apos;||CHR(10)||
+&#x9;&#x9;vDSAttributesXML ||
+&apos;  &lt;/resource:attributes&gt;&apos;||CHR(10);
+    END IF;
+
+    SET requestXML = requestXML ||
+&apos;&lt;/resource:introspectResourcesTask&gt;&apos;;
+
+&#x9;IF (debug IS NOT NULL AND UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : INTROSPECT REQUEST:  requestXML=&apos;);
+    &#x9;CALL PRINT(SUBSTRING(requestXML, 1, debugSize));
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;END IF;
+
+    SELECT
+        taskId,
+        totalResults,
+        completed
+    INTO
+        taskId,
+        totalResults,
+        isCompleted
+    FROM
+        /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/introspectResourcesTaskXSLT(requestXML); 
+
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : INTROSPECT REQUEST: Waiting on introspection report for tables with task ID=&apos; || taskId||
+&#x9;&#x9;&#x9;&apos;  totalResults=&apos;||NVL(CAST(totalResults AS VARCHAR),&apos;null&apos;)||&apos;  isCompleted=&apos;||NVL(CAST(isCompleted AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;---------------------------------------------------------------------------------------------------&apos;);
+&#x9;END IF;
+
+&#x9;/*****************************************************
+&#x9; * STEP 4: Complete the introspection task transaction
+&#x9; *****************************************************/
+&#x9;SET introspectionResult = &apos;&apos;;
+&#x9;SET introspectionEntry = &apos;&apos;;
+&#x9;SET resultMessage = &apos;&apos;;
+&#x9;SET numResponses = 0;
+&#x9;SET dstResourceXML = &apos;&apos;;
+&#x9;SET privlegePathReady = false;
+&#x9;SET currContainer = null;
+&#x9;SET prevContainer = null;
+&#x9;SET i = 0;
+&#x9;-- Validation
+    IF (taskId IS NULL) THEN
+        RAISE System.IllegalArgumentException VALUE moduleName || &apos;: The input &quot;taskId&quot; may not be NULL.&apos;;
+    END IF;
+    IF (block IS NULL) THEN
+        RAISE System.IllegalArgumentException VALUE moduleName || &apos;: The input &quot;block&quot; may not be NULL.&apos;;
+    END IF;
+    IF (pageSize IS NOT NULL AND pageSize &lt; 1) THEN
+        RAISE System.IllegalArgumentException VALUE moduleName || &apos;: The input &quot;pageSize&quot; must be positive.&apos;;
+    END IF;
+    IF (pageStart IS NOT NULL AND pageStart &lt; 1) THEN
+        RAISE System.IllegalArgumentException VALUE moduleName || &apos;: The input &quot;pageStart&quot; must be positive.&apos;;
+    END IF;
+
+    SET requestXML = 
+&apos;&lt;resource:introspectResourcesResult xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+  &lt;common:taskId&gt;&apos; || CAST(XMLTEXT(taskId) AS LONGVARCHAR) || &apos;&lt;/common:taskId&gt;
+  &lt;common:block&gt;&apos; || CAST(block AS VARCHAR) || &apos;&lt;/common:block&gt;
+  &lt;common:page&gt;
+    &lt;common:size&gt;&apos; || CAST(pageSize AS VARCHAR) || &apos;&lt;/common:size&gt;
+    &lt;common:start&gt;&apos; || CAST(pageStart AS VARCHAR) || &apos;&lt;/common:start&gt;
+  &lt;/common:page&gt;
+  &lt;resource:detail&gt;FULL&lt;/resource:detail&gt;
+&lt;/resource:introspectResourcesResult&gt;&apos;;
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : introspectResourcesResult:  requestXML=&apos;||CHR(10)||SUBSTRING(NVL(CAST(requestXML AS LONGVARCHAR),&apos;NULL&apos;),1,debugSize));
+&#x9;END IF;
+
+&#x9;CALL /services/webservices/system/admin/resource/operations/introspectResourcesResult(requestXML, responseXML, faultResponse);
+&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;RAISE exIntrospectionError VALUE CAST(faultResponse AS LONGVARCHAR);
+&#x9;END IF;
+&#x9;IF (debug2 = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : introspectResourcesResult responseXML=&apos;||CHR(10)||SUBSTRING(NVL(CAST(responseXML AS LONGVARCHAR),&apos;NULL&apos;),1,debugSize));
+&#x9;END IF;
+
+&#x9;SET i = 0;
+&#x9;WHILE (status IS NULL OR LENGTH(TRIM(status)) = 0) DO
+&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;call /services/webservices/system/admin/resource/operations/getMostRecentIntrospectionStatus(
+         &apos;&lt;resource:getMostRecentIntrospectionStatus xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot; xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+           &lt;resource:path&gt;&apos;||CAST(XMLTEXT(dsPath) AS LONGVARCHAR)||&apos;&lt;/resource:path&gt;
+           &lt;resource:detail&gt;FULL&lt;/resource:detail&gt;
+         &lt;/resource:getMostRecentIntrospectionStatus&gt;&apos;, responseXML, faultResponse);
+&#x9;&#x9;-- DO NOT CHANGE THIS LINE.  IT FORCES CIS TO COMPLETE THE RESULTS.
+&#x9;&#x9;SET response2XML = CAST(responseXML AS LONGVARCHAR);
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/&quot;xml&quot;/getValueFromXML(&apos;N&apos;, namespaces, xpath, response2XML, status);
+&#x9;&#x9;IF (debug2 = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : status=&apos;||NVL(status,&apos;NULL&apos;)||&apos;  getMostRecentIntrospectionStatus responseXML=&apos;||CHR(10)||SUBSTRING(NVL(response2XML,&apos;NULL&apos;),1,debugSize));
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : status=&apos;||NVL(status,&apos;NULL&apos;));
+&#x9;&#x9;END IF;
+&#x9;END WHILE;
+&#x9;IF (debug2 = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : Number of getMostRecentIntrospectionStatus() loop executions=&apos;||CAST(i AS VARCHAR));
+&#x9;END IF;
+
+&#x9;-- Return a sorted list of results with no null records present
+&#x9;FOR r AS
+        SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/introspectResourcesResultXSLT(response2XML)
+&#x9;&#x9;&#x9;WHERE &quot;path&quot; IS NOT NULL OR &quot;type&quot; IS NOT NULL OR subtype IS NOT NULL OR &quot;action&quot; IS NOT NULL
+&#x9;&#x9;&#x9;ORDER BY LOWER(&quot;path&quot;)
+&#x9;DO
+&#x9;&#x9;SET errStatus = NVL(r.status, &apos;SUCCESS&apos;);
+&#x9;&#x9;SET currentPath = r.&quot;path&quot;;
+&#x9;&#x9;SET currentSubtype = r.subtype;
+&#x9;&#x9;-- Capture the current container so that it can be compared with the previous container
+&#x9;&#x9;IF (r.&quot;type&quot; = &apos;CONTAINER&apos;) THEN
+&#x9;&#x9;&#x9;SET currContainer = currentPath;
+&#x9;&#x9;&#x9;IF (prevContainer IS NOT NULL AND INSTR(currContainer||&apos;/&apos;, prevContainer||&apos;/&apos;) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;-- When the container path lineage changes, then reset the privileges path ready so this new path can be registered
+&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;as a destination for copying privileges.
+&#x9;&#x9;&#x9;&#x9;SET privlegePathReady = false;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (r.&quot;type&quot; IS NOT NULL AND r.&quot;type&quot; = &apos;DATA_SOURCE&apos; AND currentSubtype IS NOT NULL AND currentSubtype = &apos;NONE&apos;) THEN 
+&#x9;&#x9;&#x9;SET currentSubtype = dataSourceSubtype;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (debug2 = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;call print(&apos;previousPath=&apos;||NVL(previousPath,&apos;null&apos;)||&apos;  current type=&apos;||NVL(r.&quot;type&quot;,&apos;null&apos;)||&apos;  currentPath=&apos;||NVL(currentPath,&apos;null&apos;));
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Capture the unique row under these circumstances.
+&#x9;&#x9;--&#x9;&#x9;Note: A row as designated by the &quot;path&quot;, &quot;type&quot; and subtype may have multiple rows dues to any number of message records.
+&#x9;&#x9;--&#x9;&#x9;&#x9;  The message records are consolidated into a single message entry delineated by info:[&lt;message&gt;].
+&#x9;&#x9;IF ( (currentPath IS NULL AND previousPath IS NOT NULL) OR
+&#x9;&#x9;&#x9; (currentPath IS NOT NULL AND previousPath IS NULL) OR 
+&#x9;&#x9;&#x9; (currentPath IS NOT NULL AND currentPath &lt;&gt; previousPath) ) THEN
+&#x9;&#x9;&#x9;-- Check the previous introspection entry and replace the message before initializing the message.
+&#x9;&#x9;&#x9;IF (INSTR(introspectionEntry, &apos;message=&lt;replace message&gt;&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET introspectionEntry = REPLACE(introspectionEntry, &apos;message=&lt;replace message&gt;&apos;, &apos;message=&apos;||NVL(resultMessage,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;SET introspectionResult = introspectionResult || introspectionEntry;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos; AND LENGTH(TRIM(introspectionEntry)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : resultMessage=&apos;||SUBSTRING(TRIM(NVL(resultMessage,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||SUBSTRING(TRIM(NVL(introspectionEntry,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Initialize the result message
+&#x9;&#x9;&#x9;SET resultMessage = &apos;&apos;;
+&#x9;&#x9;&#x9;IF (r.message IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET resultMessage = &apos;info:[&apos;||r.message||&apos;] &apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;&#x9;SET introspectionEntry =  
+                &apos;introspection entry=&apos;||i||&apos;  path=&apos;||NVL(currentPath,&apos;NULL&apos;)||&apos;,
+                 status=&apos;||NVL(CAST(r.status AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 introspectorVersion=&apos;||NVL(CAST(r.introspectorVersion AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 startTime=&apos;||NVL(CAST(r.startTime AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 endTime=&apos;||NVL(CAST(r.endTime AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 addedCount=&apos;||NVL(CAST(r.addedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 removedCount=&apos;||NVL(CAST(r.removedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 updatedCount=&apos;||NVL(CAST(r.updatedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 skippedCount=&apos;||NVL(CAST(r.skippedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 totalCompletedCount=&apos;||NVL(CAST(r.totalCompletedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 toBeAddedCount=&apos;||NVL(CAST(r.toBeAddedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 toBeRemovedCount=&apos;||NVL(CAST(r.toBeRemovedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 toBeUpdatedCount=&apos;||NVL(CAST(r.toBeUpdatedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 totalToBeCompletedCount=&apos;||NVL(CAST(r.totalToBeCompletedCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 warningCount=&apos;||NVL(CAST(r.warningCount AS VARCHAR),&apos;NULL&apos;)||&apos;,
+                 errorCount=&apos;||NVL(CAST(r.errorCount AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 &quot;path&quot;=&apos;||NVL(CAST(r.&quot;path&quot; AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 &quot;type&quot;=&apos;||NVL(CAST(r.&quot;type&quot; AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 subtype=&apos;||NVL(CAST(currentSubtype AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 &quot;action&quot;=&apos;||NVL(CAST(r.&quot;action&quot; AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 durationMs=&apos;||NVL(CAST(r.durationMs AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 entryStatus=&apos;||NVL(CAST(r.entryStatus AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 code=&apos;||NVL(CAST(r.code AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 name=&apos;||NVL(CAST(r.name AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 message=&lt;replace message&gt;
+                 detail=&apos;||NVL(CAST(r.detail AS VARCHAR),&apos;NULL&apos;)||&apos;
+                 severity=&apos;||NVL(CAST(r.severity AS VARCHAR),&apos;NULL&apos;)|| CHR(10);
+
+&#x9;&#x9;&#x9;-- Setup the copy privilege XML destination path
+&#x9;&#x9;&#x9;IF (r.&quot;action&quot; = &apos;ADD&apos; AND NOT privlegePathReady) THEN
+&#x9;&#x9;&#x9;&#x9;IF (r.&quot;type&quot; = &apos;CONTAINER&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Since privileges will be applied recursively to children, it is only necessary to capture the container path.
+&#x9;&#x9;&#x9;&#x9;&#x9;SET privlegePathReady = true;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;-- Add the resource to the destination XML
+&#x9;&#x9;&#x9;&#x9;SET numResponses = numResponses + 1;
+&#x9;&#x9;&#x9;&#x9;SET dstResourceXML = dstResourceXML || 
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;resource:dstResource&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;        &lt;resource:path&gt;&apos; || CAST(XMLTEXT(dsPath || &apos;/&apos; || r.&quot;path&quot;) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;        &lt;resource:type&gt;&apos; || CAST(XMLTEXT(r.&quot;type&quot;) AS VARCHAR) || &apos;&lt;/resource:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;    &lt;/resource:dstResource&gt;&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Check for an error
+&#x9;&#x9;&#x9;IF (r.entryStatus is not null and r.entryStatus = &apos;ERROR&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE exIntrospectionError VALUE &apos;INTROSPECTION ERROR DETECTED.  ERROR=&apos;||TRIM(NVL2(r.message,r.message,&apos; &apos;))||&apos;  DETAIL=&apos;||TRIM(NVL2(r.detail,r.detail,&apos; &apos;));
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;IF (r.message IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET resultMessage = resultMessage || &apos;info:[&apos;||r.message||&apos;] &apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;SET previousPath = currentPath;
+&#x9;&#x9;SET prevContainer = currContainer;
+&#x9;END FOR;
+
+&#x9;-- Modify the final introspection entry
+&#x9;IF (INSTR(introspectionEntry, &apos;message=&lt;replace message&gt;&apos;) &gt; 0) THEN
+&#x9;&#x9;SET introspectionEntry = REPLACE(introspectionEntry, &apos;message=&lt;replace message&gt;&apos;, &apos;message=&apos;||NVL(resultMessage,&apos;null&apos;));
+&#x9;&#x9;SET introspectionResult = introspectionResult || introspectionEntry;
+&#x9;END IF;
+&#x9;IF (debug = &apos;Y&apos; AND LENGTH(TRIM(introspectionEntry)) &gt; 0) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : resultMessage=&apos;||SUBSTRING(TRIM(NVL(resultMessage,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : &apos;||SUBSTRING(TRIM(NVL(introspectionEntry,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;CALL PRINT(&apos;---------------------------------------------------------------------------------------------------&apos;);
+&#x9;END IF;
+&#x9;SET introspectionResult = &apos;Total Entries=&apos;||i||CHR(10)||introspectionResult;
+
+&#x9;END;
+
+&#x9;/*****************************************************
+&#x9; * STEP 5: Copy Privileges to the introspected resources
+&#x9; *****************************************************/
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;IF (numResponses &gt; 0) THEN
+&#x9;&#x9;&#x9;-- Create the web service input request for copyResourcePrivileges
+&#x9;&#x9;&#x9;SET requestXML = 
+&#x9;&#x9;&#x9;&apos;&lt;resource:copyResourcePrivileges xmlns:resource=&quot;http://www.compositesw.com/services/system/admin/resource&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;resource:updateRecursively&gt;&apos; || CAST(XMLTEXT(updatePrivilegesRecursively) AS VARCHAR) || &apos;&lt;/resource:updateRecursively&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;resource:copyPrivilegeEntries&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;resource:copyPrivilegeEntry&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;resource:srcResource&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        &lt;resource:path&gt;&apos; || CAST(XMLTEXT(dsPath) AS LONGVARCHAR) || &apos;&lt;/resource:path&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        &lt;resource:type&gt;DATA_SOURCE&lt;/resource:type&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    &lt;/resource:srcResource&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9; dstResourceXML || 
+&#x9;&#x9;&#x9;&apos;    &lt;/resource:copyPrivilegeEntry&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;/resource:copyPrivilegeEntries&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;resource:mode&gt;&apos; || CAST(XMLTEXT(copyPrivilegeMode) AS VARCHAR) || &apos;&lt;/resource:mode&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;&lt;/resource:copyResourcePrivileges&gt;&apos;;
+
+&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : Copy Privileges requestXML=&apos;||CHR(10)||SUBSTRING(requestXML,1,debugSize));
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Invoke copyResourcePrivileges
+&#x9;&#x9;&#x9;CALL /services/webservices/system/admin/resource/operations/copyResourcePrivileges(requestXML, createResponse, faultResponse);
+&#x9;&#x9;&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;RAISE exCopyPrivilegeError VALUE CAST(faultResponse as LONGVARCHAR);
+&#x9;&#x9;&#x9;END IF;&#x9;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : No destination privileges to set.&apos;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;END;
+
+&#x9;SET errMessage = NULL;
+&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : Successfully completed introspection.&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;END IF;
+
+EXCEPTION
+&#x9;WHEN exResourceNotFound THEN
+&#x9;&#x9;SET errMessage = CURRENT_EXCEPTION.MESSAGE;
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : errMessage=&apos;||SUBSTRING(TRIM(NVL(errMessage,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET errStatus = &apos;FAILED&apos;;
+&#x9;WHEN exNotNullParameter THEN
+&#x9;&#x9;SET errMessage = CURRENT_EXCEPTION.MESSAGE;
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : errMessage=&apos;||SUBSTRING(TRIM(NVL(errMessage,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET errStatus = &apos;FAILED&apos;;
+&#x9;WHEN exIntrospectionError THEN
+&#x9;&#x9;SET errMessage = CURRENT_EXCEPTION.MESSAGE;
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : errMessage=&apos;||SUBSTRING(TRIM(NVL(errMessage,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET errStatus = &apos;FAILED&apos;;
+&#x9;ELSE
+&#x9;&#x9;SET errMessage = CURRENT_EXCEPTION.TRACE;
+&#x9;&#x9;IF (debug = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : errMessage=&apos;||SUBSTRING(TRIM(NVL(errMessage,&apos;  &apos;)),1,debugSize));
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET errStatus = &apos;FAILED&apos;;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1398383331017</attribute>
+  <attribute name="creatorUserDomain" type="STRING">ldap</attribute>
+  <attribute name="creatorUserName" type="STRING">nbklsvb</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">11/698</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/929</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/900</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/948</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/947</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/742</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/928</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/780</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/899</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/898</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/784</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/810</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/779</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/618</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/930</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/617</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/973</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/403</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/490</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/825</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/699</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/826</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/697</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/291</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/290</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/295</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/294</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/940</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/967</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/293</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/292</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/485</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/484</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/487</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/486</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/489</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/488</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/961</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/318</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/714</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/317</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/756</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/739</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/716</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/319</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/288</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/287</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/736</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">15/733</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/402</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/764</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/289</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/955</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

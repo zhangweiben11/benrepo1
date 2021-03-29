@@ -1,0 +1,581 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="validateDeploymentInit_CreateDrop" path="/shared/Delta_DV/_scripts/Utilities/deployment/validate/helpers/validateDeploymentInit_CreateDrop" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+]]></annotation>
+  <parameters>
+    <parameter name="datasourceType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="datasourcePath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="catalogName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="schemaName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="packagedQueryPath" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="displayDDL" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="executeDDL" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="dropIndexes" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="dropTables" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="dropSequences" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="createTables" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="createIndexes" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="createSequences" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="cursCombinedResult" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="sqlScript" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/introspectResources" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="dsPath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="catalogName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="schemaNames" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="schemaTablePatterns" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="tableNames" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="schemaProcedurePatterns" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="procedureNames" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inDebug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="errStatus" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="errMessage" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="introspectionResult" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="dataSourceType" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="dataSourceSubtype" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;validateDeploymentInit_CreateDrop: 
+
+&#x9;Provides a mechanism to drop/create table, alter table and drop/create indexes in the target database using native DDL.
+
+&#x9;This procedure gets automatically executed by /shared/ASAssets/Utilities/deployment/validate/helpers/validateDeploymentInit.
+
+&#x9;Instructions:
+&#x9;&#x9;1. Modify the tableFilegroupName and indexFilegroupName if necessary.  Leave as blank &apos;&apos; if the default file group is to be used.
+&#x9;&#x9;2. Add DROP INDEX and TABLE statements as necessary.
+&#x9;&#x9;3. Add CREATE TABLE, ALTER TABLE and INDEX statements as necessary.
+&#x9;&#x9;4. Execute the script
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2019.400&#x9;12/31/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8 / 8.x&#x9;&#x9;Created new
+&#x9;2020.202&#x9;06/08/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8 / 8.x&#x9;&#x9;Added 3 columns: ARCHIVE_FILE_NAME, SOURCE_SERVER_NAME, SERVER_VERSION.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE validateDeploymentInit_CreateDrop(
+&#x9;IN  datasourceType&#x9;&#x9;&#x9;VARCHAR,&#x9;-- Valid datasources: oracle, sqlserver, postgres
+&#x9;IN  datasourcePath&#x9;&#x9;&#x9;LONGVARCHAR,-- The datasource path
+&#x9;IN  catalogName&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The name of the catalog if applicable otherwise null.
+&#x9;IN  schemaName&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The name of the schema if applicable otherwise null.
+&#x9;IN  packagedQueryPath&#x9;&#x9;LONGVARCHAR,-- The path to the &quot;00_ExecuteDDL&quot; packaged query
+&#x9;IN  displayDDL&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=Display the DDL, N=Do not display the DDL. 
+&#x9;IN  executeDDL&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=execute the DDL for creating/dropping tables and indexes.  N=Do not execute any DDL.
+&#x9;IN  dropIndexes&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=drop the indexes before creating the first.  N=do not drop the indexes.
+&#x9;IN  dropTables&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=drop the tables before creating the tables.  N=do not drop the tables.
+&#x9;IN  dropSequences&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=drop the sequences before creating the sequences.  N=do not drop the sequences.
+&#x9;IN  createTables&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=execute the table creation DDL, N=display the table creation DDL in the console window only.
+&#x9;IN  createIndexes&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=execute index creation DDL. N=display the index creation DDL in the console window only.
+&#x9;IN  createSequences&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=execute sequence creation DDL. N=display the sequence creation DDL in the console window only.
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- PASS or FAIL.  All must pass for PASS.  If on fails then the result is FAIL.
+&#x9;OUT cursCombinedResult&#x9;&#x9;LONGVARCHAR,-- Provides a status on each sql statement executed
+&#x9;OUT sqlScript&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;-- Generates an output of the entire script which can be used for external execution
+)
+BEGIN
+&#x9;-- MODIFY: modify the tablespace name for tables if required.
+&#x9;DECLARE tableFilegroupName &#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;&apos;;
+&#x9;-- MODIFY: modify the tablespace name for tables if required.
+&#x9;DECLARE indexFilegroupName&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE tableName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;DV_DEPLOYMENT_VALIDATION&apos;;
+&#x9;DECLARE sequenceName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;DV_DEPLOY_SEQ&apos;;
+
+&#x9;-- Procedure variables. Do not modify.
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE cursType&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE i&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;DECLARE curs&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR (result INTEGER);
+&#x9;DECLARE cursResult&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE TYPE sqlRowType&#x9;&#x9;&#x9;&#x9;ROW(cursType VARCHAR, sqlStatement LONGVARCHAR);
+&#x9;DECLARE sqlRow&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;sqlRowType;
+&#x9;DECLARE sqlVect&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VECTOR(sqlRowType);
+&#x9;DECLARE vectorCount&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE resourceName&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;-- Variables for introspection
+&#x9;DECLARE errorMessage&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE procedureNames&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE introspectionResult &#x9;&#x9;LONGVARCHAR;&#x9;-- A line (CHR(10)) delimited string of results.  Use introspectResourcesResultCursor() to  return a cursor.
+&#x9;DECLARE dataSourceType2&#x9;&#x9;&#x9;&#x9;VARCHAR;&#x9;&#x9;-- The type of data source that was introspected.
+&#x9;DECLARE dataSourceSubtype2&#x9;&#x9;&#x9;VARCHAR;&#x9;&#x9;-- The subtype of data source that was introspected.
+
+&#x9;IF (schemaName IS NULL OR LENGTH(TRIM(schemaName)) = 0) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The input parameter &quot;schemaName&quot; may not be null or empty.&apos;;
+&#x9;END IF;
+
+/************************************************************************************************
+ * DROP all resources first
+ ************************************************************************************************/
+&#x9;IF (LOWER(datasourceType) = &apos;oracle&apos;) THEN
+&#x9;&#x9;set sqlVect = VECTOR[
+&#x9;&#x9;&#x9;(&apos;DROP INDEX &quot;&apos;||tableName||&apos;_IDX1&quot;&apos;, &#x9;&#x9;&apos;DROP INDEX &quot;{0}&quot;.&quot;&apos;||tableName||&apos;_IDX1&quot;&apos;),
+&#x9;&#x9;&#x9;(&apos;DROP INDEX &quot;&apos;||tableName||&apos;_IDX2&quot;&apos;, &#x9;&#x9;&apos;DROP INDEX &quot;{0}&quot;.&quot;&apos;||tableName||&apos;_IDX2&quot;&apos;),
+&#x9;&#x9;&#x9;(&apos;DROP TABLE &quot;&apos;||tableName||&apos;&quot;&apos;, &#x9;&#x9;&#x9;&apos;DROP TABLE &quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;&apos;),
+&#x9;&#x9;&#x9;(&apos;DROP SEQUENCE &quot;&apos;||sequenceName||&apos;&quot;&apos;, &#x9;&#x9;&apos;DROP SEQUENCE &quot;{0}&quot;.&quot;&apos;||sequenceName||&apos;&quot;&apos;)
+&#x9;&#x9;];
+
+&#x9;ELSEIF (LOWER(datasourceType) = &apos;sqlserver&apos;) THEN
+&#x9;&#x9;set sqlVect = VECTOR[
+&#x9;&#x9;&#x9;-- INDEXES
+&#x9;&#x9;&#x9;(&apos;DROP INDEX &quot;&apos;||tableName||&apos;_IDX1&quot;&apos;, &#x9;&apos;IF EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id(N&apos;&apos;&quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;&apos;&apos;, N&apos;&apos;U) AND NAME =&apos;&apos;&apos;||tableName||&apos;_IDX1&apos;&apos;)
+              DROP INDEX &quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;.&quot;&apos;||tableName||&apos;_IDX1&quot;&apos;),
+&#x9;&#x9;&#x9;(&apos;DROP INDEX &quot;&apos;||tableName||&apos;_IDX2&quot;&apos;, &#x9;&apos;IF EXISTS(SELECT * FROM sys.indexes WHERE object_id = object_id(N&apos;&apos;&quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;&apos;&apos;, N&apos;&apos;U) AND NAME =&apos;&apos;&apos;||tableName||&apos;_IDX2&apos;&apos;)
+              DROP INDEX &quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;.&quot;&apos;||tableName||&apos;_IDX2&quot;&apos;),
+&#x9;&#x9;&#x9;-- TABLES
+&#x9;&#x9;&#x9;(&apos;DROP TABLE &quot;&apos;||tableName||&apos;&quot;&apos;,  &#x9;&#x9;&apos;IF OBJECT_ID(N&apos;&apos;&quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;&apos;&apos;, N&apos;&apos;U&apos;&apos;) IS NOT NULL DROP TABLE &quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;&apos;),
+&#x9;&#x9;&#x9;-- SEQUENCES
+&#x9;&#x9;&#x9;(&apos;DROP SEQUENCE &quot;&apos;||sequenceName||&apos;&quot;&apos;, &#x9;&apos;DROP SEQUENCE &quot;{0}&quot;.&quot;&apos;||sequenceName||&apos;&quot;&apos;)
+&#x9;&#x9;];
+&#x9;ELSEIF (LOWER(datasourceType) = &apos;postgres&apos;) THEN
+&#x9;&#x9;set sqlVect = VECTOR[
+&#x9;&#x9;&#x9;(&apos;DROP INDEX &quot;&apos;||tableName||&apos;_IDX1&quot;&apos;, &#x9;&#x9;&apos;DROP INDEX &quot;{0}&quot;.&quot;&apos;||tableName||&apos;_IDX1&quot;&apos;),
+&#x9;&#x9;&#x9;(&apos;DROP INDEX &quot;&apos;||tableName||&apos;_IDX2&quot;&apos;, &#x9;&#x9;&apos;DROP INDEX &quot;{0}&quot;.&quot;&apos;||tableName||&apos;_IDX2&quot;&apos;),
+&#x9;&#x9;&#x9;(&apos;DROP TABLE &quot;&apos;||tableName||&apos;&quot;&apos;, &#x9;&#x9;&#x9;&apos;DROP TABLE &quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot;&apos;),
+&#x9;&#x9;&#x9;(&apos;DROP SEQUENCE &quot;&apos;||sequenceName||&apos;&quot;&apos;, &#x9;&#x9;&apos;DROP SEQUENCE &quot;{0}&quot;.&quot;&apos;||sequenceName||&apos;&quot;&apos;)
+&#x9;&#x9;];
+&#x9;END IF;
+&#x9;set vectorCount = CARDINALITY(sqlVect);
+
+
+/************************************************************************************************
+ * CREATE sequence - DV_DEPLOY_SEQ
+ ************************************************************************************************/
+&#x9;set resourceName = &apos;&quot;&apos;||sequenceName||&apos;&quot;&apos;;
+&#x9;IF (LOWER(datasourceType) = &apos;oracle&apos;) THEN
+&#x9;&#x9;set sqlStatement = &apos;CREATE SEQUENCE &quot;{0}&quot;.&apos;||resourceName||&apos; START WITH 1 NOCYCLE CACHE 100 NOORDER&apos;;
+&#x9;ELSEIF (LOWER(datasourceType) = &apos;sqlserver&apos;) THEN
+&#x9;&#x9;set sqlStatement = &apos;CREATE SEQUENCE &quot;{0}&quot;.&apos;||resourceName||&apos; START WITH 1 INCREMENT BY 1 NO CYCLE CACHE&apos;;
+&#x9;ELSEIF (LOWER(datasourceType) = &apos;postgres&apos;) THEN
+&#x9;&#x9;set sqlStatement = &apos;CREATE SEQUENCE &quot;{0}&quot;.&apos;||resourceName||&apos; INCREMENT BY 1 NO CYCLE CACHE 100&apos;;
+&#x9;END IF;
+&#x9;set vectorCount = vectorCount + 1;
+&#x9;set sqlVect = EXTEND(sqlVect, 1);
+&#x9;set sqlVect[vectorCount].cursType = &apos;CREATE SEQUENCE &apos;||resourceName;
+&#x9;set sqlVect[vectorCount].sqlStatement = sqlStatement;
+
+
+/************************************************************************************************
+ * Create tables - DV_DEPLOYMENT_VALIDATION
+ ************************************************************************************************/
+&#x9;set resourceName = &apos;&quot;&apos;||tableName||&apos;&quot;&apos;;
+&#x9;IF (LOWER(datasourceType) = &apos;oracle&apos;) THEN
+&#x9;&#x9;set sqlStatement = 
+&apos;CREATE TABLE &quot;{0}&quot;.&apos;||resourceName||&apos; (
+    &quot;PK_ID&quot;                         NUMBER(19,0),
+    &quot;EXTERNAL_ID&quot;                   VARCHAR2(50),
+    &quot;ARCHIVE_FILE_NAME&quot;             VARCHAR2(100),
+    &quot;ARCHIVE_CREATION_DATE&quot;         TIMESTAMP(9),
+    &quot;SOURCE_SERVER_NAME&quot;            VARCHAR2(50),
+    &quot;SERVER_VERSION&quot;                VARCHAR2(20),
+    &quot;DEPLOYMENT_DATE&quot;               TIMESTAMP(9),
+    &quot;NODE_HOST&quot;                     VARCHAR2(255),
+    &quot;NODE_PORT&quot;                     NUMBER(9,0),
+    &quot;RESOURCE_NAME&quot;                 VARCHAR2(255),
+    &quot;RESOURCE_PATH&quot;                 VARCHAR2(4000),
+    &quot;RESOURCE_TYPE&quot;                 VARCHAR2(25),
+    &quot;RESOURCE_SUBTYPE&quot;              VARCHAR2(50),
+    &quot;RESOURCE_MOD_DATE&quot;             TIMESTAMP(9),
+    &quot;RESOURCE_MOD_USER&quot;             VARCHAR2(100),
+    &quot;RESOURCE_MOD_DOMAIN&quot;           VARCHAR2(50),
+    &quot;RESOURCE_MOD_USERID&quot;           NUMBER(19,0),
+    &quot;COLLISION_ID&quot;                  NUMBER(19,0),
+    &quot;SCRIPT_TEXT&quot;                   CLOB,
+    CONSTRAINT PK_DV_DEPLOYMENT_VALIDATION PRIMARY KEY (&quot;PK_ID&quot;)
+) ON &quot;{TABLE}&quot;&apos;; -- ON gets converted to TABLESPACE
+&#x9;ELSEIF (LOWER(datasourceType) = &apos;sqlserver&apos;) THEN
+&#x9;&#x9;set sqlStatement = 
+&apos;CREATE TABLE &quot;{0}&quot;.&apos;||resourceName||&apos; (
+    &quot;PK_ID&quot;                         NUMERIC(19,0),
+    &quot;EXTERNAL_ID&quot;                   VARCHAR(50),
+    &quot;ARCHIVE_FILE_NAME&quot;             VARCHAR(100),
+    &quot;ARCHIVE_CREATION_DATE&quot;         DATETIME2(3),
+    &quot;SOURCE_SERVER_NAME&quot;            VARCHAR(50),
+    &quot;SERVER_VERSION&quot;                VARCHAR(20),
+    &quot;DEPLOYMENT_DATE&quot;               DATETIME2(3),
+    &quot;NODE_HOST&quot;                     VARCHAR(255),
+    &quot;NODE_PORT&quot;                     INTEGER,
+    &quot;RESOURCE_NAME&quot;                 VARCHAR(255) COLLATE Latin1_General_CS_AS,
+    &quot;RESOURCE_PATH&quot;                 VARCHAR(4000) COLLATE Latin1_General_CS_AS,
+    &quot;RESOURCE_TYPE&quot;                 VARCHAR(25) COLLATE Latin1_General_CS_AS,
+    &quot;RESOURCE_SUBTYPE&quot;              VARCHAR(50) COLLATE Latin1_General_CS_AS,
+    &quot;RESOURCE_MOD_DATE&quot;             DATETIME2(3),
+    &quot;RESOURCE_MOD_USER&quot;             VARCHAR(100),
+    &quot;RESOURCE_MOD_DOMAIN&quot;           VARCHAR(50),
+    &quot;RESOURCE_MOD_USERID&quot;           NUMERIC(19,0),
+    &quot;COLLISION_ID&quot;                  NUMERIC(19,0),
+    &quot;SCRIPT_TEXT&quot;                   TEXT,
+    CONSTRAINT PK_DV_DEPLOYMENT_VALIDATION PRIMARY KEY CLUSTERED (&quot;PK_ID&quot;)
+) ON &quot;{TABLE}&quot;&apos;;
+&#x9;ELSEIF (LOWER(datasourceType) = &apos;postgres&apos;) THEN
+&#x9;&#x9;set sqlStatement = 
+&apos;CREATE TABLE &quot;{0}&quot;.&apos;||resourceName||&apos; (
+    &quot;PK_ID&quot;                         NUMERIC(19,0),
+    &quot;EXTERNAL_ID&quot;                   VARCHAR(50),
+    &quot;ARCHIVE_FILE_NAME&quot;             VARCHAR(100),
+    &quot;ARCHIVE_CREATION_DATE&quot;         TIMESTAMP,
+    &quot;SOURCE_SERVER_NAME&quot;            VARCHAR(50),
+    &quot;SERVER_VERSION&quot;                VARCHAR(20),
+    &quot;DEPLOYMENT_DATE&quot;               TIMESTAMP,
+    &quot;NODE_HOST&quot;                     VARCHAR(255),
+    &quot;NODE_PORT&quot;                     INTEGER,
+    &quot;RESOURCE_NAME&quot;                 VARCHAR(255),
+    &quot;RESOURCE_PATH&quot;                 VARCHAR(4000),
+    &quot;RESOURCE_TYPE&quot;                 VARCHAR(25),
+    &quot;RESOURCE_SUBTYPE&quot;              VARCHAR(50),
+    &quot;RESOURCE_MOD_DATE&quot;             TIMESTAMP,
+    &quot;RESOURCE_MOD_USER&quot;             VARCHAR(100),
+    &quot;RESOURCE_MOD_DOMAIN&quot;           VARCHAR(50),
+    &quot;RESOURCE_MOD_USERID&quot;           NUMERIC(19,0),
+    &quot;COLLISION_ID&quot;                  NUMERIC(19,0),
+    &quot;SCRIPT_TEXT&quot;                   TEXT,
+    CONSTRAINT PK_DV_DEPLOYMENT_VALIDATION PRIMARY KEY (&quot;PK_ID&quot;)
+)&apos;;
+&#x9;END IF;
+&#x9;set vectorCount = vectorCount + 1;
+&#x9;set sqlVect = EXTEND(sqlVect, 1);
+&#x9;set sqlVect[vectorCount].cursType = &apos;CREATE TABLE &apos;||resourceName;
+&#x9;set sqlVect[vectorCount].sqlStatement = sqlStatement;
+
+
+/************************************************************************************************
+ * Create indexes
+ ************************************************************************************************/
+
+&#x9;-- Indexes for DVDeploymentValidation
+&#x9;set resourceName = &apos;&quot;&apos;||tableName||&apos;_IDX1&quot;&apos;;
+&#x9;set sqlStatement = &apos;CREATE INDEX &apos;||resourceName||&apos; ON &quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot; (&quot;COLLISION_ID&quot;) ON &quot;{INDEX}&quot;&apos;;
+&#x9;set vectorCount = vectorCount + 1;
+&#x9;set sqlVect = EXTEND(sqlVect, 1);
+&#x9;set sqlVect[vectorCount].cursType = &apos;CREATE INDEX &apos;||resourceName;
+&#x9;set sqlVect[vectorCount].sqlStatement = sqlStatement;
+
+&#x9;set resourceName = &apos;&quot;&apos;||tableName||&apos;_IDX2&quot;&apos;;
+&#x9;set sqlStatement = &apos;CREATE INDEX &apos;||resourceName||&apos; ON &quot;{0}&quot;.&quot;&apos;||tableName||&apos;&quot; (&quot;RESOURCE_NAME&quot;, &quot;RESOURCE_TYPE&quot;, &quot;ARCHIVE_CREATION_DATE&quot;, &quot;DEPLOYMENT_DATE&quot;, &quot;RESOURCE_MOD_DATE&quot;) ON &quot;{INDEX}&quot;&apos;;
+&#x9;set vectorCount = vectorCount + 1;
+&#x9;set sqlVect = EXTEND(sqlVect, 1);
+&#x9;set sqlVect[vectorCount].cursType = &apos;CREATE INDEX &apos;||resourceName;
+&#x9;set sqlVect[vectorCount].sqlStatement = sqlStatement;
+
+&#x9;/***************************************************
+&#x9; * PROCESS the sqlStatements
+&#x9; ***************************************************/
+&#x9;SET result = &apos;PASS&apos;;
+&#x9;SET sqlScript = &apos;&apos;;
+&#x9;SET i = 1;
+&#x9;WHILE (i &lt;= CARDINALITY(sqlVect)) DO
+&#x9;&#x9;SET sqlRow = sqlVect[i];
+
+&#x9;&#x9;-- Replace the {0} with the schemaName value
+&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;{0}&apos;, schemaName);
+&#x9;&#x9;-- Check for tableFilegroupName usage
+&#x9;&#x9;if (INSTR(sqlRow.sqlStatement,&apos;{TABLE}&apos;) &gt; 0) then
+&#x9;&#x9;&#x9;if (tableFilegroupName is not null and length(tableFilegroupName) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;if (LOWER(datasourceType) = &apos;oracle&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Replace the {TABLE} with the tableFilegroupName value
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;ON &quot;{TABLE}&quot;&apos;, &apos;TABLESPACE &quot;&apos;||tableFilegroupName||&apos;&quot;&apos;);
+&#x9;&#x9;&#x9;&#x9;elseif (LOWER(datasourceType) = &apos;sqlserver&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Replace the {TABLE} with the tableFilegroupName value
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;{TABLE}&apos;, tableFilegroupName);
+&#x9;&#x9;&#x9;&#x9;elseif (LOWER(datasourceType) = &apos;postgres&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Remove the ON &quot;{TABLE}&quot; command completely
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;ON &quot;{TABLE}&quot;&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;-- Remove the ON &quot;{TABLE}&quot; command completely
+&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;ON &quot;{TABLE}&quot;&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+&#x9;&#x9;-- Check for indexFilegroupName usage
+&#x9;&#x9;if (INSTR(sqlRow.sqlStatement,&apos;{INDEX}&apos;) &gt; 0) then
+&#x9;&#x9;&#x9;if (indexFilegroupName is not null and length(indexFilegroupName) &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;if (LOWER(datasourceType) = &apos;oracle&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Replace the {INDEX} with the tableFilegroupName value
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;ON &quot;{INDEX}&quot;&apos;, &apos;TABLESPACE &quot;&apos;||indexFilegroupName||&apos;&quot;&apos;);
+&#x9;&#x9;&#x9;&#x9;elseif (LOWER(datasourceType) = &apos;sqlserver&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Replace the {INDEX} with the tableFilegroupName value
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;{INDEX}&apos;, indexFilegroupName);
+&#x9;&#x9;&#x9;&#x9;elseif (LOWER(datasourceType) = &apos;postgres&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Remove the ON &quot;{INDEX}&quot; command completely
+&#x9;&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;ON &quot;{INDEX}&quot;&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;-- Remove the ON &quot;{INDEX}&quot; command completely
+&#x9;&#x9;&#x9;&#x9;set sqlRow.sqlStatement = REPLACE(sqlRow.sqlStatement, &apos;ON &quot;{INDEX}&quot;&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+
+&#x9;&#x9;IF  (sqlRow.cursType LIKE &apos;CREATE%&apos; OR
+&#x9;&#x9;&#x9; sqlRow.cursType LIKE &apos;ALTER%&apos; OR
+&#x9;&#x9;&#x9; sqlRow.cursType LIKE &apos;EXEC%&apos; OR
+&#x9;&#x9;&#x9; sqlRow.cursType LIKE &apos;DROP%&apos; ) THEN
+
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;    -- &apos;||i||&apos;:-----------------------------------------------------------------------------------------------&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (displayDDL IS NOT NULL AND UPPER(displayDDL) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Print the full SQL
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;    &apos;||sqlRow.sqlStatement);
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Print the short version
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;    &apos;||sqlRow.cursType);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET sqlScript = sqlScript || CHR(10) || TRIM(sqlRow.sqlStatement) || &apos;;&apos; || CHR(10);
+
+&#x9;&#x9;&#x9;&#x9;IF (executeDDL IS NOT NULL and UPPER(executeDDL) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;-- If EXECUTE DDL then createTables must be = &apos;Y&apos; or dropTables must be = &apos;Y&apos; or createIndexes must be = &apos;Y&apos; or dropIndexes must be = &apos;Y&apos;.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF ((sqlRow.cursType LIKE &apos;CREATE TABLE%&apos; AND createTables  IS NOT NULL AND UPPER(createTables)  = &apos;Y&apos;) OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(sqlRow.cursType LIKE &apos;CREATE INDEX%&apos; AND createIndexes IS NOT NULL AND UPPER(createIndexes) = &apos;Y&apos;) OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(sqlRow.cursType LIKE &apos;CREATE SEQUENCE%&apos; AND createSequences IS NOT NULL AND UPPER(createSequences) = &apos;Y&apos;) OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(sqlRow.cursType LIKE &apos;DROP TABLE%&apos;   AND dropTables    IS NOT NULL AND UPPER(dropTables)    = &apos;Y&apos;) OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(sqlRow.cursType LIKE &apos;DROP INDEX%&apos;   AND dropIndexes   IS NOT NULL AND UPPER(dropIndexes)   = &apos;Y&apos;) OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(sqlRow.cursType LIKE &apos;DROP SEQUENCE%&apos; AND dropSequences IS NOT NULL AND UPPER(dropSequences) = &apos;Y&apos;) OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(sqlRow.cursType LIKE &apos;ALTER TABLE%&apos;  AND createTables  IS NOT NULL AND UPPER(createTables)  = &apos;Y&apos;) OR
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;(sqlRow.cursType LIKE &apos;EXEC%&apos;         AND createTables  IS NOT NULL AND UPPER(createTables)  = &apos;Y&apos;)
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET sqlStatement = &apos;SELECT * FROM &apos;||packagedQueryPath||&apos;(sqlRow.sqlStatement)&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;OPEN curs FOR sqlStatement;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;FETCH curs INTO cursResult;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CLOSE curs;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET status = &apos;PASS&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET status = &apos;SKIP&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET status = &apos;SKIP&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(sqlRow.cursType||&apos; EXCEPTION=&apos;||CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET cursResult = -1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET status = &apos;FAIL&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Only fail the entire batch if a CREATE fails.  DOn&apos;t worry about DROP statement failing.
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (INSTR(sqlRow.cursType, &apos;CREATE &apos;) &gt; 0 OR INSTR(sqlRow.cursType, &apos;ALTER &apos;) &gt; 0 OR INSTR(sqlRow.cursType, &apos;EXEC &apos;) &gt; 0) THEN 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET result = &apos;FAIL&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET status = &apos;SKIP&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (cursCombinedResult IS NULL) THEN
+&#x9;&#x9;&#x9;SET cursCombinedResult = &apos;&apos;;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET cursCombinedResult = cursCombinedResult || &apos;,  &apos;||CHR(10);
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET cursCombinedResult = cursCombinedResult ||status||&apos;=&apos;||sqlRow.cursType;
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET i = i + 1;
+&#x9;END WHILE;
+
+
+&#x9;/*******************************************************************
+&#x9; * Introspect the datasource to bring in the table
+&#x9; *******************************************************************/
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;IF (UPPER(executeDDL) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;IF (status &lt;&gt; &apos;FAIL&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;    -- &apos;||i||&apos;:-----------------------------------------------------------------------------------------------&apos;);
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;    Introspect the datasource table [&apos;||tableName||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/introspectResources(
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;datasourcePath, catalogName, schemaName, null, tableName, null, null, &apos;,&apos;, &apos;N&apos;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;status, errorMessage, introspectionResult, dataSourceType2, dataSourceSubtype2);
+&#x9;&#x9;&#x9;&#x9;IF (status = &apos;FAILED&apos;) then
+&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE errorMessage;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;    -- &apos;||i||&apos;:-----------------------------------------------------------------------------------------------&apos;);
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;    Unable to Introspect the datasource table [&apos;||tableName||&apos;] due to previous failure.&apos;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;END IF;
+&#x9;END;
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">1410976495807</attribute>
+  <attribute name="creatorUserDomain" type="STRING">ldap</attribute>
+  <attribute name="creatorUserName" type="STRING">zkxl6un</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/343</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/298</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/363</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/295</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/364</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/354</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/355</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/292</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/326</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

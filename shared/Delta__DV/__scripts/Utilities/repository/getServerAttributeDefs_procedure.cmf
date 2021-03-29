@@ -1,0 +1,501 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getServerAttributeDefs" path="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttributeDefs" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getServerAttributeDefs:
+
+&#x9;This procedure returns all the server attribute definitions starting at the input attribute location. If the
+    starting attribute location is a FOLDER, then the procedure will recursively walk the folder structure and
+    return all the child attribute definitions.
+
+    Users calling this procedure must have the ACCESS_TOOLS right and, depending on whether
+    the attribute is public or not, may need the READ_ALL_CONFIG right as well.
+
+
+&#x9;Input:
+&#x9;&#x9;startingAttribute - The starting attribute location. 
+&#x9;&#x9;&#x9;Values: Any path to an attribute
+
+
+&#x9;Output:
+&#x9;&#x9;result - The attribute definition and the definitions of any child attributes (if any.)
+&#x9;&#x9;&#x9;Values: CURSOR (
+                        attrName VARCHAR(32768),            -- path to the attribute
+                        attrType VARCHAR(32768),            -- the attribute&apos;s type
+                        updateRule VARCHAR(32768),          -- indicates whether the field is updatable or not
+                        annotation VARCHAR(32768),          -- a description of the attribute
+                        required BIT,                       -- indicates whether the field must have a value or not
+                        defaultValue VARCHAR(32768),        -- indicates the default value (NULL if there is none.)
+                        pattern VARCHAR(32768),             -- a regular expression pattern that is used to test for valid values
+                        minValue VARCHAR(32768),            -- the minimum allowed value (NULL if there is none)
+                        maxValue VARCHAR(32768),            -- the maximum allowed value (NULL if there is none)
+                        displayName VARCHAR(32768),         -- the attribute&apos;s name as displayed in the Studio Configuration panel
+                        unitName VARCHAR(32768),            -- the attribute&apos;s value&apos;s unit name
+                        parentName VARCHAR(32768),          -- the parent attribute&apos;s name (this is usually NULL)
+                        visible BIT,                        -- indicates whether the configuration setting is visible in the Studio Configuration panel
+                        editorHint VARCHAR(32768),          -- editor hint (seems unused)
+                        dependencyExpression VARCHAR(32768) -- dependency expression (also seems unused)
+            );
+
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;02/14/2013&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.2.2&#x9;&#x9;&#x9;Created new.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="startingAttribute" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="categoryName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="attrName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="attrType">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="updateRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="annotation">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="required">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="defaultValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="pattern">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="minValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="maxValue">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="displayName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="unitName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="parentName">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="visible">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="editorHint">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="dependencyExpression">
+          <datatype name="VARCHAR" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="locallyDefined">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttribute" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="attribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="arrayItem">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/getServerAttributeDefs" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="startingAttribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="categoryName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="updateRule">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="required">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="defaultValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="pattern">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="minValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="maxValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="displayName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="unitName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="parentName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="visible">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="editorHint">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="dependencyExpression">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="locallyDefined">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/getServerAttributeDefChildrenXSLT" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getServerAttributeDefChildren" direction="IN">
+        <datatype name="getServerAttributeDefChildren" extendedName="{http://www.compositesw.com/services/system/admin/server}getServerAttributeDefChildren" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}getServerAttributeDefChildren" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}getServerAttributeDefChildren">
+          <schemaDatatype>
+            <datatype name="getServerAttributeDefChildren" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="getServerAttributeDefChildrenRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="path" namespace="http://www.compositesw.com/services/system/admin/server">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outputs" direction="OUT" nullable="false">
+        <datatype type="TABLE" refId="256">
+          <element name="attrName">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="updateRule">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="required">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="defaultValue">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="pattern">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="minValue">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="maxValue">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="displayName">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="unitName">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="parentName">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="visible">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="editorHint">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+          <element name="dependencyExpression">
+            <datatype namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+    getServerAttributeDefs:
+
+&#x9;This procedure returns all the server attribute definitions starting at the input attribute location. If the
+    starting attribute location is a FOLDER, then the procedure will recursively walk the folder structure and
+    return all the child attribute definitions.
+
+    Users calling this procedure must have the ACCESS_TOOLS right and, depending on whether
+    the attribute is public or not, may need the READ_ALL_CONFIG right as well.
+
+
+&#x9;Input:
+&#x9;&#x9;startingAttribute - The starting attribute location. 
+&#x9;&#x9;&#x9;Values: Any path to an attribute
+&#x9;&#x9;&#x9;&#x9;root=&#x9;&#x9;&#x9;/
+&#x9;&#x9;&#x9;&#x9;cms=&#x9;&#x9;&#x9;/cms
+&#x9;&#x9;&#x9;&#x9;diagnostic=&#x9;&#x9;/diagnostic
+&#x9;&#x9;&#x9;&#x9;discovery=&#x9;&#x9;/discovery
+&#x9;&#x9;&#x9;&#x9;monitor=&#x9;&#x9;/monitor
+&#x9;&#x9;&#x9;&#x9;server=&#x9;&#x9;&#x9;/server
+&#x9;&#x9;&#x9;&#x9;server config=&#x9;/server/config
+&#x9;&#x9;&#x9;&#x9;server jdbc=&#x9;/server/jdbc
+
+
+&#x9;Output:
+&#x9;&#x9;result - The attribute definition and the definitions of any child attributes (if any.)
+&#x9;&#x9;&#x9;Values: CURSOR (
+&#x9;&#x9;&#x9;&#x9;categoryName &#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Category: cms, diagnostic, discovery, monitor, server, sources, studio
+&#x9;&#x9;&#x9;&#x9;attrName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- path to the attribute
+&#x9;&#x9;&#x9;&#x9;attrType &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s type
+&#x9;&#x9;&#x9;&#x9;updateRule &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- indicates whether the field is updatable or not
+&#x9;&#x9;&#x9;&#x9;annotation &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- a description of the attribute
+&#x9;&#x9;&#x9;&#x9;required &#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether the field must have a value or not
+&#x9;&#x9;&#x9;&#x9;defaultValue &#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- indicates the default value (NULL if there is none.)
+&#x9;&#x9;&#x9;&#x9;pattern &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- a regular expression pattern that is used to test for valid values
+&#x9;&#x9;&#x9;&#x9;minValue &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the minimum allowed value (NULL if there is none)
+&#x9;&#x9;&#x9;&#x9;maxValue &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the maximum allowed value (NULL if there is none)
+&#x9;&#x9;&#x9;&#x9;displayName &#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s name as displayed in the Studio Configuration panel
+&#x9;&#x9;&#x9;&#x9;unitName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s value&apos;s unit name
+&#x9;&#x9;&#x9;&#x9;parentName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the parent attribute&apos;s name (this is usually NULL)
+&#x9;&#x9;&#x9;&#x9;visible &#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether the configuration setting is visible in the Studio Configuration panel
+&#x9;&#x9;&#x9;&#x9;editorHint &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- editor hint (seems unused)
+&#x9;&#x9;&#x9;&#x9;dependencyExpression &#x9;VARCHAR(32768),&#x9;-- dependency expression (also seems unused)
+&#x9;&#x9;&#x9;&#x9;locallyDefined &#x9;&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;-- indicates whether this attribute is locally defined or not
+            );
+
+
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2013.2&#x9;&#x9;02/14/2013&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.2.2&#x9;&#x9;&#x9;Created new.
+&#x9;2019.400&#x9;09/05/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Modified result set to include locallyDefined.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Allow passing in a specific attribute in addition to a FOLDER type.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getServerAttributeDefs(
+    IN startingAttribute &#x9;VARCHAR(4096),
+    OUT result &#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;categoryName &#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Category: cms, diagnostic, discovery, monitor, server, sources, studio
+&#x9;&#x9;attrName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- path to the attribute
+&#x9;&#x9;attrType &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s type
+&#x9;&#x9;updateRule &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- indicates whether the field is updatable or not
+&#x9;&#x9;annotation &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- a description of the attribute
+&#x9;&#x9;required &#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether the field must have a value or not
+&#x9;&#x9;defaultValue &#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- indicates the default value (NULL if there is none.)
+&#x9;&#x9;pattern &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- a regular expression pattern that is used to test for valid values
+&#x9;&#x9;minValue &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the minimum allowed value (NULL if there is none)
+&#x9;&#x9;maxValue &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the maximum allowed value (NULL if there is none)
+&#x9;&#x9;displayName &#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s name as displayed in the Studio Configuration panel
+&#x9;&#x9;unitName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s value&apos;s unit name
+&#x9;&#x9;parentName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the parent attribute&apos;s name (this is usually NULL)
+&#x9;&#x9;visible &#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether the configuration setting is visible in the Studio Configuration panel
+&#x9;&#x9;editorHint &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- editor hint (seems unused)
+&#x9;&#x9;dependencyExpression &#x9;VARCHAR(32768),&#x9;-- dependency expression (also seems unused)
+&#x9;&#x9;locallyDefined &#x9;&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;-- indicates whether this attribute is locally defined or not
+   )
+)
+BEGIN
+&#x9;DECLARE attrPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4096) DEFAULT TRIM(startingAttribute);
+&#x9;DECLARE attrType &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE attrNameLocal, attrNameTemp&#x9;VARCHAR;
+&#x9;DECLARE pos, len&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+    DECLARE PUBLIC TYPE ResultSetRow &#x9;ROW (
+&#x9;&#x9;categoryName &#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- Category: cms, diagnostic, discovery, monitor, server, sources, studio
+&#x9;&#x9;attrName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- path to the attribute
+&#x9;&#x9;attrType &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s type
+&#x9;&#x9;updateRule &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- indicates whether the field is updatable or not
+&#x9;&#x9;annotation &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- a description of the attribute
+&#x9;&#x9;required &#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether the field must have a value or not
+&#x9;&#x9;defaultValue &#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- indicates the default value (NULL if there is none.)
+&#x9;&#x9;pattern &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- a regular expression pattern that is used to test for valid values
+&#x9;&#x9;minValue &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the minimum allowed value (NULL if there is none)
+&#x9;&#x9;maxValue &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the maximum allowed value (NULL if there is none)
+&#x9;&#x9;displayName &#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s name as displayed in the Studio Configuration panel
+&#x9;&#x9;unitName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the attribute&apos;s value&apos;s unit name
+&#x9;&#x9;parentName &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- the parent attribute&apos;s name (this is usually NULL)
+&#x9;&#x9;visible &#x9;&#x9;&#x9;&#x9;BIT,&#x9;&#x9;&#x9;-- indicates whether the configuration setting is visible in the Studio Configuration panel
+&#x9;&#x9;editorHint &#x9;&#x9;&#x9;&#x9;VARCHAR(32768),&#x9;-- editor hint (seems unused)
+&#x9;&#x9;dependencyExpression &#x9;VARCHAR(32768),&#x9;-- dependency expression (also seems unused)
+&#x9;&#x9;locallyDefined &#x9;&#x9;&#x9;BIT&#x9;&#x9;&#x9;&#x9;-- indicates whether this attribute is locally defined or not
+    );
+
+&#x9;-- Validate the input parameter
+&#x9;IF (attrPath IS NULL OR LENGTH(TRIM(attrPath)) = 0) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The parameter &quot;startingAttribute&quot; may not be null or empty.&apos;;
+&#x9;END IF;
+
+&#x9;-- Make sure there is no / at the end of the path
+&#x9;SET len = LENGTH(attrPath);
+&#x9;IF (attrPath &lt;&gt; &apos;/&apos; AND SUBSTRING(attrPath, len) = &apos;/&apos;) THEN
+&#x9;&#x9;SET attrPath = SUBSTRING(attrPath, 1, len-1);
+&#x9;END IF;
+
+&#x9;-- Determine if the attribute type is a folder or not
+&#x9;SELECT DISTINCT attrType INTO attrType
+&#x9;&#x9;FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttribute(attrPath);
+
+&#x9;-- Extract the attribute folder path and the attribute name
+&#x9;IF (attrType IS NOT NULL AND attrType &lt;&gt; &apos;FOLDER&apos;) THEN
+&#x9;&#x9;SET pos = INSTR(attrPath, &apos;/&apos;, -1, 1);
+&#x9;&#x9;IF (pos &gt; 0) THEN
+&#x9;&#x9;&#x9;SET attrNameLocal = SUBSTRING(attrPath, pos+1);
+&#x9;&#x9;&#x9;SET attrPath = SUBSTRING(attrPath, 1, pos-1);
+&#x9;&#x9;END IF;
+&#x9;END IF;
+&#x9;--call print(&apos;attrType=&apos;||NVL(attrType,&apos;null&apos;)||&apos;  attrNameLocal=&apos;||NVL(attrNameLocal,&apos;null&apos;)||&apos;  attrPath=&apos;||NVL(attrPath,&apos;null&apos;)); 
+
+    FOR r AS
+        SELECT
+&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;WHEN INSTR(attrName, &apos;/&apos;, 2) &gt; 0 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SUBSTRING(attrName, 2, INSTR(attrName, &apos;/&apos;, 2) - 2)
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SUBSTRING(attrName, 2)
+&#x9;&#x9;&#x9;END categoryName,
+&#x9;&#x9;&#x9;a.*, 
+&#x9;&#x9;&#x9;CASE 
+&#x9;&#x9;&#x9;&#x9;WHEN INSTR(LOWER(a.annotation), &apos;locally defined&apos;) &gt; 0 THEN 1
+&#x9;&#x9;&#x9;&#x9;ELSE 0
+&#x9;&#x9;&#x9;END locallyDefined
+&#x9;&#x9;FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/lowerLevelProcedures/getServerAttributeDefChildrenXSLT(
+&apos;&lt;server:getServerAttributeDefChildren xmlns:server=&quot;http://www.compositesw.com/services/system/admin/server&quot;&gt;
+  &lt;server:path&gt;&apos; || CAST(XMLTEXT(COALESCE(attrPath, &apos;&apos;)) AS VARCHAR(4096)) || &apos;&lt;/server:path&gt;
+&lt;/server:getServerAttributeDefChildren&gt;&apos;
+        ) a
+    DO
+&#x9;&#x9;SET attrNameTemp = null;
+&#x9;&#x9;--call print(&apos;outer loop: attrNameLocal=&apos;||NVL(attrNameLocal,&apos;null&apos;)||&apos;  attrNameTemp=&apos;||NVL(attrNameTemp,&apos;null&apos;)); 
+&#x9;&#x9;IF (r.attrType = &apos;FOLDER&apos;) THEN
+&#x9;&#x9;&#x9;IF (attrNameLocal IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES (r);
+&#x9;&#x9;&#x9;END IF;
+            FOR r2 AS
+                SELECT *
+&#x9;&#x9;&#x9;&#x9;FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/getServerAttributeDefs(r.attrName) a
+            DO
+ &#x9;&#x9;&#x9;&#x9;SET pos = INSTR(r2.attrName, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;&#x9;IF (pos &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET attrNameTemp = SUBSTRING(r2.attrName, pos+1);
+&#x9;&#x9;&#x9;&#x9;END IF;
+ &#x9;&#x9;&#x9;&#x9;IF (attrNameLocal IS NULL OR attrNameLocal = attrNameTemp) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;--call print(&apos;inner loop: attrNameLocal=&apos;||NVL(attrNameLocal,&apos;null&apos;)||&apos;  attrNameTemp=&apos;||NVL(attrNameTemp,&apos;null&apos;)); 
+&#x9;&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES (r2);
+&#x9;&#x9;&#x9;&#x9;END IF;
+            END FOR;
+&#x9;&#x9;ELSE
+ &#x9;&#x9;&#x9;SET pos = INSTR(r.attrName, &apos;/&apos;, -1, 1);
+&#x9;&#x9;&#x9;IF (pos &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET attrNameTemp = SUBSTRING(r.attrName, pos+1);
+&#x9;&#x9;&#x9;END IF;
+ &#x9;&#x9;&#x9;IF (attrNameLocal IS NULL OR attrNameLocal = attrNameTemp) THEN
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES (r);
+&#x9;&#x9;&#x9;END IF;
+        END IF;
+    END FOR;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1365005263865</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="impactLevel" type="INTEGER">0</attribute>
+  <attribute name="impactMessage" type="NULL"/>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_types" type="MAP">
+    <item>
+      <key type="STRING">ResultSetRow</key>
+      <value type="BYTE_ARRAY">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</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

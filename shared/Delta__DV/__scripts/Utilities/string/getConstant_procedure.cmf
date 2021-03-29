@@ -1,0 +1,232 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="getConstant" path="/shared/Delta_DV/_scripts/Utilities/string/getConstant" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getConstant:
+
+&#x9;DEPRECATED: use getConstantV2 going forward.
+
+&#x9;This procedure gets a constant value from a dynamic constant path.  All constants must be of type VARCHAR.  
+&#x9;If the value is actually an integer THEN the application must take care of casting to the proper value.
+
+&#x9;Input:
+&#x9;&#x9;constantPath - The path to the constants file ending with procedure parenthesis ().                                                                                                                                                 i.e. /shared/PSAsSETs/Utilities/documentation/constants()
+&#x9;&#x9;constantName - The name of the constant.
+ 
+&#x9;Output:
+&#x9;&#x9;outValue - The value of the constant
+
+&#x9;Exceptions:  
+&#x9;&#x9;/lib/util/System.IllegalArgumentException - Exception IF constantPath is not valid (null or resource not found).
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;08/28/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Created new
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.301&#x9;08/01/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;2019.301: Added CAST(constantName AS LONGVARCHAR) in projection to avoid exception when a constant is not a character type.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="constantPath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="constantName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="outValue" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/repository/RepoUtils/applyReservedListToPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* getConstant:
+
+&#x9;DEPRECATED: use getConstantV2 going forward.
+
+&#x9;This procedure gets a constant value from a dynamic constant path.  All constants must be of type VARCHAR.  
+&#x9;If the value is actually an integer THEN the application must take care of casting to the proper value.
+
+&#x9;Input:
+&#x9;&#x9;constantPath - The path to the constants file ending with procedure parenthesis ().                                                                                                                                                 i.e. /shared/PSAsSETs/Utilities/documentation/constants()
+&#x9;&#x9;constantName - The name of the constant.
+ 
+&#x9;Output:
+&#x9;&#x9;outValue - The value of the constant
+
+&#x9;Exceptions:  
+&#x9;&#x9;/lib/util/System.IllegalArgumentException - Exception IF constantPath is not valid (null or resource not found).
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2014.4&#x9;&#x9;08/28/2014&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;6.2.6&#x9;&#x9;&#x9;Created new
+&#x9;2019.200&#x9;04/04/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Changed custom functions to explicit paths.
+&#x9;2019.301&#x9;08/01/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;2019.301: Added CAST(constantName AS LONGVARCHAR) in projection to avoid exception when a constant is not a character type.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE getConstant(
+&#x9;IN constantPath&#x9;&#x9;VARCHAR(4000),
+&#x9;IN constantName&#x9;&#x9;VARCHAR,
+&#x9;OUT outValue&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getConstant&apos;;
+&#x9;DECLARE debug&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT &apos;N&apos;;
+&#x9;DECLARE contsantPath_&#x9;&#x9;VARCHAR(4000) DEFAULT constantPath;
+&#x9;DECLARE sqlStatement&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE result&#x9;&#x9;&#x9;&#x9;CURSOR (textVal LONGVARCHAR);
+&#x9;DECLARE sqlProjection&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE sqlFrom&#x9;&#x9;&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE resExists&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;IF (contsantPath_ IS NULL OR LENGTH(contsantPath_) = 0) THEN
+&#x9;&#x9;RAISE System.IllegalArgumentException VALUE &apos;The parameter &quot;constantsPath&quot; is null or empty.  Please provide a valid path.&apos;;
+&#x9;END IF;
+&#x9;IF (constantName IS NULL OR LENGTH(constantName) = 0) THEN
+&#x9;&#x9;RAISE System.IllegalArgumentException VALUE &apos;The parameter &quot;constantName&quot; is null or empty.  Please provide a valid constant.&apos;;
+&#x9;END IF;
+&#x9;CALL /lib/resource/ResourceExists(contsantPath_, &apos;PROCEDURE&apos;, null, resExists);
+&#x9;IF (NOT resExists) THEN
+&#x9;&#x9;RAISE System.IllegalArgumentException VALUE &apos;The &quot;constantsPath=[&apos;||TRIM(NVL(contsantPath_, &apos; &apos;))||&apos;]&quot; does not exist.  Please provide a valid path.&apos;;
+&#x9;END IF;
+
+&#x9;-- Set up the sql projection list
+&#x9;IF (constantName IS NOT NULL AND LENGTH(&apos;|&apos;||constantName||&apos;|&apos;) &gt; 2) THEN
+&#x9;&#x9;SET sqlProjection = &apos;CAST(&apos;||TRIM(constantName)||&apos; AS LONGVARCHAR)&apos;;
+&#x9;ELSE
+&#x9;&#x9;SET sqlProjection = &apos;null&apos;;
+&#x9;END IF;
+&#x9;-- Set up the SQL from clause
+&#x9;IF (contsantPath_ IS NOT NULL AND LENGTH(&apos;|&apos;||contsantPath_||&apos;|&apos;) &gt; 2) THEN
+&#x9;&#x9;CALL /shared/Delta_DV/&quot;_scripts&quot;/Utilities/repository/RepoUtils/applyReservedListToPath(contsantPath_,null, sqlFrom);
+&#x9;&#x9;SET sqlFrom = TRIM(sqlFrom);
+&#x9;&#x9;-- Append procedure () at the end of the path IF it does not exist.
+&#x9;&#x9;IF (POSITION(&apos;()&apos; IN contsantPath_) = 0) THEN
+&#x9;&#x9;&#x9;SET sqlFrom = sqlFrom || &apos;()&apos;;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;-- Set up the SQL statement
+&#x9;SET sqlStatement = &apos;select &apos;|| sqlProjection || &apos; from &apos; || sqlFrom;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;call print(&apos;SQL:&apos;||sqlStatement);
+&#x9;END IF;
+
+&#x9;SET outValue = null;
+&#x9;OPEN result FOR sqlStatement;
+&#x9;FOR r AS result DO
+&#x9;&#x9;SET outValue = r.textVal;
+&#x9;END FOR;
+END
+</attribute>
+  <attribute name="creationDate" type="LONG">1409259010734</attribute>
+  <attribute name="creatorUserDomain" type="STRING">ldap</attribute>
+  <attribute name="creatorUserName" type="STRING">zkxl6un</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/57</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/60</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/64</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/86</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

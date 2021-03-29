@@ -1,0 +1,548 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pPaymentRequestXq" path="/shared/Delta_DV/Business/Logical/Billing/pPaymentRequestXq" type="PROCEDURE" subtype="-131" changeToken="0">
+  <parameters>
+    <parameter name="SearchDetails" direction="IN" nullable="true">
+      <datatype name="XML" namespace="/shared/Delta_DV/Business/Logical/Billing/pPaymentRequestXq" referenceType="{/shared/Delta_DV/Business/Logical/Billing/pPaymentRequestXq}XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="{/shared/Delta_DV/Business/Logical/Billing/pPaymentRequestXq}XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="output" direction="OUT" nullable="true">
+      <datatype name="output" namespace="/shared/Delta_DV/Business/Logical/Billing/pPaymentRequestXq" referenceType="{/shared/Delta_DV/Business/Logical/Billing/pPaymentRequestXq}output" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="{/shared/Delta_DV/Business/Logical/Billing/pPaymentRequestXq}output">
+        <schemaDatatype>
+          <datatype name="output" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <attribute name="creationDate" type="LONG">1598553274654</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3100101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89313</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3100101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1598553274654</attribute>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace xquery =  &quot;http://compositesw.com/transform/xquery&quot;;
+declare namespace custom =  &quot;http://compositesw.com/transform/custom&quot;;
+declare namespace xs =  &quot;http://www.w3.org/2001/XMLSchema&quot;;
+declare namespace ext2 =  &quot;http://www.compositesw.com/extensions2&quot;;
+declare namespace sql =  &quot;http://compositesw.com/transform/sql&quot;;
+
+declare variable $SearchDetails external;
+declare function local:cast4( $sortField)
+{
+  fn:substring($sortField, 0 ,21)
+};
+
+
+
+declare function local:cast110( $billToIds)
+{
+  fn:substring($billToIds, 0 ,400000)
+};
+
+
+declare function local:cast5( $sortOrder)
+{
+  fn:substring($sortOrder, 0 ,21)
+};
+
+declare function local:cast3( $parentGroupNumber)
+{
+  fn:substring($parentGroupNumber, 0 ,51)
+};
+
+declare function local:cast6( $receiptNumber)
+{
+  fn:substring($receiptNumber, 0 ,51)
+};
+
+declare function local:cast( $max)
+{
+  let $result := $max
+  return (
+  $result
+  )
+};
+
+declare function local:cast2( $min)
+{
+  let $result := $min
+  return (
+  $result
+  )
+};
+
+declare function local:cast10( $start)
+{
+  fn:substring($start, 0 ,11)
+};
+
+declare function local:cast11( $end)
+{
+  fn:substring($end, 0 ,11)
+};
+
+declare function local:cast12( $invoiceNumber)
+{
+  fn:substring($invoiceNumber, 0 ,51)
+};
+
+declare function local:cast13( $start)
+{
+  fn:substring($start, 0 ,11)
+};
+
+declare function local:cast14( $end)
+{
+  fn:substring($end, 0 ,11)
+};
+
+declare function local:cast17( $paymentAmount)
+{
+  let $result := $paymentAmount
+  return (
+  $result
+  )
+};
+
+declare function local:cast15( $max)
+{
+  let $result := $max
+  return (
+  $result
+  )
+};
+
+declare function local:cast16( $min)
+{
+  let $result := $min
+  return (
+  $result
+  )
+};
+
+declare function local:cast20( $max)
+{
+  let $result := $max
+  return (
+  $result
+  )
+};
+
+declare function local:cast21( $min)
+{
+  let $result := $min
+  return (
+  $result
+  )
+};
+
+declare function local:cast9( $max)
+{
+  let $result := $max
+  return (
+  $result
+  )
+};
+
+declare function local:cast23( $min)
+{
+  let $result := $min
+  return (
+  $result
+  )
+};
+
+declare function local:cast24( $max)
+{
+  let $result := $max
+  return (
+  $result
+  )
+};
+
+declare function local:cast25( $min)
+{
+  let $result := $min
+  return (
+  $result
+  )
+};
+
+declare function local:cast7( $max)
+{
+  let $result := $max
+  return (
+  $result
+  )
+};
+
+declare function local:cast8( $min)
+{
+  let $result := $min
+  return (
+  $result
+  )
+};
+
+let $nodes := 
+(
+  (
+    for $var1 at $counter0 in $SearchDetails/sort
+    return 
+      if (fn:not($counter0 &lt;= 2147483647 and fn:true()))
+      then ()
+      else 
+        element outPaymentSearch
+        {
+          (
+            let $var4 := $var1/sortField/text()
+            let $var3:= local:cast4(fn:data($var4))
+            return
+            element SortField
+            {
+              $var3
+            }
+            ,
+            let $var7 := $var1/sortOrder/text()
+            let $var6:= local:cast5(fn:data($var7))
+            return
+            element SortOrder
+            {
+              $var6
+            }
+            ,
+
+            let $var110 := composite:formatStringSequence($SearchDetails/search/billToIds)
+            return
+            element BillToIds
+            {
+              $var110
+            }
+            ,
+
+
+            let $var10 := $SearchDetails/search/parentGroupNumber/text()
+            let $var9:= local:cast3(fn:data($var10))
+            return
+            element ParentGroupNumber
+            {
+              $var9
+            }
+            ,
+            let $var13 := $SearchDetails/search/receiptNumber/text()
+            let $var12:= local:cast6(fn:data($var13))
+            return
+            element ReceiptNumber
+            {
+              $var12
+            }
+            ,
+            let $var16 := $SearchDetails/search/receiptAmount/max/text()
+            let $var15:= local:cast(fn:data($var16))
+            return
+            element ReceiptAmountMax
+            {
+              $var15
+            }
+            ,
+            let $var19 := $SearchDetails/search/receiptAmount/min/text()
+            let $var18:= local:cast2(fn:data($var19))
+            return
+            element ReceiptAmountMin
+            {
+              $var18
+            }
+            ,
+            let $var22 := $SearchDetails/search/paymentDateRange/start/text()
+            let $var21:= local:cast10(fn:data($var22))
+            return
+            element PaymentDateStart
+            {
+              $var21
+            }
+            ,
+            let $var25 := $SearchDetails/search/paymentDateRange/end/text()
+            let $var24:= local:cast11(fn:data($var25))
+            return
+            element PaymentDateEnd
+            {
+              $var24
+            }
+            ,
+            let $var28 := $SearchDetails/search/invoiceNumber/text()
+            let $var27:= local:cast12(fn:data($var28))
+            return
+            element InvoiceNumber
+            {
+              $var27
+            }
+            ,
+            let $var31 := $SearchDetails/search/invoiceDateRange/start/text()
+            let $var30:= local:cast13(fn:data($var31))
+            return
+            element InvoiceDateStart
+            {
+              $var30
+            }
+            ,
+            let $var34 := $SearchDetails/search/invoiceDateRange/end/text()
+            let $var33:= local:cast14(fn:data($var34))
+            return
+            element InvoiceDateRangeEnd
+            {
+              $var33
+            }
+            ,
+            let $var37 := $SearchDetails/search/paymentAmount/text()
+            let $var36:= local:cast17(fn:data($var37))
+            return
+            element PaymentAmount
+            {
+              $var36
+            }
+&#x9;&#x9;&#x9;,
+
+
+            let $var115 := composite:formatStringSequence($SearchDetails/search/paymentTypes)
+            return
+            element PaymentTypes
+            {
+              $var115
+            }
+            ,
+
+            let $var116 := composite:formatStringSequence($SearchDetails/search/paymentStatuses)
+            return
+            element PaymentStatuses
+            {
+              $var116
+            }
+            ,
+
+            let $var40 := $SearchDetails/search/appliedAmount/max/text()
+            let $var39:= local:cast15(fn:data($var40))
+            return
+            element AppliedAmountMax
+            {
+              $var39
+            }
+            ,
+            let $var43 := $SearchDetails/search/appliedAmount/min/text()
+            let $var42:= local:cast16(fn:data($var43))
+            return
+            element AppliedAmountMin
+            {
+              $var42
+            }
+            ,
+            let $var46 := $SearchDetails/search/adjustmentAmount/max/text()
+            let $var45:= local:cast20(fn:data($var46))
+            return
+            element AdjustmentAmountMax
+            {
+              $var45
+            }
+            ,
+            let $var49 := $SearchDetails/search/adjustmentAmount/min/text()
+            let $var48:= local:cast21(fn:data($var49))
+            return
+            element AdjustmentAmountMin
+            {
+              $var48
+            }
+            ,
+            let $var52 := $SearchDetails/search/originalInvoiceAmount/max/text()
+            let $var51:= local:cast9(fn:data($var52))
+            return
+            element OriginalInvoiceAmountMax
+            {
+              $var51
+            }
+            ,
+            let $var55 := $SearchDetails/search/originalInvoiceAmount/min/text()
+            let $var54:= local:cast23(fn:data($var55))
+            return
+            element OriginalInvoiceAmountMin
+            {
+              $var54
+            }
+            ,
+            let $var58 := $SearchDetails/search/outstandingBalance/max/text()
+            let $var57:= local:cast24(fn:data($var58))
+            return
+            element OutstandingBalanceMax
+            {
+              $var57
+            }
+            ,
+            let $var61 := $SearchDetails/search/outstandingBalance/min/text()
+            let $var60:= local:cast25(fn:data($var61))
+            return
+            element OutstandingBalanceMin
+            {
+              $var60
+            }
+            ,
+            let $var64 := $SearchDetails/search/creditMemo/max/text()
+            let $var63:= local:cast7(fn:data($var64))
+            return
+            element CreditMemoMax
+            {
+              $var63
+            }
+            ,
+            let $var67 := $SearchDetails/search/creditMemo/min/text()
+            let $var66:= local:cast8(fn:data($var67))
+            return
+            element CreditMemoMin
+            {
+              $var66
+            }
+            ,
+            element NumberOfRowsPerPage
+            {
+              $SearchDetails/pagination/numberOfRowsPerPage/text()
+            }
+            ,
+            element PageNumber
+            {
+              $SearchDetails/pagination/pageNumber/text()
+            }
+          )
+        }
+    ,
+    let $counter := count($SearchDetails/sort)
+    return
+      if ($counter &gt;= 0) then
+      ()
+      else 
+        for $k in (1 to ( 0 - $counter))
+        return
+          element outPaymentSearch
+          {
+            (
+              element SortField
+              {
+              }
+              ,
+              element SortOrder
+              {
+              }
+              ,
+              element BillToIds
+              {
+              }
+              ,
+              element ParentGroupNumber
+              {
+              }
+              ,
+              element ReceiptNumber
+              {
+              }
+              ,
+              element ReceiptAmountMax
+              {
+              }
+              ,
+              element ReceiptAmountMin
+              {
+              }
+              ,
+              element PaymentDateStart
+              {
+              }
+              ,
+              element PaymentDateEnd
+              {
+              }
+              ,
+              element InvoiceNumber
+              {
+              }
+              ,
+              element InvoiceDateStart
+              {
+              }
+              ,
+              element InvoiceDateRangeEnd
+              {
+              }
+              ,
+              element PaymentAmount
+              {
+              }
+              ,
+              element PaymentTypes
+              {
+              }
+              ,
+              element PaymentStatuses
+              {
+              }
+              ,
+              element AppliedAmountMax
+              {
+              }
+              ,
+              element AppliedAmountMin
+              {
+              }
+              ,
+              element AdjustmentAmountMax
+              {
+              }
+              ,
+              element AdjustmentAmountMin
+              {
+              }
+              ,
+              element OriginalInvoiceAmountMax
+              {
+              }
+              ,
+              element OriginalInvoiceAmountMin
+              {
+              }
+              ,
+              element OutstandingBalanceMax
+              {
+              }
+              ,
+              element OutstandingBalanceMin
+              {
+              }
+              ,
+              element CreditMemoMax
+              {
+              }
+              ,
+              element CreditMemoMin
+              {
+              }
+              ,
+              element NumberOfRowsPerPage
+              {
+              }
+              ,
+              element PageNumber
+              {
+              }
+            )
+          }
+  )
+)
+return
+$nodes</attribute>
+</metadata>

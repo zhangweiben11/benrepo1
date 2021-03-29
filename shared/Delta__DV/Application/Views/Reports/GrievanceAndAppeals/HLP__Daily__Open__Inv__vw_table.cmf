@@ -1,0 +1,241 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="HLP_Daily_Open_Inv_vw" path="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_Daily_Open_Inv_vw" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="TheDate" nullable="true">
+      <datatype type="DATE"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Case_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="open_inv" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Date_Dim" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Datekey">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TheDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="FiscalYearBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalYearEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalQuarter">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalQuarterBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalQuarterEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalMonth">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalMonthBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalMonthEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalWeek">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="FiscalWeekBeginDtae">
+        <datatype type="DATE"/>
+      </element>
+      <element name="FiscalWeekEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CalenderYearBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderYearEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderQuarter">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="CalenderQuarterBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderQuarterEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderMonth">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CalenderMonthBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderMonthEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderWeek">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CalenderWeekBeginDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="CalenderWeekEndDate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="Rolling30Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling60Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling90Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling120Day">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling3Month">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling6Month">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Rolling12Month">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="DayName">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="MonthName">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalYearName">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="DAY_OF_WEEK_IN_MONTH">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DayOfWeek">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DayOfMonth">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DayOfYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DaysLeftInYear">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="DaysBeforeChristmas">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IsWeekend">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="IsNewYearsDay">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="FiscalYearMonth">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Claim_Payment_Year">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Claim_Payment_Month">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Claim_Payment_Week">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="IsHolidayUSA">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="HolidayUSA">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="IsHolidayMexico">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="HolidayMexico">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="IsHolidayPuertoRico">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="HolidayPuertoRico">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_Case_Complaint_vw" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Case_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Case_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Managed_By_Stakeholder">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Complaint_Client_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Database_Partition_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Created_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Resolved_Date">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT
+c.TheDate, 
+o.Complaint_Case_Type_Code, 
+count(DISTINCT Case_Key) open_inv
+FROM /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/Date_Dim c
+LEFT JOIN /shared/Delta_DV/Application/Views/Reports/GrievanceAndAppeals/HLP_Case_Complaint_vw o 
+ON c.TheDate &gt;= o.Created_Date AND c.TheDate &lt; o.Resolved_Date
+WHERE c.TheDate  between &apos;2020-11-15&apos; and &apos;2020-11-20&apos;
+GROUP BY c.TheDate , o.Complaint_Case_Type_Code
+</attribute>
+  <attribute name="creationDate" type="LONG">1610946528752</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612114859357</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1610946528752</attribute>
+</metadata>

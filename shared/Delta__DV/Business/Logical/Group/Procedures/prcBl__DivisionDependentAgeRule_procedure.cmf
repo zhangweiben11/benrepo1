@@ -1,0 +1,268 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="prcBl_DivisionDependentAgeRule" path="/shared/Delta_DV/Business/Logical/Group/Procedures/prcBl_DivisionDependentAgeRule" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[/* Description:
+This procedure returns division level contact type (vwContact.ContactLevelIND = &apos;G2&apos; =&gt; division level)
+If no contact type is found for the division level then return group level contact type (vwContact.ContactLevelIND = &apos;G1&apos; =&gt; group level)
+
+Basically if the division level contact type exists for the division, then it takes priority.
+If there is no contact type at the division level then it inherit contact type of the group
+
+Contact Z2 and Contact ZG use ContactTitle as effective date and NameSuffix as end date. The procedure has to filter parameter Effective Date
+between ContactTitle (convert from string to date, if ContactTitle is space then use EffDate) and NameSuffix (convert from string to date,
+if NameSuffix is spaces then use EndDate).
+
+All other Contact Types do not use ContactTitle and NameSuffix as effective and end date respectively. So input Effective Date can be ignore.
+
+vwContact.ContactID CHAR(25) is foreign key to vwGroup.GroupSurrogateID (INTEGER)or vwDivision.DivisionSurrogateID (INTERGER).
+We need to cast SurrogateID to CHAR(25) in order to use index
+*/
+
+/* Input: 
+GroupSurrogateID, DivisionSurrogateID, Contact Type CD, Effective Date
+*/
+
+/* Output:
+All columns from vwContact
+*/
+
+/* Revisions:
+Author&#x9;&#x9;Date of Revisions&#x9;Reason for change
+Kim Pham&#x9;2020-06-01&#x9;&#x9;&#x9;Initial creation
+*/]]></annotation>
+  <parameters>
+    <parameter name="inGroupID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inDivisionID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+    </parameter>
+    <parameter name="inAsOfDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="inGroupSurrogateID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="inDivisionSurrogateID" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="25"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="GroupID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="DivisionID">
+          <datatype name="VARCHAR" type="STRING" maxLength="12"/>
+        </element>
+        <element name="State">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ChildAge">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="ChildTermRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="StudentAge">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="StudentTermRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="50"/>
+        </element>
+        <element name="EffDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="EndDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/services/databases/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Common/prcPl_DateStringToDate" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inDateStr" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="outDate" direction="OUT">
+        <datatype type="DATE"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/PackagedQueries/Group/pkgPl_DivisionDependentAgeRule" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inGroupID" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="inDivisionID" direction="IN">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="inAsOfDate" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="inGroupSurrogateID" direction="IN">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="inDivisionSurrogateID" direction="IN">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="GroupID">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="DivisionID">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="State">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ChildAge">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="StudentAge">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="Z2State">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="AgeEffDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="AgeEndDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="Z2EffDate">
+            <datatype type="DATE"/>
+          </element>
+          <element name="Z2EndDate">
+            <datatype type="DATE"/>
+          </element>
+          <element name="ChildTermRule">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="StudentTermRule">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="TermRuleEffDate">
+            <datatype type="DATE"/>
+          </element>
+          <element name="TermRuleEndDate">
+            <datatype type="DATE"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/system/customfunctions/prcPl_DateStringToDate" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/system/datasources/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE prcBl_DivisionDependentAgeRule(
+    IN inGroupID VARCHAR(12), 
+    IN inDivisionID VARCHAR(12), 
+    IN inAsOfDate DATE,
+    IN inGroupSurrogateID VARCHAR(25), 
+    IN inDivisionSurrogateID VARCHAR(25), 
+    OUT result PIPE (
+        GroupID VARCHAR(12),
+        DivisionID VARCHAR(12),
+&#x9;    State VARCHAR(2),
+&#x9;    ChildAge VARCHAR(2),
+&#x9;    ChildTermRule VARCHAR(50),
+&#x9;    StudentAge VARCHAR(2),
+&#x9;    StudentTermRule VARCHAR(50),
+&#x9;    EffDate DATE,
+&#x9;    EndDate DATE
+        )
+    )
+BEGIN
+        DECLARE varEffDateZ2 DATE;
+        DECLARE varEndDateZ2 DATE;
+
+        DECLARE curDepAgeRule CURSOR (
+        GroupID VARCHAR(12),
+        DivisionID VARCHAR(12),
+&#x9;    State VARCHAR(2),
+&#x9;    ChildAge VARCHAR(2),
+&#x9;    StudentAge VARCHAR(2),
+&#x9;    Z2State VARCHAR(2),
+&#x9;    AgeEffDate VARCHAR(10),
+&#x9;    AgeEndDate VARCHAR(10),
+&#x9;    Z2EffDate DATE,
+&#x9;    Z2EndDate DATE,
+&#x9;    ChildTermRule VARCHAR(2),
+&#x9;    StudentTermRule VARCHAR(2),
+&#x9;    TermRuleEffDate DATE,
+&#x9;    TermRuleEndDate DATE
+        );
+
+        DECLARE rowDepAgeRule ROW (
+        GroupID VARCHAR(12),
+        DivisionID VARCHAR(12),
+&#x9;    State VARCHAR(2),
+&#x9;    ChildAge VARCHAR(2),
+&#x9;    StudentAge VARCHAR(2),
+&#x9;    Z2State VARCHAR(2),
+&#x9;    AgeEffDate VARCHAR(10),
+&#x9;    AgeEndDate VARCHAR(10),
+&#x9;    Z2EffDate DATE,
+&#x9;    Z2EndDate DATE,
+&#x9;    ChildTermRule VARCHAR(2),
+&#x9;    StudentTermRule VARCHAR(2),
+&#x9;    TermRuleEffDate DATE,
+&#x9;    TermRuleEndDate DATE
+        );
+
+        CALL /shared/Delta_DV/Physical/Formatting/PackagedQueries/&quot;Group&quot;/pkgPl_DivisionDependentAgeRule(inGroupID, inDivisionID, inAsOfDate, inGroupSurrogateID, inDivisionSurrogateID, curDepAgeRule);
+
+        L_division: BEGIN
+           LOOP
+              FETCH curDepAgeRule INTO rowDepAgeRule;
+                 IF NOT curDepAgeRule.FOUND THEN
+                    LEAVE L_division;
+                 END IF;
+                 SET varEffDateZ2 = NVL(prcPl_DateStringToDate(rowDepAgeRule.AgeEffDate),rowDepAgeRule.Z2EffDate);
+                 SET varEndDateZ2 = NVL(prcPl_DateStringToDate(rowDepAgeRule.AgeEndDate),rowDepAgeRule.Z2EndDate);
+
+                 IF inAsOfDate &gt;= varEffDateZ2
+                 AND inAsOfDate &lt;= varEndDateZ2
+                 THEN
+                    INSERT INTO result
+                    SELECT rowDepAgeRule.GroupID, rowDepAgeRule.DivisionID, rowDepAgeRule.State, rowDepAgeRule.ChildAge, rowDepAgeRule.ChildTermRule, rowDepAgeRule.StudentAge, rowDepAgeRule.StudentTermRule, 
+                           GREATEST(varEffDateZ2, rowDepAgeRule.TermRuleEffDate), 
+                           LEAST (varEndDateZ2, rowDepAgeRule.TermRuleEndDate);
+
+                 END IF;
+           END LOOP;
+        END; --L_division
+END</attribute>
+  <attribute name="creationDate" type="LONG">1592354833301</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">2810101</attribute>
+  <attribute name="creatorUserName" type="STRING">dca31940</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612557303873</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">2810101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca31940</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1592354833301</attribute>
+</metadata>

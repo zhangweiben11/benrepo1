@@ -1,0 +1,245 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="parseDocSwitches" path="/shared/Delta_DV/_scripts/Utilities/documentation/helpers/parseDocSwitches" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[parseDocSwitches:
+
+&#x9;This procedure parses the switches that are passed in to determine what behavior should be taken.
+
+    defaultValue=        0     1
+&#x9;print_containers=[{none}|all] - print the resource container (folder)
+
+ &#x9;defaultValue=        0     1     2       3
+&#x9;print_annotations=[none|{all}|nonblank|blank] - print all annotations whether they are blank or not
+
+    defaultValue=                 0     1
+&#x9;print_resource_projections=[none|{all}] - print the resource projections
+
+    defaultValue=           0     1
+&#x9;print_resources_used=[none|{all}] - print the immediate child resources used by the parent resource
+
+    defaultValue=               0     1
+&#x9;print_datasource_accessed=[none|{all}] - print the data source accessed list
+
+    defaultValue=               0     1
+&#x9;print_datasource_lineage=[none|{all}] - print the data source lineage
+
+&#x9;defaultValue=             0   1
+&#x9;print_time=[{no}|yes] - print the time it takes to retrieve the full documentation for each resource and the final time
+
+&#x9;defaultValue=             0   1
+&#x9;save_file=[{no}|yes] - save the results to a file
+
+&#x9;defaultValue=             0   1
+&#x9;save_file_intermediate=[{no}|yes] - save the file intermediately after each resource is completed
+
+&#x9;Input:
+&#x9;&#x9;switches&#x9;&#x9;&#x9;&#x9;&#x9;A space separated list of switches with no embedded spaces 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. print_annotations=nonblank print_resource_projections=all print_resources_used=all print_datasource_lineage=all
+
+&#x9;&#x9;command&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;One of |print_annotations|print_resource_projections|print_resources_used|print_datasource_accessed|print_datasource_lineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. print_annotations
+&#x9;Output:
+&#x9;&#x9;commandOptionValue&#x9;&#x9;&#x9;The result command value [0,1,2,3] - none|no=0, all|yes=1, nonblank=2, blank=3
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. 3
+&#x9;Exceptions:  none
+
+&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Release:&#x9;Reason:
+&#x9;08/22/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Created new
+&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Added defaults for print_time, save_file, save_file_initialize.  Added no and yes.
+&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Removed 2nd extract command to make the code more efficient.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="switches" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="command" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="commandOptionValue" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/string/extractTextList" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="preserveDoubleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveSingleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveParenthesis" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveQualifier" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="trimResults" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="textExpression">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* &#x9;parseDocSwitches:
+
+&#x9;This procedure parses the switches that are passed in to determine what behavior should be taken.
+
+    defaultValue=        0     1
+&#x9;print_containers=[{none}|all] - print the resource container (folder)
+
+ &#x9;defaultValue=        0     1     2       3
+&#x9;print_annotations=[none|{all}|nonblank|blank] - print all annotations whether they are blank or not
+
+    defaultValue=                 0     1
+&#x9;print_resource_projections=[none|{all}] - print the resource projections
+
+    defaultValue=           0     1
+&#x9;print_resources_used=[none|{all}] - print the immediate child resources used by the parent resource
+
+    defaultValue=               0     1
+&#x9;print_datasource_accessed=[none|{all}] - print the data source accessed list
+
+    defaultValue=               0     1
+&#x9;print_datasource_lineage=[none|{all}] - print the data source lineage
+
+&#x9;defaultValue=             0   1
+&#x9;print_time=[{no}|yes] - print the time it takes to retrieve the full documentation for each resource and the final time
+
+&#x9;defaultValue=             0   1
+&#x9;save_file=[{no}|yes] - save the results to a file
+
+&#x9;defaultValue=             0   1
+&#x9;save_file_intermediate=[{no}|yes] - save the file intermediately after each resource is completed
+
+&#x9;Input:
+&#x9;&#x9;switches&#x9;&#x9;&#x9;&#x9;&#x9;A space separated list of switches with no embedded spaces 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. print_annotations=nonblank print_resource_projections=all print_resources_used=all print_datasource_lineage=all
+
+&#x9;&#x9;command&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;One of |print_annotations|print_resource_projections|print_resources_used|print_datasource_accessed|print_datasource_lineage
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. print_annotations
+&#x9;Output:
+&#x9;&#x9;commandOptionValue&#x9;&#x9;&#x9;The result command value [0,1,2,3] - none|no=0, all|yes=1, nonblank=2, blank=3
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;i.e. 3
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.4&#x9;&#x9;08/22/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2012.401&#x9;11/12/2012&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.2.0&#x9;&#x9;&#x9;Added defaults for print_time, save_file, save_file_initialize.  Added no and yes.
+&#x9;2018.1&#x9;&#x9;03/02/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Replaced RegexSplit with extractDelimitedText
+&#x9;2019.3&#x9;&#x9;05/20/2019&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Removed 2nd extract command to make the code more efficient.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE parseDocSwitches(
+&#x9;IN &#x9;switches&#x9;&#x9;&#x9;LONGVARCHAR, &#x9;-- the space separated list of switches with no embedded spaces 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- i.e. print_annotations=nonblank print_resource_projections=all print_resources_used=all print_datasource_lineage=all
+&#x9;IN  command&#x9;&#x9;&#x9;&#x9;VARCHAR, &#x9;&#x9;-- one of |print_annotations|print_resource_projections|print_resources_used|print_datasource_lineage
+&#x9;OUT commandOptionValue&#x9;INTEGER  &#x9;&#x9;-- the result command value [0,1,2,3]
+)
+BEGIN
+&#x9;DECLARE parsedCommand&#x9;VARCHAR;
+&#x9;DECLARE cmdRoot&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE cmdOption&#x9;&#x9;VARCHAR;
+&#x9;DECLARE pos&#x9;&#x9;&#x9;&#x9;INTEGER;
+
+&#x9;-- Assign default values
+&#x9;case
+&#x9;&#x9;when command = &apos;print_containers&apos; &#x9;&#x9;&#x9;then set commandOptionValue = 0; -- none
+&#x9;&#x9;when command = &apos;print_annotations&apos; &#x9;&#x9;&#x9;then set commandOptionValue = 1; -- all
+&#x9;&#x9;when command = &apos;print_resource_projections&apos; then set commandOptionValue = 1; -- all
+&#x9;&#x9;when command = &apos;print_resources_used&apos;&#x9;&#x9;then set commandOptionValue = 1; -- all
+&#x9;&#x9;when command = &apos;print_datasource_accessed&apos; &#x9;then set commandOptionValue = 1; -- all
+&#x9;&#x9;when command = &apos;print_datasource_lineage&apos; &#x9;then set commandOptionValue = 1; -- all
+&#x9;&#x9;when command = &apos;print_time&apos; &#x9;&#x9;&#x9;&#x9;then set commandOptionValue = 0; -- no
+&#x9;&#x9;when command = &apos;save_file&apos; &#x9;&#x9;&#x9;&#x9;&#x9;then set commandOptionValue = 0; -- no
+&#x9;&#x9;when command = &apos;save_file_initialize&apos; &#x9;&#x9;then set commandOptionValue = 0; -- no
+&#x9;&#x9;else&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set commandOptionValue = 0;
+&#x9;end case;
+
+&#x9;-- Separate the commands 
+&#x9;-- i.e. print_annotations=none print_resource_projections=all print_resources_used=none
+&#x9;for r as
+&#x9;&#x9;select * from /shared/Delta_DV/&quot;_scripts&quot;/Utilities/string/extractTextList(LOWER(switches), &apos; &apos;,0,0,0,0,1)
+&#x9;&#x9;where textExpression is not null and length(trim(textExpression)) &gt; 0 
+&#x9;do 
+&#x9;&#x9;set parsedCommand = r.textExpression;
+
+&#x9;&#x9;-- check to see if the passed in command is found in the parsed command switches
+&#x9;&#x9;if (INSTR(parsedCommand, LOWER(command)||&apos;=&apos;) &gt; 0) then
+
+&#x9;&#x9;&#x9;-- check for an equal sign which separates the command and command option
+&#x9;&#x9;&#x9;set pos = INSTR(parsedCommand, &apos;=&apos;);
+&#x9;&#x9;&#x9;if (pos &gt; 0) then
+&#x9;&#x9;&#x9;&#x9;-- Separate the command root from the command option
+&#x9;&#x9;&#x9;&#x9;-- i.e. print_annotations=none
+&#x9;&#x9;&#x9;&#x9;set cmdRoot = SUBSTRING(parsedCommand, 1, pos-1);
+&#x9;&#x9;&#x9;&#x9;set cmdOption = SUBSTRING(parsedCommand, pos+1);
+&#x9;&#x9;&#x9;&#x9;case
+&#x9;&#x9;&#x9;&#x9;&#x9;when cmdOption = &apos;none&apos; or cmdOption = &apos;no&apos; then set commandOptionValue = 0;
+&#x9;&#x9;&#x9;&#x9;&#x9;when cmdOption = &apos;all&apos; or cmdOption = &apos;yes&apos; then set commandOptionValue = 1;
+&#x9;&#x9;&#x9;&#x9;&#x9;when cmdOption = &apos;nonblank&apos; then set commandOptionValue = 2;
+&#x9;&#x9;&#x9;&#x9;&#x9;when cmdOption = &apos;blank&apos; then set commandOptionValue = 3;
+&#x9;&#x9;&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;set commandOptionValue = 0;
+&#x9;&#x9;&#x9;&#x9;end case;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;end if;
+&#x9;end for; 
+--&#x9;call print(&apos;command=&apos;||emptyStr(command)||&apos; commandOptionValue=&apos;||commandOptionValue);
+END</attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+</metadata>

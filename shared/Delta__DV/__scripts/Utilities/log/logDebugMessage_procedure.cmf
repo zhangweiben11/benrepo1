@@ -1,0 +1,165 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="logDebugMessage" path="/shared/Delta_DV/_scripts/Utilities/log/logDebugMessage" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[logDebugMessage:
+&#x9;Provides the developer with a built in mechanism to log a message to the CIS log file 
+&#x9;whereby a single parameter can turn debugging on or off globally.  Additionally the log 
+&#x9;message will contain the CIS module (procedure) where the message was registered.  
+&#x9;This allows a developer to locate the problem area more quickly.
+ 
+&#x9;Input:
+&#x9;&#x9;moduleName - The name of the invoking procedure with a length of VARCHAR(255).
+&#x9;&#x9;&#x9;Values: Any text value. e.g. &apos;procedureName&apos;
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;&#x9;messageText - The message to be to be sent or stored
+&#x9;&#x9;&#x9;Values: Any text value
+&#x9;Output: none
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="moduleName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" referenceDefinitionSet="/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions" referenceType="moduleNameType" type="STRING" maxLength="4096"/>
+    </parameter>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="1"/>
+    </parameter>
+    <parameter name="messageText" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/TypeDefinitions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* logDebugMessage:
+&#x9;Provides the developer with a built in mechanism to log a message to the CIS log file 
+&#x9;whereby a single parameter can turn debugging on or off globally.  Additionally the log 
+&#x9;message will contain the CIS module (procedure) where the message was registered.  
+&#x9;This allows a developer to locate the problem area more quickly.
+ 
+&#x9;Input:
+&#x9;&#x9;moduleName - The name of the invoking procedure with a length of VARCHAR(255).
+&#x9;&#x9;&#x9;Values: Any text value. e.g. &apos;procedureName&apos;
+&#x9;&#x9;debug - defines the debugging options for this procedure.  
+&#x9;&#x9;&#x9;Values: Y or T = debugging turned on, N or F = debugging turned off
+&#x9;&#x9;messageText - The message to be to be sent or stored
+&#x9;&#x9;&#x9;Values: Any text value
+&#x9;Output: none
+&#x9;Exceptions:  none
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2010.3&#x9;&#x9;08/02/2010&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;5.1.0&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE logDebugMessage(
+&#x9;IN moduleName &#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.moduleNameType, 
+&#x9;IN debug &#x9;VARCHAR(1),
+&#x9;IN messageText &#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE localModuleName &#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.moduleNameType DEFAULT &apos;&lt;no module defined&gt;&apos;;
+&#x9;DECLARE localMessageText &#x9;/shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.messageType DEFAULT &apos;&lt;no message text&gt;&apos;;
+&#x9;DECLARE localDebug &#x9;&#x9;VARCHAR(1) DEFAULT &apos;N&apos;;
+&#x9;DECLARE messageLen&#x9;&#x9;INTEGER;
+&#x9;DECLARE messageTrim&#x9;&#x9;VARCHAR 
+&#x9;&#x9;DEFAULT &apos;[...MESSAGE TRIMMED TO LEN=&apos;|| /shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.messageTypeConstant||&apos;]&apos;;
+
+&#x9;IF ((debug IS NOT NULL) OR (LENGTH(debug) &gt; 0)) then
+&#x9;&#x9;SET localDebug = UPPER(debug);
+&#x9;END IF;
+&#x9;if (localDebug = &apos;Y&apos; or localDebug = &apos;T&apos;) then
+&#x9;&#x9;SET messageLen = /shared/Delta_DV/&quot;_scripts&quot;/Utilities/TypeDefinitions.messageTypeConstant;
+&#x9;&#x9;IF (moduleName IS NOT NULL) THEN
+&#x9;&#x9;&#x9;set localModuleName = moduleName;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (messageText IS NOT NULL) THEN
+&#x9;&#x9;&#x9;if (LENGTH(messageText) &gt; messageLen) then
+&#x9;&#x9;&#x9;&#x9;set messageLen = messageLen - LENGTH(messageTrim);
+&#x9;&#x9;&#x9;&#x9;set localMessageText = SUBSTRING(messageText,1,messageLen) || messageTrim;
+&#x9;&#x9;&#x9;else
+&#x9;&#x9;&#x9;&#x9;set localMessageText = messageText;
+&#x9;&#x9;&#x9;end if;
+&#x9;&#x9;END IF;&#x9;
+&#x9;&#x9;call log  (localModuleName || &apos; : &apos; || localMessageText);
+&#x9;&#x9;call print(localModuleName || &apos; : &apos; || localMessageText);
+&#x9;end if;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1376679119252</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/67</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/66</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

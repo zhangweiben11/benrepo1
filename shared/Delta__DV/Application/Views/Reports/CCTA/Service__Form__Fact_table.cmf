@@ -1,0 +1,795 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Service_Form_Fact" path="/shared/Delta_DV/Application/Views/Reports/CCTA/Service_Form_Fact" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Customer_Service_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Start_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Start_Time" nullable="true">
+      <datatype type="TIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_Key" nullable="true">
+      <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Key" nullable="true">
+      <datatype type="STRING" minLength="2" maxLength="2" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Customer_Call_Center_Code" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="State_Province_CD" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Contact_Type_Code" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Contact_Center_Case_Owner_Code" nullable="true">
+      <datatype type="STRING" maxLength="15"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Completed_In_Business_Days_Count" nullable="true">
+      <datatype type="DECIMAL" maxDigits="4" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Completed_In_Calendar_Days_Count" nullable="true">
+      <datatype type="DECIMAL" maxDigits="4" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="In_Provider_Concierge_Workflow_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Correspondence_Form_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Call_Form_IND" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Resolution_Agent_Notes_Text" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="25"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Plan_Sponsor_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="12"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Plan_Sponsor_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Plan_State_Code" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Accounting_Partition_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="12"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Plan_Information_Source_System_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Subject_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="DMHC_Category_Name" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_License_State_Code" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Provider_Billing_State_Code" nullable="true">
+      <datatype type="STRING" maxLength="3"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Unique_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="128"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Resolution_Action" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Category_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Subject_Text_Empty_IND" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="1" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Category_Empty_IND" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="1" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Resolution_Empty_IND" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="1" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Agent_Call_Escalation_Indicator" nullable="true">
+      <datatype type="STRING" maxLength="1"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Closed_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Close_Time" nullable="true">
+      <datatype type="TIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Regulatory_Agency_Code" nullable="true">
+      <datatype type="STRING" maxLength="10"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_State_Type_Code" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="1" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Opened_By_Agent_Name" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="201"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Opened_By_Agent_ID" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Opened_By_Agent_Supervisor_Name" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="201"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Closed_By_Agent_Name" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="201"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Closed_By_Agent_ID" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Closed_By_Agent_Supervisor_Name" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="201"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Pended_By_Agent_Name" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="201"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Pended_By_Agent_ID" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Pended_By_Agent_Supervisor_Name" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="201"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Opened_Queue_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Closed_Queue_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Service_Form_Pended_Queue_Name" nullable="true">
+      <datatype type="STRING" maxLength="60"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Inquiry_Open_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Inquiry_Closed_Date" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/CCTA/Service_Form_Fact_HLP_Agent_Details" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Service_Form_KEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="CR_Agent_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="CR_Service_Form_Workstream_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="CR_Agent_Name">
+        <datatype type="STRING" minLength="1" maxLength="201"/>
+      </element>
+      <element name="CR_Supervisor_Name">
+        <datatype type="STRING" minLength="1" maxLength="201"/>
+      </element>
+      <element name="CR_state_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="PE_Agent_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="PE_Service_Form_Workstream_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="PE_Agent_Name">
+        <datatype type="STRING" minLength="1" maxLength="201"/>
+      </element>
+      <element name="PE_Supervisor_Name">
+        <datatype type="STRING" minLength="1" maxLength="201"/>
+      </element>
+      <element name="PE_state_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="CL_Agent_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="CL_Service_Form_Workstream_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="CL_Agent_Name">
+        <datatype type="STRING" minLength="1" maxLength="201"/>
+      </element>
+      <element name="CL_Supervisor_Name">
+        <datatype type="STRING" minLength="1" maxLength="201"/>
+      </element>
+      <element name="CL_state_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="IO_state_date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="IC_state_date">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Application/Views/Reports/CCTA/Service_Form_Fact_HLP_Service_Form_State" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Service_Form_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="max_st_dt">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="min_st_dt">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Agent" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Agent_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="User_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Given_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Family_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Job_Title_Text">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Begin_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Supervisor_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Source_System_Identifier">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Event" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Event_Type_CD">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Customer_Call_Center_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Customer_Service_Channel_Type_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Medicare_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Medicaid_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Service_Form_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="State_Province_CD">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Service_Form_Contact_Type_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Contact_Center_Case_Owner_Code">
+        <datatype type="STRING" maxLength="15"/>
+      </element>
+      <element name="Completed_In_Business_Days_Count">
+        <datatype type="DECIMAL" maxDigits="4" maxFractionalDigits="0"/>
+      </element>
+      <element name="Completed_In_Calendar_Days_Count">
+        <datatype type="DECIMAL" maxDigits="4" maxFractionalDigits="0"/>
+      </element>
+      <element name="In_Provider_Concierge_Workflow_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Correspondence_Form_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Call_Form_IND">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+      <element name="Resolution_Agent_Notes_Text">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="Service_Form_Identifier">
+        <datatype type="STRING" maxLength="25"/>
+      </element>
+      <element name="Source_System_Plan_Sponsor_Identifier">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="Source_System_Plan_Sponsor_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Source_System_Plan_State_Code">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Source_System_Accounting_Partition_Identifier">
+        <datatype type="STRING" maxLength="12"/>
+      </element>
+      <element name="Plan_Information_Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Service_Form_Subject_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="DMHC_Category_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Provider_License_State_Code">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Provider_Billing_State_Code">
+        <datatype type="STRING" maxLength="3"/>
+      </element>
+      <element name="Regulatory_Agency_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Agent_Call_Escalation_Indicator">
+        <datatype type="STRING" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form_Category" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Service_Form_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Service_Form_Category_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Customer_Service_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="DMHC_Category_Name">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form_Resolution_Action" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Customer_Service_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Service_Form_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Service_Form_Resolution_Action_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Service_Form_Resolution_Action">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form_State" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="State_Date">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Customer_Service_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Source_System_User_Login_Identifier">
+        <datatype type="STRING" maxLength="64"/>
+      </element>
+      <element name="Service_Form_State_Type_Code">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="Agent_Event_Stakeholder_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Service_Form_Workstream_Name">
+        <datatype type="STRING" maxLength="60"/>
+      </element>
+      <element name="Service_Form_State_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Service_Form_Key">
+        <datatype type="INTEGER"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Stakeholder_Role_Cross_Reference_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Stakeholder_Role_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Stakeholder_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Stakeholder_Role_Id">
+        <datatype type="DECIMAL" maxDigits="38" maxFractionalDigits="23"/>
+      </element>
+      <element name="Create_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Created_By_Identifier">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Last_Updated_By_Identifier">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Last_Update_DateTime">
+        <datatype type="STRING"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Stakeholder_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">--OPTION CASE_SENSITIVE=&quot;false&quot; is needed for a full push down of the query to the source system when a filter is used on the published view. 
+--For example: Tableau is filtering on the Service_Form_Category_Name.
+SELECT { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+    sf.Customer_Service_Event_Key,
+    sf.Service_Form_Key,
+    t.min_st_dt AS Start_Date,
+    CAST(t.min_st_dt AS TIME) AS Start_Time,
+/* 
+--20210105-Philip du Maine:
+--replaced with normal join condition
+(Select { OPTION CASE_SENSITIVE=&quot;false&quot; } 
+        c.Stakeholder_Role_Id
+    From /shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event b,
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_holder_Cross_Reference c
+    Where sf.Customer_Service_Event_Key = b.Event_Key And b.Stakeholder_Role_Cross_Reference_Key = c.Stakeholder_Role_Cross_Reference_Key And c.Stakeholder_Role_Type_Code = &apos;MEMBR&apos;
+) as Member_Key,
+*/
+c.Stakeholder_Role_Id AS Member_Key,
+
+    &apos;-1&apos; as Provider_Key,
+    /*CASE WHEN shcr.Stakeholder_Role_Type_Code = &apos;MEMBR&apos;
+ THEN shcr.Stakeholder_Role_Id  END AS Member_Key, 
+  CASE WHEN shcr.Stakeholder_Role_Type_Code = &apos;PRVDR&apos;
+THEN shcr.Stakeholder_Role_Id  END AS Provider_Key,*/
+    cse.Customer_Call_Center_Code,
+    sf.State_Province_CD,
+    sf.Service_Form_Contact_Type_Code,
+    sf.Contact_Center_Case_Owner_Code,
+    sf.Completed_In_Business_Days_Count,
+    sf.Completed_In_Calendar_Days_Count,
+    sf.In_Provider_Concierge_Workflow_Indicator,
+    sf.Correspondence_Form_IND,
+    sf.Call_Form_IND,
+    sf.Resolution_Agent_Notes_Text,
+    sf.Service_Form_Identifier,
+    sf.Source_System_Plan_Sponsor_Identifier,
+    sf.Source_System_Plan_Sponsor_Name,
+    sf.Source_System_Plan_State_Code,
+    sf.Source_System_Accounting_Partition_Identifier,
+    sf.Plan_Information_Source_System_Name,
+    sf.Service_Form_Subject_Name,
+    sf.DMHC_Category_Name,
+    sf.Provider_License_State_Code,
+    sf.Provider_Billing_State_Code,
+    sf.Source_System_Name,
+    sf.Source_System_Unique_Identifier,
+    sfra.Service_Form_Resolution_Action,
+    sfc.Service_Form_Category_Name,
+    CASE 
+        WHEN sf.Service_Form_Subject_Name IS NULL THEN &apos;Y&apos;
+        ELSE &apos;N&apos;
+    END as Subject_Text_Empty_IND,
+     CASE 
+        WHEN sfc.Service_Form_Category_Name IS NULL THEN &apos;Y&apos;
+        ELSE &apos;N&apos;
+    END AS Category_Empty_IND,
+    CASE 
+        WHEN sfra.Service_Form_Resolution_Action IS NULL THEN &apos;Y&apos;
+        ELSE &apos;N&apos;
+    END AS Resolution_Empty_IND,
+    sf.Agent_Call_Escalation_Indicator,
+    t.max_st_dt AS Closed_Date,
+    CAST(t.max_st_dt AS TIME) AS Close_Time,
+    sf.Regulatory_Agency_Code,
+    CASE 
+        WHEN t.max_st_dt = sfs.State_Date and upper(sfs.Service_Form_State_Type_Code) in (&apos;IC&apos;, &apos;CL&apos;) THEN &apos;C&apos;
+        WHEN t.max_st_dt = sfs.State_Date and upper(sfs.Service_Form_State_Type_Code) in (&apos;PE&apos;) THEN &apos;P&apos;
+        ELSE &apos;O&apos;
+    END AS Service_Form_State_Type_Code,
+    --New Columns
+    sw.CR_Agent_Name AS Service_Form_Opened_By_Agent_Name,
+    sw.CR_Agent_ID AS Service_Form_Opened_By_Agent_ID,
+    sw.CR_Supervisor_Name AS Service_Form_Opened_By_Agent_Supervisor_Name,
+    sw.CL_Agent_Name AS Service_Form_Closed_By_Agent_Name,
+    sw.CL_Agent_ID AS Service_Form_Closed_By_Agent_ID,
+    sw.CL_Supervisor_Name AS Service_Form_Closed_By_Agent_Supervisor_Name,
+    sw.PE_Agent_Name AS Service_Form_Pended_By_Agent_Name,
+    sw.PE_Agent_ID AS Service_Form_Pended_By_Agent_ID,
+    sw.PE_Supervisor_Name AS Service_Form_Pended_By_Agent_Supervisor_Name,
+    Sw.CR_Service_Form_Workstream_Name AS Service_Form_Opened_Queue_Name,
+    Sw.CL_Service_Form_Workstream_Name AS Service_Form_Closed_Queue_Name,
+    Sw.PE_Service_Form_Workstream_Name AS Service_Form_Pended_Queue_Name,
+    sw.IO_State_Date AS Inquiry_Open_Date,
+    sw.IC_State_Date AS Inquiry_Closed_Date
+FROM /shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form sf 
+INNER JOIN 
+        /shared/Delta_DV/Application/Views/Reports/CCTA/Service_Form_Fact_HLP_Agent_Details sw
+    ON sw.Service_Form_Key = sf.Service_Form_Key 
+INNER JOIN 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form_State sfs
+    ON sf.Service_Form_Key = sfs.Service_Form_Key
+    --INNER JOIN t
+    --New join to helper view replaces old view
+INNER JOIN 
+        /shared/Delta_DV/Application/Views/Reports/CCTA/Service_Form_Fact_HLP_Service_Form_State t
+    ON t.Service_Form_Key = sfs.Service_Form_Key 
+and t.max_st_dt = sfs.State_Date 
+AND sfs.Service_Form_State_Type_Code IN (&apos;IO&apos;, &apos;PE&apos;, &apos;CL&apos;)
+    --INNER JOIN   1/4/21 Supriya  Made change as 16M doesnt have the Events (-1) from Service Form table 
+LEFT OUTER JOIN 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Agent csa
+ON upper(cast(csa.Source_System_Identifier as varchar(100))) = upper(cast(sfs.Source_System_User_Login_Identifier as varchar(100))) 
+
+LEFT OUTER JOIN 
+        (SELECT 
+            Service_Form_Key,
+            MAX(upper(Service_Form_Category_Name)) as Service_Form_Category_Name
+        FROM /shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form_Category
+        group by Service_Form_Key) as sfc
+    ON sfc.Service_Form_Key = sf.Service_Form_Key 
+
+LEFT OUTER JOIN 
+        (SELECT 
+            Service_Form_Key,
+            MAX(upper(Service_Form_Resolution_Action)) AS Service_Form_Resolution_Action
+        FROM /shared/Delta_DV/Business/BusinessSemantic/EDP/Service_Form_Resolution_Action
+        group by Service_Form_Key) as sfra
+    ON sfra.Service_Form_Key = sf.Service_Form_Key
+
+    --INNER JOIN 
+LEFT OUTER JOIN 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Customer_Service_Event cse
+    ON cse.Customer_Service_Event_Key = sf.Customer_Service_Event_Key
+--20210105-Philip du Maine:
+--New join condition for c.Stakeholder_Role_Id AS Member_Key 
+LEFT JOIN /shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event b
+ON sf.Customer_Service_Event_Key = b.Event_Key
+LEFT JOIN /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference c
+ON b.Stakeholder_Role_Cross_Reference_Key = c.Stakeholder_Role_Cross_Reference_Key 
+AND c.Stakeholder_Role_Type_Code = &apos;MEMBR&apos;
+
+--WHERE sf.Call_Form_IND = &apos;Y&apos;
+
+--Inner Join for newly added columns
+/*LEFT OUTER JOIN 
+ /shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event se
+ON sf.Customer_Service_Event_Key = se.Event_Key
+LEFT OUTER JOIN /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference shcr
+ON se.Stakeholder_Role_Cross_Reference_Key  = shcr.Stakeholder_Role_Cross_Reference_Key 
+AND shcr.Stakeholder_Role_Type_Code IN (&apos;MEMBR&apos;,&apos;PRVDR&apos;) */
+/*( select * from ( SELECT se.Event_Key ,  shcr.Stakeholder_Role_Id , Stakeholder_Role_Type_Code,
+ROW_NUMBER() OVER ( PARTITION BY Event_Key  
+ order by  Stakeholder_Role_Id asc ) rank
+ from   /shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event se
+LEFT OUTER JOIN /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference shcr
+ON se.Stakeholder_Role_Cross_Reference_Key  = shcr.Stakeholder_Role_Cross_Reference_Key 
+AND shcr.Stakeholder_Role_Type_Code IN (&apos;MEMBR&apos;,&apos;PRVDR&apos;)
+) t2
+where t2.rank = 1 ) t1
+ON sf.Customer_Service_Event_Key = t1.Event_Key*/
+</attribute>
+  <attribute name="creationDate" type="LONG">1607454552970</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5310113</attribute>
+  <attribute name="creatorUserName" type="STRING">dos90129</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5310113</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1607454552970</attribute>
+</metadata>

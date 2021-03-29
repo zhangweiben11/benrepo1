@@ -1,0 +1,469 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="updateCacheConfigTables" path="/shared/Delta_DV/_scripts/Utilities/upgrade/updateCacheConfigTables" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[updateCacheConfigTables:
+
+&#x9;This procedure will update the cache config tables - cache_status and cache_tracking - to allow a new server
+&#x9;to use existing cache data as part of a CIS server version upgrade. This can be done as part of a migration from
+&#x9;CIS 6.2 to CIS 7.0, and allow cache data to be preserved after the upgrade
+
+&#x9;NOTE: BEFORE RUNNING THIS PROCEDURE, ENSURE THAT CACHING IS DISABLED ON THE OLD SERVER AND NEW SERVER
+
+&#x9;NOTE: THIS PROCEDURE IS TO BE RUN ON THE TARGET SITE FOR UPGRADE - I.E. IF YOU ARE UPGRADING FROM CIS 6.2 TO
+&#x9;7.0, EXECUTE THE PROCEDURE ON THE CIS 7.0 SERVER, PROVIDING THE CIS 6.2 SERVER&apos;S SERVER_ID AS INPUT
+
+&#x9;NOTE: AFTER RUNNING THIS PROCEDURE, RE-ENABLE CACHING ON THE TARGET SITE FOR UPGRADE ONLY
+
+&#x9;NOTE: ALSO RECOMMEND SETTING CACHE STATUS SYNC INTERVAL TO 60 SECONDS ON SOURCE AND TARGET SERVER BEFORE RUNNING
+
+
+&#x9;Input:
+&#x9;&#x9;performDelete - BIT
+&#x9;&#x9;&#x9;0, do not delete; 1, delete existing entries for the target upgrade server
+
+&#x9;&#x9;performInsert - BIT
+&#x9;&#x9;&#x9;0, do not insert new entries; 1, insert new entries for the target upgrade server
+
+&#x9;&#x9;previousServerID - LONGVARCHAR
+&#x9;&#x9;&#x9;Server ID of the previous CIS server we are upgrading
+
+
+&#x9;Output:
+&#x9;&#x9;NONE
+
+
+&#x9;Exceptions:
+&#x9;&#x9;System.IllegalArgumentException - Thrown when input parameters cannot be validated.
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2015.4&#x9;&#x9;11/02/2015&#x9;&#x9;Tony Young&#x9;&#x9;&#x9;7.0.2&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="performDelete" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="performInsert" direction="IN" nullable="true">
+      <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+    </parameter>
+    <parameter name="previousServerID" direction="IN" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/GetProperty" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="property" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/System" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/upgrade/helpers/configuredCaches" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DATASOURCE_PATH">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="STATUS_PATH">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="TRACKING_PATH">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+  updateCacheConfigTables:
+
+&#x9;This procedure will update the cache config tables - cache_status and cache_tracking - to allow a new server
+&#x9;to use existing cache data as part of a CIS server version upgrade. This can be done as part of a migration from
+&#x9;CIS 6.2 to CIS 7.0, and allow cache data to be preserved after the upgrade
+
+&#x9;NOTE: BEFORE RUNNING THIS PROCEDURE, ENSURE THAT CACHING IS DISABLED ON THE OLD SERVER AND NEW SERVER
+
+&#x9;NOTE: THIS PROCEDURE IS TO BE RUN ON THE TARGET SITE FOR UPGRADE - I.E. IF YOU ARE UPGRADING FROM CIS 6.2 TO
+&#x9;7.0, EXECUTE THE PROCEDURE ON THE CIS 7.0 SERVER, PROVIDING THE CIS 6.2 SERVER&apos;S SERVER_ID AS INPUT
+
+&#x9;NOTE: AFTER RUNNING THIS PROCEDURE, RE-ENABLE CACHING ON THE TARGET SITE FOR UPGRADE ONLY
+
+&#x9;NOTE: ALSO RECOMMEND SETTING CACHE STATUS SYNC INTERVAL TO 60 SECONDS ON SOURCE AND TARGET SERVER BEFORE RUNNING
+
+
+&#x9;Input:
+&#x9;&#x9;performDelete - BIT
+&#x9;&#x9;&#x9;0, do not delete; 1, delete existing entries for the target upgrade server
+
+&#x9;&#x9;performInsert - BIT
+&#x9;&#x9;&#x9;0, do not insert new entries; 1, insert new entries for the target upgrade server
+
+&#x9;&#x9;previousServerID - LONGVARCHAR
+&#x9;&#x9;&#x9;Server ID of the previous CIS server we are upgrading
+
+
+&#x9;Output:
+&#x9;&#x9;NONE
+
+
+&#x9;Exceptions:
+&#x9;&#x9;System.IllegalArgumentException - Thrown when input parameters cannot be validated.
+
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2015.4&#x9;&#x9;11/02/2015&#x9;&#x9;Tony Young&#x9;&#x9;&#x9;7.0.2&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc. All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE updateCacheConfigTables(
+&#x9;IN performDelete &#x9;BIT,&#x9;&#x9;&#x9;--0, do not delete; 1, delete existing entries for this server
+&#x9;IN performInsert &#x9;BIT,&#x9;&#x9;&#x9;--0, do not insert new entries; 1, insert new entries for this server
+&#x9;IN previousServerID LONGVARCHAR&#x9;&#x9;--Server ID of the previous CIS server we are upgrading
+)
+BEGIN
+&#x9;DECLARE myServerID&#x9;VARCHAR&#x9;&#x9;DEFAULT&#x9;&apos;&apos;;
+&#x9;DECLARE cacheCursor&#x9;CURSOR(DATASOURCE_PATH LONGVARCHAR, STATUS_PATH LONGVARCHAR, TRACKING_PATH LONGVARCHAR);
+&#x9;DECLARE sqlStmt&#x9;&#x9;LONGVARCHAR&#x9;DEFAULT &apos;&apos;;
+
+&#x9;--Check that we have no NULL parameter values
+&#x9;CASE
+&#x9;WHEN performDelete IS NULL THEN
+&#x9;&#x9;RAISE System.IllegalArgumentException VALUE &apos;performDelete may not be NULL&apos;;
+&#x9;WHEN performInsert IS NULL THEN
+&#x9;&#x9;RAISE System.IllegalArgumentException VALUE &apos;performInsert may not be NULL&apos;;
+&#x9;WHEN previousServerID IS NULL THEN
+&#x9;&#x9;RAISE System.IllegalArgumentException VALUE &apos;previousServerID may not be NULL&apos;;
+&#x9;END CASE;
+
+&#x9;--Get the server ID for this server
+&#x9;CALL /lib/util/GetProperty(&apos;SERVER_ID&apos;,myServerID);
+
+&#x9;CALL PRINT(&apos;Beginning execution with parameter values:
+&#x9;performDelete=&apos; || performDelete || &apos;;
+&#x9;performInsert=&apos; || performInsert || &apos;;
+&#x9;previousServerID=&apos; || previousServerID || &apos;;
+&#x9;myServerID=&apos; || myServerID || &apos;;&apos;);
+
+&#x9;--Get the set of cache status and tracking tables
+&#x9;OPEN cacheCursor FOR SELECT * FROM /shared/Delta_DV/&quot;_scripts&quot;/Utilities/upgrade/helpers/configuredCaches;
+
+&#x9;--For each set of cache status and tracking tables
+&#x9;cacheCursor:FOR r AS cacheCursor DO
+&#x9;&#x9;CALL PRINT(&apos;FOR DATASOURCE_PATH=&apos; || r.DATASOURCE_PATH);
+
+&#x9;&#x9;IF r.STATUS_PATH IS NULL OR r.TRACKING_PATH IS NULL THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;&#x9;Cache status or tracking table is NULL. Check data source configuration! Skipping...&apos;);
+&#x9;&#x9;&#x9;ITERATE cacheCursor;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF performDelete = 1 THEN
+&#x9;&#x9;&#x9;--STEP 0: Cleanup existing entries from the status and tracking tables
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;Begin: STEP 0: Cleanup existing entries from the status and tracking tables...&apos;);
+
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(sqlStmt);
+&#x9;&#x9;&#x9;&#x9;SET sqlStmt = &apos;DELETE FROM &apos; || r.STATUS_PATH || &apos; WHERE SERVERID = &apos;&apos;&apos; || myServerID || &apos;&apos;&apos;&apos;;
+&#x9;
+&#x9;&#x9;&#x9;&#x9;EXECUTE IMMEDIATE sqlStmt;
+&#x9;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(sqlStmt);
+&#x9;&#x9;&#x9;&#x9;SET sqlStmt = &apos;DELETE FROM &apos; || r.TRACKING_PATH || &apos; WHERE SERVERID = &apos;&apos;&apos; || myServerID || &apos;&apos;&apos;&apos;;
+&#x9;
+&#x9;&#x9;&#x9;&#x9;EXECUTE IMMEDIATE sqlStmt;
+&#x9;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;End: STEP 0&apos;);
+&#x9;&#x9;&#x9;END;
+&#x9;&#x9;END IF;
+&#x9;
+&#x9;&#x9;IF performInsert = 1 THEN
+&#x9;&#x9;&#x9;--STEP 1: Copy over the current CACHE_STATUS entries from source to target site
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;Begin: STEP 1: Copy over the current CACHE_STATUS entries from source to target site...&apos;);
+&#x9;
+&#x9;&#x9;&#x9;&#x9;SET sqlStmt = &apos;INSERT INTO &apos; || r.STATUS_PATH || &apos; 
+&#x9;&#x9;&#x9;&#x9;SELECT
+&#x9;&#x9;&#x9;&#x9;&#x9;CLUSTERID,
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos; || myServerID || &apos;&apos;&apos; SERVERID,
+&#x9;&#x9;&#x9;&#x9;&#x9;RESOURCEID,
+&#x9;&#x9;&#x9;&#x9;&#x9;PARAMETERS,
+&#x9;&#x9;&#x9;&#x9;&#x9;STATUS,
+&#x9;&#x9;&#x9;&#x9;&#x9;CACHEKEY,
+&#x9;&#x9;&#x9;&#x9;&#x9;STARTTIME,
+&#x9;&#x9;&#x9;&#x9;&#x9;FINISHTIME,
+&#x9;&#x9;&#x9;&#x9;&#x9;CLEARTIME,
+&#x9;&#x9;&#x9;&#x9;&#x9;BYTES,
+&#x9;&#x9;&#x9;&#x9;&#x9;MESSAGE,
+&#x9;&#x9;&#x9;&#x9;&#x9;BUCKET,
+&#x9;&#x9;&#x9;&#x9;&#x9;INCREMENTALSTATUS,
+&#x9;&#x9;&#x9;&#x9;&#x9;INCREMENTALMAINTENANCELEVEL
+&#x9;&#x9;&#x9;&#x9;FROM
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos; || r.STATUS_PATH || &apos;
+&#x9;&#x9;&#x9;&#x9;WHERE
+&#x9;&#x9;&#x9;&#x9;&#x9;SERVERID = &apos;&apos;&apos; || previousServerID || &apos;&apos;&apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(sqlStmt);
+&#x9;
+&#x9;&#x9;&#x9;&#x9;EXECUTE IMMEDIATE sqlStmt;
+&#x9;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;End: STEP 1&apos;);
+&#x9;&#x9;&#x9;END;
+&#x9;&#x9;
+&#x9;&#x9;&#x9;--STEP 2: Update the CACHEKEY for the target to be greater than source, so there is no overlap in keys
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;Begin: STEP 2: Update the CACHEKEY for the target to be greater than source, so there is no overlap in keys...&apos;);
+&#x9;&#x9;&#x9;&#x9;IF r.STATUS_PATH != &apos;/lib/sources/cacheDataSource/csstatus&apos; THEN
+&#x9;&#x9;&#x9;&#x9;SET sqlStmt = &apos;UPDATE &apos; || r.STATUS_PATH || &apos;
+&#x9;&#x9;&#x9;&#x9;SET CACHEKEY = CACHEKEY*100
+&#x9;&#x9;&#x9;&#x9;WHERE SERVERID = &apos;&apos;&apos; || myServerID || &apos;&apos;&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;AND STATUS = &apos;&apos;K&apos;&apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(sqlStmt);
+&#x9;
+&#x9;&#x9;&#x9;&#x9;EXECUTE IMMEDIATE sqlStmt;
+&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;End: STEP 2&apos;);
+&#x9;&#x9;&#x9;END;
+&#x9;&#x9;
+&#x9;&#x9;&#x9;--STEP 3: Copy over the current CACHE_TRACKING entries from source to target site
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;Begin: STEP 3: Copy over the current CACHE_TRACKING entries from source to target site...&apos;);
+&#x9;
+&#x9;&#x9;&#x9;&#x9;SET sqlStmt = &apos;INSERT INTO &apos; || r.TRACKING_PATH || &apos;
+&#x9;&#x9;&#x9;&#x9;SELECT
+&#x9;&#x9;&#x9;&#x9;&#x9;CLUSTERID,
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;&apos;&apos; || myServerID || &apos;&apos;&apos; SERVERID,
+&#x9;&#x9;&#x9;&#x9;&#x9;RESOURCEID,
+&#x9;&#x9;&#x9;&#x9;&#x9;&quot;CATALOG&quot;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&quot;SCHEMA&quot;,
+&#x9;&#x9;&#x9;&#x9;&#x9;&quot;table&quot;,
+&#x9;&#x9;&#x9;&#x9;&#x9;CREATETIME
+&#x9;&#x9;&#x9;&#x9;FROM
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos; || r.TRACKING_PATH || &apos;
+&#x9;&#x9;&#x9;&#x9;WHERE
+&#x9;&#x9;&#x9;&#x9;&#x9;SERVERID = &apos;&apos;&apos; || previousServerID || &apos;&apos;&apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(sqlStmt);
+&#x9;
+&#x9;&#x9;&#x9;&#x9;EXECUTE IMMEDIATE sqlStmt;
+&#x9;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;End: STEP 3&apos;);
+&#x9;&#x9;&#x9;END;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+
+&#x9;CALL PRINT(&apos;End Execution&apos;);
+END</attribute>
+  <attribute name="creationDate" type="LONG">1443100035188</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">424</attribute>
+  <attribute name="creatorUserName" type="STRING">v598790</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">424</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">10/120</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/142</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/74</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/80</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/185</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/151</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/72</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/94</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/161</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/181</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/190</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/103</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/113</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/146</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/157</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/70</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>System</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/91</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/101</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/166</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/108</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1443100035188</attribute>
+</metadata>

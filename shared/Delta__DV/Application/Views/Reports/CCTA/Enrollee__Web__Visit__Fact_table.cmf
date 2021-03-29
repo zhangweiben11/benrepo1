@@ -1,0 +1,174 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Enrollee_Web_Visit_Fact" path="/shared/Delta_DV/Application/Views/Reports/CCTA/Enrollee_Web_Visit_Fact" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Web_Visit_Start_Date" nullable="true">
+      <datatype type="DATE"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Web_Visit_Start_Time" nullable="true">
+      <datatype type="TIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Web_Visit_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Web_Visit_End_Date" nullable="true">
+      <datatype type="DATE"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Web_Visit_End_Time" nullable="true">
+      <datatype type="TIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Session_Count" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Page_View_Count" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Session_Duration_Group" nullable="true">
+      <datatype type="STRING" maxLength="200"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Event_Duration" nullable="true">
+      <datatype type="STRING" minLength="1" maxLength="5" trailingSpaces="false"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Unique_Identifier" nullable="true">
+      <datatype type="STRING" maxLength="128"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Source_System_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Enrollee_Web_Visit_Event" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Session_Count">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Page_View_Count">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="0"/>
+      </element>
+      <element name="Session_Duration_Group_Text">
+        <datatype type="STRING" maxLength="200"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Event" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Event_Type_Code">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+      <element name="Start_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="End_DateTime">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Event_Duration_Seconds">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Source_System_Unique_Identifier">
+        <datatype type="STRING" maxLength="128"/>
+      </element>
+      <element name="Source_System_Name">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Stakeholder_Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Event_Key">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Stakeholder_Role_Cross_Reference_Key">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT {OPTION CASE_SENSITIVE=&quot;false&quot;}
+CAST(Event.Start_DateTime AS DATE) Web_Visit_Start_Date, 
+CAST(Event.Start_DateTime AS TIME) Web_Visit_Start_Time,
+--Stake_Holder_Cross_Reference.Stakeholder_Role_Id Member_key,
+  Event.Event_Key Web_Visit_Event_Key,
+CAST(Event.End_DateTime AS DATE) Web_Visit_End_Date, 
+CAST(Event.End_DateTime AS TIME) Web_Visit_End_Time, 
+    Enrollee_Web_Visit_Event.Session_Count Session_Count, 
+    Enrollee_Web_Visit_Event.Page_View_Count Page_View_Count, 
+    Enrollee_Web_Visit_Event.Session_Duration_Group_Text Session_Duration_Group, 
+CASE   Enrollee_Web_Visit_Event.Session_Duration_Group_Text
+when  &apos;Group D: 10-30 minutes&apos;  then &apos;1800&apos;  
+&#x9;&#x9;&#x9;&#x9; when &apos;Group G: 2-5 hours&apos;  then &apos;18000&apos;    
+&#x9;&#x9;&#x9;&#x9; when &apos;Group C: 5-10 minutes&apos;  then &apos;600&apos;  
+&#x9;&#x9;&#x9;&#x9; when  &apos;Group F: 1-2 hours&apos;  then &apos;7200&apos;   
+&#x9;&#x9;&#x9;&#x9; when  &apos;Group J: &gt;15 hours&apos;  then &apos;54000&apos;  
+&#x9;&#x9;&#x9;&#x9; when &apos;Group A: &lt;1 minute&apos;  then &apos;60&apos;  
+&#x9;&#x9;&#x9;&#x9; when &apos;Group E: 30-60 minutes&apos;  then &apos;3600&apos;    
+&#x9;&#x9;&#x9;&#x9; when &apos;Group B: 1-5 minutes&apos;  then &apos;300&apos;  ELSE &apos;0&apos;  
+&#x9;&#x9;&#x9;&#x9;END  as Event_Duration,
+    Event.Source_System_Unique_Identifier, 
+    Event.Source_System_Name
+  
+FROM      
+    /shared/Delta_DV/Business/BusinessSemantic/EDP/Enrollee_Web_Visit_Event Enrollee_Web_Visit_Event INNER JOIN 
+        /shared/Delta_DV/Business/BusinessSemantic/EDP/Event Event
+    ON Event.Event_Key = Enrollee_Web_Visit_Event.Event_Key   INNER JOIN
+/shared/Delta_DV/Business/BusinessSemantic/EDP/Stakeholder_Event  Stakeholder_Event on Stakeholder_Event.Event_Key = Enrollee_Web_Visit_Event.Event_Key 
+--INNER JOIN /shared/Delta_DV/Business/BusinessSemantic/EDP/Stake_Holder_Cross_Reference Stake_Holder_Cross_Reference  
+--on  Stakeholder_Event.Stakeholder_Role_Cross_Reference_Key = Stake_Holder_Cross_Reference.Stakeholder_Role_Cross_Reference_Key 
+--where Stake_Holder_Cross_Reference.Stakeholder_Role_Type_Code = &apos;MEMBR&apos;
+</attribute>
+  <attribute name="creationDate" type="LONG">1607033348435</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1607033348435</attribute>
+</metadata>

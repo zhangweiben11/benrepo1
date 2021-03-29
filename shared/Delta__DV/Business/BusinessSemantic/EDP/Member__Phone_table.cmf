@@ -1,0 +1,125 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Member_Phone" path="/shared/Delta_DV/Business/BusinessSemantic/EDP/Member_Phone" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <annotation><![CDATA[Comments saved during Model Generation 2020/11/18 12:47:17
+--MEMBER_PHONE.Member_SKEY Member_Key, 
+]]></annotation>
+  <columns>
+    <column name="Member_Phone_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Member_Key" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Phone_Type_Key" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Phone_Number_Text" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Extension_Text" nullable="true">
+      <datatype type="STRING" maxLength="100"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Begin_Date" nullable="true">
+      <datatype type="STRING"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="End_Date" nullable="true">
+      <datatype type="NULL"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Active_Indicator" nullable="true">
+      <datatype type="NULL"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Business/Logical/EDP/MEMBER_PHONE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Member_Phone_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Phone_NBR_TXT">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Extension_TXT">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Member_SKEY">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Phone_Type_CD">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_Unique_ID">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Source_System_NM">
+        <datatype type="STRING" maxLength="100"/>
+      </element>
+      <element name="Create_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Created_By_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Last_Updated_By_ID">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Last_Update_DTM">
+        <datatype type="STRING"/>
+      </element>
+      <element name="Primary_IND">
+        <datatype type="STRING" maxLength="10"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    MEMBER_PHONE.Member_Phone_SKEY Member_Phone_Key, 
+    MEMBER_PHONE.Member_SKEY Member_Key, 
+    MEMBER_PHONE.Phone_Type_CD Phone_Type_Key, 
+    MEMBER_PHONE.Phone_NBR_TXT Phone_Number_Text, 
+    MEMBER_PHONE.Extension_TXT Extension_Text, 
+    MEMBER_PHONE.Last_Update_DTM Begin_Date,
+NULL as End_Date,
+NULL as Active_Indicator
+
+FROM      
+    /shared/Delta_DV/Business/Logical/EDP/MEMBER_PHONE MEMBER_PHONE</attribute>
+  <attribute name="creationDate" type="LONG">1603842006224</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">4670118</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89575</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609896176534</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">4670118</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1603842006224</attribute>
+</metadata>

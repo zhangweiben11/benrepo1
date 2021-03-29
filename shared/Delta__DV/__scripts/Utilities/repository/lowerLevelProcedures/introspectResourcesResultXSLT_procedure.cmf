@@ -1,0 +1,501 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="introspectResourcesResultXSLT" path="/shared/Delta_DV/_scripts/Utilities/repository/lowerLevelProcedures/introspectResourcesResultXSLT" type="PROCEDURE" subtype="XSLT_TRANSFORM_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[introspectResourcesResultXSLT:
+
+&#x9;This procedure transforms the results from getMostRecentIntrospectionStatus.
+&#x9;The result output will only be a single row if the introspection is successful. Otherwise, the
+    additional result rows will indicate what went wrong.
+
+    Input:
+        getMostRecentIntrospectionStatus - The SOAP response in XML format.
+            Values: XML
+
+&#x9;Output:
+&#x9;&#x9;result    - Cursor containing introspection results from getMostRecentIntrospectionStatus
+&#x9;&#x9;&#x9;Values: CURSOR (
+                        status                  VARCHAR(32768),
+                        introspectorVersion     INTEGER,
+                        startTime               TIMESTAMP,
+                        endTime                 TIMESTAMP,
+                        addedCount              INTEGER,
+                        removedCount            INTEGER,
+                        updatedCount            INTEGER,
+                        skippedCount            INTEGER,
+                        totalCompletedCount     INTEGER,
+                        toBeAddedCount          INTEGER,
+                        toBeRemovedCount        INTEGER,
+                        toBeUpdatedCount        INTEGER,
+                        totalToBeCompletedCount INTEGER,
+                        warningCount            INTEGER,
+                        errorCount              INTEGER,
+                        &quot;path&quot;                  VARCHAR(4096),
+                        &quot;type&quot;                  VARCHAR(40),
+                        subtype                 VARCHAR(40),
+                        &quot;action&quot;                VARCHAR(32768),
+                        durationMs              INTEGER,
+                        entryStatus             VARCHAR(32768),
+                        code                    VARCHAR(32768),
+                        name                    VARCHAR(32768),
+                        message                 VARCHAR(32768),
+                        detail                  VARCHAR(32768),
+                        severity                VARCHAR(32768)
+                    )
+
+&#x9;Exceptions:
+        N/A
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2012.4&#x9;&#x9;10/11/2012&#x9;&#x9;Calvin Goodrich&#x9;&#x9;6.2.0&#x9;&#x9;&#x9;Created new
+&#x9;2018.100&#x9;01/10/2018&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.5&#x9;&#x9;&#x9;Fixed results to return a result for each table entry.
+
+    (c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="inXML" direction="IN" nullable="true">
+      <datatype name="XML" referenceType="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="outputs" direction="OUT" nullable="false">
+      <datatype name="outputs" type="TABLE" refId="256">
+        <element name="status">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="introspectorVersion">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="startTime">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="endTime">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="addedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="removedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="updatedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="skippedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="totalCompletedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="toBeAddedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="toBeRemovedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="toBeUpdatedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="totalToBeCompletedCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="warningCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="errorCount">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="path">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="4096"/>
+        </element>
+        <element name="type">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="40"/>
+        </element>
+        <element name="subtype">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="40"/>
+        </element>
+        <element name="action">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/admin/resource" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="durationMs">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="entryStatus">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="code">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="name">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="message">
+          <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="detail">
+          <datatype name="VARCHAR" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+        <element name="severity">
+          <datatype name="VARCHAR" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="32768"/>
+        </element>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/_scripts/Utilities/xml/reverseXML" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inXML" direction="IN">
+        <datatype name="XML" referenceType="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="outXML" direction="OUT">
+        <datatype name="XML" referenceType="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1349969065870</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1609965948495</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="p:1:Customized" type="STRING">datatype.changed</attribute>
+  <attribute name="sourcePath" type="STRING">/shared/Delta_DV/_scripts/Utilities/xml/reverseXML</attribute>
+  <attribute name="sourceType" type="SHORT">3</attribute>
+  <attribute name="transformModel" type="BYTE_ARRAY">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</attribute>
+  <attribute name="xqueryModel" type="NULL"/>
+  <attribute name="xslt" type="STRING">&lt;xslt:stylesheet xmlns:xslt=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:csw-xform=&quot;http://www.compositesw.com/2003/xform&quot; xmlns:ns1=&quot;http://www.compositesw.com/services/system/admin/resource&quot; xmlns:ns2=&quot;http://www.compositesw.com/services/system/util/common&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; version=&quot;2.0&quot;&gt;
+  &lt;xslt:template match=&quot;/&quot;&gt;
+ 
+    &lt;xslt:variable name=&quot;_status&quot;/&gt;
+    &lt;xslt:variable name=&quot;_introspectorVersion&quot;/&gt;
+    &lt;xslt:variable name=&quot;_startTime&quot;/&gt;
+    &lt;xslt:variable name=&quot;_endTime&quot;/&gt;
+    &lt;xslt:variable name=&quot;_addedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_removedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_updatedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_skippedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_totalCompletedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_toBeAddedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_toBeRemovedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_toBeUpdatedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_totalToBeCompletedCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_warningCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_errorCount&quot;/&gt;
+    &lt;xslt:variable name=&quot;_path&quot;/&gt;
+    &lt;xslt:variable name=&quot;_type&quot;/&gt;
+    &lt;xslt:variable name=&quot;_subtype&quot;/&gt;
+    &lt;xslt:variable name=&quot;_action&quot;/&gt;
+    &lt;xslt:variable name=&quot;_durationMs&quot;/&gt;
+    &lt;xslt:variable name=&quot;_entryStatus&quot;/&gt;
+    &lt;xslt:variable name=&quot;_code&quot;/&gt;
+    &lt;xslt:variable name=&quot;_name&quot;/&gt;
+    &lt;xslt:variable name=&quot;_message&quot;/&gt;
+    &lt;xslt:variable name=&quot;_detail&quot;/&gt;
+    &lt;xslt:variable name=&quot;_severity&quot;/&gt;
+    &lt;xslt:element name=&quot;results&quot;&gt;
+      &lt;xslt:for-each select=&quot;ns1:getMostRecentIntrospectionStatusResponse&quot;&gt;
+        &lt;xslt:variable name=&quot;_status&quot; select=&quot;ns1:status/ns1:status&quot;/&gt;
+        &lt;xslt:variable name=&quot;_introspectorVersion&quot; select=&quot;ns1:status/ns1:introspectorVersion&quot;/&gt;
+        &lt;xslt:variable name=&quot;_startTime&quot; select=&quot;ns1:status/ns1:startTime&quot;/&gt;
+        &lt;xslt:variable name=&quot;_endTime&quot; select=&quot;ns1:status/ns1:endTime&quot;/&gt;
+        &lt;xslt:variable name=&quot;_addedCount&quot; select=&quot;ns1:status/ns1:addedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_removedCount&quot; select=&quot;ns1:status/ns1:removedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_updatedCount&quot; select=&quot;ns1:status/ns1:updatedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_skippedCount&quot; select=&quot;ns1:status/ns1:skippedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_totalCompletedCount&quot; select=&quot;ns1:status/ns1:totalCompletedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_toBeAddedCount&quot; select=&quot;ns1:status/ns1:toBeAddedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_toBeRemovedCount&quot; select=&quot;ns1:status/ns1:toBeRemovedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_toBeUpdatedCount&quot; select=&quot;ns1:status/ns1:toBeUpdatedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_totalToBeCompletedCount&quot; select=&quot;ns1:status/ns1:totalToBeCompletedCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_warningCount&quot; select=&quot;ns1:status/ns1:warningCount&quot;/&gt;
+        &lt;xslt:variable name=&quot;_errorCount&quot; select=&quot;ns1:status/ns1:errorCount&quot;/&gt;
+        &lt;xslt:for-each select=&quot;ns1:status/ns1:report&quot;&gt;
+          &lt;xslt:for-each select=&quot;ns1:entry&quot;&gt;
+            &lt;xslt:variable name=&quot;_path&quot; select=&quot;ns1:path&quot;/&gt;
+            &lt;xslt:variable name=&quot;_type&quot; select=&quot;ns1:type&quot;/&gt;
+            &lt;xslt:variable name=&quot;_subtype&quot; select=&quot;ns1:subtype&quot;/&gt;
+            &lt;xslt:variable name=&quot;_action&quot; select=&quot;ns1:action&quot;/&gt;
+            &lt;xslt:variable name=&quot;_durationMs&quot; select=&quot;ns1:durationMs&quot;/&gt;
+            &lt;xslt:variable name=&quot;_entryStatus&quot; select=&quot;ns1:status&quot;/&gt;
+            &lt;xslt:for-each select=&quot;ns1:messages&quot;&gt;
+              &lt;xslt:for-each select=&quot;ns2:entry&quot;&gt;
+                &lt;xslt:variable name=&quot;_code&quot; select=&quot;ns2:code&quot;/&gt;
+                &lt;xslt:variable name=&quot;_name&quot; select=&quot;ns2:name&quot;/&gt;
+                &lt;xslt:variable name=&quot;_message&quot; select=&quot;ns2:message&quot;/&gt;
+                &lt;xslt:variable name=&quot;_detail&quot; select=&quot;ns2:detail&quot;/&gt;
+                &lt;xslt:variable name=&quot;_severity&quot; select=&quot;ns2:severity&quot;/&gt;
+                &lt;xslt:element name=&quot;result&quot;&gt;
+                  &lt;xslt:element name=&quot;status&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_status&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;introspectorVersion&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_introspectorVersion&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;startTime&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_startTime&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;endTime&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_endTime&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;addedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_addedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;removedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_removedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;updatedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_updatedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;skippedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_skippedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;totalCompletedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_totalCompletedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;toBeAddedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_toBeAddedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;toBeRemovedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_toBeRemovedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;toBeUpdatedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_toBeUpdatedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;totalToBeCompletedCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_totalToBeCompletedCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;warningCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_warningCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;errorCount&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_errorCount&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;path&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_path&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;type&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_type&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;subtype&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_subtype&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;action&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_action&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;durationMs&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_durationMs&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;entryStatus&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_entryStatus&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;code&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_code&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;name&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_name&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;message&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_message&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;detail&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_detail&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                  &lt;xslt:element name=&quot;severity&quot;&gt;
+                    &lt;xslt:value-of select=&quot;$_severity&quot;/&gt;
+                  &lt;/xslt:element&gt;
+                &lt;/xslt:element&gt;
+              &lt;/xslt:for-each&gt;
+            &lt;/xslt:for-each&gt;
+            &lt;xslt:element name=&quot;result&quot;&gt;
+              &lt;xslt:element name=&quot;status&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_status&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;introspectorVersion&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_introspectorVersion&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;startTime&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_startTime&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;endTime&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_endTime&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;addedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_addedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;removedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_removedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;updatedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_updatedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;skippedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_skippedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;totalCompletedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_totalCompletedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;toBeAddedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_toBeAddedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;toBeRemovedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_toBeRemovedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;toBeUpdatedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_toBeUpdatedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;totalToBeCompletedCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_totalToBeCompletedCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;warningCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_warningCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;errorCount&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_errorCount&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;path&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_path&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;type&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_type&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;subtype&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_subtype&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;action&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_action&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;durationMs&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_durationMs&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;entryStatus&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_entryStatus&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;code&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_code&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;name&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_name&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;message&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_message&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;detail&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_detail&quot;/&gt;
+              &lt;/xslt:element&gt;
+              &lt;xslt:element name=&quot;severity&quot;&gt;
+                &lt;xslt:value-of select=&quot;$_severity&quot;/&gt;
+              &lt;/xslt:element&gt;
+            &lt;/xslt:element&gt;
+          &lt;/xslt:for-each&gt;
+        &lt;/xslt:for-each&gt;
+        &lt;xslt:element name=&quot;result&quot;&gt;
+          &lt;xslt:element name=&quot;status&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_status&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;introspectorVersion&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_introspectorVersion&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;startTime&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_startTime&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;endTime&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_endTime&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;addedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_addedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;removedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_removedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;updatedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_updatedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;skippedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_skippedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;totalCompletedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_totalCompletedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;toBeAddedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_toBeAddedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;toBeRemovedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_toBeRemovedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;toBeUpdatedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_toBeUpdatedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;totalToBeCompletedCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_totalToBeCompletedCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;warningCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_warningCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;errorCount&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_errorCount&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;path&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_path&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;type&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_type&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;subtype&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_subtype&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;action&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_action&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;durationMs&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_durationMs&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;entryStatus&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_entryStatus&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;code&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_code&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;name&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_name&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;message&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_message&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;detail&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_detail&quot;/&gt;
+          &lt;/xslt:element&gt;
+          &lt;xslt:element name=&quot;severity&quot;&gt;
+            &lt;xslt:value-of select=&quot;$_severity&quot;/&gt;
+          &lt;/xslt:element&gt;
+        &lt;/xslt:element&gt;
+      &lt;/xslt:for-each&gt;
+    &lt;/xslt:element&gt;
+  &lt;/xslt:template&gt;
+&lt;/xslt:stylesheet&gt;</attribute>
+</metadata>

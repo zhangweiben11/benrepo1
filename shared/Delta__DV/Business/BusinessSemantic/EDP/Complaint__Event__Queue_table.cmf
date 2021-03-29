@@ -1,0 +1,120 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="Complaint_Event_Queue" path="/shared/Delta_DV/Business/BusinessSemantic/EDP/Complaint_Event_Queue" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="Complaint_Event_Queue_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Appeals_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Inquiry_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Complaint_Grievance_Event_Key" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Queue_Name" nullable="true">
+      <datatype type="STRING" maxLength="50"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Placed_In_Queue_DateTime" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+    <column name="Removed_From_Queue_DateTime" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="nobody" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/shared/Delta_DV/Physical/Formatting/EDP_CURATED/COMPLAINT_EVENT_QUEUE" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="Complaint_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Appeals_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Grievance_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Inquiry_Event_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Complaint_Event_Queue_SKEY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="Queue_NM">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="Placed_In_Queue_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="Removed_From_Queue_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Created_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="EDP_Last_Modified_DTM">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="EDP_Last_Modified_By_TXT">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    Complaint_Event_Queue_SKEY Complaint_Event_Queue_Key,
+    Complaint_Event_SKEY Complaint_Event_Key,
+    Complaint_Appeals_Event_SKEY Complaint_Appeals_Event_Key,
+    Complaint_Inquiry_Event_SKEY Complaint_Inquiry_Event_Key,
+    Complaint_Grievance_Event_SKEY Complaint_Grievance_Event_Key,
+    Queue_NM Queue_Name,
+    Placed_In_Queue_DTM Placed_In_Queue_DateTime,
+    Removed_From_Queue_DTM Removed_From_Queue_DateTime
+from /shared/Delta_DV/Physical/Formatting/EDP_CURATED/COMPLAINT_EVENT_QUEUE</attribute>
+  <attribute name="creationDate" type="LONG">1611806531007</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">5990136</attribute>
+  <attribute name="creatorUserName" type="STRING">dca89256</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1611864873481</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">5990136</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89256</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1611806531007</attribute>
+</metadata>

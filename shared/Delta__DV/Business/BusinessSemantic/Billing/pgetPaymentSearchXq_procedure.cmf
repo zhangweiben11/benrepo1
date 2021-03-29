@@ -1,0 +1,452 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:cde82315-e936-41f1-90c6-32daeeda6afd -->
+<metadata name="pgetPaymentSearchXq" path="/shared/Delta_DV/Business/BusinessSemantic/Billing/pgetPaymentSearchXq" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="SearchDetails" direction="IN" nullable="true">
+      <datatype name="XML" referenceType="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+        <schemaDatatype>
+          <datatype name="XML" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="CNT">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="invoiceNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="paymentNumber">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="invoiceDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="bill_to_div">
+          <datatype name="VARCHAR" type="STRING" maxLength="40"/>
+        </element>
+        <element name="billToAccount">
+          <datatype name="VARCHAR" type="STRING" maxLength="30"/>
+        </element>
+        <element name="billToID">
+          <datatype name="VARCHAR" type="STRING" maxLength="100"/>
+        </element>
+        <element name="paymentInitiateDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="paymentDate">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="paymentType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="paymentStatus">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="originalInvoiceAmount">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="amountApplied">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="outstandBalance">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="adjustment">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="creditMemo">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="paymentAmount">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="paymentTotal">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="ship_to_div">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="shipto_account">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="NumberOfRowsPerPage">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="PageNumber">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="TotalPages">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="nobody" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Billing/Mrigank_pPaymentRequestx" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/Delta_DV/Business/Logical/Billing/Procedures/prcBI_PaymentSearchBillToComb" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/system/customfunctions/CASE" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE pgetPaymentSearchXq(
+IN  SearchDetails XML, 
+   OUT result cursor (
+        CNT INTEGER,
+&#x9;&#x9;invoiceNumber VARCHAR(30),
+        paymentNumber VARCHAR(30),
+        invoiceDate DATE,
+        bill_to_div VARCHAR(40),
+        billToAccount VARCHAR(30),
+        billToID   VARCHAR(100),
+        paymentInitiateDate DATE,
+        paymentDate DATE,
+        paymentType VARCHAR(255),
+        paymentStatus VARCHAR(255),
+       originalInvoiceAmount DOUBLE,
+       amountApplied DOUBLE,
+       outstandBalance DOUBLE,
+       adjustment DOUBLE,
+       creditMemo DOUBLE,
+       paymentAmount DOUBLE,
+       paymentTotal DOUBLE,
+       ship_to_div VARCHAR(255),
+       shipto_account VARCHAR(255),
+        NumberOfRowsPerPage INTEGER,
+&#x9;&#x9;PageNumber INTEGER,
+        TotalPages INTEGER
+        )
+)
+BEGIN
+
+DECLARE curPaymentJSONSearch CURSOR(
+       &#x9;&#x9;SortField VARCHAR(20),
+&#x9;&#x9;&#x9;SortOrder VARCHAR(20),
+&#x9;&#x9;&#x9;BillToIds VARCHAR(400000),
+&#x9;&#x9;&#x9;ParentGroupNumber VARCHAR(50),
+&#x9;&#x9;&#x9;ReceiptNumber VARCHAR(50),
+&#x9;&#x9;&#x9;ReceiptAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;ReceiptAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;PaymentDateStart VARCHAR(10),
+&#x9;&#x9;&#x9;PaymentDateEnd VARCHAR(10),
+&#x9;&#x9;&#x9;InvoiceNumber VARCHAR(50),
+&#x9;&#x9;&#x9;InvoiceDateStart VARCHAR(10),
+&#x9;&#x9;&#x9;InvoiceDateRangeEnd VARCHAR(10),
+&#x9;&#x9;&#x9;PaymentAmount DECIMAL(30,2),
+&#x9;&#x9;&#x9;PaymentTypes VARCHAR(1000), 
+&#x9;&#x9;&#x9;PaymentStatuses VARCHAR(1000),
+&#x9;&#x9;&#x9;AppliedAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;AppliedAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;AdjustmentAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;AdjustmentAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;OriginalInvoiceAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;OriginalInvoiceAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;OutstandingBalanceMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;OutstandingBalanceMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;CreditMemoMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;CreditMemoMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;NumberOfRowsPerPage INTEGER,
+&#x9;&#x9;&#x9;PageNumber INTEGER);
+
+DECLARE rowPaymentJSONSearch ROW(
+&#x9;&#x9;&#x9;SortField VARCHAR(20),
+&#x9;&#x9;&#x9;SortOrder VARCHAR(20),
+&#x9;&#x9;&#x9;BillToIds VARCHAR(400000),
+&#x9;&#x9;&#x9;ParentGroupNumber VARCHAR(50),
+&#x9;&#x9;&#x9;ReceiptNumber VARCHAR(50),
+&#x9;&#x9;&#x9;ReceiptAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;ReceiptAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;PaymentDateStart VARCHAR(10),
+&#x9;&#x9;&#x9;PaymentDateEnd VARCHAR(10),
+&#x9;&#x9;&#x9;InvoiceNumber VARCHAR(50),
+&#x9;&#x9;&#x9;InvoiceDateStart VARCHAR(10),
+&#x9;&#x9;&#x9;InvoiceDateRangeEnd VARCHAR(10),
+&#x9;&#x9;&#x9;PaymentAmount DECIMAL(30,2),
+&#x9;&#x9;&#x9;PaymentTypes VARCHAR(1000), 
+&#x9;&#x9;&#x9;PaymentStatuses VARCHAR(1000),
+&#x9;&#x9;&#x9;AppliedAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;AppliedAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;AdjustmentAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;AdjustmentAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;OriginalInvoiceAmountMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;OriginalInvoiceAmountMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;OutstandingBalanceMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;OutstandingBalanceMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;CreditMemoMax DECIMAL(30,2),
+&#x9;&#x9;&#x9;CreditMemoMin DECIMAL(30,2),
+&#x9;&#x9;&#x9;NumberOfRowsPerPage INTEGER,
+&#x9;&#x9;&#x9;PageNumber INTEGER);
+
+
+   DECLARE curPaymentSearch CURSOR (
+        invoiceNumber VARCHAR(30),
+        paymentNumber VARCHAR(30),
+        invoiceDate DATE,
+        bill_to_div VARCHAR(40),
+        billToAccount VARCHAR(30),
+        billToID   VARCHAR(100),
+        paymentInitiateDate DATE,
+        paymentDate DATE,
+        paymentType VARCHAR(255),
+        paymentStatus VARCHAR(255),
+       originalInvoiceAmount DOUBLE,
+       amountApplied DOUBLE,
+       outstandBalance DOUBLE,
+       adjustment DOUBLE,
+       creditMemo DOUBLE,
+       paymentAmount DOUBLE,
+       paymentTotal DOUBLE
+        );
+
+        DECLARE rowPaymentSearch ROW (
+        invoiceNumber VARCHAR(30),
+        paymentNumber VARCHAR(30),
+        invoiceDate DATE,
+        bill_to_div VARCHAR(40),
+        billToAccount VARCHAR(30),
+        billToID   VARCHAR(100),
+        paymentInitiateDate DATE,
+        paymentDate DATE,
+        paymentType VARCHAR(255),
+        paymentStatus VARCHAR(255),
+       originalInvoiceAmount DOUBLE,
+       amountApplied DOUBLE,
+       outstandBalance DOUBLE,
+       adjustment DOUBLE,
+       creditMemo DOUBLE,
+       paymentAmount DOUBLE,
+       paymentTotal DOUBLE
+);
+        DECLARE varcnt INTEGER;
+        /*DECLARE varinvoiceNumber VARCHAR(30);
+        DECLARE varpaymentNumber VARCHAR(30);
+        DECLARE varinvoiceDate DATE;
+        DECLARE varbill_to_div VARCHAR(40);
+        DECLARE varbillToAccount VARCHAR(30);
+
+        DECLARE varpaymentInitiateDate DATE;
+        DECLARE varpaymentDate DATE;
+        DECLARE varpaymentType VARCHAR(255);
+        DECLARE varpaymentStatus VARCHAR(255);
+        DECLARE varoriginalInvoiceAmount DOUBLE;
+        DECLARE varamountApplied DOUBLE;
+        DECLARE varoutstandBalance DOUBLE;
+        DECLARE varadjustment DOUBLE;
+        DECLARE varcreditMemo DOUBLE;
+        DECLARE varpaymentAmount DOUBLE;
+        DECLARE varpaymentTotal DOUBLE;
+*/
+&#x9;&#x9;DECLARE varSortField VARCHAR(20);
+&#x9;&#x9;DECLARE varSortOrder VARCHAR(20);
+        DECLARE varBillToID   VARCHAR(4000);
+&#x9;&#x9;DECLARE varParentGroupNumber VARCHAR(30);
+&#x9;&#x9;DECLARE varReceiptNumber VARCHAR(50);
+&#x9;&#x9;DECLARE varReceiptAmountMax DECIMAL(27,2);
+&#x9;&#x9;DECLARE varReceiptAmountMin DECIMAL(27,2);
+&#x9;&#x9;DECLARE varPaymentDateStart DATE;
+&#x9;&#x9;DECLARE varPaymentDateEnd DATE;
+&#x9;&#x9;DECLARE varInvoiceNumber VARCHAR(50);
+&#x9;&#x9;DECLARE varInvoiceDateStart DATE;
+&#x9;&#x9;DECLARE varInvoiceDateRangeEnd DATE;
+&#x9;&#x9;DECLARE varPaymentAmount DECIMAL(27,2);
+&#x9;&#x9;DECLARE varPaymentTypes VARCHAR(1000); 
+&#x9;&#x9;DECLARE varPaymentStatuses VARCHAR(1000);
+&#x9;&#x9;DECLARE varAppliedAmountMax DECIMAL(27,2);
+&#x9;&#x9;DECLARE varAppliedAmountMin DECIMAL(27,2);
+&#x9;&#x9;DECLARE varAdjustmentAmountMax DECIMAL(27,2);
+&#x9;&#x9;DECLARE varAdjustmentAmountMin DECIMAL(27,2);
+&#x9;&#x9;DECLARE varOriginalInvoiceAmountMax DECIMAL(27,2);
+&#x9;&#x9;DECLARE varOriginalInvoiceAmountMin DECIMAL(27,2);
+&#x9;&#x9;DECLARE varOutstandingBalanceMax DECIMAL(27,2);
+&#x9;&#x9;DECLARE varOutstandingBalanceMin DECIMAL(27,2);
+&#x9;&#x9;DECLARE varCreditMemoMax DECIMAL(27,2);
+&#x9;&#x9;DECLARE varCreditMemoMin DECIMAL(27,2);
+        DECLARE varNumberOfRowsPerPage INTEGER;
+&#x9;&#x9;DECLARE varPageNumber INTEGER;
+CALL /shared/Delta_DV/Business/Logical/Billing/Mrigank_pPaymentRequestx(SearchDetails,curPaymentJSONSearch);
+--CALL /shared/Delta_DV/Business/Logical/Billing/pPaymentRequest(inJson,curPaymentJSONSearch);
+ pPaymentSearch1: BEGIN
+              LOOP
+                 FETCH curPaymentJSONSearch INTO rowPaymentJSONSearch;
+                 IF NOT curPaymentJSONSearch.FOUND THEN
+                    LEAVE pPaymentSearch1;
+                 END IF;
+&#x9;&#x9;&#x9;&#x9; SET varBillToID = case when rowPaymentJSONSearch.BillToIds is null then  &apos;(&apos;&apos;x&apos;&apos;)&apos; when rowPaymentJSONSearch.BillToIds = &apos;(&apos;&apos;&apos;&apos;)&apos; then  &apos;(&apos;&apos;x&apos;&apos;)&apos; when rowPaymentJSONSearch.BillToIds = &apos;()&apos; then  &apos;(&apos;&apos;x&apos;&apos;)&apos; else rowPaymentJSONSearch.BillToIds end;
+                 SET varNumberOfRowsPerPage = rowPaymentJSONSearch.NumberOfRowsPerPage;
+                 SET varPageNumber = rowPaymentJSONSearch.PageNumber;
+&#x9;&#x9;&#x9;&#x9; SET varInvoiceNumber = rowPaymentJSONSearch.InvoiceNumber;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varSortOrder = rowPaymentJSONSearch.SortOrder;
+&#x9;&#x9;&#x9;&#x9;&#x9;--SET varBillToID = rowPaymentJSONSearch.BillToIDs;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varParentGroupNumber = rowPaymentJSONSearch.ParentGroupNumber;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varReceiptNumber = rowPaymentJSONSearch.ReceiptNumber;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varReceiptAmountMax = rowPaymentJSONSearch.ReceiptAmountMax;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varReceiptAmountMin = rowPaymentJSONSearch.ReceiptAmountMin;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varPaymentDateStart = rowPaymentJSONSearch.PaymentDateStart;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varPaymentDateEnd = rowPaymentJSONSearch.PaymentDateEnd;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varInvoiceNumber = rowPaymentJSONSearch.InvoiceNumber;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varInvoiceDateStart = rowPaymentJSONSearch.InvoiceDateStart;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varInvoiceDateRangeEnd = rowPaymentJSONSearch.InvoiceDateRangeEnd;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varPaymentAmount = rowPaymentJSONSearch.PaymentAmount;
+&#x9;&#x9;&#x9;&#x9;&#x9;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varPaymentTypes = case when rowPaymentJSONSearch.PaymentTypes is null then  &apos;(&apos;&apos;x&apos;&apos;)&apos;  when rowPaymentJSONSearch.PaymentTypes = &apos;()&apos; then  &apos;(&apos;&apos;x&apos;&apos;)&apos; when rowPaymentJSONSearch.PaymentTypes = &apos;(&apos;&apos;&apos;&apos;)&apos; then  &apos;(&apos;&apos;x&apos;&apos;)&apos;  else UPPER(rowPaymentJSONSearch.PaymentTypes) end;    
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varPaymentStatuses = case when rowPaymentJSONSearch.PaymentStatuses is null then  &apos;(&apos;&apos;x&apos;&apos;)&apos;  when rowPaymentJSONSearch.PaymentStatuses = &apos;()&apos; then  &apos;(&apos;&apos;x&apos;&apos;)&apos;  when rowPaymentJSONSearch.PaymentStatuses = &apos;(&apos;&apos;&apos;&apos;)&apos; then  &apos;(&apos;&apos;x&apos;&apos;)&apos; else UPPER(rowPaymentJSONSearch.PaymentStatuses) end;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   
+&#x9;&#x9;&#x9;&#x9;&#x9;--SET varPaymentTypes = rowPaymentJSONSearch.PaymentTypes;
+&#x9;&#x9;&#x9;&#x9;&#x9;--SET varPaymentStatuses = rowPaymentJSONSearch.PaymentStatuses;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varAppliedAmountMax = rowPaymentJSONSearch.AppliedAmountMax;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varAppliedAmountMin = rowPaymentJSONSearch.AppliedAmountMin;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varAdjustmentAmountMax = rowPaymentJSONSearch.AdjustmentAmountMax;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varAdjustmentAmountMin = rowPaymentJSONSearch.AdjustmentAmountMin;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varOriginalInvoiceAmountMax = rowPaymentJSONSearch.OriginalInvoiceAmountMax;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varOriginalInvoiceAmountMin = rowPaymentJSONSearch.OriginalInvoiceAmountMin;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varOutstandingBalanceMax = rowPaymentJSONSearch.OutstandingBalanceMax;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varOutstandingBalanceMin = rowPaymentJSONSearch.OutstandingBalanceMin;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varCreditMemoMax = rowPaymentJSONSearch.CreditMemoMax;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varCreditMemoMin = rowPaymentJSONSearch.CreditMemoMin;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varNumberOfRowsPerPage = rowPaymentJSONSearch.NumberOfRowsPerPage;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET varPageNumber = rowPaymentJSONSearch.PageNumber;
+&#x9;&#x9;&#x9;&#x9;&#x9;
+
+               END LOOP;
+        CLOSE curPaymentJSONSearch;
+        END; --pPaymentSearch1 
+
+--set varbillToID =&apos;(&apos;&apos;0308400000&apos;&apos;)&apos;;
+/*call /shared/Delta_DV/Business/Logical/Billing/pPaymentSearch(varbillToID,curPaymentSearch);
+    FETCH NEXT FROM curPaymentSearch INTO rowPaymentSearch;
+               IF NOT curPaymentSearch.FOUND THEN
+              CLOSE curPaymentSearch;
+           end IF;
+        SET varinvoiceNumber =rowPaymentSearch.invoiceNumber;
+        SET varpaymentNumber =rowPaymentSearch.paymentNumber;
+        SET varinvoiceDate =rowPaymentSearch.invoiceDate;
+        SET varbill_to_div =rowPaymentSearch.bill_to_div;
+        SET varbillToAccount =rowPaymentSearch.billToAccount;
+        SET varbillToID   =rowPaymentSearch.billToID;
+        SET varpaymentInitiateDate =rowPaymentSearch.paymentInitiateDate;
+        SET varpaymentDate =rowPaymentSearch.paymentDate;
+        SET varpaymentType =rowPaymentSearch.paymentType;
+        SET varpaymentStatus =rowPaymentSearch.paymentStatus;
+        SET varoriginalInvoiceAmount =rowPaymentSearch.originalInvoiceAmount;
+        SET varamountApplied =rowPaymentSearch.amountApplied;
+        SET varoutstandBalance =rowPaymentSearch.outstandBalance;
+        SET varadjustment =rowPaymentSearch.adjustment;
+        SET varcreditMemo =rowPaymentSearch.creditMemo;
+        SET varpaymentAmount =rowPaymentSearch.paymentAmount;
+        SET varpaymentTotal =rowPaymentSearch.paymentTotal;
+   INSERT INTO result VALUES (varinvoiceNumber, varpaymentNumber, varinvoiceDate, varbill_to_div, varbillToAccount,varbillToID,varpaymentInitiateDate,varpaymentDate,varpaymentType,varpaymentStatus,varoriginalInvoiceAmount,varamountApplied,varoutstandBalance,varadjustment,varcreditMemo,varpaymentAmount,varpaymentTotal);
+ */
+
+
+call print(cast(varSortField as varchar(4000)));
+call print(cast(varSortOrder as varchar(4000)));
+call print(cast(varBillToID as varchar(4000)));
+call print(cast(varParentGroupNumber as varchar(4000)));
+call print(cast(varReceiptNumber as varchar(4000)));
+call print(cast(varReceiptAmountMax as varchar(4000)));
+call print(cast(varReceiptAmountMin as varchar(4000)));
+call print(cast(varPaymentDateStart as varchar(4000)));
+call print(cast(varPaymentDateEnd as varchar(4000)));
+call print(cast(varInvoiceNumber as varchar(4000)));
+call print(cast(varInvoiceDateStart as varchar(4000)));
+call print(cast(varInvoiceDateRangeEnd as varchar(4000)));
+call print(cast(varPaymentAmount as varchar(4000)));
+call print(cast(varPaymentTypes as varchar(4000)));
+call print(cast(varPaymentStatuses as varchar(4000)));
+call print(cast(varAppliedAmountMax as varchar(4000)));
+call print(cast(varAppliedAmountMin as varchar(4000)));
+call print(cast(varAdjustmentAmountMax as varchar(4000)));
+call print(cast(varAdjustmentAmountMin as varchar(4000)));
+call print(cast(varOriginalInvoiceAmountMax as varchar(4000)));
+call print(cast(varOriginalInvoiceAmountMin as varchar(4000)));
+call print(cast(varOutstandingBalanceMax as varchar(4000)));
+call print(cast(varOutstandingBalanceMin as varchar(4000)));
+call print(cast(varCreditMemoMax as varchar(4000)));
+call print(cast(varCreditMemoMin as varchar(4000)));
+call print(cast(varNumberOfRowsPerPage as varchar(4000)));
+call print(cast(varPageNumber as varchar(4000)));
+
+    OPEN result FOR
+                   SELECT 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  --CNT,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  invoiceNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  paymentNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  invoiceDate,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  bill_to_div,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  billToAccount,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  billToID,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  paymentInitiateDate,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  paymentDate,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  paymentType,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  paymentStatus,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  originalInvoiceAmount,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  amountApplied,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  outstandBalance,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  adjustment,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  creditMemo,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  paymentAmount,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;   paymentTotal,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  ship_to_div,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  shipto_account,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  varNumberOfRowsPerPage as NumberOfRowsPerPage,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  varPageNumber  as PageNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;  CEILING(cnt/varNumberOfRowsPerPage) AS TotalPages
+                      from /shared/Delta_DV/Business/Logical/Billing/Procedures/prcBI_PaymentSearchBillToComb(varSortField,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varSortOrder,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varBillToID,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varParentGroupNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varReceiptNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varReceiptAmountMax,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varReceiptAmountMin,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varPaymentDateStart,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varPaymentDateEnd,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varInvoiceNumber,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varInvoiceDateStart,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varInvoiceDateRangeEnd,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CAST(varPaymentAmount as VARCHAR(50)),
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varPaymentTypes,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varPaymentStatuses,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varAppliedAmountMax,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varAppliedAmountMin,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varOriginalInvoiceAmountMax,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varOriginalInvoiceAmountMin,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varOutstandingBalanceMax,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varOutstandingBalanceMin,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varAdjustmentAmountMax,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varAdjustmentAmountMin,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varCreditMemoMax,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varCreditMemoMin,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varNumberOfRowsPerPage,
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;varPageNumber
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;); 
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">1596614309420</attribute>
+  <attribute name="creatorUserDomain" type="STRING">dev</attribute>
+  <attribute name="creatorUserId" type="INTEGER">3980101</attribute>
+  <attribute name="creatorUserName" type="STRING">dos59246</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="impactLevel" type="INTEGER">2</attribute>
+  <attribute name="impactMessage" type="STRING">Invalid column name &apos;bill_to_div&apos;.  On line 285, column 9.  [parser-2900650]</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1612571203289</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">dev</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">3980101</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">dca89313</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_constants" type="NULL"/>
+  <attribute name="public_exceptions" type="NULL"/>
+  <attribute name="public_types" type="NULL"/>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1596614309420</attribute>
+</metadata>
