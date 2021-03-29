@@ -1,0 +1,196 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="setupPrivileges_CoE" path="/shared/CoE/Security/Privileges/setupPrivileges_CoE" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="environment" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inSubproject" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="rowsProcessed" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="logOutput" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/BestPractices_v81/PrivilegeScripts/updatePrivilegesDriver" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="Datasource" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Batch_Privileges" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="Environment_Name" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Organization" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Project" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="SubProject" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Sheet_Name" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Resource_Path" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="Resource_Type" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Name_" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Name_Type" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="Domain_Name" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="preview" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="forceDomainAsComposite" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inDebug1" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inDebug1Console" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inDebug1CISLog" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inDebug1ReadOnly" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inDebug1RevokeAll" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inDebug2" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inBypassErrors" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="rowsProcessed" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="logOutput" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;This serves as a template for invoking the Data Abstraction Best Practices, Privileges module 
+&#x9;&#x9;for applying privileges from the spreadsheet using the sheets &quot;Privileges_shared&quot;, &quot;Privileges_databases&quot;, &quot;Privileges_webservices&quot;.
+
+&#x9;Instructions:
+&#x9;&#x9;&#x9;1. Make a copy of setupPrivileges_CoE_subproject 
+&#x9;&#x9;&#x9;2. Rename by changing the project &quot;CoE&quot; to your project name.
+&#x9;&#x9;&#x9;3. Modify the following variables inside each procedure.
+&#x9;&#x9;&#x9;&#x9;DECLARE org&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;myorg&apos;;&#x9;&#x9;&#x9;-- Modify Organization
+&#x9;&#x9;&#x9;&#x9;DECLARE project&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;CoE&apos;;&#x9;&#x9;&#x9;&#x9;-- Modify project name
+
+*/
+PROCEDURE setupPrivileges_CoE(
+&#x9;IN environment&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- environment [DEV, TEST, PROD]
+&#x9;IN inSubproject&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- subproject name.  Leave null to apply privileges for the entire project.
+&#x9;OUT rowsProcessed&#x9;&#x9;&#x9;INTEGER&#x9;,&#x9;&#x9;-- number of rows processed from the spreadsheet
+&#x9;OUT logOutput&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;&#x9;-- The output log that gets printed to the command line console is also output
+
+)
+BEGIN
+&#x9;DECLARE org&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;org&apos;;&#x9;&#x9;&#x9;&#x9;&#x9;-- Modify Organization
+&#x9;DECLARE project&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;CoE&apos;;&#x9;&#x9;&#x9;&#x9;&#x9;-- Modify project name
+&#x9;DECLARE&#x9;subproject&#x9;&#x9;&#x9;VARCHAR DEFAULT inSubproject;
+&#x9;-- Standard input parameters
+&#x9;DECLARE datasource&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;EXCEL&apos;;
+&#x9;DECLARE batch&#x9;&#x9;&#x9;&#x9;SMALLINT DEFAULT 1;
+&#x9;-- Standard debug capabilities
+&#x9;DECLARE debug1&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT &apos;Y&apos;;
+&#x9;DECLARE debug1Console&#x9;&#x9;CHAR(1) DEFAULT &apos;Y&apos;;
+&#x9;DECLARE debug1CISLog&#x9;&#x9;CHAR(1) DEFAULT &apos;N&apos;;
+&#x9;DECLARE debug1ReadOnly&#x9;&#x9;CHAR(1) DEFAULT &apos;Y&apos;;
+&#x9;DECLARE debugRevokeAll&#x9;&#x9;CHAR(1) DEFAULT &apos;Y&apos;;
+&#x9;DECLARE debug2&#x9;&#x9;&#x9;&#x9;CHAR(1) DEFAULT &apos;N&apos;;
+&#x9;DECLARE bypassErrors&#x9;&#x9;CHAR(1) DEFAULT &apos;Y&apos;;
+&#x9;DECLARE description&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;project=[&apos;||NVL(project,&apos;null&apos;)||&apos;] subproject=[&apos;||NVL(subproject,&apos;null&apos;)||&apos;] privilege execution&apos;;
+&#x9;-- For testing purposes only.  OPTIONAL PARAM: Y=true, N=false. 
+&#x9;--    Provides a way to force a conversion of the group from an LDAP domain name like &quot;ldap&quot; to a the &quot;composite&quot; domain.  
+&#x9;--    This is useful when setting up the privileges for testing with composite groups that mirror the LDAP groups.  This way the spreadsheet does not have to be modified.
+&#x9;--    For example, the LDAP group Composite_Servicing_Dev is automatically converted to the composite domain group composite_servicing_dev.
+&#x9;DECLARE forceDomainAsComposite &#x9;CHAR(1) DEFAULT &apos;N&apos;; 
+
+&#x9;CALL Print(&apos;Started &apos;||description);
+&#x9;CALL Print(&apos;&apos;);
+&#x9;CALL /shared/ASAssets/BestPractices_v81/PrivilegeScripts/updatePrivilegesDriver(
+&#x9;&#x9;datasource, batch, environment, org, project, subproject, null, null, null, null, null, null, null, forceDomainAsComposite, debug1, debug1Console, debug1CISLog, debug1ReadOnly, debugRevokeAll, debug2, bypassErrors,
+&#x9;&#x9;rowsProcessed, logOutput);
+&#x9;CALL Print(&apos;&apos;);
+&#x9;CALL Print(&apos;End &apos;||description||&apos;: rows processed=[&apos; || rowsProcessed||&apos;]&apos;);
+END</attribute>
+  <attribute name="creationDate" type="LONG">1587562601444</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1591017798010</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">7/47</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/48</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/43</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/42</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1587562601444</attribute>
+</metadata>

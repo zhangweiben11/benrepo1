@@ -1,0 +1,349 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="SystemRequests" path="/shared/CoE/MonitorServer/SystemRequests/Views/SystemRequests" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="REQUEST_ID" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="PARENT_ID" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SESSION_ID" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TRANSACTION_ID" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="OWNER_ID" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="OWNER" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="REQUEST_TYPE" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="STATUS" nullable="true">
+      <datatype type="STRING" maxLength="24"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="DESCRIPTION" nullable="true">
+      <datatype type="STRING" maxLength="65535"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="START_TIME" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="END_TIME" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_DURATION" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_DURATION_STR" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_DURATION_DAYS" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_DURATION_MINUTES" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_DURATION_HOURS" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_DURATION_SECONDS" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SERVER_DURATION" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="ROWS_AFFECTED" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CURRENT_MEMORY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CURRENT_MEMORY_QUALIFIED" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CURRENT_USED_MEMORY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CURRENT_USED_MEMORY_QUALIFIED" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CURRENT_DISK" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MAX_MEMORY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MAX_USED_MEMORY" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MAX_DISK" nullable="true">
+      <datatype type="INTEGER"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MESSAGE" nullable="true">
+      <datatype type="STRING" maxLength="65535"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/services/databases/system/SYS_REQUESTS" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="REQUEST_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="PARENT_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="SESSION_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="TRANSACTION_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="OWNER_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="OWNER">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="REQUEST_TYPE">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="STATUS">
+        <datatype type="STRING" maxLength="24"/>
+      </element>
+      <element name="DESCRIPTION">
+        <datatype type="STRING" maxLength="65535"/>
+      </element>
+      <element name="START_TIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="END_TIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="TOTAL_DURATION">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="SERVER_DURATION">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="ROWS_AFFECTED">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="MAX_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="MAX_DISK">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="CURRENT_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="CURRENT_DISK">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="MESSAGE">
+        <datatype type="STRING" maxLength="65535"/>
+      </element>
+      <element name="MAX_USED_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="CURRENT_USED_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="PROCEDURE_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT 
+    REQUEST_ID, 
+    PARENT_ID, 
+    SESSION_ID, 
+    TRANSACTION_ID, 
+    OWNER_ID, 
+    OWNER, 
+    REQUEST_TYPE, 
+    STATUS, 
+    DESCRIPTION, 
+    START_TIME, 
+    END_TIME, 
+    TOTAL_DURATION, 
+&#x9;CAST(
+&#x9;&#x9;-- Calculate days
+&#x9;&#x9;LPAD(CAST(
+&#x9;&#x9;&#x9;CAST(TRUNCATE(TOTAL_DURATION / CAST(60*60*24*1000 AS DECIMAL(12,0))) AS INTEGER)
+&#x9;&#x9;AS VARCHAR),1,&apos;0&apos;)||
+&#x9;&#x9;&apos; &apos;||
+&#x9;&#x9;-- Calculate hours
+&#x9;&#x9;LPAD(CAST(
+&#x9;&#x9;&#x9;CASE WHEN CAST(TRUNCATE(TOTAL_DURATION / (3600*1000.0000)) AS INTEGER) &lt; 24 THEN
+&#x9;&#x9;&#x9;&#x9;CAST(TRUNCATE(TOTAL_DURATION / (3600*1000.0000)) AS INTEGER)
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;TRUNCATE((CAST(TOTAL_DURATION / (3600*1000.0000)/3600.0000 AS DECIMAL(12,4)) -
+&#x9;&#x9;&#x9;&#x9;&#x9;CAST(TRUNCATE(TOTAL_DURATION / (3600*1000.0000)/3600) AS INTEGER)) * 3600)
+&#x9;&#x9;&#x9;END
+&#x9;&#x9;AS VARCHAR),2,&apos;0&apos;)||
+&#x9;&#x9;&apos;:&apos;||
+&#x9;&#x9;-- Calculate minutes
+&#x9;&#x9;LPAD(CAST(
+&#x9;&#x9;&#x9;CASE WHEN CAST(TRUNCATE(TOTAL_DURATION / (60*1000.0000)) AS INTEGER) &lt; 60 THEN
+&#x9;&#x9;&#x9;&#x9;CAST(TRUNCATE(TOTAL_DURATION / (60*1000.0000)) AS INTEGER)
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;TRUNCATE((CAST(TOTAL_DURATION / (60*1000.0000)/60.0000 AS DECIMAL(12,4)) -
+&#x9;&#x9;&#x9;&#x9;&#x9;CAST(TRUNCATE(TOTAL_DURATION / (60*1000.0000)/60.0000) AS INTEGER)) * 60)
+&#x9;&#x9;&#x9;END
+&#x9;&#x9;AS VARCHAR),2,&apos;0&apos;)||
+&#x9;&#x9;&apos;:&apos;||
+&#x9;&#x9;-- Calculate seconds
+&#x9;&#x9;LPAD(CAST(
+&#x9;&#x9;&#x9;&#x9;CAST(TOTAL_DURATION / 1000.0000 AS DECIMAL(12,4)) -
+&#x9;&#x9;&#x9;&#x9;&#x9;(CAST(TRUNCATE(TOTAL_DURATION / (60*1000.0000)) AS INTEGER) * 60)
+&#x9;&#x9;&#x9;AS VARCHAR),5,&apos;0&apos;)
+&#x9;AS VARCHAR) AS TOTAL_DURATION_STR,
+&#x9;CAST(TOTAL_DURATION / (24*60*60*1000.0000) AS DECIMAL(12,4)) TOTAL_DURATION_DAYS,
+&#x9;CAST(TOTAL_DURATION / (60*1000.0000) AS DECIMAL(12,4)) TOTAL_DURATION_MINUTES,
+&#x9;CAST(TOTAL_DURATION / (60*60*1000.0000) AS DECIMAL(12,4)) TOTAL_DURATION_HOURS,
+ &#x9;CAST(TOTAL_DURATION / 1000.0000 AS DECIMAL(12,4)) TOTAL_DURATION_SECONDS,
+    SERVER_DURATION, 
+    ROWS_AFFECTED, 
+    CURRENT_MEMORY, 
+&#x9;CAST(
+&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;WHEN CURRENT_MEMORY &lt; 1024.00 THEN 
+&#x9;&#x9;&#x9;&#x9;CURRENT_MEMORY || &apos; BYTES&apos;
+&#x9;&#x9;&#x9;WHEN CURRENT_MEMORY &gt;= 1024.00 AND CURRENT_MEMORY &lt; (1024.00*1024.00) THEN
+&#x9;&#x9;&#x9;&#x9;CURRENT_MEMORY / 1024.00 || &apos; KB&apos;
+&#x9;&#x9;&#x9;WHEN CURRENT_MEMORY &gt;= (1024.00*1024.00) AND CURRENT_MEMORY &lt; (1024.00*1024.00*1024.00) THEN
+&#x9;&#x9;&#x9;&#x9;CURRENT_MEMORY / (1024.00*1024.00) || &apos; MB&apos;
+&#x9;&#x9;&#x9;WHEN CURRENT_MEMORY &gt;= (1024.00*1024.00*1024.00) AND CURRENT_MEMORY &lt; (1024.00*1024.00*1024.00*1024.00) THEN
+&#x9;&#x9;&#x9;&#x9;CURRENT_MEMORY / (1024.00*1024.00*1024.00) || &apos; GB&apos;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;CURRENT_MEMORY || &apos; BYTES&apos;
+&#x9;&#x9;END 
+&#x9;AS VARCHAR) AS CURRENT_MEMORY_QUALIFIED,
+    CURRENT_USED_MEMORY,
+&#x9;CAST(
+&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;WHEN CURRENT_USED_MEMORY &lt; 1024.00 THEN 
+&#x9;&#x9;&#x9;&#x9;CURRENT_USED_MEMORY || &apos; BYTES&apos;
+&#x9;&#x9;&#x9;WHEN CURRENT_USED_MEMORY &gt;= 1024.00 AND CURRENT_USED_MEMORY &lt; (1024.00*1024.00) THEN
+&#x9;&#x9;&#x9;&#x9;CURRENT_USED_MEMORY / 1024.00 || &apos; KB&apos;
+&#x9;&#x9;&#x9;WHEN CURRENT_USED_MEMORY &gt;= (1024.00*1024.00) AND CURRENT_USED_MEMORY &lt; (1024.00*1024.00*1024.00) THEN
+&#x9;&#x9;&#x9;&#x9;CURRENT_USED_MEMORY / (1024.00*1024.00) || &apos; MB&apos;
+&#x9;&#x9;&#x9;WHEN CURRENT_USED_MEMORY &gt;= (1024.00*1024.00*1024.00) AND CURRENT_USED_MEMORY &lt; (1024.00*1024.00*1024.00*1024.00) THEN
+&#x9;&#x9;&#x9;&#x9;CURRENT_USED_MEMORY / (1024.00*1024.00*1024.00) || &apos; GB&apos;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;CURRENT_USED_MEMORY || &apos; BYTES&apos;
+&#x9;&#x9;END 
+&#x9;AS VARCHAR) AS CURRENT_USED_MEMORY_QUALIFIED,
+    CURRENT_DISK, 
+    MAX_MEMORY, 
+    MAX_USED_MEMORY, 
+    MAX_DISK, 
+    MESSAGE
+FROM      
+    /services/databases/system/SYS_REQUESTS
+ORDER BY START_TIME DESC</attribute>
+  <attribute name="creationDate" type="LONG">1510933071334</attribute>
+  <attribute name="creatorUserDomain" type="STRING">eatonvance.com</attribute>
+  <attribute name="creatorUserId" type="INTEGER">301</attribute>
+  <attribute name="creatorUserName" type="STRING">fwright</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1590551717481</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">301</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1510933071334</attribute>
+</metadata>

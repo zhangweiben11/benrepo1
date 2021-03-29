@@ -1,0 +1,842 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="pSystemRequestsActive" path="/shared/CoE/MonitorServer/SystemRequests/pSystemRequestsActive" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="logResultsToDB" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="inCurrentTime" direction="IN" nullable="true">
+      <datatype name="TIMESTAMP" type="DATETIME"/>
+    </parameter>
+    <parameter name="inNodehost" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inNodeport" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="inTotalHeapUsedPercent" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="PARTITION">
+          <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+        </element>
+        <element name="LOAD_TIME">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="NODE_HOST">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="NODE_PORT">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="REQUEST_ID">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="PARENT_ID">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="SESSION_ID">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="TRANSACTION_ID">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="OWNER_ID">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="OWNER">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="REQUEST_TYPE">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="STATUS">
+          <datatype name="VARCHAR" type="STRING" maxLength="20"/>
+        </element>
+        <element name="DESCRIPTION">
+          <datatype name="CLOB" type="CLOB" maxLength="2147483647"/>
+        </element>
+        <element name="START_TIME">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="END_TIME">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="TOTAL_DURATION">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="TOTAL_DURATION_STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="SERVER_DURATION">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="ROWS_AFFECTED">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="MAX_MEMORY">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="MAX_DISK">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="CURRENT_MEMORY">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="CURRENT_MEMORY_QUALIFIED">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="CURRENT_DISK">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="MESSAGE">
+          <datatype name="CLOB" type="CLOB" maxLength="2147483647"/>
+        </element>
+        <element name="MAX_USED_MEMORY">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="CURRENT_USED_MEMORY">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/GetEnvironment" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="variableName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/RepoUtils/applyReservedListToPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/getTrigger" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="triggerPath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="changeId">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="creationDateLong">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateLong">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="maxEventsQueued">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="conditionType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="eventName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerMode">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerStartTime">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerPeriod">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerPeriodQty">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerFromTimeInADay">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerFromTimeInADayFormatted">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerEndTimeInADay">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerEndTimeInADayFormatted">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerRecurringDay">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerRecurringDayList">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerIsCluster">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="jmsConnector">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="jmsSelector">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="jmsDestination">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="actionType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="actionPath">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="actionPathType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="actionExhaustCursors">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="actionParameters">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="actionNumParameters">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="emailTo">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailCC">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailBCC">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailReplyTo">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailSubject">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="emailContent">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="emailInclueSummary">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="emailSkipIfNoResults">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="reintrospectNoCommit">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/time/getCurrentTimestamp" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="currentTS" direction="OUT">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/DatasourceOperations/F_GET_PARTITION_NUM_COE" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="startDate" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="partitionNum" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Common/getServerHostPort" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="nodehost" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="nodeport" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Customize/commonValues" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PartitionProcs/P_UPDATE_STATISTICS" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="schemaName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="tableName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/SystemRequests/Views/SystemRequestsActive" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="REQUEST_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="PARENT_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="SESSION_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="TRANSACTION_ID">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="OWNER_ID">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="OWNER">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="REQUEST_TYPE">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="STATUS">
+        <datatype type="STRING" maxLength="24"/>
+      </element>
+      <element name="DESCRIPTION">
+        <datatype type="STRING" maxLength="65535"/>
+      </element>
+      <element name="START_TIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="END_TIME">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="TOTAL_DURATION">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="TOTAL_DURATION_STR">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="TOTAL_DURATION_DAYS">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="TOTAL_DURATION_MINUTES">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="TOTAL_DURATION_HOURS">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="TOTAL_DURATION_SECONDS">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="4"/>
+      </element>
+      <element name="SERVER_DURATION">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="ROWS_AFFECTED">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="CURRENT_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="CURRENT_MEMORY_QUALIFIED">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CURRENT_USED_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="CURRENT_USED_MEMORY_QUALIFIED">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CURRENT_DISK">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="MAX_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="MAX_USED_MEMORY">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="MAX_DISK">
+        <datatype type="INTEGER"/>
+      </element>
+      <element name="MESSAGE">
+        <datatype type="STRING" maxLength="65535"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/* 
+&#x9;pSystemRequestsActive
+
+&#x9;This procedure is used to check for excesses memory usage and log any actively running queries
+&#x9;&#x9;using excessive memory at the time that this event is triggered.
+&#x9;It is intended to get ahead of issues with the server before they become critical.  This is meant
+&#x9;&#x9;to be a warning and memory should be watched.  Any queries that are causing the memory issue
+&#x9;&#x9;should be analyzed and tuned.
+
+&#x9;INPUT:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),  &#x9;-- Y=debug on.  N=debug off
+&#x9;&#x9;logResultsToDB&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- logResultsToDB: Y=log the result row to a database table.  N=do not log the row.  In both cases, the row is returned to the invoking program.
+&#x9;&#x9;inTotalHeapUsedPercent&#x9;&#x9;INTEGER,&#x9;-- NULL or comes from pServerHealthCheck
+&#x9;&#x9;inCurrentTime&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;-- NULL or comes from pServerHealthCheck 
+&#x9;&#x9;inNodehost&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- NULL or comes from pServerHealthCheck 
+&#x9;&#x9;inNodeport&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;-- NULL or comes from pServerHealthCheck 
+
+&#x9;Output:
+&#x9;&#x9;-- Running system requests at the time of the log memory event.
+&#x9;&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;&#x9;PARTITION&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- The partition number.
+&#x9;        LOAD_TIME                   TIMESTAMP,
+&#x9;&#x9;&#x9;NODE_HOST&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;&#x9;NODE_PORT&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;        REQUEST_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        PARENT_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        SESSION_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        TRANSACTION_ID &#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        OWNER_ID &#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, 
+&#x9;        OWNER&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+&#x9;        REQUEST_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+&#x9;        STATUS &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(20), 
+&#x9;        DESCRIPTION &#x9;&#x9;&#x9;&#x9;LONGVARCHAR, 
+&#x9;        START_TIME &#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, 
+&#x9;        END_TIME &#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, 
+&#x9;        TOTAL_DURATION &#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        TOTAL_DURATION_STR &#x9;&#x9;&#x9;VARCHAR(255), 
+&#x9;        SERVER_DURATION &#x9;&#x9;&#x9;BIGINT, 
+&#x9;        ROWS_AFFECTED &#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        MAX_MEMORY &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        MAX_DISK &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        CURRENT_MEMORY &#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        CURRENT_MEMORY_QUALIFIED &#x9;VARCHAR(255),
+&#x9;        CURRENT_DISK &#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;        MESSAGE &#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR, 
+&#x9;        MAX_USED_MEMORY &#x9;&#x9;&#x9;BIGINT, 
+&#x9;        CURRENT_USED_MEMORY &#x9;&#x9;BIGINT
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2020.200&#x9;05/27/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new.
+
+*/
+PROCEDURE pSystemRequestsActive(
+&#x9;IN&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),  &#x9;-- Y=debug on.  N=debug off
+&#x9;IN&#x9;logResultsToDB&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- logResultsToDB: Y=log the result row to a database table.  N=do not log the row.  In both cases, the row is returned to the invoking program.
+&#x9;IN  inCurrentTime&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;-- NULL or comes from pServerHealthCheck 
+&#x9;IN  inNodehost&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- NULL or comes from pServerHealthCheck 
+&#x9;IN  inNodeport&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;-- NULL or comes from pServerHealthCheck 
+&#x9;IN  inTotalHeapUsedPercent&#x9;&#x9;INTEGER,&#x9;-- NULL or comes from pServerHealthCheck
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PIPE (
+&#x9;&#x9;PARTITION&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- The partition number.
+        LOAD_TIME                   TIMESTAMP,
+&#x9;&#x9;NODE_HOST&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;NODE_PORT&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+        REQUEST_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        PARENT_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        SESSION_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        TRANSACTION_ID &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        OWNER_ID &#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, 
+        OWNER&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+        REQUEST_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+        STATUS &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(20), 
+        DESCRIPTION &#x9;&#x9;&#x9;&#x9;CLOB, 
+        START_TIME &#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, 
+        END_TIME &#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, 
+        TOTAL_DURATION &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        TOTAL_DURATION_STR &#x9;&#x9;&#x9;VARCHAR(255), 
+        SERVER_DURATION &#x9;&#x9;&#x9;BIGINT, 
+        ROWS_AFFECTED &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        MAX_MEMORY &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        MAX_DISK &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        CURRENT_MEMORY &#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;&#x9;CURRENT_MEMORY_QUALIFIED &#x9;VARCHAR(255),
+        CURRENT_DISK &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        MESSAGE &#x9;&#x9;&#x9;&#x9;&#x9;CLOB, 
+        MAX_USED_MEMORY &#x9;&#x9;&#x9;BIGINT, 
+        CURRENT_USED_MEMORY &#x9;&#x9;BIGINT
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;pSystemRequestsActive&apos;;
+&#x9;DECLARE currentTime&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP &#x9;&#x9;DEFAULT inCurrentTime;
+&#x9;DECLARE nodehost&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT inNodehost;
+&#x9;DECLARE nodeport&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;&#x9;DEFAULT inNodeport;
+&#x9;DECLARE totalHeapUsedPercent&#x9;&#x9;&#x9;INTEGER&#x9;&#x9;&#x9;DEFAULT inTotalHeapUsedPercent;
+&#x9;-- The percentage of managed memory to compare against the current memory (bytes) in order to trigger an alert.
+&#x9;DECLARE MonitorServerPath&#x9;&#x9;&#x9;&#x9;VARCHAR(4000)&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.MonitorServerPath;
+&#x9;DECLARE totalHeapUsedPercentThreshold&#x9;INTEGER &#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.totalHeapUsedPercentThreshold;
+&#x9;DECLARE ReportingPath &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.ReportingPath;
+&#x9;DECLARE SystemRequestsTable&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.SystemRequestsTable;
+&#x9;DECLARE SystemRequestsTablePath&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT ReportingPath||&apos;/&apos;||SystemRequestsTable;
+&#x9;DECLARE schemaName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.schemaName;
+&#x9;DECLARE triggerPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE intervalTimestamp&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;DECLARE cursTime&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(tm TIMESTAMP);
+&#x9;DECLARE cursCount&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(totalHeapUsedPercent INTEGER);
+&#x9;DECLARE rowCount&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE errMessage &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE TYPE recType&#x9;&#x9;&#x9;&#x9;&#x9;ROW(
+&#x9;&#x9;PARTITION&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- The partition number.
+        LOAD_TIME                   TIMESTAMP,
+&#x9;&#x9;NODE_HOST&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;NODE_PORT&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,
+        REQUEST_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        PARENT_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        SESSION_ID &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        TRANSACTION_ID &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        OWNER_ID &#x9;&#x9;&#x9;&#x9;&#x9;INTEGER, 
+        OWNER&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+        REQUEST_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(255), 
+        STATUS &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(20), 
+        DESCRIPTION &#x9;&#x9;&#x9;&#x9;CLOB, 
+        START_TIME &#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, 
+        END_TIME &#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, 
+        TOTAL_DURATION &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        TOTAL_DURATION_STR &#x9;&#x9;&#x9;VARCHAR(255), 
+        SERVER_DURATION &#x9;&#x9;&#x9;BIGINT, 
+        ROWS_AFFECTED &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        MAX_MEMORY &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        MAX_DISK &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, 
+        CURRENT_MEMORY &#x9;&#x9;&#x9;&#x9;BIGINT, 
+&#x9;&#x9;CURRENT_MEMORY_QUALIFIED &#x9;VARCHAR(255),
+        CURRENT_DISK &#x9;&#x9;&#x9;&#x9;BIGINT, 
+        MESSAGE &#x9;&#x9;&#x9;&#x9;&#x9;CLOB, 
+        MAX_USED_MEMORY &#x9;&#x9;&#x9;BIGINT, 
+        CURRENT_USED_MEMORY &#x9;&#x9;BIGINT
+&#x9;);
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;recType;
+
+&#x9;----------------------------------------------
+&#x9;-- Initialize variables
+&#x9;----------------------------------------------
+&#x9;-- Get the current time
+&#x9;IF (currentTime IS NULL) THEN
+&#x9;&#x9;CALL /shared/ASAssets/Utilities/&quot;time&quot;/getCurrentTimestamp(currentTime);
+&#x9;END IF;
+
+&#x9;--Get the current host and port
+&#x9;CALL /shared/CoE/MonitorServer/Common/getServerHostPort(nodehost, nodeport);
+
+&#x9;----------------------------------
+&#x9;-- Get Current LOG_MEMORY Total Heap Used
+&#x9;----------------------------------
+&#x9;IF (totalHeapUsedPercent IS NULL) THEN
+&#x9;&#x9;-- Look to see if the actual memory (bytes) has exceeded the managed memory max using the custom percentage.
+&#x9;&#x9;SET sqlStatement = 
+&#x9;&#x9;&#x9;&apos;SELECT TOP 1 ROUND((MEMORY_BYTES / CAST(MEMORY_MAX AS DECIMAL(12,2))) * 100) TOTAL_HEAP_USED_PERCENT &apos;||
+&#x9;&#x9;&#x9;&apos;FROM /services/databases/system/LOG_MEMORY LOG_MEMORY &apos;||
+&#x9;&#x9;&#x9;&apos;ORDER BY EVENT_TIME DESC&apos;;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;sqlStatement=&apos;||NVL(sqlStatement,&apos;null&apos;));
+&#x9;&#x9;END IF;
+&#x9;&#x9;-- Get the total current heap used percent
+&#x9;&#x9;OPEN cursCount FOR sqlStatement;
+&#x9;&#x9;FETCH cursCount INTO totalHeapUsedPercent;
+&#x9;&#x9;CLOSE cursCount;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;currentTime=&apos;||NVL(CAST(currentTime AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;totalHeapUsedPercent=&apos;||NVL(CAST(totalHeapUsedPercent AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;totalHeapUsedPercentThreshold=&apos;||NVL(CAST(totalHeapUsedPercentThreshold AS VARCHAR),&apos;null&apos;));
+&#x9;END IF;
+
+&#x9;----------------------------------
+&#x9;-- Get System Requests Running
+&#x9;----------------------------------
+&#x9;IF (totalHeapUsedPercent &gt; totalHeapUsedPercentThreshold) THEN
+&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;----------------------------------
+&#x9;&#x9;&#x9;-- Get Trigger Interval
+&#x9;&#x9;&#x9;----------------------------------
+&#x9;&#x9;&#x9;CALL GetEnvironment(&apos;TRIGGER_PATH&apos;, triggerPath);
+&#x9;&#x9;&#x9;IF (triggerPath IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET triggerPath = /shared/CoE/MonitorServer/Customize/commonValues.TriggerPath||&apos;/Periodic/trServerHealthCheck&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;triggerPath=&apos;||NVL(triggerPath,&apos;null&apos;));
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;FOR t AS SELECT timerPeriod, timerPeriodQty FROM /shared/ASAssets/Utilities/repository/getTrigger(debug, triggerPath) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;--timerPeriod&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- One of [MINUTE|HOUR|DAY|WEEK|MONTH|YEAR]
+&#x9;&#x9;&#x9;&#x9;&#x9;--timerPeriodQty&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- If timerMode=INTERVAL then timerPeriod=MINUTE and timerPeriodQty=#of min.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If timerMode=CALENDER then timerPeriod=as is value and timerPeriodQty=as is value
+&#x9;&#x9;&#x9;&#x9;SET sqlStatement = &apos;SELECT (currentTime - INTERVAL &apos;&apos;&apos;||t.timerPeriodQty||&apos;&apos;&apos; &apos;||t.timerPeriod||&apos;) FROM  /services/databases/system/DUAL&apos;;
+&#x9;&#x9;&#x9;END FOR;
+
+&#x9;&#x9;&#x9;-- Get the interval timestamp
+&#x9;&#x9;&#x9;OPEN cursTime FOR sqlStatement;
+&#x9;&#x9;&#x9;FETCH cursTime INTO intervalTimestamp;
+&#x9;&#x9;&#x9;CLOSE cursTime;
+&#x9;&#x9;&#x9;IF (intervalTimestamp IS NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET intervalTimestamp = currentTime - INTERVAL &apos;5&apos; MINUTE;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;sqlStatement=&apos;||NVL(sqlStatement,&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;intervalTimestamp=&apos;||NVL(CAST(intervalTimestamp AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;SELECT various_columns FROM &apos;||MonitorServerPath||&apos;/SystemRequests/Views/SystemRequestsRunning WHERE START_TIME &gt; &apos;&apos;&apos;||intervalTimestamp||&apos;&apos;&apos;&apos;);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;----------------------------------
+&#x9;&#x9;&#x9;-- Get System Requests Running
+&#x9;&#x9;&#x9;----------------------------------
+&#x9;&#x9;&#x9;-- Get the partition number for the LOAD_TIME
+&#x9;&#x9;&#x9;CALL /shared/CoE/DatasourceOperations/F_GET_PARTITION_NUM_COE(CAST(currentTime AS DATE), rec.partition);
+
+&#x9;&#x9;&#x9;-- Fix path with double quotes if it needs it
+&#x9;&#x9;&#x9;CALL /shared/ASAssets/Utilities/repository/RepoUtils/applyReservedListToPath(SystemRequestsTablePath, null, SystemRequestsTablePath);
+&#x9;&#x9;&#x9;-- Insert record into table
+&#x9;&#x9;&#x9;SET sqlStatement = &apos;INSERT INTO &apos;||SystemRequestsTablePath||&apos; VALUES(r)&apos;;
+
+&#x9;&#x9;&#x9;-- Loop through the records
+&#x9;&#x9;&#x9;FOR r AS
+&#x9;&#x9;&#x9;&#x9;SELECT
+&#x9;&#x9;&#x9;&#x9;&#x9;rec.PARTITION PARTITION,
+&#x9;&#x9;&#x9;&#x9;&#x9;currentTime LOAD_TIME,
+&#x9;&#x9;&#x9;&#x9;&#x9;nodehost NODE_HOST,
+&#x9;&#x9;&#x9;&#x9;&#x9;nodeport NODE_PORT,
+&#x9;&#x9;&#x9;&#x9;&#x9;REQUEST_ID, 
+&#x9;&#x9;&#x9;&#x9;&#x9;PARENT_ID, 
+&#x9;&#x9;&#x9;&#x9;&#x9;SESSION_ID, 
+&#x9;&#x9;&#x9;&#x9;&#x9;TRANSACTION_ID, 
+&#x9;&#x9;&#x9;&#x9;&#x9;OWNER_ID, 
+&#x9;&#x9;&#x9;&#x9;&#x9;OWNER, 
+&#x9;&#x9;&#x9;&#x9;&#x9;REQUEST_TYPE, 
+&#x9;&#x9;&#x9;&#x9;&#x9;STATUS, 
+&#x9;&#x9;&#x9;&#x9;&#x9;CAST(DESCRIPTION AS CLOB) DESCRIPTION, 
+&#x9;&#x9;&#x9;&#x9;&#x9;START_TIME, 
+&#x9;&#x9;&#x9;&#x9;&#x9;END_TIME, 
+&#x9;&#x9;&#x9;&#x9;&#x9;TOTAL_DURATION, 
+&#x9;&#x9;&#x9;&#x9;&#x9;TOTAL_DURATION_STR, 
+&#x9;&#x9;&#x9;&#x9;&#x9;SERVER_DURATION, 
+&#x9;&#x9;&#x9;&#x9;&#x9;ROWS_AFFECTED, 
+&#x9;&#x9;&#x9;&#x9;&#x9;MAX_MEMORY, 
+&#x9;&#x9;&#x9;&#x9;&#x9;MAX_DISK, 
+&#x9;&#x9;&#x9;&#x9;&#x9;CURRENT_MEMORY, 
+&#x9;&#x9;&#x9;&#x9;&#x9;CURRENT_MEMORY_QUALIFIED,
+&#x9;&#x9;&#x9;&#x9;&#x9;CURRENT_DISK, 
+&#x9;&#x9;&#x9;&#x9;&#x9;CAST(MESSAGE AS CLOB) MESSAGE, 
+&#x9;&#x9;&#x9;&#x9;&#x9;MAX_USED_MEMORY, 
+&#x9;&#x9;&#x9;&#x9;&#x9;CURRENT_USED_MEMORY
+&#x9;&#x9;&#x9;&#x9;FROM /shared/CoE/MonitorServer/SystemRequests/Views/SystemRequestsActive
+&#x9;&#x9;&#x9;&#x9;WHERE START_TIME &gt; intervalTimestamp
+&#x9;&#x9;&#x9;DO
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(logResultsToDB) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rowCount = rowCount + 1;
+
+&#x9;&#x9;&#x9;&#x9;&#x9;-- Insert the row into the table
+&#x9;&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXECUTE IMMEDIATE sqlStatement;
+&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE RAISE;
+&#x9;&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Insert the row into the result output pipe.
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(r);
+&#x9;&#x9;&#x9;END FOR;
+
+&#x9;&#x9;&#x9;-- Update statistics for the table
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;IF (rowCount &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/CoE/MonitorServer/Datasources/PartitionProcs/P_UPDATE_STATISTICS(debug, schemaName, SystemRequestsTable, success);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;ELSE RAISE;
+&#x9;&#x9;&#x9;END;
+
+&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET errMessage = moduleName||&apos; : INSERT EXCEPTION: &apos;||CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR);
+&#x9;&#x9;&#x9;&#x9;CALL log(errMessage);
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(errMessage, 1,63900));
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END;
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1554739735111</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601333668980</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/186</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>GetEnvironment</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/165</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/175</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/210</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/286</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/284</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/174</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/209</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/173</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/208</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/191</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1554739735111</attribute>
+</metadata>

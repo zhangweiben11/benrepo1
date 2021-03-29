@@ -1,0 +1,44 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="_README" path="/shared/CoE/Deployment/DeploymentValidation/_README" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters></parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/*
+&#x9;Instructions:
+&#x9;--------------
+&#x9;These instructions are a quick guide to setting up the Deployment Validation module.
+
+&#x9;1. Enable and configure the datasource to be used in /shared/CoE/DatasourceOperations
+&#x9;&#x9;a. Test the data source
+
+&#x9;2. Drop/Create all resources
+&#x9;&#x9;Execute /shared/CoE/Deployment/DeploymentValidation/InitializeResources/DeploymentValidation_Init
+&#x9;&#x9;&#x9;This procedure will invoke the ASAssets Utilities procedure to create/drop the resources:
+&#x9;&#x9;&#x9;&#x9;&#x9;/shared/ASAssets/Utilities/deployment/validate/helpers/validateDeploymentInit
+&#x9;&#x9;&#x9;INPUT/OUTPUT:
+&#x9;&#x9;&#x9;&#x9;IN destroyResources&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=destroy resources.  N=do not destroy resources.
+&#x9;&#x9;&#x9;&#x9;IN datasourcePath&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The path to the oracle, sqlserver or postgres datasource
+&#x9;&#x9;&#x9;&#x9;IN catalogName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The catalog name if applicable otherwise null.
+&#x9;&#x9;&#x9;&#x9;IN schemaName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The schema name if applicable otherwise null.
+&#x9;&#x9;&#x9;&#x9;OUT status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- SUCCESS or an exception is thrown.
+
+*/
+PROCEDURE &quot;_README&quot;()
+BEGIN
+END</attribute>
+  <attribute name="creationDate" type="LONG">1588131862131</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1591638941829</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1588131862131</attribute>
+</metadata>

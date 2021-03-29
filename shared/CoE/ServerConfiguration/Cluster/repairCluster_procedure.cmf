@@ -1,0 +1,278 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="repairCluster" path="/shared/CoE/ServerConfiguration/Cluster/repairCluster" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="repairOption" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="remoteHostName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="remotePort" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="remoteUserName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="remoteDomainName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="remotePassword" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege user="anonymous" domain="composite" privileges="READ"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/server/operations/repairCluster" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="repairCluster" direction="IN">
+        <datatype name="repairCluster" extendedName="{http://www.compositesw.com/services/system/admin/server}repairCluster" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}repairCluster" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}repairCluster">
+          <schemaDatatype>
+            <datatype name="repairCluster" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="repairClusterRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="257">
+              <element name="option" namespace="http://www.compositesw.com/services/system/admin/server">
+                <datatype name="repairClusterOption" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="remoteHostName" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="remotePort" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+                <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+              </element>
+              <element name="remoteDomainName" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="remoteUserName" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+              <element name="remotePassword" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="repairClusterResponse" direction="OUT">
+        <datatype name="repairClusterResponse" extendedName="{http://www.compositesw.com/services/system/admin/server}repairClusterResponse" namespace="http://www.compositesw.com/services/system/admin/server" referenceDefinitionSet="/services/webservices/system/admin/server/operations/ServerSchema" referenceType="{http://www.compositesw.com/services/system/admin/server}repairClusterResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/server}repairClusterResponse">
+          <schemaDatatype>
+            <datatype name="repairClusterResponse" namespace="http://www.compositesw.com/services/system/admin/server" superTypeName="repairClusterResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/server" subType="ELEMENT_DECL" type="TREE" refId="513">
+              <element name="messages" namespace="http://www.compositesw.com/services/system/admin/server" minOccurs="0">
+                <datatype name="messageEntryList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="entry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                        <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="1281">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <reference refId="1025"/>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;repairCluster:
+
+&#x9;This procedure is used to automate repairing a node in a cluster.  
+&#x9;&#x9;&#x9;
+&#x9;INPUT:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=debug on.  N=debug off.
+&#x9;&#x9;option&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The option to perform the repair. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&quot;REGROUP&quot; - initiate a cluster regroup does not require the other input parameters.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&quot;REPAIR_FULL&quot; - a full repair of this node requires the other input parameters to send the repair request to.
+&#x9;&#x9;remoteHostName&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote host name to repair
+&#x9;&#x9;remotePort&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote port to repair
+&#x9;&#x9;remoteUserName&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote user name to repair
+&#x9;&#x9;remoteDomainName&#x9;&#x9;VARCHAR,&#x9;-- The remote domain name to repair
+&#x9;&#x9;remotePassword&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote user&apos;s password to repair
+
+&#x9;OUTPUT:
+&#x9;&#x9;result - SUCCESS or an exception is thrown
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;CSW Version:&#x9;Reason:
+&#x9;2020.300&#x9;07/02/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE repairCluster(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=debug on.  N=debug off.
+&#x9;IN repairOption&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The option to perform the repair. 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&quot;REGROUP&quot; - initiate a cluster regroup does not require the other input parameters.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--&#x9;&#x9;&quot;REPAIR_FULL&quot; - a full repair of this node requires the other input parameters to send the repair request to.
+&#x9;IN remoteHostName&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote host name to repair
+&#x9;IN remotePort&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote port to repair
+&#x9;IN remoteUserName&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote user name to repair
+&#x9;IN remoteDomainName&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote domain name to repair
+&#x9;IN remotePassword&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The remote password to repair
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;-- SUCCESS or an exception is thrown
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;repairCluster&apos;;
+&#x9;DECLARE debugPrintSize&#x9;&#x9;INTEGER DEFAULT 63900;
+&#x9;DECLARE request&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE response&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE faultResponse&#x9;&#x9;XML;
+&#x9;DECLARE errorMessage&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;SET result = &apos;SUCCESS&apos;;
+&#x9;IF (repairOption IS NULL OR LENGTH(TRIM(repairOption)) = 0) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The &quot;repairOption&quot; may not be null or empty.&apos;;
+&#x9;END IF;
+&#x9;IF (UPPER(repairOption) NOT IN (&apos;REGROUP&apos;,&apos;REPAIR_FULL&apos;)) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The &quot;repairOption&quot; must be one of (&apos;&apos;REGROUP&apos;&apos;,&apos;&apos;REPAIR_FULL&apos;&apos;)&apos;;
+&#x9;END IF;
+&#x9;IF (UPPER(repairOption) = &apos;REPAIR_FULL&apos;) THEN
+&#x9;&#x9;IF (remoteHostName IS NULL OR LENGTH(TRIM(remoteHostName)) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The &quot;remoteHostName&quot; may not be null or empty.&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (remotePort IS NULL OR remotePort = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The &quot;remotePort&quot; may not be null or empty.&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (remoteDomainName IS NULL OR LENGTH(TRIM(remoteDomainName)) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The &quot;remoteDomainName&quot; may not be null or empty.&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (remoteUserName IS NULL OR LENGTH(TRIM(remoteUserName)) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The &quot;remoteUserName&quot; may not be null or empty.&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (remotePassword IS NULL OR LENGTH(TRIM(remotePassword)) = 0) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The &quot;remotePassword&quot; may not be null or empty.&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (LOWER(TRIM(remoteHostName)) = &apos;localhost&apos;) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The &quot;remoteHostName&quot; may not reference &quot;localhost&quot;.  Actual hostnames must be used.&apos;;
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET request = 
+&#x9;&#x9;&#x9;&apos;&lt;server:repairCluster xmlns:server=&quot;http://www.compositesw.com/services/system/admin/server&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;server:option&gt;REPAIR_FULL&lt;/server:option&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;server:remoteHostName&gt;&apos;||CAST(XMLTEXT(remoteHostName) AS LONGVARCHAR)||&apos;&lt;/server:remoteHostName&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;server:remotePort&gt;&apos;||CAST(XMLTEXT(remotePort) AS LONGVARCHAR)||&apos;&lt;/server:remotePort&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;server:remoteDomainName&gt;&apos;||CAST(XMLTEXT(remoteDomainName) AS LONGVARCHAR)||&apos;&lt;/server:remoteDomainName&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;server:remoteUserName&gt;&apos;||CAST(XMLTEXT(remoteUserName) AS LONGVARCHAR)||&apos;&lt;/server:remoteUserName&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;server:remotePassword&gt;&apos;||CAST(XMLTEXT(remotePassword) AS LONGVARCHAR)||&apos;&lt;/server:remotePassword&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;&lt;/server:repairCluster&gt;&apos;;
+&#x9;ELSE
+&#x9;&#x9;SET request = 
+&#x9;&#x9;&#x9;&apos;&lt;server:repairCluster xmlns:server=&quot;http://www.compositesw.com/services/system/admin/server&quot;&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  &lt;server:option&gt;REGROUP&lt;/server:option&gt;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;&lt;/server:repairCluster&gt;&apos;;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos; : request=&apos;||CHR(10)||NVL(CAST(request AS LONGVARCHAR),&apos;null&apos;));
+&#x9;END IF;
+
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;-- Invoke the web service API to repair a node in a cluster.
+&#x9;&#x9;CALL /services/webservices/system/admin/server/operations/repairCluster(request, response, faultResponse);
+&#x9;&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;&#x9;RAISE ex VALUE CAST(faultResponse AS LONGVARCHAR);
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : response=&apos;||CHR(10)||NVL(CAST(response AS LONGVARCHAR),&apos;null&apos;));
+&#x9;&#x9;END IF;
+&#x9;EXCEPTION
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET errorMessage = CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR);
+&#x9;&#x9;&#x9;CALL LOG(&apos;COEUtilities : EXCEPTION=[&apos;||errorMessage||&apos;]&apos;);
+&#x9;&#x9;&#x9;RAISE ex VALUE errorMessage;
+&#x9;END;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1593435261919</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1595075260839</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/112</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/102</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/117</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1593435261919</attribute>
+</metadata>

@@ -1,0 +1,290 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="P_PARTITION_ROW_DISTRIBUTION" path="/shared/CoE/MonitorServer/Datasources/PartitionProcs/sqlserver/P_PARTITION_ROW_DISTRIBUTION" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="databaseType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="table_name">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="partition_name">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="boundary_definition">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="range_type">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="partition_number">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="num_rows">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/string/extractTextList" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textList" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="separator" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="preserveDoubleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveSingleQuotes" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveParenthesis" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="preserveQualifier" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="trimResults" direction="IN">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="textExpression">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Customize/commonValues" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PackagedQueries/00_ExecuteDMLRowDist" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="sqlStatement" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="table_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="boundary_definition">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="range_type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_number">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="num_rows">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="partition_position">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;P_PARTITION_ROW_DISTRIBUTION:
+
+&#x9;Provides a mechanism to dynamically display the partition row distribution.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE P_PARTITION_ROW_DISTRIBUTION(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=debug on.  N=debug off.
+&#x9;IN databaseType&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;-- The type of database configured.
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;PIPE (&#x9;&#x9;-- Partition Distribution output
+&#x9;&#x9;table_name&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;partition_name&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;boundary_definition&#x9;&#x9;VARCHAR,
+&#x9;&#x9;range_type&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;partition_number&#x9;&#x9;INTEGER,
+&#x9;&#x9;num_rows&#x9;&#x9;&#x9;&#x9;BIGINT
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE defaultDatabaseType&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;DEFAULT &apos;sqlserver&apos;;
+&#x9;DECLARE schemaName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.schemaName;
+&#x9;DECLARE HealthCheckTable &#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.HealthCheckTable;
+&#x9;DECLARE SystemRequestsTable&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.SystemRequestsTable;
+&#x9;DECLARE SystemEventTable&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.SystemEventTable;
+&#x9;DECLARE tableList&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR&#x9;DEFAULT HealthCheckTable||&apos;,&apos;||SystemRequestsTable||&apos;,&apos;||SystemEventTable;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE partition_position&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;-- Validate schema name
+&#x9;if (schemaName IS NULL or length(trim(schemaName)) = 0) then
+&#x9;&#x9;raise ex value &apos;The commonValues.schemaName is null or empty.  Please configure it properly.&apos;;
+&#x9;end if;
+&#x9;IF (databaseType &lt;&gt; defaultDatabaseType) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The commonValues.databaseType is configured for &quot;&apos;||databaseType||&apos;&quot; instead of &quot;&apos;||defaultDatabaseType||&apos;&quot;.&apos;;
+&#x9;END IF;
+
+/************************************************************************************************
+ * Query partitioned tables
+ ************************************************************************************************/
+&#x9;FOR p AS 
+&#x9;&#x9;SELECT textExpression TABLE_NAME 
+&#x9;&#x9;FROM /shared/ASAssets/Utilities/string/extractTextList(tableList, &apos;,&apos;, 0,0,0,0,1)
+&#x9;&#x9;WHERE textExpression IS NOT NULL AND LENGTH(TRIM(textExpression)) &gt; 0
+&#x9;DO
+&#x9;&#x9;SET partition_position = 0;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;---------------------------------------------------&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(&apos;TABLE=&apos;||NVL(p.TABLE_NAME,&apos;null&apos;));
+&#x9;&#x9;&#x9;CALL PRINT(&apos;---------------------------------------------------&apos;);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Get the partition row distribution
+&#x9;&#x9;SET sqlStatement = 
+&#x9;&#x9;&#x9;&#x9;&apos;select t.name as table_name&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;     , DateAdd(DAY,partition_number,DateFromParts(Year(GetDate())-1,12,31)) partition_name&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;     , DateAdd(DAY,partition_number,DateFromParts(Year(GetDate()),12,31)) boundary_definition&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;     , case when pf.boundary_value_on_right=1 then &apos;&apos;RIGHT&apos;&apos; else &apos;&apos;LEFT&apos;&apos; end range_type&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;     , p.partition_number&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;     , p.rows num_rows&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;     , cast(null as integer) partition_position&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;from sys.tables t &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;    join sys.indexes i on t.object_id = i.object_id &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;    join sys.partition_schemes ps on i.data_space_id = ps.data_space_id &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;    join sys.partition_functions pf on ps.function_id = pf.function_id &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;    join sys.partitions p on i.object_id = p.object_id and i.index_id = p.index_id &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;    join sys.partition_range_values prv on pf.function_id = prv.function_id and p.partition_number = prv.boundary_id &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;where i.index_id &lt; 2  &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  and i.object_id = object_id(&apos;&apos;&quot;&apos;||schemaName||&apos;&quot;.&quot;&apos;||p.TABLE_NAME||&apos;&quot;&apos;&apos;) &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  and p.rows &gt; 0&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;order by p.partition_number&apos;;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL print(&apos;sqlStatement=&apos;||CHR(10)||NVL(sqlStatement,&apos;null&apos;)||CHR(10));
+&#x9;&#x9;END IF;
+&#x9;&#x9;FOR r AS SELECT * FROM /shared/CoE/MonitorServer/Datasources/PackagedQueries/&quot;00_ExecuteDMLRowDist&quot;(sqlStatement) do
+&#x9;&#x9;&#x9;SET partition_position = partition_position + 1;
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(&apos;ROW: table_name=[&apos;||r.table_name||&apos;]  partition_name=[&apos;||r.partition_name||&apos;]  boundary_definition=[&apos;||r.boundary_definition||&apos;]  range_type=[&apos;||NVL(r.range_type,&apos;null&apos;)||&apos;]  partition_number=[&apos;||r.partition_number||&apos;]  num_rows=[&apos;||r.num_rows||&apos;]  partition_position=[&apos;||partition_position||&apos;]&apos;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;-- Insert into the output pipe cursor
+&#x9;&#x9;&#x9;INSERT INTO result VALUES (r.table_name, r.partition_name, CAST(r.boundary_definition AS DATE), r.range_type, r.partition_number, r.num_rows);
+&#x9;&#x9;END FOR;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+END </attribute>
+  <attribute name="creationDate" type="LONG">1410976495807</attribute>
+  <attribute name="creatorUserDomain" type="STRING">ldap</attribute>
+  <attribute name="creatorUserName" type="STRING">zkxl6un</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601333668980</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">10/93</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/63</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/88</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/99</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/64</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/65</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+</metadata>

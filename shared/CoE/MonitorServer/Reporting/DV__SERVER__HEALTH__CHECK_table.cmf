@@ -1,0 +1,306 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="DV_SERVER_HEALTH_CHECK" path="/shared/CoE/MonitorServer/Reporting/DV_SERVER_HEALTH_CHECK" type="TABLE" subtype="SQL_TABLE" changeToken="0" tableType="VIEW">
+  <columns>
+    <column name="PARTITION" nullable="true">
+      <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="LOAD_TIME" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="NODE_HOST" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="NODE_PORT" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_NODES" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CLUSTER_NAME" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CLUSTER_IS_CLUSTER" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CLUSTER_IS_TIMEKEEPER" nullable="true">
+      <datatype type="STRING" maxLength="5"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CLUSTER_STATUS" nullable="true">
+      <datatype type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CLUSTER_TOTAL_TIMEKEEPER_NODES" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="CLUSTER_TIMEKEEPER_NODES" nullable="true">
+      <datatype type="STRING" maxLength="4000"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_ACTIVE_REQUESTS" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="BIG_HEAP_REQUESTS" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="EVENT_TIME" nullable="true">
+      <datatype type="DATETIME"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="TOTAL_HEAP_USED_PERCENT" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEMORY_BYTES" nullable="true">
+      <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEMORY_BYTES_AMOUNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEMORY_BYTES_TYPE" nullable="true">
+      <datatype type="STRING" maxLength="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEMORY_MAX" nullable="true">
+      <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEMORY_MAX_AMOUNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MEMORY_MAX_TYPE" nullable="true">
+      <datatype type="STRING" maxLength="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MANAGED_HEAP_USED_PERCENT" nullable="true">
+      <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MANAGED_BYTES" nullable="true">
+      <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MANAGED_BYTES_AMOUNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MANAGED_BYTES_TYPE" nullable="true">
+      <datatype type="STRING" maxLength="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MANAGED_MAX" nullable="true">
+      <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MANAGED_MAX_AMOUNT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="MANAGED_MAX_TYPE" nullable="true">
+      <datatype type="STRING" maxLength="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SYSTEM_CPU_USED_PERCENT" nullable="true">
+      <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SYSTEM_MEMORY_USED_MB" nullable="true">
+      <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="SYSTEM_MEMORY_AVAIL_MB" nullable="true">
+      <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes></indexes>
+  <foreignKeys></foreignKeys>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/shared/CoE/DatasourceOperations/TDVOperations_sqlserver_2016/tdvkpi/dbo/DV_SERVER_HEALTH_CHECK" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="PARTITION" nullable="false">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="LOAD_TIME" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="NODE_HOST" nullable="false">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="NODE_PORT" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="TOTAL_NODES">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CLUSTER_NAME">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CLUSTER_IS_CLUSTER">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="CLUSTER_IS_TIMEKEEPER">
+        <datatype type="STRING" maxLength="5"/>
+      </element>
+      <element name="CLUSTER_STATUS">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="CLUSTER_TOTAL_TIMEKEEPER_NODES">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="CLUSTER_TIMEKEEPER_NODES">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="TOTAL_ACTIVE_REQUESTS">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="BIG_HEAP_REQUESTS">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="EVENT_TIME" nullable="false">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="TOTAL_HEAP_USED_PERCENT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MEMORY_BYTES">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="MEMORY_BYTES_AMOUNT">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      </element>
+      <element name="MEMORY_BYTES_TYPE">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="MEMORY_MAX">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="MEMORY_MAX_AMOUNT">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      </element>
+      <element name="MEMORY_MAX_TYPE">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="MANAGED_HEAP_USED_PERCENT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="MANAGED_BYTES">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="MANAGED_BYTES_AMOUNT">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      </element>
+      <element name="MANAGED_BYTES_TYPE">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="MANAGED_MAX">
+        <datatype type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      </element>
+      <element name="MANAGED_MAX_AMOUNT">
+        <datatype type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+      </element>
+      <element name="MANAGED_MAX_TYPE">
+        <datatype type="STRING" maxLength="2"/>
+      </element>
+      <element name="SYSTEM_CPU_USED_PERCENT">
+        <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+      </element>
+      <element name="SYSTEM_MEMORY_USED_MB">
+        <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+      </element>
+      <element name="SYSTEM_MEMORY_AVAIL_MB">
+        <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">SELECT * FROM /shared/CoE/DatasourceOperations/TDVOperations_sqlserver_2016/tdvkpi/dbo/DV_SERVER_HEALTH_CHECK</attribute>
+  <attribute name="creationDate" type="LONG">1601334398703</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601334399111</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1601334398703</attribute>
+</metadata>

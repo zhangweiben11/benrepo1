@@ -1,0 +1,73 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="F_GET_PARTITION_NUM_COE" path="/shared/CoE/DatasourceOperations/F_GET_PARTITION_NUM_COE" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0" isFunction="true">
+  <parameters>
+    <parameter name="startDate" direction="IN" nullable="true">
+      <datatype name="DATE" type="DATE"/>
+    </parameter>
+    <parameter name="partitionNum" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/shared/CoE/DatasourceOperations/TDVOperations_sqlserver_2016/tdvkpi/dbo/F_GET_PARTITION_NUM_COE" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="@RETURN_VALUE" direction="RETURN">
+        <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+      </element>
+      <element name="@inDate" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;F_GET_PARTITION_NUM_COE:
+
+&#x9;Get the partion number based on the &quot;startDate&quot;.
+
+&#x9;Usage in a query:
+&#x9;&#x9;select * from /shared/CoE/MonitorServer/Reporting/DV_SERVER_HEALTH_CHECK
+&#x9;&#x9;&#x9;where PARTITION &lt;= F_GET_PARTITION_NUM_COE(CURRENT_DATE)
+&#x9;&#x9;&#x9;  and PARTITION &gt;= F_GET_PARTITION_NUM_COE(TO_DATE(&apos;2020-04-17&apos;))
+                                                          ^
+                                                          | use the TO_DATE() funtion around a date string literal
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE F_GET_PARTITION_NUM_COE(
+&#x9;IN startDate&#x9;&#x9;&#x9;DATE,
+&#x9;OUT partitionNum&#x9;&#x9;INTEGER
+)
+BEGIN
+&#x9;CALL /shared/CoE/DatasourceOperations/TDVOperations_sqlserver_2016/tdvkpi/dbo/F_GET_PARTITION_NUM_COE(partitionNum, startDate);
+END</attribute>
+  <attribute name="creationDate" type="LONG">1590727190278</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601334397792</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">true</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1590727190278</attribute>
+</metadata>

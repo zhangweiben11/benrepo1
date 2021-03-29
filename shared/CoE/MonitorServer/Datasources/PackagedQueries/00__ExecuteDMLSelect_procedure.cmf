@@ -1,0 +1,82 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="00_ExecuteDMLSelect" path="/shared/CoE/MonitorServer/Datasources/PackagedQueries/00_ExecuteDMLSelect" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[sqlserver packaged query to execute DML dynamic SQL statements.]]></annotation>
+  <parameters>
+    <parameter name="inputSQL" direction="IN" nullable="true">
+      <datatype name="VARCHAR" extendedName="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype extendedName="CURSOR" type="TABLE" refId="256">
+        <element name="col1TS">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="col2STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="col3INT">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="col4STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col5STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col6STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="2147483647"/>
+        </element>
+        <element name="col7INT">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="col8STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col9STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col10STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col11STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col12STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col13STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col14STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col15STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="col16STR">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/shared/CoE/DatasourceOperations/TDVOperations_sqlserver_2016" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">&lt;version 2&gt;multipartseparator=;+;
+{0}; ;
+</attribute>
+  <attribute name="creationDate" type="LONG">1590726106681</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601334396533</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/CoE/DatasourceOperations/TDVOperations_sqlserver_2016</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1590726106681</attribute>
+</metadata>

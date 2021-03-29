@@ -1,0 +1,264 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="_README" path="/shared/CoE/MonitorServer/_README" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters></parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/*
+&#x9;Requirements:
+&#x9;--------------
+&#x9;Database - Only the following 3 databases are supported.  If using postgres in a TDV cluster it must be accessible to all nodes in a cluster.  
+&#x9;&#x9;SQL Server 2016 or higher is required.
+&#x9;&#x9;Oracle 11g or higher.
+&#x9;&#x9;Postgres 9 or higher.
+
+&#x9;Instructions:
+&#x9;--------------
+&#x9;These instructions are a quick guide to setting up the Monitor Server module.
+
+&#x9;1. Configure the datasource in /shared/CoE/DatasourceOperations
+&#x9;&#x9;Since this is a multi-purpose database used for other modules, it may already be configured.
+&#x9;&#x9;Test it to make sure it works.
+
+&#x9;2. Modify values in commonValues
+&#x9;&#x9;/shared/CoE/MonitorServer/Customize/commonValues
+&#x9;&#x9;&#x9;[DV Server Maintenance List]
+&#x9;&#x9;&#x9;&#x9;serverMaintenanceList - do not modify.
+&#x9;&#x9;&#x9;&#x9;&#x9;Only modify using /shared/CoE/MonitorServer/Admin/performServerMaintenance to bring a node up or down for maintenance.
+
+&#x9;&#x9;&#x9;[Email Distribution List]
+&#x9;&#x9;&#x9;&#x9;defaultEmail - the default email alias list to send email alerts.
+&#x9;&#x9;&#x9;&#x9;defaultEmailHeader - the default email header.
+
+&#x9;&#x9;&#x9;[Server Threshold Health Logging Values]
+&#x9;&#x9;&#x9;&#x9;totalHeapUsedPercentThreshold
+&#x9;&#x9;&#x9;&#x9;bigHeapThresholdBytes
+&#x9;&#x9;&#x9;&#x9;getSystemMemoryCPU
+
+&#x9;&#x9;&#x9;[Server Threshold Health Probe Limits]
+&#x9;&#x9;&#x9;&#x9;totalHeapUsedPercentLimit
+&#x9;&#x9;&#x9;&#x9;managedMemoryUsedPercentLimit
+&#x9;&#x9;&#x9;&#x9;totalActiveBigHeapRequestsLimit
+&#x9;&#x9;&#x9;&#x9;totalActiveRequestsLimit
+
+&#x9;&#x9;&#x9;[Cluster Awareness]
+&#x9;&#x9;&#x9;&#x9;dedicatedTimeKeeperHostname - only modify if a cluster has a dedicated timekeeper.
+&#x9;&#x9;&#x9;&#x9;dedicatedTimeKeeperPort - only modify if a cluster has a dedicated timekeeper.
+&#x9;&#x9;&#x9;&#x9;totalNumberWorkerNodes - set the number of worker nodes.  Rules described in commonValues.
+
+&#x9;&#x9;&#x9;[System Memory/CPU Usage]
+&#x9;&#x9;&#x9;&#x9;CPUCheckerCommandPath - configure correct operating system command line for CPU utilization.
+&#x9;&#x9;&#x9;&#x9;memoryCheckerCommandPath - configure correct operating system command line for memory utilization.
+
+&#x9;&#x9;&#x9;[CoE Database Variables]
+&#x9;&#x9;&#x9;&#x9;tableFilegroupName - used by MonitorServer_Init during initialization.
+&#x9;&#x9;&#x9;&#x9;indexFilegroupName - used by MonitorServer_Init during initialization.
+&#x9;&#x9;&#x9;&#x9;tableCompression - used by MonitorServer_Init during initialization.
+&#x9;&#x9;&#x9;&#x9;tableRetentionDays - number of days to retain data.
+
+&#x9;&#x9;&#x9;&#x9;** The following are modified automatically by MonitorServer_Init.  No need to modify manaully.
+&#x9;&#x9;&#x9;&#x9;databaseType
+&#x9;&#x9;&#x9;&#x9;catalogName
+&#x9;&#x9;&#x9;&#x9;schemaName
+
+&#x9;&#x9;&#x9;[CoE Path Variables]
+&#x9;&#x9;&#x9;&#x9;Do not change these variables unless the /shared/CoE path is changed.
+
+&#x9;3. Execute &quot;MonitorServer_Init&quot; in /shared/CoE/MonitorServer/Datasources/InitializeTable/MonitorServer_Init
+&#x9;&#x9;IN destroyResources&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=destroy resources.  N=do not destroy resources.
+&#x9;&#x9;IN createResources&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=create resources.  N=do not create resources.
+&#x9;&#x9;IN datasourcePath&#x9;&#x9;&#x9;&#x9;VARCHAR(4000),&#x9;-- The path to the oracle, sqlserver or postgres datasource
+&#x9;&#x9;IN catalogName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The catalog name if applicable otherwise null.
+&#x9;&#x9;IN schemaName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The schema name if applicable otherwise null.
+
+&#x9;4. Determine which triggers to turn on.
+
+&#x9;&#x9;-----------------------
+&#x9;&#x9;Alert Triggers - /shared/CoE/MonitorServer/Triggers/Alerts
+&#x9;&#x9;-----------------
+&#x9;&#x9;&#x9;trAlertCacheRefresh - [every 15 min] - Send email alert notifications for the cache refresh alerts. 
+&#x9;&#x9;&#x9;&#x9;events=[CacheRefreshFailure, CacheRefreshSuccess]
+&#x9;&#x9;&#x9;&#x9;Invokes the following procedures: /shared/CoE/MonitorServer/Alerts/pAlertCacheRefresh
+
+&#x9;&#x9;&#x9;trAlertClusterServer - [every 15 min] - Send email alert notifications for the cluster alerts. 
+&#x9;&#x9;&#x9;&#x9;events=[ClusterServerDisconnected, ClusterServerConnected, ClusterServerShunned, ClusterServerJoined]
+&#x9;&#x9;&#x9;&#x9;Invokes the following procedures: /shared/CoE/MonitorServer/Alerts/pAlertClusterServer
+
+&#x9;&#x9;&#x9;trAlertDataSource - [every 15 min] - Send email alert notifications for the data source alerts. 
+&#x9;&#x9;&#x9;&#x9;events=[DataSourceDown, DataSourceUp]
+&#x9;&#x9;&#x9;&#x9;Invokes the following procedures: /shared/CoE/MonitorServer/Alerts/pAlertDataSource
+
+&#x9;&#x9;&#x9;trAlertFreeMemory - [every 15 min] - Send email alert notifications for the free memory alerts. 
+&#x9;&#x9;&#x9;&#x9;events=[FreeMemory]
+&#x9;&#x9;&#x9;&#x9;Invokes the following procedures: /shared/CoE/MonitorServer/Alerts/pAlertFreeMemory
+
+&#x9;&#x9;&#x9;trAlertServerProcess - [every 15 min] - Send email alert notifications for the server process alerts. 
+&#x9;&#x9;&#x9;&#x9;events=[ServerProcessStop, ServerProcessStart]
+&#x9;&#x9;&#x9;&#x9;Invokes the following procedures: /shared/CoE/MonitorServer/Alerts/pAlertServerProcess
+
+&#x9;&#x9;&#x9;trAlertServerStatus - [every 15 min] - Send email alert notifications for the server status alerts. 
+&#x9;&#x9;&#x9;&#x9;events=[ServerStatusBusy, ServerStatusDown, ServerStatusUp]
+&#x9;&#x9;&#x9;&#x9;Invokes the following procedures: /shared/CoE/MonitorServer/Alerts/pAlertServerStatus
+
+&#x9;&#x9;&#x9;trAlertTerminateIdleSessions - [every 15 min] - Send email alert notifications for the terminate idle sessions alerts. 
+&#x9;&#x9;&#x9;&#x9;events=[TerminateIdleSessions]
+&#x9;&#x9;&#x9;&#x9;Invokes the following procedures: /shared/CoE/MonitorServer/Alerts/pAlertTerminateIdleSessions
+
+&#x9;&#x9;-----------------------
+&#x9;&#x9;System Event Triggers - /shared/CoE/MonitorServer/Triggers/SystemEvents
+&#x9;&#x9;----------------------
+&#x9;&#x9;Cache Refresh - [optional] - Detect when a cache refresh fails and when successful.
+&#x9;&#x9;&#x9;Invokess the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trSystemEventCacheRefreshFailure - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;CacheRefreshFailure&quot; event occurs.
+&#x9;&#x9;&#x9;trSystemEventCacheRefreshSuccess - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;CacheRefreshSuccess&quot; event occurs.
+
+&#x9;&#x9;Cluster Server - [recommended for cluster only] - receives cluster system events.
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trSystemEventClusterServerConnected    - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;ClusterServerConnected&quot; event occurs.
+&#x9;&#x9;&#x9;trSystemEventClusterServerDisconnected - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;ClusterServerDisconnected&quot; event occurs.
+&#x9;&#x9;&#x9;trSystemEventClusterServerJoined       - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;ClusterServerJoined&quot; event occurs.
+&#x9;&#x9;&#x9;trSystemEventClusterServerShunned      - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;ClusterServerShunned&quot; event occurs.
+
+&#x9;&#x9;Data Source - [optional] - Detect when a data source goes down and comes back up.
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trSystemEventDataSourceDown - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;DataSourceDown&quot; event occurs.
+&#x9;&#x9;&#x9;trSystemEventDataSourceUp   - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;DataSourceUp&quot; event occurs.
+
+&#x9;&#x9;Server Process - [optional] - Detect when a TDV server process is started or stopped.
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trSystemEventServerProcessStop  - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;ServerStop&quot; event occurs.  [map ServerStop to ServerProcessStop]
+&#x9;&#x9;&#x9;trSystemEventServerProcessStart - [system event] - log data into DV_SERVER_SYSTEM_EVENT when a &quot;ServerStart&quot; event occurs. [map ServerStart to ServerProcessStart]
+
+&#x9;&#x9;-----------------------
+&#x9;&#x9;Timer Triggers - /shared/CoE/MonitorServer/Triggers/Timer
+&#x9;&#x9;-----------------
+&#x9;&#x9;Memory Health - [recommended] - periodically test memory for exceeding the threshold and clear memory if needed.
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Memory/pFreeMemoryAtThreshold
+&#x9;&#x9;&#x9;trTimerFreeMemoryAtThreshold - [every 15 min] - Execute free unused memory when (totalHeapUsedPercent &gt; commonValues.totalHeapUsedPercentThreshold).
+&#x9;&#x9;&#x9;
+&#x9;&#x9;Server Health Check - [recommended] - monitor and log server health and system requests.
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/HealthCheck/pServerHealthCheck
+&#x9;&#x9;&#x9;trTimerServerHealthCheck - [every 2 min] - check the health of the server and log data into DV_SERVER_HEALTH_CHECK and DV_SERVER_SYS_REQUESTS.
+
+&#x9;&#x9;Terminate Idle Sessions - [optional] - terminate idle sessions longer than the idle minutes passed from the trigger to the procedure.
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/ASAssets/Utilities/request/terminateIdleSessions(60) - pass in 60 min
+&#x9;&#x9;&#x9;trTimerTerminateIdleSessions - [every 30 min] - check for idle sessions longer than 60 minutes.
+
+&#x9;&#x9;Truncate Partitions - [mandatory] Database self maintenance.
+&#x9;&#x9;&#x9;Invokes the following procedures:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Datasources/PartitionProcs
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Datasources/PackagedQueries
+&#x9;&#x9;&#x9;trTimerTruncatePartitions - [once a day at 12:00 AM] - Truncate/Delete the monitor server database tables based on commonValues.tableRetentionDays.
+&#x9;&#x9;&#x9;&#x9;This allows this application to be self-maintaining.  
+
+&#x9;&#x9;-----------------------
+&#x9;&#x9;User Defined Triggers - /shared/CoE/MonitorServer/Triggers/UserDefined
+&#x9;&#x9;-----------------------
+&#x9;&#x9;Free Memory - [optional] - log when memory garbage collection executes to free unused memory.
+&#x9;&#x9;&#x9;Event generated from the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Memory/pFreeMemoryAtThreshold - event=FreeMemory
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trUserDefinedFreeMemory - log data into DV_SERVER_SYSTEM_EVENT when a &quot;FreeMemory&quot; event occurs.
+
+&#x9;&#x9;Server Status - [mandatory] - log a user defined event for server status.
+&#x9;&#x9;&#x9;Event generated from the following procedures:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Admin/performServerMaintenance - status=SERVER_DOWN event=ServerStatusDown or status=SERVER_UP, event=ServerStatusUp
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/HealthProbe/pServerHealthProbe - status=SERVER_BUSY, event=ServerStatusBusy
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trUserDefinedServerStatusBusy - log data into DV_SERVER_SYSTEM_EVENT when a server status &quot;ServerStatusBusy&quot; event occurs.
+&#x9;&#x9;&#x9;trUserDefinedServerStatusDown - log data into DV_SERVER_SYSTEM_EVENT when a server status &quot;ServerStatusDown&quot; event occurs.
+&#x9;&#x9;&#x9;trUserDefinedServerStatusUp -   log data into DV_SERVER_SYSTEM_EVENT when a server status &quot;ServerStatusUp&quot; event occurs.
+
+&#x9;&#x9;Terminate Idle Sessions - [optional] - log when idle sessions are terminated.
+&#x9;&#x9;&#x9;Event generated from the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Sessions/pTerminateIdleSessions - event=TerminateIdleSessions
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trUserDefinedTerminateIdleSessions - log data into DV_SERVER_SYSTEM_EVENT when a &quot;TerminateIdleSessions&quot; event occurs.
+
+&#x9;&#x9;Truncate Partition Success - [recommended] - log when truncate partitions has been successfully executed on a table.
+&#x9;&#x9;&#x9;Event generated from the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Datasources/PartitionProcs/P_TRUNCATE_PARTITION - event=TruncatePartitionSuccess
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trUserDefinedServerMaintenanceDown - log data into DV_SERVER_SYSTEM_EVENT when a &quot;TruncatePartitionSuccess&quot; event occurs.
+
+&#x9;&#x9;Truncate Partition Failure - [mandatory] - log when truncate partitions has failed during while executing on a table.
+&#x9;&#x9;&#x9;Event generated from the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/Datasources/PartitionProcs/P_TRUNCATE_PARTITION - event=TruncatePartitionFailure
+&#x9;&#x9;&#x9;Invokes the following procedure:
+&#x9;&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/SystemEvent/pSystemEvent
+&#x9;&#x9;&#x9;trUserDefinedServerMaintenanceDown - log data into DV_SERVER_SYSTEM_EVENT when a &quot;TruncatePartitionFailure&quot; event occurs.
+
+&#x9;5. Integrate the Load Balancer with &quot;pServerHealthProbe&quot;
+&#x9;&#x9;Web Service:
+&#x9;&#x9;&#x9;/services/webservices/CoE/MonitorServer
+&#x9;&#x9;&#x9;&#x9;http://&lt;hostname&gt;:9400/soap12/CoE/MonitorServer?wsdl
+&#x9;&#x9;&#x9;The SOAP request:
+&#x9;&#x9;&#x9;&#x9;&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot; xmlns:tib=&quot;http://MonitorServer/tibco.com/&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;   &lt;soap:Header/&gt;
+&#x9;&#x9;&#x9;&#x9;   &lt;soap:Body&gt;
+&#x9;&#x9;&#x9;&#x9;      &lt;tib:WrapperedPserverhealthprobe/&gt;
+&#x9;&#x9;&#x9;&#x9;   &lt;/soap:Body&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/soap:Envelope&gt;
+
+&#x9;&#x9;&#x9;The SOAP response example:
+&#x9;&#x9;&#x9;&#x9;&lt;ns1:Envelope xmlns:ns1=&quot;http://www.w3.org/2003/05/soap-envelope&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;   &lt;ns1:Body&gt;
+&#x9;&#x9;&#x9;&#x9;      &lt;ns2:WrapperedPserverhealthprobeResponse xmlns:ns2=&quot;http://MonitorServer/tibco.com/&quot;&gt;
+&#x9;&#x9;&#x9;&#x9;         &lt;ns2:pServerHealthProbeProbetime&gt;2020-06-01T15:30:10.138Z&lt;/ns2:pServerHealthProbeProbetime&gt;
+&#x9;&#x9;&#x9;&#x9;         &lt;ns2:pServerHealthProbeProbestatus&gt;SERVER_READY&lt;/ns2:pServerHealthProbeProbestatus&gt;
+&#x9;&#x9;&#x9;&#x9;         &lt;ns2:pServerHealthProbeProbemessage&gt;N/A&lt;/ns2:pServerHealthProbeProbemessage&gt;
+&#x9;&#x9;&#x9;         &lt;ns2:pServerHealthProbeProbescore&gt;0&lt;/ns2:pServerHealthProbeProbescore&gt;
+&#x9;&#x9;&#x9;&#x9;      &lt;/ns2:WrapperedPserverhealthprobeResponse&gt;
+&#x9;&#x9;&#x9;&#x9;   &lt;/ns1:Body&gt;
+&#x9;&#x9;&#x9;&#x9;&lt;/ns1:Envelope&gt;
+
+&#x9;&#x9;Rest:
+&#x9;&#x9;&#x9;/services/webservices/CoE/MonitorServer
+&#x9;&#x9;&#x9;&#x9;http://&lt;hostname&gt;:9400/json/CoE/MonitorServer/pServerHealthProbe
+
+&#x9;&#x9;JDBC:
+&#x9;&#x9;&#x9;Database: &#x9;CoE
+&#x9;&#x9;&#x9;Catalog:&#x9;MonitorServer
+&#x9;&#x9;&#x9;Schema:&#x9;&#x9;HelathProbe
+&#x9;&#x9;&#x9;Procedure:&#x9;pServerHealthProbe
+
+&#x9;&#x9;Implementation:
+&#x9;&#x9;&#x9;/shared/CoE/MonitorServer/HealthProbe/pServerHealthProbe
+&#x9;&#x9;&#x9;&#x9;OUT ProbeTime &#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- Timestamp of the invocation
+&#x9;&#x9;&#x9;&#x9;OUT ProbeStatus &#x9;VARCHAR,   &#x9;&#x9;-- Possible values are SERVER_READY, SERVER_DOWN or SERVER_BUSY.
+&#x9;&#x9;&#x9;&#x9;OUT ProbeMessage &#x9;VARCHAR(4000),  -- The reason for health failure.
+&#x9;&#x9;&#x9;&#x9;OUT ProbeScore&#x9;&#x9;INTEGER&#x9;&#x9;&#x9;-- When ProbeStatus=SERVER_BUSY the ProbeScore indicates a score of busy on a scale of 1-100.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--    The load balancer should choose the TDV node with the least busy score.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When ProbeStatus=SERVER_READY the ProbeScore=0
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- When ProbeStatus=SERVER_DOWN the ProbeScore=-1
+)
+*/
+PROCEDURE &quot;_README&quot;()
+BEGIN
+END</attribute>
+  <attribute name="creationDate" type="LONG">1590841381186</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1599151530223</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1590841381186</attribute>
+</metadata>

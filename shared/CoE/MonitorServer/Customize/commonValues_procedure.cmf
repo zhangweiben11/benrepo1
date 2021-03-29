@@ -1,0 +1,461 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="commonValues" path="/shared/CoE/MonitorServer/Customize/commonValues" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters></parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/*
+&#x9;commonValues:
+
+&#x9;This procedure provides a standard place to define common values for all procedures.
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2020.200&#x9;05/27/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE commonValues()
+BEGIN
+&#x9;-------------------------------------------------------
+&#x9;-- Common public constants for all procedures
+&#x9;-------------------------------------------------------
+
+&#x9;-----------------------------------------------
+&#x9;-- [DV Server Maintenance List]
+&#x9;-----------------------------------------------
+&#x9;-- The list is empty [&apos;&apos;] when there is no server maintenance being performed.
+&#x9;-- Do NOT set to null.  It must contain single quotes.
+&#x9;-- When there is server maintenance, this variable will contain the &quot;actual&quot; server host name.
+&#x9;--    The following example indicates that 2 nodes in the cluster are down.
+&#x9;--       Example: host1.co.com,host2,co.com
+&#x9;--    Instructions:  
+&#x9;--       This variable may be edited manually or updated automatically using /MonitorServer/Admin/performServerMaintenance.
+&#x9;--       It may &quot;not&quot; contain alias names.  The name must be contained within /MonitorServer/Serverinfo/getServerNames.hostName field to be valid.
+&#x9;--       This variable list is maintained either by changing it locally or through the external API call.
+&#x9;--       The setting will impact &quot;pServerHealthProbe&quot; which looks at this field and returns SERVER_READY or SERVER_DOWN to the load balancer
+&#x9;--          based on the presence/abasence of the a node&apos;s hostname in this field.
+&#x9;DECLARE PUBLIC serverMaintenanceList&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;&apos;;
+
+&#x9;-----------------------------------------------
+&#x9;-- [Email Distribution List]
+&#x9;-----------------------------------------------
+&#x9;-- defaultEmail:
+&#x9;--    Email dstribution list variable.  Entries are comma-separated.
+&#x9;DECLARE PUBLIC defaultEmail&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;dl-datamanagement@delta.org,areddy@delta.org&apos;; -- &apos;email-list@company.com&apos;;
+
+&#x9;-- defaultEmailHeader:
+&#x9;--    The email header is shown in the subject line and first line of the email for all &quot;Alerts&quot; type of emails.
+&#x9;DECLARE PUBLIC defaultEmailHeader&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;TDV DEV SYSTEM EVENT MESSAGE&apos;;
+
+&#x9;-----------------------------------------------
+&#x9;-- [Server Threshold Health Logging Values]
+&#x9;-----------------------------------------------
+&#x9;-- totalHeapUsedPercentThreshold:
+&#x9;--    The following variable is used to set a default percentage of total heap memory used for logging and free memory puposes.
+&#x9;--    Compare LOG_MEMORY [WHERE MEMORY_BYTES &gt;= (MANAGED_MAX * (totalHeapUsedPercentThreshold/100))]
+&#x9;--     Used by the following:
+&#x9;--        /shared/CoE/MonitorServer/Memory/freeMemoryAtThreshold - used to trigger freeing memory / garbage collection if the total heap used percent is exceeded.
+&#x9;--        /shared/CoE/MonitorServer/HealthCheck/pServerHealthCheck - used to calculate the heap used percent and trigger calling &quot;pSystemRequestsActive&quot;.
+&#x9;--        /shared/CoE/MonitorServer/SystemRequests/pSystemRequestsActive - used to log the active system requests when memory is over the threshold.
+&#x9;DECLARE PUBLIC totalHeapUsedPercentThreshold&#x9;&#x9;CONSTANT INTEGER DEFAULT 30;
+
+&#x9;-- bigHeapThresholdBytes:
+&#x9;--    The following variables is the total number of bytes &quot;threshold&quot; used to define how much memory is used
+&#x9;--&#x9;   by a big heap query that is currently running in TDV.  The default is 5 GB.  This is a logging threshold.
+&#x9;--&#x9;   Adjust the number of GB according to the requirements of reporting against this threshold value.
+&#x9;--     Used by the following:
+&#x9;--        /shared/CoE/MonitorServer/HealthCheck/pServerHealthCheck - used to calculate how many big heap queries are actively running
+&#x9;DECLARE PUBLIC bigHeapThresholdBytes&#x9;&#x9;&#x9;&#x9;CONSTANT BIGINT DEFAULT 5 *(1024*1024*1024); -- number * (1 GB) = total bytes
+
+&#x9;-- getSystemMemoryCPU:
+&#x9;--    The following variables is used to determine whether to get system CPU and memory utilization for logging purposes.
+&#x9;--    It should be noted that the it may be somewhat costly in that it could take up to 10 seconds or longer to get this information from the operating system.
+&#x9;--       There is no impact on TDV processing to retrieve this info.
+&#x9;--     Y=get the system Memory and CPU usage.
+&#x9;--     N=Do not get system Memory and CPU.
+&#x9;--     Used by the following:
+&#x9;--        /shared/CoE/MonitorServer/HealthCheck/pServerHealthCheck
+&#x9;DECLARE PUBLIC getSystemMemoryCPU&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT CHAR(1) DEFAULT &apos;Y&apos;; -- Y or N
+
+&#x9;-----------------------------------------------
+&#x9;-- [Server Threshold Health Probe Limits]
+&#x9;-----------------------------------------------
+&#x9;-- totalHeapUsedPercentLimit:
+&#x9;--    The total heap used percent limit.  
+&#x9;--     IF (DV_SERVER_HEALTH_CHECK.TOTAL_HEAP_USED_PERCENT &gt; totalHeapUsedPercentLimit) THEN return SERVER_BUSY ELSE return SERVER_READY
+&#x9;--     Used by the following:
+&#x9;--        /shared/CoE/MonitorServer/HealthProbe/pServerHealthProbe - used to compare with DV_SERVER_HEALTH_CHECK.TOTAL_HEAP_USED_PERCENT
+&#x9;DECLARE PUBLIC totalHeapUsedPercentLimit&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT 75;
+
+&#x9;-- managedMemoryUsedPercentLimit:
+&#x9;--    The managed memory used percent limit.  
+&#x9;--     IF (DV_SERVER_HEALTH_CHECK.MANAGED_HEAP_USED_PERCENT &gt; managedMemoryUsedPercentLimit) THEN return SERVER_BUSY ELSE return SERVER_READY
+&#x9;--     Used by the following:
+&#x9;--        /shared/CoE/MonitorServer/HealthProbe/pServerHealthProbe - used to compare with DV_SERVER_HEALTH_CHECK.MANAGED_HEAP_USED_PERCENT
+&#x9;DECLARE PUBLIC managedMemoryUsedPercentLimit&#x9;&#x9;CONSTANT INTEGER DEFAULT 75;
+
+&#x9;-- totalActiveBigHeapRequestsLimit:
+&#x9;--    The managed memory used percent limit.  
+&#x9;--     IF (DV_SERVER_HEALTH_CHECK.BIG_HEAP_REQUESTS &gt; totalActiveBigHeapRequestsLimit) THEN return SERVER_BUSY ELSE return SERVER_READY
+&#x9;--     Used by the following:
+&#x9;--        /shared/CoE/MonitorServer/HealthProbe/pServerHealthProbe - used to compare with DV_SERVER_HEALTH_CHECK.BIG_HEAP_REQUESTS
+&#x9;DECLARE PUBLIC totalActiveBigHeapRequestsLimit&#x9;&#x9;CONSTANT INTEGER DEFAULT 10;
+
+&#x9;-- totalActiveRequestsLimit:
+&#x9;--    The managed memory used percent limit.  
+&#x9;--     IF (DV_SERVER_HEALTH_CHECK.TOTAL_ACTIVE_REQUESTS &gt; totalActiveRequestsLimit) THEN return SERVER_BUSY ELSE return SERVER_READY
+&#x9;--     Used by the following:
+&#x9;--        /shared/CoE/MonitorServer/HealthProbe/pServerHealthProbe - used to compare with DV_SERVER_HEALTH_CHECK.TOTAL_ACTIVE_REQUESTS
+&#x9;DECLARE PUBLIC totalActiveRequestsLimit&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT 200;
+
+&#x9;-----------------------------------------------
+&#x9;-- [Alert Notification]
+&#x9;-----------------------------------------------
+&#x9;-- Description - the following variables are used to tune the various alerts.
+&#x9;--    Adjusting the value will determine what notifications are emailed.
+&#x9;--    The event name value below is used in a query of DV_SERVER_SYSTEM_EVENT.TRIGGER_EVENT_NAME.
+&#x9;--
+&#x9;-- CacheRefreshEventName:
+&#x9;--    Cache Refresh event valid values:
+&#x9;--       CacheRefresh - notify for all cache refresh events.
+&#x9;--       CacheRefreshFailure - notify if cache refresh failure.
+&#x9;--       CacheRefreshSuccess - notify if cache refresh success.
+&#x9;DECLARE PUBLIC CacheRefreshEventName&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT &apos;CacheRefreshFailure&apos;;
+
+&#x9;-- ClusterServerEventName:
+&#x9;--    Cluster Server event valid values:
+&#x9;--       ClusterServer - notify for all cluster events.
+&#x9;--       ClusterServerDisconnected - notify if a node disconnected from the cluster.
+&#x9;--       ClusterServerConnected - notify if if a node connected to the cluster.
+&#x9;--       ClusterServerJoined - notify if a node joined the cluster.
+&#x9;--       ClusterServerShunned - notify if if a node is shunned from the cluster.
+&#x9;DECLARE PUBLIC ClusterServerEventName&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT &apos;ClusterServer&apos;;
+
+&#x9;-- DataSourceEventName:
+&#x9;--    Data Source event valid values:
+&#x9;--       DataSource - notify for all data source events.
+&#x9;--       DataSourceDown - notify if a data source is down.
+&#x9;--       DataSourceUp - notify if a data source is up.
+&#x9;DECLARE PUBLIC DataSourceEventName&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT &apos;DataSourceDown&apos;;
+
+&#x9;-- FreeMemoryEventName:
+&#x9;--    Free Memory event valid values:
+&#x9;--       FreeMemory - notify for all free memory events.
+&#x9;DECLARE PUBLIC FreeMemoryEventName&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT &apos;FreeMemory&apos;;
+
+&#x9;-- ServerProcessEventName:
+&#x9;--    Server Start/Stop event valid values:
+&#x9;--       ServerProcess - notify for all server process events.
+&#x9;--       ServerProcessStop - notify if the TDV server was stopped.
+&#x9;--       ServerProcessStart - notify if the TDV server was started.
+&#x9;DECLARE PUBLIC ServerProcessEventName&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT &apos;ServerProcess&apos;;
+
+&#x9;-- ServerStatusEventName:
+&#x9;--    Server Status event valid values:
+&#x9;--       ServerStatusBusy - notify for all server status events.
+&#x9;--       ServerStatusDown - notify if the TDV server status was stopped.
+&#x9;--       ServerStatusUp - notify if the TDV server status was started.
+&#x9;DECLARE PUBLIC ServerStatusEventName&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT &apos;ServerStatus&apos;;
+
+&#x9;-- TerminateIdleSessionsEventName:
+&#x9;--    Terminate Idle Sessions event valid values:
+&#x9;--       TerminateIdleSessions - notify for all terminate idle sessions events.
+&#x9;DECLARE PUBLIC TerminateIdleSessionsEventName&#x9;&#x9;CONSTANT INTEGER DEFAULT &apos;TerminateIdleSessions&apos;;
+
+&#x9;-----------------------------------------------
+&#x9;-- [Cluster Awareness]
+&#x9;-----------------------------------------------
+&#x9;-- dedicatedTimeKeeperHostname / dedicatedTimeKeeperPort:
+&#x9;--    The following variables are used to designate a dedicated time keeper host and port.
+&#x9;--    The timekeeper&apos;s only job in the cluster is to service triggers and perform deployments. 
+&#x9;--    Execute the following procedure on the &quot;dedicated&quot; time keeper node to get the hostname and port:
+&#x9;--&#x9;    /shared/CoE/MonitorServer/ServerInfo/getServerNames
+&#x9;--    Rules:
+&#x9;--&#x9;   1. Both variables should be set to null when this environment is not a cluster (a.k.a. single node).
+&#x9;--&#x9;   2. Both variables should be set to null when this environment is a cluster and
+&#x9;--        any node in the cluster may be the timekeeper and all nodes do work.
+&#x9;--&#x9;   3. Set the hostname and port to the the dedicated timekeeper hostname and port when the environment
+&#x9;--        is a cluster and the node has been dedicated as a timekeeper and does not perform work.
+&#x9;DECLARE PUBLIC  dedicatedTimeKeeperHostname&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT null;
+&#x9;DECLARE PUBLIC  dedicatedTimeKeeperPort&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT null;
+
+&#x9;-- totalNumberWorkerNodes:
+&#x9;--    The following variable is used to designate the total number of worker nodes used for processing.
+&#x9;--&#x9;   Scenario 1 - stand-alone environment.  No cluster.  The total should be the default of 1.
+&#x9;--        Example:  totalNumberWorkerNodes=1
+&#x9;--&#x9;   Scenario 2 - cluster environment with NO &quot;dedicated&quot; timekeeper.  The total is the total number of nodes in the cluster.
+&#x9;--        Example:  a 3-node cluster with NO dedicated timekeeper.  totalNumberWorkerNodes=3
+&#x9;--&#x9;   Scenario 3 - cluster environment with a &quot;dedicated&quot; timekeeper. The total is the total number of nodes minus 1.
+&#x9;--        Example:  a 3-node cluster with a dedicated timekeeper.  totalNumberWorkerNodes=2
+&#x9;DECLARE PUBLIC  totalNumberWorkerNodes&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT 1;
+
+&#x9;-----------------------------------------------
+&#x9;-- [System Memory/CPU Usage]
+&#x9;-----------------------------------------------
+&#x9;-- CPUCheckerCommandPath / memoryCheckerCommandPath:
+&#x9;--    The following section stores CPU and memory checker default values for WINDOWS and UNIX.  The following are the command line execution statements:
+&#x9;--&#x9;   CPU Utilization - processor time percentage.  The variable $DV_HOME will be converted to the actual DV server home path during processing.
+&#x9;--&#x9;&#x9;&#x9;Operating System&#x9;&#x9;&#x9;&#x9;&#x9;Command line
+&#x9;--&#x9;&#x9;&#x9;Windows 7 or 10&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;powershell.exe -file &quot;$DV_HOME/bin/KPImetricsCpuUtilization.ps1&quot;&apos;
+&#x9;--&#x9;&#x9;&#x9;UNIX (Linux 6)&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;$DV_HOME/bin/KPImetricsTopCommandGrepCpu_linux6.sh&apos;;
+&#x9;--&#x9;&#x9;&#x9;UNIX (Linux 7)&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;$DV_HOME/bin/KPImetricsTopCommandGrepCpu_linux7.sh&apos;;
+&#x9;--&#x9;   Memory Utilization - Memory used and memory available
+&#x9;--&#x9;&#x9;&#x9;Operating System&#x9;&#x9;&#x9;&#x9;&#x9;Command line
+&#x9;--&#x9;&#x9;&#x9;Windows 7 or 10&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;powershell.exe -file &quot;$DV_HOME/bin/KPImetricsMemUtilization.ps1&quot;&apos;
+&#x9;--&#x9;&#x9;&#x9;UNIX (Linux 6)&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;$DV_HOME/bin/KPImetricsFreeMemCommand_linux6.sh&apos;;
+&#x9;--&#x9;&#x9;&#x9;UNIX (Linux 7)&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;$DV_HOME/bin/KPImetricsFreeMemCommand_linux7.sh&apos;;
+&#x9;--DECLARE PUBLIC CPUCheckerCommandPath &#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(1000) DEFAULT &apos;powershell.exe -file &quot;$DV_HOME/bin/KPImetricsCpuUtilization.ps1&quot;&apos;;
+&#x9;--DECLARE PUBLIC memoryCheckerCommandPath &#x9;&#x9;&#x9;CONSTANT VARCHAR(1000) DEFAULT &apos;powershell.exe -file &quot;$DV_HOME/bin/KPImetricsMemUtilization.ps1&quot;&apos;;
+
+&#x9;DECLARE PUBLIC CPUCheckerCommandPath &#x9;&#x9;&#x9;CONSTANT VARCHAR(1000) DEFAULT &apos;$DV_HOME/bin/KPImetricsTopCommandGrepCpu_linux7.sh&apos;;
+&#x9;DECLARE PUBLIC memoryCheckerCommandPath &#x9;&#x9;CONSTANT VARCHAR(1000) DEFAULT &apos;$DV_HOME/bin/KPImetricsFreeMemCommand_linux7.sh&apos;;
+&#x9;-----------------------------------------------
+&#x9;-- [CoE Database Variables]
+&#x9;-----------------------------------------------
+&#x9;-- Data source type being used [oracle, sqlserver, postgres]
+&#x9;DECLARE PUBLIC databaseType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;sqlserver&apos;;
+&#x9;-- Data source catalog name
+&#x9;DECLARE PUBLIC catalogName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;tdvkpi&apos;;
+&#x9;-- Data source schema name
+&#x9;DECLARE PUBLIC schemaName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT &apos;dbo&apos;;
+&#x9;-- Modify the tablespace/filegroup name for tables if required.
+&#x9;DECLARE PUBLIC tableFilegroupName &#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT null;
+&#x9;-- Modify the tablespace/filegroup name for indexes if required.
+&#x9;DECLARE PUBLIC indexFilegroupName&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR DEFAULT null;
+&#x9;-- Identifies the type of Oracle compression that is allowed for the tables.  Applied on table creation only.
+&#x9;-- Oracle:&#x9;NOCOMPRESS&#x9;&#x9;&#x9;&#x9;- used for an Oracle database that does not support compression
+&#x9;-- &#x9;&#x9;&#x9;COMPRESS FOR QUERY HIGH&#x9;- used for an Oracle Exadata platform.  A variation on this would be COMPRESS for basic compression.
+&#x9;-- SQL Server: parameter is ignored and should be set to null
+&#x9;-- Postgres: parameter is ignored and should be set to null
+    DECLARE PUBLIC tableCompression&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(255) DEFAULT &apos;NOCOMPRESS&apos;;
+&#x9;--&#x9;RULE: tableRetentionDays - number of days to retain data.
+&#x9;--&#x9;&#x9;A valid value must be between 1 and 366.  Anything else will throw an exception.
+&#x9;--&#x9;&#x9;The load scripts will always purge the current day prior to loading new data.  The amount of
+&#x9;--&#x9;&#x9;data is always the current day + the history.  To keep 3 days would be the current day - 2 days of history.
+&#x9;--&#x9;&#x9;Example: To keep 3 days of metadata the value will be 3.  The other partitions will be truncated as per the formula:
+&#x9;--&#x9;&#x9;&#x9;startDate=CURRENT_TIMESTAMP&#x9;&#x9;endDate=DATEADD(&apos;day&apos;, (366-3), CURRENT_TIMESTAMP)
+&#x9;--&#x9;&#x9;&#x9;The startDate and endDate are passed into the P_TRUNCATE_PARTITION function.
+&#x9;--&#x9;&#x9;&#x9;All partitions are truncated from the current day until -3 days from current day within the 366 interval partitioning scheme.
+&#x9;--&#x9;&#x9;&#x9;Therefore there are 3 total days of data available to query.
+&#x9;--&#x9;&#x9;&#x9;Partitioning is mandatory for these tables.  TRUNCATE PARTITION statements executed.
+&#x9;DECLARE PUBLIC  tableRetentionDays&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT INTEGER DEFAULT 14;&#x9;-- number of days to retain data
+&#x9;
+&#x9;-----------------------------------------------
+&#x9;-- [CoE Monitor Server Path Variables]
+&#x9;-----------------------------------------------
+&#x9;-- CoE Path - The path to the MonitorServer folder.
+&#x9;DECLARE PUBLIC CoEPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT &apos;/shared/CoE&apos;;
+&#x9;-- Datasource Operations folder where the data sources reside
+&#x9;DECLARE PUBLIC DatasourceOperationsPath&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT CoEPath||&apos;/DatasourceOperations&apos;;
+&#x9;-- Montor Server Path - The path to the MonitorServer folder.
+&#x9;DECLARE PUBLIC MonitorServerPath&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT CoEPath||&apos;/MonitorServer&apos;;
+&#x9;-- DV Monitor Server commonValues path
+&#x9;DECLARE PUBLIC commonValuesPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT MonitorServerPath||&apos;/Customize/commonValues&apos;;
+&#x9;-- DV Monitor Server Datasource Packaged Query Folder Path
+&#x9;DECLARE PUBLIC PackagedQueryPath&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT MonitorServerPath||&apos;/Datasources/PackagedQueries&apos;;
+&#x9;-- DV Monitor Server Datasource Partition Procedure Folder Path
+&#x9;DECLARE PUBLIC PartitionProcsPath&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT MonitorServerPath||&apos;/Datasources/PartitionProcs&apos;;
+&#x9;-- DV Monitor Server Trigger Folder Path
+&#x9;DECLARE PUBLIC TriggerPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT MonitorServerPath||&apos;/Triggers&apos;;
+&#x9;-- DV Monitor Server Health Check Reporting Folder Path
+&#x9;DECLARE PUBLIC ReportingPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT MonitorServerPath||&apos;/Reporting&apos;;
+&#x9;-- DV Monitor Server Health Check Reporting Table
+&#x9;DECLARE PUBLIC HealthCheckTable&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT &apos;DV_SERVER_HEALTH_CHECK&apos;;
+&#x9;-- DV Monitor Server Cluster Event Reporting Table
+&#x9;DECLARE PUBLIC SystemEventTable&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT &apos;DV_SERVER_SYSTEM_EVENT&apos;;
+&#x9;-- DV Monitor Server System Requests Reporting Table
+&#x9;DECLARE PUBLIC SystemRequestsTable&#x9;&#x9;&#x9;&#x9;&#x9;CONSTANT VARCHAR(4000) DEFAULT &apos;DV_SERVER_SYS_REQUESTS&apos;;
+
+END</attribute>
+  <attribute name="creationDate" type="LONG">1544128207914</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1602637979123</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="public_constants" type="MAP">
+    <item>
+      <key type="STRING">PackagedQueryPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAGAFMAdAByAGkAbgBnAxIAAAABATsABAUAAAAAAAAAHAQEAAAAAAAAD7wBEwH//w==</value>
+    </item>
+    <item>
+      <key type="STRING">memoryCheckerCommandPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAvBAQAAAAAAAAALwETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">commonValuesPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAGAFMAdAByAGkAbgBnAxIAAAABATsABAUAAAAAAAAAFwQEAAAAAAAAD7cBEwH//w==</value>
+    </item>
+    <item>
+      <key type="STRING">totalNumberWorkerNodes</key>
+      <value type="BYTE_ARRAY">EBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAEEBwAAAAAAAAABBAYAAAAAAAAAAf//</value>
+    </item>
+    <item>
+      <key type="STRING">DataSourceEventName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAOBAQAAAAAAAAADgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">schemaName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAADBAQAAAAAAAAAAwETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">TriggerPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAGAFMAdAByAGkAbgBnAxIAAAABATsABAUAAAAAAAAACQQEAAAAAAAAD6kBEwH//w==</value>
+    </item>
+    <item>
+      <key type="STRING">CPUCheckerCommandPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAyBAQAAAAAAAAAMgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">SystemEventTable</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAWBAQAAAAAAAAAFgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">CacheRefreshEventName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAATBAQAAAAAAAAAEwETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">FreeMemoryEventName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAKBAQAAAAAAAAACgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">defaultEmail</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAsBAQAAAAAAAAALAETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">ServerProcessEventName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAANBAQAAAAAAAAADQETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">tableRetentionDays</key>
+      <value type="BYTE_ARRAY">EBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAEEBwAAAAAAAAAOBAYAAAAAAAAADv//</value>
+    </item>
+    <item>
+      <key type="STRING">TerminateIdleSessionsEventName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAVBAQAAAAAAAAAFQETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">HealthCheckTable</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAWBAQAAAAAAAAAFgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">defaultEmailHeader</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAcBAQAAAAAAAAAHAETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">bigHeapThresholdBytes</key>
+      <value type="BYTE_ARRAY">EBcGAgAHAEQAZQBjAGkAbQBhAGwDEgAAAAEDDgAAABoDEAAAAAD//w==</value>
+    </item>
+    <item>
+      <key type="STRING">totalActiveRequestsLimit</key>
+      <value type="BYTE_ARRAY">EBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAEEBwAAAAAAAADIBAYAAAAAAAAAyP//</value>
+    </item>
+    <item>
+      <key type="STRING">tableFilegroupName</key>
+      <value type="BYTE_ARRAY">EC8DEv//+6r//w==</value>
+    </item>
+    <item>
+      <key type="STRING">PartitionProcsPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAGAFMAdAByAGkAbgBnAxIAAAABATsABAUAAAAAAAAAGwQEAAAAAAAAD7sBEwH//w==</value>
+    </item>
+    <item>
+      <key type="STRING">CoEPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAALBAQAAAAAAAAACwETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">managedMemoryUsedPercentLimit</key>
+      <value type="BYTE_ARRAY">EBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAEEBwAAAAAAAABLBAYAAAAAAAAAS///</value>
+    </item>
+    <item>
+      <key type="STRING">serverMaintenanceList</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBAAAAAAAAAABARMB//8=</value>
+    </item>
+    <item>
+      <key type="STRING">dedicatedTimeKeeperPort</key>
+      <value type="BYTE_ARRAY">EC8DEv//+6r//w==</value>
+    </item>
+    <item>
+      <key type="STRING">MonitorServerPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAGAFMAdAByAGkAbgBnAxIAAAABATsABAUAAAAAAAAADgQEAAAAAAAAD64BEwH//w==</value>
+    </item>
+    <item>
+      <key type="STRING">totalHeapUsedPercentThreshold</key>
+      <value type="BYTE_ARRAY">EBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAEEBwAAAAAAAAAeBAYAAAAAAAAAHv//</value>
+    </item>
+    <item>
+      <key type="STRING">indexFilegroupName</key>
+      <value type="BYTE_ARRAY">EC8DEv//+6r//w==</value>
+    </item>
+    <item>
+      <key type="STRING">ClusterServerEventName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAANBAQAAAAAAAAADQETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">databaseType</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAJBAQAAAAAAAAACQETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">catalogName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAGBAQAAAAAAAAABgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">ServerStatusEventName</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAMBAQAAAAAAAAADAETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">dedicatedTimeKeeperHostname</key>
+      <value type="BYTE_ARRAY">EC8DEv//+6r//w==</value>
+    </item>
+    <item>
+      <key type="STRING">DatasourceOperationsPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAGAFMAdAByAGkAbgBnAxIAAAABATsABAUAAAAAAAAAFQQEAAAAAAAAD7UBEwH//w==</value>
+    </item>
+    <item>
+      <key type="STRING">SystemRequestsTable</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAWBAQAAAAAAAAAFgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">ReportingPath</key>
+      <value type="BYTE_ARRAY">EBsGAgAGAFMAdAByAGkAbgBnAxIAAAABATsABAUAAAAAAAAACgQEAAAAAAAAD6oBEwH//w==</value>
+    </item>
+    <item>
+      <key type="STRING">totalActiveBigHeapRequestsLimit</key>
+      <value type="BYTE_ARRAY">EBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAEEBwAAAAAAAAAKBAYAAAAAAAAACv//</value>
+    </item>
+    <item>
+      <key type="STRING">tableCompression</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAAKBAQAAAAAAAAACgETAf//</value>
+    </item>
+    <item>
+      <key type="STRING">totalHeapUsedPercentLimit</key>
+      <value type="BYTE_ARRAY">EBkGAgAHAEkATgBUAEUARwBFAFIDEgAAAAEEBwAAAAAAAABLBAYAAAAAAAAAS///</value>
+    </item>
+    <item>
+      <key type="STRING">getSystemMemoryCPU</key>
+      <value type="BYTE_ARRAY">EBsGAgAEAEMASABBAFIDEgAAAAEBOwAEBQAAAAAAAAABBAQAAAAAAAAAAQETAf//</value>
+    </item>
+  </attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1544128207914</attribute>
+</metadata>

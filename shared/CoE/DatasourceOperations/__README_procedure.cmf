@@ -1,0 +1,69 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="_README" path="/shared/CoE/DatasourceOperations/_README" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters></parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <attribute name="Script" type="STRING">/*
+&#x9;Requirements:
+&#x9;--------------
+&#x9;Database - Only the following 3 databases are supported.  If using postgres in a TDV cluster it must be accessible to all nodes in a cluster.  
+&#x9;&#x9;SQL Server 2016 or higher is required.
+&#x9;&#x9;Oracle 11g or higher.
+&#x9;&#x9;Postgres 9 or higher.
+
+&#x9;Instructions:
+&#x9;--------------
+&#x9;These instructions are a quick guide to setting up the DatasourceOperations module.
+
+&#x9;1. Configure the datasource type that will be used for TDV Operations.
+&#x9;&#x9;a. Click &quot;Test Connection&quot; to make sure it works.
+
+&#x9;2. Disable the other datasources that will not be used.
+&#x9;&#x9;a. They cannot be deleted because there are dependencies in MonitorServer module
+&#x9;&#x9;&#x9;that point to them even though they will not be used.
+
+&#x9;3. Modules that will use the configured datasource include:
+&#x9;&#x9;/shared/CoE/DeploymentValidation
+&#x9;&#x9;/shared/CoE/MonitorServer
+
+&#x9;4. Add the following text to the Oracle or SQL Server capabilities file
+&#x9;&#x9;a. Note: The schema name must be changed to reflect the actual schema being used
+&#x9;&#x9;&#x9;&#x9; Each node in the cluster must be updated.
+&#x9;&#x9;b. Oracle:&#x9;&#x9;&#x9;&#x9;DV_HOME/conf/adapters/system/oracle_12c_thin_driver/oracle_12c_thin_driver_values.xml
+&#x9;&#x9;c. SQL Server:&#x9;&#x9;&#x9;DV_HOME/conf/adapters/system/microsoft_sql_server_2016/microsoft_sql_server_2016_values.xml
+&#x9;&#x9;d. Capabilities Text:&#x9;Locate CHANGE_SCHEMA_NAME and modify it to the actual schema
+&lt;common:attribute xmlns:common=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+  &lt;common:name&gt;/custom/F_GET_PARTITION_NUM_COE(~date)&lt;/common:name&gt;
+  &lt;common:type&gt;STRING&lt;/common:type&gt;
+  &lt;common:value&gt;CHANGE_SCHEMA_NAME.F_GET_PARTITION_NUM_COE($1)&lt;/common:value&gt;
+  &lt;common:configID&gt;F_GET_PARTITION_NUM_COE(~date)&lt;/common:configID&gt;
+&lt;/common:attribute&gt;
+&lt;ns1:attribute xmlns:ns1=&quot;http://www.compositesw.com/services/system/util/common&quot;&gt;
+  &lt;ns1:name&gt;/custom/F_GET_PARTITION_NUM_COE(~string)&lt;/ns1:name&gt;
+  &lt;ns1:type&gt;STRING&lt;/ns1:type&gt;
+  &lt;ns1:value&gt;CHANGE_SCHEMA_NAME.F_GET_PARTITION_NUM_COE($1)&lt;/ns1:value&gt;
+  &lt;ns1:configID&gt;F_GET_PARTITION_NUM_COE(~string)&lt;/ns1:configID&gt;
+&lt;/ns1:attribute&gt;
+
+&#x9;&#x9;e. Restart the TDV node
+
+*/
+PROCEDURE &quot;_README&quot;()
+BEGIN
+END</attribute>
+  <attribute name="creationDate" type="LONG">1590841381186</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1593434497031</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1590841381186</attribute>
+</metadata>

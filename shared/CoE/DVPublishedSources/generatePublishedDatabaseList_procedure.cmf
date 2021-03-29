@@ -1,0 +1,575 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="generatePublishedDatabaseList" path="/shared/CoE/DVPublishedSources/generatePublishedDatabaseList" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="inFormatTemplate" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="inStartingPath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="numCreated" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege user="anonymous" domain="composite" privileges="READ"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/resource/ResourceExists" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="path" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourcePath" type="STRING" maxLength="4096"/>
+      </element>
+      <element name="type" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceType" type="STRING" maxLength="40"/>
+      </element>
+      <element name="version" direction="IN">
+        <datatype referenceDefinitionSet="/lib/resource/ResourceDefs" referenceType="ResourceVersion" type="STRING" maxLength="255"/>
+      </element>
+      <element name="exists" direction="OUT">
+        <datatype type="BOOLEAN"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/createResource" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype referenceDefinitionSet="/shared/ASAssets/Utilities/TypeDefinitions" referenceType="pathType" type="STRING" maxLength="4000"/>
+      </element>
+      <element name="resourceName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="resourceSubType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="createResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/getResourceListRecursive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="resPath">
+            <datatype type="STRING" maxLength="4096"/>
+          </element>
+          <element name="resType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="changeid">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="version">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="introspectState">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactMessage">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="explicitlyDesigned">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="isFunction">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="tableType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="sqlText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="scriptText">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="proprietaryModel">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="childCount">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="dataSourceType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creationDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateBigint">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserId">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/getScriptText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inSubType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="scriptText" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/updateSqlTable" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="inScripttext" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="createResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;generatePublishedDatabaseList:
+
+&#x9;This procedure is used to automatically create the list of available DV Published Data Sources.
+&#x9;It generates the view &quot;PublishedDatabaseList&quot;.
+
+*/
+PROCEDURE generatePublishedDatabaseList(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=debug on.  N=debug off
+&#x9;-- The format template describes how the datasource name is constructed.  It must comply with the following pattern templates:
+&#x9;--&#x9;&#x9;The template markers must be separated by underscores.  They can be in any case [upper, lower, mixed].
+&#x9;--&#x9;&#x9;The template markers may appear in any order but they must appear first before any other custom text.
+&#x9;--&#x9;&#x9;The minimum requires is for a combination of DATABASE and ENVIRONMENT.
+&#x9;--&#x9;&#x9;Template markers:
+&#x9;--&#x9;&#x9;&#x9;PRODUCT -     [optional] The name of the product such as DV, TDV, or not be present at all.
+&#x9;--&#x9;&#x9;&#x9;DATABASE -    [required] The name of the published database such as ASAssets or CoE.
+&#x9;--&#x9;&#x9;&#x9;ENVIRONMENT - [required] The DV environment name which must be unique.  For a cluster such as PROD use PROD1, PROD2...PRODn.
+&#x9;--&#x9;&#x9;Examples:     Format Template                : Datasource name
+&#x9;--                   ---------------------------       -----------------
+&#x9;--&#x9;&#x9;&#x9;[DEFAULT] - PRODUCT_DATABASE_ENVIRONMENT : TDV_ASAssets_PROD1
+&#x9;--&#x9;&#x9;&#x9;PRODUCT_DATABASE_ENVIRONMENT_custom_text : TDV_ASAssets_PROD1_custom_text
+&#x9;--&#x9;&#x9;&#x9;DATABASE_ENVIRONMENT                     : ASAssets_PROD1
+&#x9;--&#x9;&#x9;&#x9;ENVIRONMENT_PRODUCT_DATABASE             : PROD1_TDV_ASAssets_customer_text
+&#x9;IN inFormatTemplate&#x9;&#x9;&#x9;VARCHAR,
+&#x9;-- The starting folder path of where to look for data sources.
+&#x9;IN inStartingPath&#x9;&#x9;&#x9;VARCHAR(4000),
+&#x9;OUT numCreated&#x9;&#x9;&#x9;&#x9;INTEGER
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;generatePublishedDatabaseList&apos;;
+&#x9;DECLARE viewNameParent&#x9;&#x9;VARCHAR DEFAULT &apos;/shared/CoE/DVPublishedSources&apos;;
+&#x9;DECLARE viewName&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;PublishedDatabaseList&apos;;
+&#x9;DECLARE viewPath&#x9;&#x9;&#x9;VARCHAR(4000) DEFAULT viewNameParent||&apos;/&apos;||viewName;
+&#x9;DECLARE formatTemplate&#x9;&#x9;VARCHAR DEFAULT NVL(inFormatTemplate,&apos;PRODUCT_DATABASE_ENVIRONMENT&apos;);
+&#x9;DECLARE startingPath&#x9;&#x9;VARCHAR(4000) DEFAULT NVL(inStartingPath,&apos;/shared/CoE/DVPublishedSources&apos;);
+&#x9;DECLARE startingType&#x9;&#x9;VARCHAR DEFAULT &apos;CONTAINER&apos;;
+&#x9;DECLARE validTemplateMarker VARCHAR DEFAULT &apos;PRODUCT|DATABASE|ENVIRONMENT&apos;;
+&#x9;DECLARE formatTemplateTmp&#x9;VARCHAR DEFAULT formatTemplate;
+&#x9;DECLARE sqlText&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE databaseName&#x9;&#x9;VARCHAR;
+&#x9;DECLARE envName&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE resPath&#x9;&#x9;&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE i, pos1, pos2&#x9;&#x9;INTEGER;
+&#x9;DECLARE success&#x9;&#x9;&#x9;&#x9;BIT;
+&#x9;DECLARE createResponse &#x9;&#x9;XML;
+&#x9;DECLARE faultResponse&#x9;&#x9;XML;
+&#x9;DECLARE resExists&#x9;&#x9;&#x9;BOOLEAN;
+&#x9;DECLARE marker1&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE marker2&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE marker3&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE customText&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE envNameFound&#x9;&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE databaseNameFound&#x9;BOOLEAN DEFAULT false;
+&#x9;DECLARE viewFormat&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;SELECT &apos;&apos;[DATABASE_NAME]&apos;&apos; databaseName,&apos;&apos;[ENVIRONMENT]&apos;&apos; envName,&apos;&apos;[DATABASE_PATH]&apos;&apos; databasePath FROM /services/databases/system/dual&apos;;
+&#x9;DECLARE line, line2&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos;: INPUT:  formatTemplate=[&apos;||NVL(formatTemplate,&apos;null&apos;)||&apos;]  startingPath=[&apos;||NVL(startingPath,&apos;null&apos;)||&apos;]&apos;);
+&#x9;END IF;&#x9;
+&#x9;SET numCreated = 0;
+
+&#x9;-- Check to see if the view exists
+&#x9;CALL /lib/resource/ResourceExists(viewPath, &apos;TABLE&apos;, null, resExists);
+&#x9;IF (resExists) THEN
+&#x9;&#x9;-- Get the current view sql text
+&#x9;&#x9;CALL /shared/ASAssets/Utilities/repository/getScriptText(viewPath, &apos;TABLE&apos;, &apos;SQL_TABLE&apos;, sqlText);
+&#x9;ELSE
+&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;-- View does NOT exist so create it.
+&#x9;&#x9;&#x9;CALL /shared/ASAssets/Utilities/repository/createResource(viewNameParent, viewName, &apos;TABLE&apos;, &apos;SQL_TABLE&apos;, success, createResponse, faultResponse);
+&#x9;&#x9;&#x9;SET sqlText = &apos;  &apos;;
+&#x9;&#x9;END;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos;: sqlText:&apos;||CHR(10)||NVL(sqlText,&apos;null&apos;));
+&#x9;END IF;&#x9;
+
+&#x9;-- Get the template marker sequence
+&#x9;SET i = 0;
+&#x9;SET pos1 = INSTR(formatTemplateTmp, &apos;_&apos;);
+&#x9;WHILE (i &lt;= 3) DO
+&#x9;&#x9;SET i = i + 1;
+&#x9;&#x9;CASE WHEN i = 1 THEN
+&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET marker1 = SUBSTRING(formatTemplateTmp, 1, pos1-1);
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET marker1 = formatTemplateTmp;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET formatTemplateTmp = REPLACE(formatTemplateTmp, marker1||&apos;_&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: MARKER1:  pos1=[&apos;||pos1||&apos;]  formatTemplateTmp=[&apos;||NVL(formatTemplateTmp,&apos;null&apos;)||&apos;]  marker1=[&apos;||NVL(marker1,&apos;null&apos;)||&apos;]  marker2=[&apos;||NVL(marker2,&apos;null&apos;)||&apos;]  marker3=[&apos;||NVL(marker3,&apos;null&apos;)||&apos;]  customText=[&apos;||NVL(customText,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;&#x9;
+&#x9;&#x9;&#x9;&#x9;IF (INSTR(validTemplateMarker, marker1) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The template &quot;marker1[&apos;||marker1||&apos;]&quot; is not valid.  It must be one of &quot;&apos;||validTemplateMarker||&apos;&quot;.&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (marker1 = &apos;ENVIRONMENT&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET envNameFound = true;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (marker1 = &apos;DATABASE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET databaseNameFound = true;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9; WHEN i = 2 THEN
+&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET marker2 = SUBSTRING(formatTemplateTmp, 1, pos1-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET customText = SUBSTRING(formatTemplateTmp, pos1+1);
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET marker2 = formatTemplateTmp;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET formatTemplateTmp = REPLACE(formatTemplateTmp, marker2||&apos;_&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: MARKER2:  pos1=[&apos;||pos1||&apos;]  formatTemplateTmp=[&apos;||NVL(formatTemplateTmp,&apos;null&apos;)||&apos;]  marker1=[&apos;||NVL(marker1,&apos;null&apos;)||&apos;]  marker2=[&apos;||NVL(marker2,&apos;null&apos;)||&apos;]  marker3=[&apos;||NVL(marker3,&apos;null&apos;)||&apos;]  customText=[&apos;||NVL(customText,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;&#x9;
+&#x9;&#x9;&#x9;&#x9;IF (INSTR(validTemplateMarker, marker2) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;RAISE ex VALUE &apos;The template &quot;marker2[&apos;||marker2||&apos;]&quot; is not valid.  It must be one of &quot;&apos;||validTemplateMarker||&apos;&quot;.&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (marker2 = &apos;ENVIRONMENT&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET envNameFound = true;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (marker2 = &apos;DATABASE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET databaseNameFound = true;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9; WHEN i = 3 THEN
+&#x9;&#x9;&#x9;&#x9;IF (pos1 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET marker3 = SUBSTRING(formatTemplateTmp, 1, pos1-1);
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (INSTR(validTemplateMarker, marker3) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET customText = SUBSTRING(formatTemplateTmp, pos1+1);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET marker3 = formatTemplateTmp;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET formatTemplateTmp = REPLACE(formatTemplateTmp, marker3||&apos;_&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: MARKER3:  pos1=[&apos;||pos1||&apos;]  formatTemplateTmp=[&apos;||NVL(formatTemplateTmp,&apos;null&apos;)||&apos;]  marker1=[&apos;||NVL(marker1,&apos;null&apos;)||&apos;]  marker2=[&apos;||NVL(marker2,&apos;null&apos;)||&apos;]  marker3=[&apos;||NVL(marker3,&apos;null&apos;)||&apos;]  customText=[&apos;||NVL(customText,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;&#x9;
+&#x9;&#x9;&#x9;&#x9;IF (INSTR(validTemplateMarker, marker3) = 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET marker3 = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (INSTR(validTemplateMarker, customText) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET customText = null;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (marker3 = &apos;ENVIRONMENT&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET envNameFound = true;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;IF (marker3 = &apos;DATABASE&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET databaseNameFound = true;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9; ELSE
+&#x9;&#x9;END CASE;
+&#x9;&#x9;SET pos1 = INSTR(formatTemplateTmp, &apos;_&apos;);
+&#x9;END WHILE;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos;: FINAL:  marker1=[&apos;||NVL(marker1,&apos;null&apos;)||&apos;]  marker2=[&apos;||NVL(marker2,&apos;null&apos;)||&apos;]  marker3=[&apos;||NVL(marker3,&apos;null&apos;)||&apos;]  customText=[&apos;||NVL(customText,&apos;null&apos;)||&apos;]&apos;);
+&#x9;END IF;&#x9;
+&#x9;IF (NOT envNameFound) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The format template did not include the required &quot;ENVIRONMENT&quot; formatTemplate=[&apos;||formatTemplate||&apos;]&apos;;
+&#x9;END IF;
+&#x9;IF (NOT databaseNameFound) THEN
+&#x9;&#x9;RAISE ex VALUE &apos;The format template did not include the required &quot;DATABASE&quot; formatTemplate=[&apos;||formatTemplate||&apos;]&apos;;
+&#x9;END IF;
+
+&#x9;-- Get the list of datasources
+&#x9;FOR r AS 
+&#x9;&#x9;SELECT name, resPath FROM /shared/ASAssets/Utilities/repository/getResourceListRecursive(startingPath, startingType)
+&#x9;&#x9;WHERE resType = &apos;DATA_SOURCE&apos;
+&#x9;DO
+&#x9;&#x9;SET databaseName = null;
+&#x9;&#x9;SET envName = null;
+&#x9;&#x9;SET resPath = r.resPath;
+
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: name=[&apos;||r.name||&apos;]  resPath=[&apos;||r.resPath||&apos;]&apos;);
+&#x9;&#x9;END IF;&#x9;
+
+&#x9;&#x9;-- Extract the environment name from the datasource name
+&#x9;&#x9;IF (marker1 = &apos;ENVIRONMENT&apos;) THEN
+&#x9;&#x9;&#x9;SET pos1 = 1;
+&#x9;&#x9;&#x9;SET pos2 = INSTR(r.name, &apos;_&apos;,1,1);&#x9;-- Get the 1st occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;IF (pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET envName = SUBSTRING(r.name, pos1, pos2-1);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSEIF (marker2 = &apos;ENVIRONMENT&apos;) THEN
+&#x9;&#x9;&#x9;SET pos1 = INSTR(r.name, &apos;_&apos;,1,1);&#x9;-- Get the 1st occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;SET pos2 = INSTR(r.name, &apos;_&apos;,1,2);&#x9;-- Get the 2nd occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET envName = SUBSTRING(r.name, pos1+1, pos2-pos1-1);
+&#x9;&#x9;&#x9;ELSEIF (pos1 &gt; 0 AND pos2 = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET envName = SUBSTRING(r.name, pos1+1);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSEIF (marker3 = &apos;ENVIRONMENT&apos;) THEN
+&#x9;&#x9;&#x9;SET pos1 = INSTR(r.name, &apos;_&apos;,1,2);&#x9;-- Get the 2nd occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;SET pos2 = INSTR(r.name, &apos;_&apos;,1,3);&#x9;-- Get the 3rd occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET envName = SUBSTRING(r.name, pos1+1, pos2-pos1-1);
+&#x9;&#x9;&#x9;ELSEIF (pos1 &gt; 0 AND pos2 = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET envName = SUBSTRING(r.name, pos1+1);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Extract the database name from the datasource name
+&#x9;&#x9;IF (marker1 = &apos;DATABASE&apos;) THEN
+&#x9;&#x9;&#x9;SET pos1 = 1;
+&#x9;&#x9;&#x9;SET pos2 = INSTR(r.name, &apos;_&apos;,1,1);&#x9;-- Get the 1st occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;IF (pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET databaseName = SUBSTRING(r.name, pos1, pos2-1);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSEIF (marker2 = &apos;DATABASE&apos;) THEN
+&#x9;&#x9;&#x9;SET pos1 = INSTR(r.name, &apos;_&apos;,1,1);&#x9;-- Get the 1st occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;SET pos2 = INSTR(r.name, &apos;_&apos;,1,2);&#x9;-- Get the 2nd occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET databaseName = SUBSTRING(r.name, pos1+1, pos2-pos1-1);
+&#x9;&#x9;&#x9;ELSEIF (pos1 &gt; 0 AND pos2 = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET databaseName = SUBSTRING(r.name, pos1+1);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSEIF (marker3 = &apos;DATABASE&apos;) THEN
+&#x9;&#x9;&#x9;SET pos1 = INSTR(r.name, &apos;_&apos;,1,2);&#x9;-- Get the 2nd occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;SET pos2 = INSTR(r.name, &apos;_&apos;,1,3);&#x9;-- Get the 3rd occurrence of &apos;_&apos;
+&#x9;&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET databaseName = SUBSTRING(r.name, pos1+1, pos2-pos1-1);
+&#x9;&#x9;&#x9;ELSEIF (pos1 &gt; 0 AND pos2 = 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET databaseName = SUBSTRING(r.name, pos1+1);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: envName=[&apos;||NVL(envName,&apos;null&apos;)||&apos;]  databaseName=[&apos;||NVL(databaseName,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;END IF;&#x9;
+
+&#x9;&#x9;-- Check to see if the datasource path does not exist and add it.
+&#x9;&#x9;IF (INSTR(sqlText, resPath) = 0) THEN
+&#x9;&#x9;&#x9;SET numCreated = numCreated + 1;
+&#x9;&#x9;&#x9;IF (LENGTH(TRIM(sqlText)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET sqlText = sqlText || CHR(10)||&apos; UNION&apos;||CHR(10);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET line = &apos;SELECT &apos;&apos;&apos;||databaseName||&apos;&apos;&apos; databaseName,&apos;&apos;&apos;||envName||&apos;&apos;&apos; envName,&apos;&apos;&apos;||resPath||&apos;&apos;&apos; databasePath FROM /services/databases/system/dual&apos;;
+&#x9;&#x9;&#x9;SET sqlText = sqlText || line;
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: Resource path is created:  line=[&apos;||line||&apos;]&apos;);
+&#x9;&#x9;&#x9;END IF;&#x9;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(moduleName||&apos;: sqlText:&apos;||CHR(10)||NVL(sqlText,&apos;null&apos;));
+&#x9;END IF;&#x9;
+
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;-- Update the view sql text
+&#x9;&#x9;CALL /shared/ASAssets/Utilities/repository/updateSqlTable(viewPath, sqlText, success, createResponse, faultResponse);
+&#x9;END;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1588073778595</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1589893361533</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">10/238</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/59</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/92</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/243</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/153</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/112</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/134</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/226</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/76</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/172</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1588073778595</attribute>
+</metadata>

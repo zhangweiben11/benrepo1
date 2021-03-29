@@ -1,0 +1,462 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="P_TRUNCATE_PARTITION" path="/shared/CoE/MonitorServer/Datasources/PartitionProcs/oracle/P_TRUNCATE_PARTITION" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="schemaName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="tableName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="startDate" direction="IN" nullable="true">
+      <datatype name="TIMESTAMP" type="DATETIME"/>
+    </parameter>
+    <parameter name="tableRetentionDays" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="rowcount" direction="OUT" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="partitionList" direction="OUT" nullable="true">
+      <datatype name="LONGVARCHAR" type="STRING" maxLength="2147483647"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/databases/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/time/getCurrentTimestamp" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="currentTS" direction="OUT">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PackagedQueries/00_ExecuteDDL" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inputSQL" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="outputValue">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PackagedQueries/00_ExecuteDMLRowDist" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="sqlStatement" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="table_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="boundary_definition">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="range_type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_number">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="num_rows">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="partition_position">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;P_TRUNCATE_PARTITION:
+
+&#x9;Provides a way to drop partitions that are no longer needed as per the commonValues.tableRetentionDays.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE P_TRUNCATE_PARTITION( 
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),
+&#x9;IN schemaName&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;IN tableName&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;IN startDate&#x9;&#x9;&#x9;&#x9;TIMESTAMP,
+&#x9;IN tableRetentionDays&#x9;&#x9;INTEGER,
+&#x9;OUT rowcount&#x9;&#x9;&#x9;&#x9;INTEGER,
+&#x9;OUT partitionList&#x9;&#x9;&#x9;LONGVARCHAR
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;P_TRUNCATE_PARTITION&apos;;
+&#x9;DECLARE endDate&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE high_value_str&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE high_value_dt&#x9;&#x9;&#x9;&#x9;&#x9;DATE;
+&#x9;DECLARE boundary_definition&#x9;&#x9;&#x9;&#x9;DATE;
+&#x9;DECLARE partition_num&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT;
+&#x9;DECLARE truncatePartitionName&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE finalPartitionName&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE totalPartitionDays&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE startDateAsDate&#x9;&#x9;&#x9;&#x9;&#x9;DATE;
+&#x9;DECLARE endDateASDate&#x9;&#x9;&#x9;&#x9;&#x9;DATE;
+&#x9;DECLARE ouptputValue&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(1000);
+&#x9;DECLARE totalPartitions&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numDiffDays&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE cursStatistics&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR (status VARCHAR);
+&#x9;DECLARE startTime&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;DECLARE endTime&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;DECLARE duration&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+
+&#x9;SET startDateAsDate = CAST(startDate AS DATE);
+&#x9;SET partitionList = &apos;&apos;;
+&#x9;SET rowcount = 0;
+&#x9;-- Determine if it is leap year in order to know how to handle the &quot;DATEADD&quot; function
+&#x9;IF (EXTRACT(DAY FROM LAST_DAY(TO_DATE(EXTRACT(YEAR FROM CAST(startDate as DATE))||&apos;-02-01&apos;, &apos;yyyy-mm-dd&apos;))) = 29) THEN
+&#x9;-- There are 366 partitions allowing 1 extra for leap year.  Calcuate the total partitions - number of days to keep history for.
+&#x9;&#x9;SET totalPartitionDays = 366;
+&#x9;ELSE
+&#x9;&#x9;SET totalPartitionDays = 365;
+&#x9;END IF;
+
+&#x9;-- endDate - There are 366 partitions allowing 1 extra for leap year.  Calcuate the total partitions - number of days to keep history for.
+&#x9;-- The startDate and endDate act as a rolling window into the 366 partitions
+&#x9;SELECT DATEADD(&apos;day&apos;, totalPartitionDays - tableRetentionDays, startDateAsDate) INTO endDate from /services/databases/system/DUAL;
+&#x9;SET endDateASDate = CAST(endDate AS DATE);
+
+&#x9;-- Given 366 days of the year (account for leap year), find the difference between the start date (today) - end date (future date).
+&#x9;SET numDiffDays = totalPartitionDays - CAST((endDateASDate - startDateAsDate) AS INTEGER);
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;SET message = &apos;INPUT:  schemaName=&apos;||schemaName||&apos;  tableName=&apos;||tableName||&apos;  startDateAsDate=&apos;||startDateAsDate||&apos;  endDateASDate=&apos;||endDateASDate||&apos;  totalPartitionDays=&apos;||totalPartitionDays||&apos;  (totalPartitionDays - purgeMetadata)=[&apos;||CAST(totalPartitionDays - tableRetentionDays AS VARCHAR)||&apos;]&apos;;
+&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;&#x9;CALL print(moduleName||&apos;: &apos;||message);
+&#x9;END IF;
+&#x9;-- Subtract the number of days from the start date to find the partition date.  
+&#x9;-- Unlike SQL Server, which has a static sliding window of partitions, Oracle&apos;s sliding window is based on incrementally adding partitions instead of reusing them.
+&#x9;-- &#x9;&#x9;Therefore, the logic must start from the current date and work backwards to determine if the partitions at the beginning of the window should be dropped.
+&#x9;SET endDateASDate = DATEADD(&apos;day&apos;, -numDiffDays, startDateAsDate);
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;SET message = &apos;startDateAsDate[&apos;||startDateAsDate||&apos;] - num days diff[&apos;||CAST(numDiffDays AS VARCHAR)||&apos;] = endDateASDate[&apos;||endDateASDate||&apos;]&apos;;
+&#x9;&#x9;CALL print(moduleName||&apos;: &apos;||message);
+&#x9;END IF;
+
+&#x9;-- Get the partition row distribution
+&#x9;SET sqlStatement = 
+&#x9;&#x9;&#x9;&apos;        WITH date_partition AS (&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            SELECT table_name&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;                 , partition_name&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;                 , substr(extractvalue(dbms_xmlgen.getxmltype(&apos;&apos;select high_value FROM ALL_TAB_PARTITIONS WHERE table_name = &apos;&apos;&apos;&apos;&apos;&apos; || t.table_name || &apos;&apos;&apos;&apos;&apos;&apos; and PARTITION_NAME = &apos;&apos;&apos;&apos;&apos;&apos; || t.partition_name || &apos;&apos;&apos;&apos;&apos;&apos; &apos;&apos;), &apos;&apos;//text()&apos;&apos;), 12, 10) AS boundary_definition&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;                 , &apos;&apos;LEFT&apos;&apos; range_type&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;                 , CASE WHEN num_rows IS NULL THEN 0 ELSE num_rows END num_rows&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;                 , partition_position&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            FROM all_tab_partitions t&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;            WHERE table_owner = &apos;&apos;&apos;||schemaName||&apos;&apos;&apos;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;              AND table_name = &apos;&apos;&apos;||tableName||&apos;&apos;&apos;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        ) &apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        SELECT table_name, partition_name, boundary_definition, range_type, F_GET_PARTITION_NUM_COE(TO_DATE(boundary_definition,&apos;&apos;YYYY-MM-DD&apos;&apos;)-1) partition_number, num_rows, partition_position&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        FROM date_partition&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;        ORDER BY table_name, boundary_definition&apos;;
+
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;SET message = &apos;sqlStatement=&apos;||CHR(10)||sqlStatement;
+&#x9;&#x9;CALL print(moduleName||&apos;: &apos;||message);
+&#x9;END IF;
+
+&#x9;-------------------------------------------------
+&#x9;-- GET PARTITIONS
+&#x9;-------------------------------------------------
+&#x9;-- Execute the SQL Statement
+&#x9;FOR r AS SELECT * FROM /shared/CoE/MonitorServer/Datasources/PackagedQueries/&quot;00_ExecuteDMLRowDist&quot;(sqlStatement) do
+&#x9;&#x9;SET totalPartitions = totalPartitions + 1;
+&#x9;&#x9;SET finalPartitionName = r.partition_name;
+
+&#x9;&#x9;-- subtract 1 from the high value to get the actual date of the data contained therein.
+&#x9;&#x9;SET boundary_definition = CAST(r.boundary_definition AS DATE) - 1; 
+
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;SET message = &apos;INFO ONLY: partition_name=&apos;||r.partition_name||&apos;  boundary_definition=&apos;||r.boundary_definition||&apos;  (boundary_definition-1)=&apos;||boundary_definition||&apos;  partition_number=&apos;||r.partition_number||&apos;  num_rows=&apos;||r.num_rows||&apos;  partition_position=&apos;||r.partition_position;
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos;: &apos;||message);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Determine which partitions to drop
+&#x9;&#x9;IF (boundary_definition &lt;= endDateASDate AND r.partition_name &lt;&gt; &apos;INITIAL&apos;) THEN
+&#x9;&#x9;&#x9;SET rowcount = rowcount + 1;
+&#x9;&#x9;&#x9;IF (LENGTH(partitionList) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET partitionList = partitionList || &apos;,&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET partitionList = partitionList || &apos;&quot;&apos;||r.partition_name||&apos;&quot;&apos;;
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL print(moduleName||&apos;: ADD TO PARTITION LIST=&quot;&apos;||r.partition_name||&apos;&quot;  boundary_definition[&apos;||CAST(boundary_definition AS VARCHAR)||&apos;] &lt;= endDateASDate[&apos;||CAST(endDateASDate AS VARCHAR)||&apos;]&apos;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;&#x9;-- Determine the current partition to truncate if it exists
+&#x9;&#x9;IF (boundary_definition = startDateAsDate) THEN
+&#x9;&#x9;&#x9;SET truncatePartitionName = &apos;&quot;&apos;||r.partition_name||&apos;&quot;&apos;;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+
+&#x9;-------------------------------------------------
+&#x9;-- DROP PARTITIONS
+&#x9;-------------------------------------------------
+&#x9;-- Drop partitions as long as the partition list does not include all of the partitions.
+&#x9;--&#x9;&#x9;An exception would be thrown if all partitions were dropped.
+&#x9;IF (rowcount &gt; 0) THEN
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;SET message = &apos;DROP PARTITION: rowcount=&apos;||rowcount||&apos;  totalPartitions=&apos;||totalPartitions||&apos;  finalPartitionName=&apos;||NVL(finalPartitionName,&apos;null&apos;);
+&#x9;&#x9;&#x9;CALL print(moduleName||&apos;: &apos;||message);
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (totalPartitions &gt; 1) THEN
+&#x9;&#x9;&#x9;-- This scenario is when all partitions are set to be dropped which would throw an exception.
+&#x9;&#x9;&#x9;-- Therefore, drop all but the final partition and truncate the final partition.
+&#x9;&#x9;&#x9;IF (rowcount = totalPartitions AND rowcount &gt; 1) THEN
+&#x9;&#x9;&#x9;&#x9;SET partitionList = REPLACE(partitionList, &apos;,&quot;&apos;||finalPartitionName||&apos;&quot;&apos;, &apos;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET rowcount = rowcount - 1;
+
+&#x9;&#x9;&#x9;&#x9;-- Truncate the final partition that could not be dropped since.
+&#x9;&#x9;&#x9;&#x9;SET sqlStatement = &apos;ALTER TABLE &quot;&apos;||schemaName||&apos;&quot;.&quot;&apos;||tableName||&apos;&quot; TRUNCATE PARTITION &quot;&apos;||finalPartitionName||&apos;&quot; UPDATE INDEXES&apos;;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET message = &apos;TRUNCATE PARTITION: sqlStatement=&apos;||sqlStatement;
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(moduleName||&apos;: &apos;||message);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;FOR r AS SELECT * FROM /shared/CoE/MonitorServer/Datasources/PackagedQueries/&quot;00_ExecuteDDL&quot;(sqlStatement) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET ouptputValue = r.outputValue;
+&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE RAISE;
+&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Only DROP partitions when there is more than 1.  It is not allowed to drop all partitions.
+&#x9;&#x9;&#x9;IF (rowcount &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET sqlStatement = &apos;ALTER TABLE &quot;&apos;||schemaName||&apos;&quot;.&quot;&apos;||tableName||&apos;&quot; DROP PARTITION &apos;||partitionList||&apos; UPDATE INDEXES&apos;;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET message = &apos;DROP PARTITION: sqlStatement=&apos;||sqlStatement;
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL print(moduleName||&apos;: &apos;||message);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;&#x9;FOR r AS SELECT * FROM /shared/CoE/MonitorServer/Datasources/PackagedQueries/&quot;00_ExecuteDDL&quot;(sqlStatement) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET ouptputValue = r.outputValue;
+&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE RAISE;
+&#x9;&#x9;&#x9;&#x9;END;
+
+&#x9;&#x9;&#x9;&#x9;-- Set up the SQL statement for Execute Statistics
+&#x9;&#x9;&#x9;&#x9;SET sqlStatement = &apos;call dbms_stats.gather_table_stats(&apos;&apos;&apos;||schemaName||&apos;&apos;&apos;,&apos;&apos;&apos;||tableName||&apos;&apos;&apos;)&apos;;
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/ASAssets/Utilities/&quot;time&quot;/getCurrentTimestamp(startTime);
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: [&apos;||tableName||&apos;]: sqlStatement=&apos;||sqlStatement);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;BEGIN
+&#x9;&#x9;&#x9;&#x9;&#x9;FOR r AS SELECT * FROM /shared/CoE/MonitorServer/Datasources/PackagedQueries/&quot;00_ExecuteDDL&quot;(sqlStatement) DO
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET ouptputValue = r.outputValue;
+&#x9;&#x9;&#x9;&#x9;&#x9;END FOR;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL /shared/ASAssets/Utilities/&quot;time&quot;/getCurrentTimestamp(endTime);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET duration = cast(endTime - startTime as varchar);
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: [&apos;||tableName||&apos;]:  Executed Table Statistics: Duration=&apos;||duration);
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;&#x9;ELSE RAISE;
+&#x9;&#x9;&#x9;&#x9;END;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: WARNING:  Unable to drop a SINGLE partition.&apos;);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET rowcount = 0;
+&#x9;&#x9;&#x9;SET partitionList = &apos;&apos;;
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: WARNING:  Unable to drop ALL partitions.&apos;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;ELSE
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;: NO partitions to drop.&apos;);
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;-- Set partitionList to null if blank
+&#x9;IF (LENGTH(partitionList) = 0) THEN
+&#x9;&#x9;SET partitionList = null;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL print(&apos;&apos;);
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1532606307970</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601333668980</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/120</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/220</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/178</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/148</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/131</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/73</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/229</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/82</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/208</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/74</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">12/201</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/215</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/104</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/162</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/192</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1532606307970</attribute>
+</metadata>

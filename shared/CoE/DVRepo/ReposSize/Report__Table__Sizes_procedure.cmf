@@ -1,0 +1,43 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="Report_Table_Sizes" path="/shared/CoE/DVRepo/ReposSize/Report_Table_Sizes" type="PROCEDURE" subtype="EXTERNAL_SQL_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="CURSOR" type="TABLE" refId="256">
+        <element name="relation">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="total_size">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege user="anonymous" domain="composite" privileges="READ"/>
+  </security>
+  <dependency target="/shared/CoE/DVRepo/Datasources/DVPostgresRepo" type="DATA_SOURCE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="SQL" type="STRING">select 
+&#x9;nspname ||&apos;.&apos;|| relname as &quot;relation&quot;, 
+&#x9;pg_size_pretty(pg_total_relation_size(C.oid)) as &quot;total_size&quot; 
+FROM pg_class C 
+&#x9;LEFT JOIN pg_namespace N on (N.oid = C.relnamespace) 
+WHERE nspname NOT IN (&apos;pg_catalog&apos;, &apos;information_schema&apos;) 
+AND C.relkind &lt;&gt; &apos;i&apos; 
+AND nspname !~ &apos;^pg_toast&apos; 
+ORDER BY pg_total_relation_size(C.oid) DESC LIMIT 20</attribute>
+  <attribute name="creationDate" type="LONG">1587561685807</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="isSingleSelect" type="STRING">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1587761239347</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="passThroughSource" type="STRING">/shared/CoE/DVRepo/Datasources/DVPostgresRepo</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1587561685807</attribute>
+</metadata>

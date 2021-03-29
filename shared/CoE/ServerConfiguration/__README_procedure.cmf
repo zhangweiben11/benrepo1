@@ -1,0 +1,72 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="_README" path="/shared/CoE/ServerConfiguration/_README" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters></parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege user="anonymous" domain="composite" privileges="READ"/>
+  </security>
+  <attribute name="Script" type="STRING">/*
+&#x9;Instructions:
+&#x9;--------------
+&#x9;These instructions are a quick guide to setting up the Server Configuration module.
+
+&#x9;1. A spreadsheet called &quot;CoeServerConfiguration.xlsx&quot; was packaged with the .car file used to import this code.
+&#x9;&#x9;1a. Locate the spreadsheet.
+&#x9;&#x9;1b. Modify the spreadsheet by adding a column in the &quot;first row&quot; to the right of each yellow, high-lighted environment section.
+&#x9;&#x9;&#x9;&#x9;Environment sections include: PROD:, QA:, DEV:, SBX:, SBXC:
+&#x9;&#x9;&#x9;&#x9;&#x9;These names are arbitrary and can be changed without affecting any of the code.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PROD=production environment.  QA=qa, test, uat environment.  SBX=sandbox.  SBXC=sand box cluster
+&#x9;&#x9;&#x9;&#x9;Hostname format: [hostname] (node-type)
+&#x9;&#x9;&#x9;&#x9;&#x9;The hostname must be the actual name of the host and not an alias.  For example, in Linux uname -a will give you the host name.
+&#x9;&#x9;&#x9;&#x9;&#x9;The first part of the host name is only required.  Example: my-host.my.domain.com  --&gt; [my-host] (S)
+&#x9;&#x9;&#x9;&#x9;&#x9;The node-type is free-form.  node-type:  TK=timekeeper (dedicated), W=worker node in a cluster, S=single node not in a cluster
+&#x9;&#x9;&#x9;&#x9;Summary: 
+&#x9;&#x9;&#x9;&#x9;&#x9;getCurrentServerConfiguration and updateServerConfiguration will try to match the true actual hostname with no domain qualifiers against the
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;same value in the spreadsheet.  The format doesn&apos;t really matter.  All that matters is that the hostname be present anywhere in the column
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;on the first row as the procedure does an INSTR() search for the text.
+&#x9;&#x9;1c. Modify the values in that colunm for that server.  These values are &quot;node&quot; specific for each node in the cluster.
+&#x9;&#x9;&#x9;&#x9;Many values are locally defined which means the updateServerConfiguration &quot;must&quot; be executed on each node in a cluster.
+&#x9;&#x9;1d. Place the modified spreadsheet on the TDV server so TDV can read it.
+&#x9;&#x9;&#x9;NOTE: It is &quot;HIGHLY&quot; recommended to create a share drive accessible to all servers in all environments and put the spreadshee in that &quot;SINGLE&quot; location.
+&#x9;&#x9;&#x9;&#x9;  This menas that you will only have 1 copy of the spreadsheet since it has &quot;ALL&quot; servers in your environment in one place.
+&#x9;&#x9;&#x9;&#x9;  This will eliminate version headaches.  This is the last thing that you want with TDV server configuration.
+
+&#x9;2. Modify the ServerConfiguration data source
+&#x9;&#x9;2a. Using TDV Studio, open the resource /shared/CoE/ServerConfiguration/Datasources/ServerConfiguration
+&#x9;&#x9;2b. Modify the root path to point to the server and save.
+&#x9;&#x9;2c. Re-introspect the data source to pick up the changes.
+&#x9;&#x9;&#x9;NOTE: Any time a new column (hostname) is added the data source must be re-introspected to pick it up.
+
+&#x9;3. Execute Procedures
+&#x9;&#x9;3a. The ServerConfiguration module is now ready to be used.
+
+&#x9;&#x9;3b. PROCEDURE: getCurrentServerConfiguration - This procedure reads the spreadsheet and locates the correpsoning attribute name in TDV and displays the 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;comparison between what is in the spreadsheet and what is in the TDV server that you executed on.  Remember that many variables are &quot;locally defined&quot;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;which means that you need to run this procedure on each node.
+
+&#x9;&#x9;&#x9;&#x9;NOTE: Refer to &quot;/shared/CoE/ServerComparisons/compareServerAttributes&quot; for a bigger picture comparison between differen TDV servers in your environment.
+
+&#x9;&#x9;3c. PROCEDURE: updateServerConfiguration - This procedure reads the spreadsheet and &quot;updates&quot; the correpsoning attribute name in TDV with the value in the
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;spreadsheet as long as &quot;Execute:&quot; = Y.   You will notice that some of the password fields are defaulted to &quot;Execute:&quot; = N.   You will have to 
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;decide how to handle those.  You may chosse to either place the passwords in the spreadsheet with clear text or update the server manaually.
+
+
+*/
+PROCEDURE &quot;_README&quot;()
+BEGIN
+END</attribute>
+  <attribute name="creationDate" type="LONG">1590841381186</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1590843056976</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1590841381186</attribute>
+</metadata>

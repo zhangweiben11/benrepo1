@@ -1,0 +1,236 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="Modify_F_GET_PARTITION_NUM_COE" path="/shared/CoE/MonitorServer/Datasources/InitializeTable/CreateDropTables/Modify_F_GET_PARTITION_NUM_COE" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="operationType" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="databaseType" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="datasourcePath" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+    </parameter>
+    <parameter name="catalogName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="schemaName" direction="IN" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+    <parameter name="status" direction="OUT" nullable="true">
+      <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/RepoUtils/applyReservedListToPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/getScriptText" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="resourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="resourceType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inSubType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="scriptText" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/updateSqlScript" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="fullResourcePath" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="scripttext" direction="INOUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="0" maxValue="1"/>
+      </element>
+      <element name="createResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <datatype name="XML" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="faultResponse" direction="OUT">
+        <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+          <schemaDatatype>
+            <reference refId="257"/>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Customize/commonValues" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE Modify_F_GET_PARTITION_NUM_COE(
+&#x9;IN operationType&#x9;&#x9;CHAR(1),&#x9;&#x9;-- C=create.  D=destroy.
+&#x9;IN databaseType&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- oracle, sqlserver or postgres
+&#x9;IN datasourcePath&#x9;&#x9;VARCHAR(4000),&#x9;-- full path to the datasource
+&#x9;IN catalogName&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- catalog name if applicable or null
+&#x9;IN schemaName&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- schema name if applicable or null
+&#x9;OUT status&#x9;&#x9;&#x9;&#x9;VARCHAR
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;Modify_F_GET_PARTITION_NUM_COE&apos;;
+&#x9;DECLARE newProcPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT datasourcePath;
+&#x9;DECLARE DatasourceOperationsPath&#x9;VARCHAR(4000)&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.DatasourceOperationsPath;
+&#x9;DECLARE scriptText&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE pos1, pos2&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE functionName&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;F_GET_PARTITION_NUM_COE&apos;;
+&#x9;DECLARE procPath&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT DatasourceOperationsPath||&apos;/&apos;||functionName;
+&#x9;DECLARE functionInput&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE command&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIT;
+&#x9;DECLARE createResponse &#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE faultResponse&#x9;&#x9;&#x9;&#x9;XML;
+
+&#x9;CALL /shared/ASAssets/Utilities/repository/getScriptText(procPath, &apos;PROCEDURE&apos;, &apos;SQL_SCRIPT_PROCEDURE&apos;, scriptText);
+&#x9;IF (scriptText IS NULL OR LENGTH(TRIM(scriptText)) = 0) THEN
+&#x9;&#x9;SET status = &apos;FAIL&apos;;
+&#x9;ELSE
+&#x9;&#x9;-- There are 2 possibilities:
+&#x9;&#x9;--&#x9;&#x9;CALL /shared/
+&#x9;&#x9;--&#x9;&#x9;SET partitionNum
+&#x9;&#x9;SET pos1 = INSTR(UPPER(scriptText), UPPER(&apos;CALL /shared/&apos;));
+&#x9;&#x9;IF (pos1 = 0) THEN
+&#x9;&#x9;&#x9;SET pos1 = INSTR(UPPER(scriptText), UPPER(&apos;SET partitionNum&apos;));
+&#x9;&#x9;END IF;
+&#x9;&#x9;SET pos2 = INSTR(UPPER(scriptText), &apos;;&apos;,pos1);
+&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;IF (LOWER(databaseType) = &apos;oracle&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(operationType) = &apos;C&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET functionInput = &apos;(partitionNum, startDate)&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (schemaName IS NOT NULL AND LENGTH(TRIM(schemaName)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = newProcPath || &apos;/&apos; || schemaName;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = newProcPath || &apos;/&apos; || functionName;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET command = &apos;CALL &apos;;
+&#x9;&#x9;&#x9;&#x9;ELSEIF (UPPER(operationType) = &apos;D&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET functionInput = &apos;partitionNum = 0&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET command = &apos;SET &apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;ELSEIF (LOWER(databaseType) = &apos;sqlserver&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(operationType) = &apos;C&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET functionInput = &apos;(partitionNum, startDate)&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (catalogName IS NOT NULL AND LENGTH(TRIM(catalogName)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = newProcPath || &apos;/&apos; || catalogName;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;IF (schemaName IS NOT NULL AND LENGTH(TRIM(schemaName)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = newProcPath || &apos;/&apos; || schemaName;
+&#x9;&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = newProcPath || &apos;/&apos; || functionName;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET command = &apos;CALL &apos;;
+&#x9;&#x9;&#x9;&#x9;ELSEIF (UPPER(operationType) = &apos;D&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET functionInput = &apos;partitionNum = 0&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET command = &apos;SET &apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;ELSEIF (LOWER(databaseType) = &apos;postgres&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(operationType) = &apos;C&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET functionInput = &apos;partitionNum = 0&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET command = &apos;SET &apos;;
+&#x9;&#x9;&#x9;&#x9;ELSEIF (UPPER(operationType) = &apos;D&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET newProcPath = &apos;&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET functionInput = &apos;partitionNum = 0&apos;;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET command = &apos;SET &apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;END IF;
+&#x9;
+&#x9;&#x9;&#x9;-- Apply reserved path double quotes if applicable
+&#x9;&#x9;&#x9;IF (LENGTH(TRIM(newProcPath)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;CALL /shared/ASAssets/Utilities/repository/RepoUtils/applyReservedListToPath(newProcPath, null, newProcPath);
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Modify the procedure text the new path
+&#x9;&#x9;&#x9;SET scriptText = SUBSTRING(scriptText, 1, pos1-1) || command||newProcPath||functionInput || SUBSTRING(scriptText, pos2);
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos; : UPDATE RESOURCE [&apos;||procPath||&apos;]: new script text=[&apos;&apos;&apos;||command||newProcPath||functionInput||&apos;&apos;&apos;]&apos;);
+
+&#x9;&#x9;&#x9;-- Update the procedure with the new path
+&#x9;&#x9;&#x9;CALL /shared/ASAssets/Utilities/repository/updateSqlScript(procPath, scriptText, success, createResponse, faultResponse);
+&#x9;&#x9;&#x9;IF (faultResponse IS NOT NULL) THEN
+&#x9;&#x9;&#x9;&#x9;SET status = &apos;FAIL&apos;;
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(&apos;EXCEPTION: &apos;||CAST(faultResponse AS LONGVARCHAR), 1, 63900));
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET status = &apos;PASS&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET status = &apos;FAIL&apos;;
+&#x9;&#x9;END IF; 
+&#x9;END IF;
+EXCEPTION
+&#x9;ELSE
+&#x9;&#x9;CALL PRINT(SUBSTRING(&apos;EXCEPTION: &apos;||CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR), 1, 63900));&#x9;
+&#x9;&#x9;SET status = &apos;FAIL&apos;;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1591104973663</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601333668980</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">10/93</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/103</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/87</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1591104973663</attribute>
+</metadata>

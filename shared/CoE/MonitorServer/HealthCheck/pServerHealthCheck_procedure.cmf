@@ -1,0 +1,1040 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="pServerHealthCheck" path="/shared/CoE/MonitorServer/HealthCheck/pServerHealthCheck" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="getSystemMemoryCPU" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="logResultsToDB" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="bigHeapThresholdMBytes" direction="IN" nullable="true">
+      <datatype name="BIGINT" type="INTEGER"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="PARTITION">
+          <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+        </element>
+        <element name="LOAD_TIME">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="NODE_HOST">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="NODE_PORT">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="TOTAL_NODES">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="CLUSTER_NAME">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="CLUSTER_IS_CLUSTER">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="CLUSTER_IS_TIMEKEEPER">
+          <datatype name="VARCHAR" type="STRING" maxLength="5"/>
+        </element>
+        <element name="CLUSTER_STATUS">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="CLUSTER_TOTAL_TIMEKEEPER_NODES">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="CLUSTER_TIMEKEEPER_NODES">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+        <element name="TOTAL_ACTIVE_REQUESTS">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="BIG_HEAP_REQUESTS">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="EVENT_TIME">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+        <element name="TOTAL_HEAP_USED_PERCENT">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="MEMORY_BYTES">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="MEMORY_BYTES_AMOUNT">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+        </element>
+        <element name="MEMORY_BYTES_TYPE">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="MEMORY_MAX">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="MEMORY_MAX_AMOUNT">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+        </element>
+        <element name="MEMORY_MAX_TYPE">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="MANAGED_HEAP_USED_PERCENT">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="MANAGED_BYTES">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="MANAGED_BYTES_AMOUNT">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+        </element>
+        <element name="MANAGED_BYTES_TYPE">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="MANAGED_MAX">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="MANAGED_MAX_AMOUNT">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="12" maxFractionalDigits="2"/>
+        </element>
+        <element name="MANAGED_MAX_TYPE">
+          <datatype name="VARCHAR" type="STRING" maxLength="2"/>
+        </element>
+        <element name="SYSTEM_CPU_USED_PERCENT">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+        </element>
+        <element name="SYSTEM_MEMORY_USED_MB">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+        </element>
+        <element name="SYSTEM_MEMORY_AVAIL_MB">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+        </element>
+        <element name="DEBUG_OUTPUT">
+          <datatype name="VARCHAR" type="STRING" maxLength="4000"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/GetProperty" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="property" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/RepoUtils/applyReservedListToPath" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="inPath" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="debug" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/getServerAttribute" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="attribute" direction="IN">
+        <datatype type="STRING" maxLength="4096"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="attrName">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="attrValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="listEntryValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapKeyValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueType">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="mapValueValue">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+          <element name="arrayItem">
+            <datatype type="STRING" maxLength="32768"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/time/getCurrentTimestamp" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="currentTS" direction="OUT">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/DatasourceOperations/F_GET_PARTITION_NUM_COE" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="startDate" direction="IN">
+        <datatype type="DATE"/>
+      </element>
+      <element name="partitionNum" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Common/getServerHostPort" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="nodehost" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="nodeport" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Customize/commonValues" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PartitionProcs/P_UPDATE_STATISTICS" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="schemaName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="tableName" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="success" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/SystemMemoryCPU/getSystemMemoryCPU" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="CurrentTimestamp">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="cpuUsedPercent">
+            <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+          </element>
+          <element name="memoryUsedMb">
+            <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+          </element>
+          <element name="memoryAvailMb">
+            <datatype type="DECIMAL" maxDigits="10" maxFractionalDigits="2"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/SystemRequests/pSystemRequestsActive" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="logResultsToDB" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="inCurrentTime" direction="IN">
+        <datatype type="DATETIME"/>
+      </element>
+      <element name="inNodehost" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="inNodeport" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="inTotalHeapUsedPercent" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="PARTITION">
+            <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+          </element>
+          <element name="LOAD_TIME">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="NODE_HOST">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="NODE_PORT">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="REQUEST_ID">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="PARENT_ID">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="SESSION_ID">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="TRANSACTION_ID">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="OWNER_ID">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="OWNER">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="REQUEST_TYPE">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="STATUS">
+            <datatype type="STRING" maxLength="20"/>
+          </element>
+          <element name="DESCRIPTION">
+            <datatype type="CLOB" maxLength="2147483647"/>
+          </element>
+          <element name="START_TIME">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="END_TIME">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="TOTAL_DURATION">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="TOTAL_DURATION_STR">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="SERVER_DURATION">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="ROWS_AFFECTED">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="MAX_MEMORY">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="MAX_DISK">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="CURRENT_MEMORY">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="CURRENT_MEMORY_QUALIFIED">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="CURRENT_DISK">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="MESSAGE">
+            <datatype type="CLOB" maxLength="2147483647"/>
+          </element>
+          <element name="MAX_USED_MEMORY">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="CURRENT_USED_MEMORY">
+            <datatype type="INTEGER"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;pClusterHealthCheck:
+
+&#x9;This procedure gets invoked by a local trigger to gather node health check data.
+&#x9;Each node of a cluster will execute this procedure and gather data for itself.  
+&#x9;Each time this procedure executes, it will insert a row into a database table &quot;DV_SERVER_HEALTH_CHECK&quot;.
+&#x9;It is recommended that this procedure only be called once per minute or more.
+&#x9;The invoking load balancer application will read the &quot;DV_SERVER_HEALTH_CHECK&quot; table and
+&#x9;&#x9;apply a set of rules to determine the health of each the node in the cluster.
+&#x9;&#x9;Based on the health and a score for each node, it will determine the best node
+&#x9;&#x9;in which to route the request.
+
+&#x9;Caveats:
+&#x9;&#x9;1) The invocation to getSystemMemoryCPU() can be an expensive operation in that it may take several seconds to execute.
+&#x9;&#x9;&#x9;The user may decide to invoke it or not based on an input parameter.
+
+&#x9;INPUT:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),  &#x9;&#x9;&#x9;&#x9;-- Y=debug on.  N=debug off
+&#x9;&#x9;getSystemMemoryCPU&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;&#x9;&#x9;-- getSystemMemoryCPU: Y=get the system Memory and CPU usage.  This is an expensive operation in that it takes about a second to return.  N=Do not get system Memory and CPU.
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;--    This value is overridden by commonValues.getSystemMemoryCPUDef unless it is explicitly set to Y.
+&#x9;&#x9;logResultsToDB&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;&#x9;&#x9;-- logResultsToDB: Y=log the result row to a database table.  N=do not log the row.  In both cases, the row is returned to the invoking program.
+&#x9;&#x9;bigHeapThresholdMBytes&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;&#x9;&#x9;-- Number of megabytes threshold in which to calculate Big Heap Queries actively running or null to use commonValues.bigHeapThresholdBytes.
+
+&#x9;OUTPUT:
+&#x9;&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PIPE(
+&#x9;&#x9;&#x9;PARTITION&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- The partition number.
+&#x9;&#x9;&#x9;NODE_HOST&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The hostname of the server this procedure is invoked from.
+&#x9;&#x9;&#x9;NODE_PORT&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The port of the server this procedure is invoked from.
+&#x9;&#x9;&#x9;TOTAL_NODES&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- SYS_CLUSTER: Total number of nodes reported by this node or 1 if this is not a cluster.
+&#x9;&#x9;&#x9;CLUSTER_NAME&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- getServerAttribute(/server/config/cluster/displayName)
+&#x9;&#x9;&#x9;CLUSTER_IS_CLUSTER&#x9;&#x9;&#x9;&#x9;VARCHAR(5),&#x9;&#x9;-- SYS_CLUSTER: [true|false] Is this a environment a cluster.
+&#x9;&#x9;&#x9;CLUSTER_IS_TIMEKEEPER&#x9;&#x9;&#x9;VARCHAR(5),&#x9;&#x9;-- SYS_CLUSTER.TIMEKEEPER - [true|false] Is this node a timekeeper node.
+&#x9;&#x9;&#x9;CLUSTER_STATUS&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SYS_CLUSTER.STATUS [OPERATIONAL|DISCONNECTED] -- a single node will show OPERATIONAL.
+&#x9;&#x9;&#x9;CLUSTER_TOTAL_TIMEKEEPER_NODES&#x9;INTEGER,&#x9;&#x9;-- SYS_CLUSTER: WHERE TIMEKEEPER = &apos;Y&apos;.  Anything &gt; 1 is a problem indicating that the cluster sub-partitioned itself.
+&#x9;&#x9;&#x9;CLUSTER_TIMEKEEPER_NODES&#x9;&#x9;VARCHAR(4000),&#x9;-- SYS_CLUSTER.SERVER_HOST||&apos;:&apos;||SERVER_PORT - comma separated list
+&#x9;&#x9;&#x9;TOTAL_ACTIVE_REQUESTS &#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- SYS_REQUESTS: WHERE END_TIME IS NULL AND OWNER &lt;&gt; &apos;admin&apos; AND OWNER &lt;&gt; &apos;server&apos;
+&#x9;&#x9;&#x9;BIG_HEAP_REQUESTS &#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- SYS_REQUESTS: WHERE END_TIME IS NULL AND OWNER &lt;&gt; &apos;admin&apos; AND OWNER &lt;&gt; &apos;server&apos; AND CURRENT_USED_MEMORY &gt; bigHeapThresholdBytes
+&#x9;&#x9;&#x9;EVENT_TIME &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, &#x9;&#x9;-- LOG_MEMORY.EVENT_TIME - timestamp of event occurrence.
+&#x9;&#x9;&#x9;TOTAL_HEAP_USED_PERCENT &#x9;&#x9;INTEGER, &#x9;&#x9;-- LOG_MEMORY: ROUND((MEMORY_BYTES / CAST(MEMORY_MAX AS DECIMAL(12,2))) * 100)
+&#x9;&#x9;&#x9;MEMORY_BYTES &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MEMORY_BYTES - total number of bytes of TDV memory currently used.
+&#x9;&#x9;&#x9;MEMORY_BYTES_AMOUNT &#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MEMORY_BYTES - derived from MEMORY_BYTES.  The easy to read value of bytes that goes with the MEMORY_BYTES_TYPE.
+&#x9;&#x9;&#x9;MEMORY_BYTES_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MEMORY_BYTES - derived from MEMORY_BYTES. [B, KB, MB, GB, TB]
+&#x9;&#x9;&#x9;MEMORY_MAX &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MEMORY_MAX - maximum number of bytes of TDV memory configured (heap size).
+&#x9;&#x9;&#x9;MEMORY_MAX_AMOUNT &#x9;&#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MEMORY_MAX - derived from MEMORY_MAX.  The easy to read value of bytes that goes with the MEMORY_MAX_TYPE.
+&#x9;&#x9;&#x9;MEMORY_MAX_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MEMORY_MAX - derived from MEMORY_MAX. [B, KB, MB, GB, TB]
+&#x9;&#x9;&#x9;MANAGED_HEAP_USED_PERCENT &#x9;&#x9;INTEGER,&#x9;&#x9;-- LOG_MEMORY: ROUND((MANAGED_BYTES / CAST(MANAGED_MAX AS DECIMAL(12,2))) * 100)
+&#x9;&#x9;&#x9;MANAGED_BYTES &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MANAGED_BYTES - total number of bytes of TDV managed memory configured (lower threshold).
+&#x9;&#x9;&#x9;MANAGED_BYTES_AMOUNT &#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MANAGED_BYTES - derived from MANAGED_BYTES.  The easy to read value of bytes that goes with the MANAGED_BYTES_TYPE.
+&#x9;&#x9;&#x9;MANAGED_BYTES_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MANAGED_BYTES - derived from MANAGED_BYTES. [B, KB, MB, GB, TB]
+&#x9;&#x9;&#x9;MANAGED_MAX &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MANAGED_MAX - maximum number of bytes of TDV managed memory configured (upper threshold).
+&#x9;&#x9;&#x9;MANAGED_MAX_AMOUNT &#x9;&#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MANAGED_MAX - derived from MANAGED_MAX.  The easy to read value of bytes that goes with the MANAGED_MAX_TYPE.
+&#x9;&#x9;&#x9;MANAGED_MAX_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MANAGED_MAX - derived from MANAGED_MAX. [B, KB, MB, GB, TB]
+&#x9;&#x9;&#x9;SYSTEM_CPU_USED_PERCENT&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The percentage of CPU used at the time of execution.
+&#x9;&#x9;&#x9;SYSTEM_MEMORY_USED_MB&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The amount of memory used in MB at the time of execution.
+&#x9;&#x9;&#x9;SYSTEM_MEMORY_AVAIL_MB&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The amount of memory available in MB at the time of execution.
+&#x9;&#x9;&#x9;DEBUG_OUTPUT&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000)&#x9;-- Debug output when debug=Y, otherwise null.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2020.200&#x9;05/27/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new.
+&#x9;2020.300&#x9;08/25/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8/8.3&#x9;&#x9;Fixed reserved word port to server_port for 8.3.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE pServerHealthCheck(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),  &#x9;&#x9;&#x9;-- Debug: Y=debug on.  N=debug off
+&#x9;IN getSystemMemoryCPU&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;&#x9;-- getSystemMemoryCPU: Y=get the system Memory and CPU usage.  This is an expensive operation in that it takes about a second to return.  N=Do not get system Memory and CPU.
+&#x9;IN logResultsToDB&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;&#x9;-- logResultsToDB: Y=log the result row to a database table.  N=do not log the row.  In both cases, the row is returned to the invoking program.
+&#x9;IN bigHeapThresholdMBytes&#x9;&#x9;BIGINT,&#x9;&#x9;&#x9;&#x9;-- Number of megabytes threshold in which to calculate Big Heap Queries actively running or null to use commonValues.bigHeapThresholdBytes.
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PIPE(
+&#x9;&#x9;PARTITION&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- The partition number.
+&#x9;&#x9;LOAD_TIME&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The current timestamp of when the records was loaded/displayed.
+&#x9;&#x9;NODE_HOST&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The hostname of the server this procedure is invoked from.
+&#x9;&#x9;NODE_PORT&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The port of the server this procedure is invoked from.
+&#x9;&#x9;TOTAL_NODES&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- SYS_CLUSTER: Total number of nodes reported by this node or 1 if this is not a cluster.
+&#x9;&#x9;CLUSTER_NAME&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- getServerAttribute(/server/config/cluster/displayName)
+&#x9;&#x9;CLUSTER_IS_CLUSTER&#x9;&#x9;&#x9;&#x9;VARCHAR(5),&#x9;&#x9;-- SYS_CLUSTER: [true|false] Is this a environment a cluster.
+&#x9;&#x9;CLUSTER_IS_TIMEKEEPER&#x9;&#x9;&#x9;VARCHAR(5),&#x9;&#x9;-- SYS_CLUSTER.TIMEKEEPER - [true|false] Is this node a timekeeper node.
+&#x9;&#x9;CLUSTER_STATUS&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SYS_CLUSTER.STATUS [OPERATIONAL|DISCONNECTED] -- a single node will show OPERATIONAL.
+&#x9;&#x9;CLUSTER_TOTAL_TIMEKEEPER_NODES&#x9;INTEGER,&#x9;&#x9;-- SYS_CLUSTER: WHERE TIMEKEEPER = &apos;Y&apos;.  Anything &gt; 1 is a problem indicating that the cluster sub-partitioned itself.
+&#x9;&#x9;CLUSTER_TIMEKEEPER_NODES&#x9;&#x9;VARCHAR(4000),&#x9;-- SYS_CLUSTER.SERVER_HOST||&apos;:&apos;||SERVER_PORT - comma separated list
+&#x9;&#x9;TOTAL_ACTIVE_REQUESTS &#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- SYS_REQUESTS: WHERE END_TIME IS NULL AND OWNER &lt;&gt; &apos;admin&apos; AND OWNER &lt;&gt; &apos;server&apos;
+&#x9;&#x9;BIG_HEAP_REQUESTS &#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- SYS_REQUESTS: WHERE END_TIME IS NULL AND OWNER &lt;&gt; &apos;admin&apos; AND OWNER &lt;&gt; &apos;server&apos; AND CURRENT_USED_MEMORY &gt; bigHeapThresholdBytes
+&#x9;&#x9;EVENT_TIME &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, &#x9;&#x9;-- LOG_MEMORY.EVENT_TIME - timestamp of event occurrence.
+&#x9;&#x9;TOTAL_HEAP_USED_PERCENT &#x9;&#x9;INTEGER, &#x9;&#x9;-- LOG_MEMORY: ROUND((MEMORY_BYTES / CAST(MEMORY_MAX AS DECIMAL(12,2))) * 100)
+&#x9;&#x9;MEMORY_BYTES &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MEMORY_BYTES - total number of bytes of TDV memory currently used.
+&#x9;&#x9;MEMORY_BYTES_AMOUNT &#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MEMORY_BYTES - derived from MEMORY_BYTES.  The easy to read value of bytes that goes with the MEMORY_BYTES_TYPE.
+&#x9;&#x9;MEMORY_BYTES_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MEMORY_BYTES - derived from MEMORY_BYTES. [B, KB, MB, GB, TB]
+&#x9;&#x9;MEMORY_MAX &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MEMORY_MAX - maximum number of bytes of TDV memory configured (heap size).
+&#x9;&#x9;MEMORY_MAX_AMOUNT &#x9;&#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MEMORY_MAX - derived from MEMORY_MAX.  The easy to read value of bytes that goes with the MEMORY_MAX_TYPE.
+&#x9;&#x9;MEMORY_MAX_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MEMORY_MAX - derived from MEMORY_MAX. [B, KB, MB, GB, TB]
+&#x9;&#x9;MANAGED_HEAP_USED_PERCENT &#x9;&#x9;INTEGER,&#x9;&#x9;-- LOG_MEMORY: ROUND((MANAGED_BYTES / CAST(MANAGED_MAX AS DECIMAL(12,2))) * 100)
+&#x9;&#x9;MANAGED_BYTES &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MANAGED_BYTES - total number of bytes of TDV managed memory configured (lower threshold).
+&#x9;&#x9;MANAGED_BYTES_AMOUNT &#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MANAGED_BYTES - derived from MANAGED_BYTES.  The easy to read value of bytes that goes with the MANAGED_BYTES_TYPE.
+&#x9;&#x9;MANAGED_BYTES_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MANAGED_BYTES - derived from MANAGED_BYTES. [B, KB, MB, GB, TB]
+&#x9;&#x9;MANAGED_MAX &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MANAGED_MAX - maximum number of bytes of TDV managed memory configured (upper threshold).
+&#x9;&#x9;MANAGED_MAX_AMOUNT &#x9;&#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MANAGED_MAX - derived from MANAGED_MAX.  The easy to read value of bytes that goes with the MANAGED_MAX_TYPE.
+&#x9;&#x9;MANAGED_MAX_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MANAGED_MAX - derived from MANAGED_MAX. [B, KB, MB, GB, TB]
+&#x9;&#x9;SYSTEM_CPU_USED_PERCENT&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The percentage of CPU used at the time of execution.
+&#x9;&#x9;SYSTEM_MEMORY_USED_MB&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The amount of memory used in MB at the time of execution.
+&#x9;&#x9;SYSTEM_MEMORY_AVAIL_MB&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The amount of memory available in MB at the time of execution.
+&#x9;&#x9;DEBUG_OUTPUT&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000)&#x9;-- Debug output when debug=Y, otherwise null.
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE MonitorServerPath&#x9;&#x9;&#x9;&#x9;VARCHAR(4000)&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.MonitorServerPath;
+&#x9;DECLARE totalHeapUsedPercentThreshold&#x9;INTEGER &#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.totalHeapUsedPercentThreshold;
+&#x9;DECLARE bigHeapThresholdBytesDef &#x9;&#x9;BIGINT &#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.bigHeapThresholdBytes;
+&#x9;DECLARE getSystemMemoryCPUDef&#x9;&#x9;&#x9;CHAR(1)&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.getSystemMemoryCPU;
+&#x9;DECLARE ReportingPath &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.ReportingPath;
+&#x9;DECLARE HealthCheckTable &#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.HealthCheckTable;
+&#x9;DECLARE HealthCheckTablePath&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT ReportingPath||&apos;/&apos;||HealthCheckTable;
+&#x9;DECLARE tableRetentionDays&#x9;&#x9;&#x9;&#x9;INTEGER&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.tableRetentionDays;
+&#x9;DECLARE schemaName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.schemaName;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE whereClause&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE success&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE curs1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(EVENT_TIME TIMESTAMP, TOTAL_HEAP_USED_PERCENT INTEGER, MEMORY_BYTES BIGINT, MEMORY_MAX BIGINT, MANAGED_HEAP_USED_PERCENT INTEGER, MANAGED_BYTES BIGINT, MANAGED_MAX BIGINT);
+&#x9;DECLARE curs2&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(cnt INTEGER, label VARCHAR);
+&#x9;DECLARE curs3&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(isCluster BOOLEAN, isCurrentNode BOOLEAN, isDedicatedTimekeeper BOOLEAN, isTimeKeeper BOOLEAN, hostName VARCHAR, server_port INTEGER, status VARCHAR);
+&#x9;DECLARE KB1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DECIMAL(19,2) &#x9;DEFAULT 1024;
+&#x9;DECLARE MB1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DECIMAL(19,2) &#x9;DEFAULT (1024 * 1024);
+&#x9;DECLARE GB1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DECIMAL(19,2) &#x9;DEFAULT (1024 * 1024 * 1024);
+&#x9;DECLARE TB1&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;DECIMAL(19,2) &#x9;DEFAULT (1024 * 1024 * 1024 * 1024);
+&#x9;DECLARE username&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE TYPE recType&#x9;&#x9;&#x9;&#x9;&#x9;ROW(
+&#x9;&#x9;PARTITION&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;SMALLINT,&#x9;&#x9;-- The partition number.
+&#x9;&#x9;LOAD_TIME&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP,&#x9;&#x9;-- The current timestamp of when the records was loaded/displayed.
+&#x9;&#x9;NODE_HOST&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- The hostname of the server this procedure is invoked from.
+&#x9;&#x9;NODE_PORT&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- The port of the server this procedure is invoked from.
+&#x9;&#x9;TOTAL_NODES&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- SYS_CLUSTER: Total number of nodes reported by this node.
+&#x9;&#x9;CLUSTER_NAME&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- getServerAttribute(/server/config/cluster/displayName)
+&#x9;&#x9;CLUSTER_IS_CLUSTER&#x9;&#x9;&#x9;&#x9;VARCHAR(5),&#x9;&#x9;-- SYS_CLUSTER: [true|false] Is this a environment a cluster.
+&#x9;&#x9;CLUSTER_IS_TIMEKEEPER&#x9;&#x9;&#x9;VARCHAR(5),&#x9;&#x9;-- SYS_CLUSTER.TIMEKEEPER - [true|false] Is this node a timekeeper node.
+&#x9;&#x9;CLUSTER_STATUS&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- SYS_CLUSTER.STATUS [OPERATIONAL|DISCONNECTED] -- a single node will show OPERATIONAL.
+&#x9;&#x9;CLUSTER_TOTAL_TIMEKEEPER_NODES&#x9;INTEGER,&#x9;&#x9;-- SYS_CLUSTER: WHERE TIMEKEEPER = &apos;Y&apos;.  Anything &gt; 1 is a problem indicating that the cluster sub-partitioned itself.
+&#x9;&#x9;CLUSTER_TIMEKEEPER_NODES&#x9;&#x9;VARCHAR(4000),&#x9;-- SYS_CLUSTER.SERVER_HOST||&apos;:&apos;||SERVER_PORT - comma separated list
+&#x9;&#x9;TOTAL_ACTIVE_REQUESTS &#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- SYS_REQUESTS: WHERE END_TIME IS NULL AND OWNER &lt;&gt; &apos;admin&apos; AND OWNER &lt;&gt; &apos;server&apos;
+&#x9;&#x9;BIG_HEAP_REQUESTS &#x9;&#x9;&#x9;&#x9;INTEGER, &#x9;&#x9;-- SYS_REQUESTS: WHERE END_TIME IS NULL AND OWNER &lt;&gt; &apos;admin&apos; AND OWNER &lt;&gt; &apos;server&apos; AND CURRENT_USED_MEMORY &gt; bigHeapThresholdBytes
+&#x9;&#x9;EVENT_TIME &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP, &#x9;&#x9;-- LOG_MEMORY.EVENT_TIME - timestamp of event occurrence.
+&#x9;&#x9;TOTAL_HEAP_USED_PERCENT &#x9;&#x9;INTEGER, &#x9;&#x9;-- LOG_MEMORY: ROUND((MEMORY_BYTES / CAST(MEMORY_MAX AS DECIMAL(12,2))) * 100)
+&#x9;&#x9;MEMORY_BYTES &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MEMORY_BYTES - total number of bytes of TDV memory currently used.
+&#x9;&#x9;MEMORY_BYTES_AMOUNT &#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MEMORY_BYTES - derived from MEMORY_BYTES.  The easy to read value of bytes that goes with the MEMORY_BYTES_TYPE.
+&#x9;&#x9;MEMORY_BYTES_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MEMORY_BYTES - derived from MEMORY_BYTES. [B, KB, MB, GB, TB]
+&#x9;&#x9;MEMORY_MAX &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MEMORY_MAX - maximum number of bytes of TDV memory configured (heap size).
+&#x9;&#x9;MEMORY_MAX_AMOUNT &#x9;&#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MEMORY_MAX - derived from MEMORY_MAX.  The easy to read value of bytes that goes with the MEMORY_MAX_TYPE.
+&#x9;&#x9;MEMORY_MAX_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MEMORY_MAX - derived from MEMORY_MAX. [B, KB, MB, GB, TB]
+&#x9;&#x9;MANAGED_HEAP_USED_PERCENT &#x9;&#x9;INTEGER,&#x9;&#x9;-- LOG_MEMORY: ROUND((MANAGED_BYTES / CAST(MANAGED_MAX AS DECIMAL(12,2))) * 100)
+&#x9;&#x9;MANAGED_BYTES &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MANAGED_BYTES - total number of bytes of TDV managed memory configured (lower threshold).
+&#x9;&#x9;MANAGED_BYTES_AMOUNT &#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MANAGED_BYTES - derived from MANAGED_BYTES.  The easy to read value of bytes that goes with the MANAGED_BYTES_TYPE.
+&#x9;&#x9;MANAGED_BYTES_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MANAGED_BYTES - derived from MANAGED_BYTES. [B, KB, MB, GB, TB]
+&#x9;&#x9;MANAGED_MAX &#x9;&#x9;&#x9;&#x9;&#x9;BIGINT, &#x9;&#x9;-- LOG_MEMORY.MANAGED_MAX - maximum number of bytes of TDV managed memory configured (upper threshold).
+&#x9;&#x9;MANAGED_MAX_AMOUNT &#x9;&#x9;&#x9;&#x9;DECIMAL(12,2), &#x9;-- LOG_MEMORY.MANAGED_MAX - derived from MANAGED_MAX.  The easy to read value of bytes that goes with the MANAGED_MAX_TYPE.
+&#x9;&#x9;MANAGED_MAX_TYPE &#x9;&#x9;&#x9;&#x9;VARCHAR(2),&#x9;&#x9;-- LOG_MEMORY.MANAGED_MAX - derived from MANAGED_MAX. [B, KB, MB, GB, TB]
+&#x9;&#x9;SYSTEM_CPU_USED_PERCENT&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The percentage of CPU used at the time of execution.
+&#x9;&#x9;SYSTEM_MEMORY_USED_MB&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The amount of memory used in MB at the time of execution.
+&#x9;&#x9;SYSTEM_MEMORY_AVAIL_MB&#x9;&#x9;&#x9;DECIMAL(10,2),&#x9;-- getSystemCpuMemory[CPUAndMemChecker] - The amount of memory available in MB at the time of execution.
+&#x9;&#x9;DEBUG_OUTPUT&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000)&#x9;-- Debug output when debug=Y, otherwise null.
+&#x9;);
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;recType;
+
+&#x9;----------------------------------------------
+&#x9;-- Initialize variables
+&#x9;----------------------------------------------
+&#x9;SET rec = null;
+&#x9;-- Get the current time
+&#x9;CALL /shared/ASAssets/Utilities/&quot;time&quot;/getCurrentTimestamp(rec.LOAD_TIME);
+&#x9;-- Set default values
+&#x9;SET rec.TOTAL_NODES = 0;
+&#x9;SET rec.CLUSTER_IS_CLUSTER = &apos;false&apos;;
+&#x9;SET rec.CLUSTER_IS_TIMEKEEPER = &apos;false&apos;;
+&#x9;SET rec.CLUSTER_TOTAL_TIMEKEEPER_NODES = 0;
+&#x9;SET rec.CLUSTER_TIMEKEEPER_NODES = &apos;&apos;;
+&#x9;SET rec.CLUSTER_STATUS = &apos;OPERATIONAL&apos;;
+&#x9;SET rec.CLUSTER_NAME = null;
+&#x9;-- Default getSystemMemoryCPU
+&#x9;IF (getSystemMemoryCPU IS NOT NULL AND UPPER(getSystemMemoryCPU) = &apos;Y&apos;) THEN
+&#x9;&#x9;SET getSystemMemoryCPUDef = getSystemMemoryCPU;
+&#x9;END IF;
+
+&#x9;--Get the current username
+&#x9;CALL /lib/util/GetProperty(&apos;CURRENT_USER_NAME&apos;, username);
+&#x9;IF (username &lt;&gt; &apos;admin&apos;) THEN
+&#x9;&#x9;SET whereClause = &apos;  AND OWNER &lt;&gt; &apos;&apos;&apos;||username||&apos;&apos;&apos;&apos;||CHR(10);
+&#x9;END IF;
+&#x9;-- Get the current host and port
+&#x9;CALL /shared/CoE/MonitorServer/Common/getServerHostPort(rec.NODE_HOST, rec.NODE_PORT);
+
+&#x9;----------------------------------------------
+&#x9;-- Get LOG_MEMORY data
+&#x9;----------------------------------------------
+&#x9;SET sqlStatement = 
+&#x9;&#x9;&apos;SELECT TOP 1&apos;||CHR(10)||
+&#x9;&#x9;&apos;   EVENT_TIME,&apos;||CHR(10)||
+&#x9;&#x9;&apos;   ROUND((MEMORY_BYTES / CAST(MEMORY_MAX AS DECIMAL(12,2))) * 100) TOTAL_HEAP_USED_PERCENT,&apos;||CHR(10)||
+&#x9;&#x9;&apos;   MEMORY_BYTES,&apos;||CHR(10)||
+&#x9;&#x9;&apos;   MEMORY_MAX,&apos;||CHR(10)||
+&#x9;&#x9;&apos;   ROUND((MANAGED_BYTES / CAST(MANAGED_MAX AS DECIMAL(12,2))) * 100) MANAGED_HEAP_USED_PERCENT,&apos;||CHR(10)||
+&#x9;&#x9;&apos;   MANAGED_BYTES,&apos;||CHR(10)||
+&#x9;&#x9;&apos;   MANAGED_MAX&apos;||CHR(10)||
+&#x9;&#x9;&apos;FROM /services/databases/system/LOG_MEMORY LOG_MEMORY&apos;||CHR(10)||
+&#x9;&#x9;&apos;ORDER BY EVENT_TIME DESC&apos;;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#1=[&apos;||sqlStatement||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET rec.DEBUG_OUTPUT = &apos;SQL_STATEMENT_#1=[&apos;||sqlStatement||&apos;]&apos;||CHR(10)||CHR(10);
+&#x9;END IF;
+
+&#x9;OPEN curs1 FOR sqlStatement;
+&#x9;FOR r AS curs1 DO
+&#x9;&#x9;SET rec.EVENT_TIME = r.EVENT_TIME;
+&#x9;&#x9;-- Total memory
+&#x9;&#x9;SET rec.TOTAL_HEAP_USED_PERCENT = r.TOTAL_HEAP_USED_PERCENT;
+&#x9;&#x9;SET rec.MEMORY_BYTES = r.MEMORY_BYTES;
+&#x9;&#x9;SET rec.MEMORY_MAX = r.MEMORY_MAX;
+&#x9;&#x9;-- Calculate the easy to read MEMORY_BYTES
+&#x9;&#x9;IF (rec.MEMORY_BYTES &gt; 0) THEN
+&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_BYTES &lt; KB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_AMOUNT = rec.MEMORY_BYTES;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_TYPE = &apos;B&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_BYTES &gt;= KB1 AND rec.MEMORY_BYTES &lt; MB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_AMOUNT = rec.MEMORY_BYTES / KB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_TYPE = &apos;KB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_BYTES &gt;= MB1 AND rec.MEMORY_BYTES &lt; GB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_AMOUNT = rec.MEMORY_BYTES / MB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_TYPE = &apos;MB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_BYTES &gt;= GB1 AND rec.MEMORY_BYTES &lt; TB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_AMOUNT = rec.MEMORY_BYTES / GB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_TYPE = &apos;GB&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_AMOUNT = rec.MEMORY_BYTES / TB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_BYTES_TYPE = &apos;TB&apos;;
+&#x9;&#x9;&#x9;END CASE;
+&#x9;&#x9;END IF;
+&#x9;&#x9;-- Calculate the easy to read MEMORY_MAX
+&#x9;&#x9;IF (rec.MEMORY_MAX &gt; 0) THEN
+&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_MAX &lt; KB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_AMOUNT = rec.MEMORY_MAX;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_TYPE = &apos;B&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_MAX &gt;= KB1 AND rec.MEMORY_MAX &lt; MB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_AMOUNT = rec.MEMORY_MAX / KB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_TYPE = &apos;KB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_MAX &gt;= MB1 AND rec.MEMORY_MAX &lt; GB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_AMOUNT = rec.MEMORY_MAX / MB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_TYPE = &apos;MB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MEMORY_MAX &gt;= GB1 AND rec.MEMORY_MAX &lt; TB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_AMOUNT = rec.MEMORY_MAX / GB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_TYPE = &apos;GB&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_AMOUNT = rec.MEMORY_MAX / TB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MEMORY_MAX_TYPE = &apos;TB&apos;;
+&#x9;&#x9;&#x9;END CASE;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Managed memory
+&#x9;&#x9;SET rec.MANAGED_HEAP_USED_PERCENT = r.MANAGED_HEAP_USED_PERCENT;
+&#x9;&#x9;SET rec.MANAGED_BYTES = r.MANAGED_BYTES;
+&#x9;&#x9;SET rec.MANAGED_MAX = r.MANAGED_MAX;
+&#x9;&#x9;-- Calculate the easy to read MANAGED_BYTES
+&#x9;&#x9;IF (rec.MANAGED_BYTES &gt; 0) THEN
+&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_BYTES &lt; KB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_AMOUNT = rec.MANAGED_BYTES;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_TYPE = &apos;B&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_BYTES &gt;= KB1 AND rec.MANAGED_BYTES &lt; MB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_AMOUNT = rec.MANAGED_BYTES / KB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_TYPE = &apos;KB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_BYTES &gt;= MB1 AND rec.MANAGED_BYTES &lt; GB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_AMOUNT = rec.MANAGED_BYTES / MB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_TYPE = &apos;MB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_BYTES &gt;= GB1 AND rec.MANAGED_BYTES &lt; TB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_AMOUNT = rec.MANAGED_BYTES / GB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_TYPE = &apos;GB&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_AMOUNT = rec.MANAGED_BYTES / TB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_BYTES_TYPE = &apos;TB&apos;;
+&#x9;&#x9;&#x9;END CASE;
+&#x9;&#x9;END IF;
+&#x9;&#x9;-- Calculate the easy to read MANAGED_MAX
+&#x9;&#x9;IF (rec.MANAGED_MAX &gt; 0) THEN
+&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_MAX &lt; KB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_AMOUNT = rec.MANAGED_MAX;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_TYPE = &apos;B&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_MAX &gt;= KB1 AND rec.MANAGED_MAX &lt; MB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_AMOUNT = rec.MANAGED_MAX / KB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_TYPE = &apos;KB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_MAX &gt;= MB1 AND rec.MANAGED_MAX &lt; GB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_AMOUNT = rec.MANAGED_MAX / MB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_TYPE = &apos;MB&apos;;
+&#x9;&#x9;&#x9;&#x9;WHEN rec.MANAGED_MAX &gt;= GB1 AND rec.MANAGED_MAX &lt; TB1 THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_AMOUNT = rec.MANAGED_MAX / GB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_TYPE = &apos;GB&apos;;
+&#x9;&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_AMOUNT = rec.MANAGED_MAX / TB1;
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.MANAGED_MAX_TYPE = &apos;TB&apos;;
+&#x9;&#x9;&#x9;END CASE;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#1_RESULT=[&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;EVENT_TIME=&apos;||r.EVENT_TIME||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, TOTAL_HEAP_USED_PERCENT=&apos;||r.TOTAL_HEAP_USED_PERCENT||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MEMORY_BYTES=&apos;||r.MEMORY_BYTES||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MEMORY_MAX=&apos;||r.MEMORY_MAX||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MANAGED_HEAP_USED_PERCENT=&apos;||r.MANAGED_HEAP_USED_PERCENT||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MANAGED_BYTES=&apos;||r.MANAGED_BYTES||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MANAGED_MAX=&apos;||r.MANAGED_MAX||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;]&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;&#x9;SET rec.DEBUG_OUTPUT = rec.DEBUG_OUTPUT || &apos;SQL_STATEMENT_#1_RESULT=[&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;EVENT_TIME=&apos;||r.EVENT_TIME||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, TOTAL_HEAP_USED_PERCENT=&apos;||r.TOTAL_HEAP_USED_PERCENT||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MEMORY_BYTES=&apos;||r.MEMORY_BYTES||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MEMORY_MAX=&apos;||r.MEMORY_MAX||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MANAGED_HEAP_USED_PERCENT=&apos;||r.MANAGED_HEAP_USED_PERCENT||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MANAGED_BYTES=&apos;||r.MANAGED_BYTES||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;, MANAGED_MAX=&apos;||r.MANAGED_MAX||&apos;]&apos;||CHR(10)||CHR(10);
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+
+&#x9;----------------------------------------------
+&#x9;-- Get SYS_REQUESTS COUNT() Active &amp; Big Heap
+&#x9;----------------------------------------------
+&#x9;-- Determine whether to use the passed in value or the default value.
+&#x9;IF (bigHeapThresholdMBytes IS NOT NULL) THEN
+&#x9;&#x9;SET bigHeapThresholdBytesDef = bigHeapThresholdMBytes*1024;
+&#x9;END IF;
+&#x9;SET rec.BIG_HEAP_REQUESTS = 0;
+&#x9;SET sqlStatement = 
+&#x9;&#x9;&#x9;&apos;SELECT COUNT(*) cnt, &apos;&apos;BIG_HEAP_REQUESTS&apos;&apos; label&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;FROM /services/databases/system/SYS_REQUESTS&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;WHERE END_TIME IS NULL&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  AND OWNER &lt;&gt; &apos;&apos;admin&apos;&apos;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;  AND OWNER &lt;&gt; &apos;&apos;server&apos;&apos;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;whereClause||
+&#x9;&#x9;&#x9;&apos;  AND CURRENT_USED_MEMORY &gt; &apos;||bigHeapThresholdBytesDef;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#2=[&apos;||sqlStatement||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET rec.DEBUG_OUTPUT = rec.DEBUG_OUTPUT || &apos;SQL_STATEMENT_#2=[&apos;||sqlStatement||&apos;]&apos;||CHR(10)||CHR(10);
+&#x9;END IF;
+&#x9;OPEN curs2 FOR sqlStatement;
+&#x9;FOR r AS curs2 DO
+&#x9;&#x9;IF r.label = &apos;BIG_HEAP_REQUESTS&apos; THEN
+&#x9;&#x9;&#x9;SET rec.BIG_HEAP_REQUESTS = r.cnt;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#2_RESULT=[BIG_HEAP_REQUESTS=&apos;||rec.BIG_HEAP_REQUESTS||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET rec.DEBUG_OUTPUT = rec.DEBUG_OUTPUT || &apos;SQL_STATEMENT_#2_RESULT=[BIG_HEAP_REQUESTS=&apos;||rec.BIG_HEAP_REQUESTS||&apos;]&apos;||CHR(10)||CHR(10);
+&#x9;END IF;
+
+&#x9;----------------------------------------------
+&#x9;-- Get SYS_REQUESTS ACTIVE PROCESSES
+&#x9;----------------------------------------------
+&#x9;SET rec.TOTAL_ACTIVE_REQUESTS = 0;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#3=[IF (rec.TOTAL_HEAP_USED_PERCENT[&apos;||rec.TOTAL_HEAP_USED_PERCENT||&apos;] &gt; totalHeapUsedPercentThreshold[&apos;||totalHeapUsedPercentThreshold||&apos;]) THEN SELECT * FROM /shared/CoE/MonitorServer/SystemRequests/pSystemRequestsActive()]&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET rec.DEBUG_OUTPUT = rec.DEBUG_OUTPUT || &apos;SQL_STATEMENT_#3=[IF (rec.TOTAL_HEAP_USED_PERCENT[&apos;||rec.TOTAL_HEAP_USED_PERCENT||&apos;] &gt; totalHeapUsedPercentThreshold[&apos;||totalHeapUsedPercentThreshold||&apos;]) THEN SELECT * FROM /shared/CoE/MonitorServer/SystemRequests/pSystemRequestsActive()]&apos;||CHR(10)||CHR(10);
+&#x9;END IF;
+&#x9;IF (rec.TOTAL_HEAP_USED_PERCENT &gt; totalHeapUsedPercentThreshold) THEN
+&#x9;&#x9;SET rec.TOTAL_ACTIVE_REQUESTS = 0;
+&#x9;&#x9;FOR r AS 
+&#x9;&#x9;&#x9;SELECT * FROM /shared/CoE/MonitorServer/SystemRequests/pSystemRequestsActive(debug, logResultsToDB, rec.LOAD_TIME, rec.NODE_HOST, rec.NODE_PORT, rec.TOTAL_HEAP_USED_PERCENT)
+&#x9;&#x9;DO
+&#x9;&#x9;&#x9;SET rec.TOTAL_ACTIVE_REQUESTS = rec.TOTAL_ACTIVE_REQUESTS + 1;
+&#x9;&#x9;END FOR;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#3_RESULT=[rec.TOTAL_ACTIVE_REQUESTS=&apos;||rec.TOTAL_ACTIVE_REQUESTS||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET rec.DEBUG_OUTPUT = rec.DEBUG_OUTPUT || &apos;SQL_STATEMENT_#3_RESULT=[rec.TOTAL_ACTIVE_REQUESTS=&apos;||rec.TOTAL_ACTIVE_REQUESTS||&apos;]&apos;||CHR(10)||CHR(10);
+&#x9;END IF;
+
+&#x9;----------------------------------------------
+&#x9;-- Get SYS_CLUSTER data
+&#x9;----------------------------------------------
+&#x9;SET sqlStatement = 
+&#x9;&#x9;&apos;SELECT isCluster, isCurrentNode, isDedicatedTimekeeper, isTimeKeeper, hostName, server_port, status FROM &apos;||MonitorServerPath||&apos;/Common/getServerNames()&apos;;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#4=[&apos;||sqlStatement||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET rec.DEBUG_OUTPUT = rec.DEBUG_OUTPUT || &apos;SQL_STATEMENT_#4=[&apos;||sqlStatement||&apos;]&apos;||CHR(10)||CHR(10);
+&#x9;END IF;
+&#x9;OPEN curs3 FOR sqlStatement;
+&#x9;FOR r AS curs3 DO
+&#x9;&#x9;-- Set the total number of nodes
+&#x9;&#x9;SET rec.TOTAL_NODES = rec.TOTAL_NODES + 1;
+
+&#x9;&#x9;-- Determine if status of this node
+&#x9;&#x9;IF (r.isCurrentNode) THEN
+&#x9;&#x9;&#x9;IF (r.isCluster) THEN
+&#x9;&#x9;&#x9;&#x9;SET rec.CLUSTER_IS_CLUSTER = &apos;true&apos;;
+&#x9;&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;&#x9;SET rec.CLUSTER_IS_CLUSTER = &apos;false&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET rec.CLUSTER_STATUS = r.status;
+&#x9;&#x9;&#x9;-- Determine if this node is the timekeeper node
+&#x9;&#x9;&#x9;IF (r.isTimeKeeper) THEN
+&#x9;&#x9;&#x9;&#x9;SET rec.CLUSTER_IS_TIMEKEEPER = &apos;true&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Determine the list of timekeeper nodes (this is an issue if there is more than 1).
+&#x9;&#x9;IF (r.isTimeKeeper) THEN
+&#x9;&#x9;&#x9;SET rec.CLUSTER_TOTAL_TIMEKEEPER_NODES = rec.CLUSTER_TOTAL_TIMEKEEPER_NODES + 1;
+&#x9;&#x9;&#x9;IF (rec.CLUSTER_TIMEKEEPER_NODES IS NOT NULL AND LENGTH(TRIM(rec.CLUSTER_TIMEKEEPER_NODES)) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET rec.CLUSTER_TIMEKEEPER_NODES = rec.CLUSTER_TIMEKEEPER_NODES || &apos;,&apos;;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET rec.CLUSTER_TIMEKEEPER_NODES = rec.CLUSTER_TIMEKEEPER_NODES || r.hostName||&apos;:&apos;||r.server_port;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;SQL_STATEMENT_#4_RESULT=[CLUSTER_TOTAL_TIMEKEEPER_NODES=&apos;||rec.CLUSTER_TOTAL_TIMEKEEPER_NODES||&apos;, CLUSTER_TIMEKEEPER_NODES=&apos;||NVL(rec.CLUSTER_TIMEKEEPER_NODES,&apos;null&apos;)||&apos;]&apos;);
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;SET rec.DEBUG_OUTPUT = rec.DEBUG_OUTPUT || &apos;SQL_STATEMENT_#4_RESULT=[CLUSTER_TOTAL_TIMEKEEPER_NODES=&apos;||rec.CLUSTER_TOTAL_TIMEKEEPER_NODES||&apos;, CLUSTER_TIMEKEEPER_NODES=&apos;||NVL(rec.CLUSTER_TIMEKEEPER_NODES,&apos;null&apos;)||&apos;]&apos;||CHR(10)||CHR(10);
+&#x9;END IF;
+
+&#x9;-- If no cluster then this node counts as 1 node
+&#x9;IF (rec.TOTAL_NODES = 0) THEN
+&#x9;&#x9;SET rec.TOTAL_NODES = 1;
+&#x9;ELSE
+&#x9;&#x9;-- Get the cluster name if this is a cluster
+&#x9;&#x9;FOR a AS SELECT attrValue FROM /shared/ASAssets/Utilities/repository/getServerAttribute(&apos;/server/config/cluster/displayName&apos;) DO
+&#x9;&#x9;&#x9;SET rec.CLUSTER_NAME = a.attrValue;
+&#x9;&#x9;END FOR;
+&#x9;END IF;
+&#x9;-- Reset this value if still blank
+&#x9;IF (LENGTH(rec.CLUSTER_TIMEKEEPER_NODES) = 0) THEN
+&#x9;&#x9;SET rec.CLUSTER_TIMEKEEPER_NODES = null;
+&#x9;END IF;
+
+&#x9;----------------------------------------------
+&#x9;-- Get SYSTEM MEMORY and CPU data
+&#x9;----------------------------------------------
+&#x9;IF (UPPER(getSystemMemoryCPUDef) = &apos;Y&apos;) THEN
+&#x9;&#x9;FOR s AS SELECT * FROM /shared/CoE/MonitorServer/SystemMemoryCPU/getSystemMemoryCPU(debug) DO
+&#x9;&#x9;&#x9;set rec.SYSTEM_CPU_USED_PERCENT = s.cpuUsedPercent;
+&#x9;&#x9;&#x9;set rec.SYSTEM_MEMORY_USED_MB = s.memoryUsedMb;
+&#x9;&#x9;&#x9;set rec.SYSTEM_MEMORY_AVAIL_MB = s.memoryAvailMb;
+&#x9;&#x9;END FOR;
+&#x9;END IF;
+
+&#x9;----------------------------------------------
+&#x9;-- Insert rec into a database table
+&#x9;----------------------------------------------
+&#x9;IF (UPPER(logResultsToDB) = &apos;Y&apos;) THEN
+&#x9;&#x9;IF (HealthCheckTable IS NOT NULL AND LENGTH(TRIM(HealthCheckTable)) &gt; 0) THEN
+&#x9;&#x9;&#x9;-- Get the partition number for the LOAD_TIME
+&#x9;&#x9;&#x9;CALL /shared/CoE/DatasourceOperations/F_GET_PARTITION_NUM_COE(CAST(rec.LOAD_TIME AS DATE), rec.partition);
+
+&#x9;&#x9;&#x9;-- Fix the table path
+&#x9;&#x9;&#x9;CALL /shared/ASAssets/Utilities/repository/RepoUtils/applyReservedListToPath(HealthCheckTablePath, null, HealthCheckTablePath);
+
+&#x9;&#x9;&#x9;-- Construct the dynamic SQL insert statement
+&#x9;&#x9;&#x9;SET sqlStatement = 
+&#x9;&#x9;&#x9;&apos;INSERT INTO &apos;||HealthCheckTablePath||&apos; VALUES(
+&#x9;&#x9;&#x9;&#x9;rec.PARTITION,
+&#x9;&#x9;&#x9;&#x9;rec.LOAD_TIME,
+&#x9;&#x9;&#x9;&#x9;rec.NODE_HOST,
+&#x9;&#x9;&#x9;&#x9;rec.NODE_PORT,
+&#x9;&#x9;&#x9;&#x9;rec.TOTAL_NODES,
+&#x9;&#x9;&#x9;&#x9;rec.CLUSTER_NAME,
+&#x9;&#x9;&#x9;&#x9;rec.CLUSTER_IS_CLUSTER,
+&#x9;&#x9;&#x9;&#x9;rec.CLUSTER_IS_TIMEKEEPER,
+&#x9;&#x9;&#x9;&#x9;rec.CLUSTER_STATUS,
+&#x9;&#x9;&#x9;&#x9;rec.CLUSTER_TOTAL_TIMEKEEPER_NODES,
+&#x9;&#x9;&#x9;&#x9;rec.CLUSTER_TIMEKEEPER_NODES,
+&#x9;&#x9;&#x9;&#x9;rec.TOTAL_ACTIVE_REQUESTS,
+&#x9;&#x9;&#x9;&#x9;rec.BIG_HEAP_REQUESTS,
+&#x9;&#x9;&#x9;&#x9;rec.EVENT_TIME,
+&#x9;&#x9;&#x9;&#x9;rec.TOTAL_HEAP_USED_PERCENT,
+&#x9;&#x9;&#x9;&#x9;rec.MEMORY_BYTES,
+&#x9;&#x9;&#x9;&#x9;rec.MEMORY_BYTES_AMOUNT,
+&#x9;&#x9;&#x9;&#x9;rec.MEMORY_BYTES_TYPE,
+&#x9;&#x9;&#x9;&#x9;rec.MEMORY_MAX,
+&#x9;&#x9;&#x9;&#x9;rec.MEMORY_MAX_AMOUNT,
+&#x9;&#x9;&#x9;&#x9;rec.MEMORY_MAX_TYPE,
+&#x9;&#x9;&#x9;&#x9;rec.MANAGED_HEAP_USED_PERCENT,
+&#x9;&#x9;&#x9;&#x9;rec.MANAGED_BYTES,
+&#x9;&#x9;&#x9;&#x9;rec.MANAGED_BYTES_AMOUNT,
+&#x9;&#x9;&#x9;&#x9;rec.MANAGED_BYTES_TYPE,
+&#x9;&#x9;&#x9;&#x9;rec.MANAGED_MAX,
+&#x9;&#x9;&#x9;&#x9;rec.MANAGED_MAX_AMOUNT,
+&#x9;&#x9;&#x9;&#x9;rec.MANAGED_MAX_TYPE,
+&#x9;&#x9;&#x9;&#x9;rec.SYSTEM_CPU_USED_PERCENT,
+&#x9;&#x9;&#x9;&#x9;rec.SYSTEM_MEMORY_USED_MB,
+&#x9;&#x9;&#x9;&#x9;rec.SYSTEM_MEMORY_AVAIL_MB
+&#x9;&#x9;&#x9;)&apos;;
+
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;EXECUTE IMMEDIATE sqlStatement;
+&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;ELSE RAISE;
+&#x9;&#x9;&#x9;END;
+
+&#x9;&#x9;&#x9;-- Update statistics for the table
+&#x9;&#x9;&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;&#x9;&#x9;CALL /shared/CoE/MonitorServer/Datasources/PartitionProcs/P_UPDATE_STATISTICS(debug, schemaName, HealthCheckTable, success);
+&#x9;&#x9;&#x9;EXCEPTION
+&#x9;&#x9;&#x9;&#x9;ELSE RAISE;
+&#x9;&#x9;&#x9;END;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+
+&#x9;----------------------------------------------
+&#x9;-- Insert rec into result
+&#x9;----------------------------------------------
+&#x9;INSERT INTO result VALUES(rec);
+END</attribute>
+  <attribute name="creationDate" type="LONG">1585169009520</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601333668980</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">8/219</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/220</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/402</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/435</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/357</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/368</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/401</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/434</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/356</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/367</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/378</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/377</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/390</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/327</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/318</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/391</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1585169009520</attribute>
+</metadata>

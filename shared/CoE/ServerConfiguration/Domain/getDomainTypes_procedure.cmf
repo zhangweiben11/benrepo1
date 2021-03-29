@@ -1,0 +1,577 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="getDomainTypes" path="/shared/CoE/ServerConfiguration/Domain/getDomainTypes" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <annotation><![CDATA[getDomainTypes:
+
+&#x9;This procedure is used to get the valid domain types and attributes.
+
+&#x9;INPUT:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;OUTPUT:
+&#x9;&#x9;result&#x9;&#x9;&#x9;&#x9;&#x9;PIPE(
+&#x9;&#x9;&#x9;domainType &#x9;&#x9;&#x9;VARCHAR, &#x9;&#x9;-- The type of domain [LDAP,COMPOSITE,DYNAMIC]
+&#x9;&#x9;&#x9;attributeName &#x9;&#x9;VARCHAR, &#x9;&#x9;-- The attribute name
+&#x9;&#x9;&#x9;attributeType &#x9;&#x9;VARCHAR, &#x9;&#x9;-- The attribute type [STRING,PASSWORD_STRING]
+&#x9;&#x9;&#x9;updateRule &#x9;&#x9;&#x9;VARCHAR, &#x9;&#x9;-- The update rule [READ_WRITE,READ_ONLY]
+&#x9;&#x9;&#x9;attributeRequired &#x9;BOOLEAN, &#x9;&#x9;-- The attribute is required or not [true,false]
+&#x9;&#x9;&#x9;annotation &#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The annotation for the attribute.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;CSW Version:&#x9;Reason:
+&#x9;2020.200&#x9;06/29/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.]]></annotation>
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="getAttributes" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="domainType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="attributeName">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="attributeType">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="updateRule">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="attributeRequired">
+          <datatype name="BOOLEAN" type="BOOLEAN"/>
+        </element>
+        <element name="annotation">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege user="anonymous" domain="composite" privileges="READ"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/services/webservices/system/admin/user/operations/getDomainTypes" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="getDomainTypes" direction="IN">
+        <datatype name="getDomainTypes" extendedName="{http://www.compositesw.com/services/system/admin/user}getDomainTypes" namespace="http://www.compositesw.com/services/system/admin/user" referenceDefinitionSet="/services/webservices/system/admin/user/operations/UserSchema" referenceType="{http://www.compositesw.com/services/system/admin/user}getDomainTypes" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/user}getDomainTypes">
+          <schemaDatatype>
+            <datatype name="getDomainTypes" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="getDomainTypesRequest" superTypeNamespace="http://www.compositesw.com/services/system/admin/user" subType="ELEMENT_DECL" type="TREE" refId="257"></datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="getDomainTypesResponse" direction="OUT">
+        <datatype name="getDomainTypesResponse" extendedName="{http://www.compositesw.com/services/system/admin/user}getDomainTypesResponse" namespace="http://www.compositesw.com/services/system/admin/user" referenceDefinitionSet="/services/webservices/system/admin/user/operations/UserSchema" referenceType="{http://www.compositesw.com/services/system/admin/user}getDomainTypesResponse" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/admin/user}getDomainTypesResponse">
+          <schemaDatatype>
+            <datatype name="getDomainTypesResponse" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="getDomainTypesResponse" superTypeNamespace="http://www.compositesw.com/services/system/admin/user" subType="ELEMENT_DECL" type="TREE" refId="513">
+              <element name="domainTypes" namespace="http://www.compositesw.com/services/system/admin/user">
+                <datatype name="domainTypeList" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                  <element name="domainType" namespace="http://www.compositesw.com/services/system/admin/user" maxOccurs="2147483647" minOccurs="0">
+                    <datatype name="domainType" namespace="http://www.compositesw.com/services/system/admin/user" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                      <element name="name" namespace="http://www.compositesw.com/services/system/admin/user">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="annotation" namespace="http://www.compositesw.com/services/system/admin/user" minOccurs="0">
+                        <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                      </element>
+                      <element name="attributeDefs" namespace="http://www.compositesw.com/services/system/admin/user" minOccurs="0">
+                        <datatype name="attributeDefList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                          <element name="attributeDef" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                            <datatype name="attributeDef" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1537">
+                              <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="type" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeType" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="updateRule" namespace="http://www.compositesw.com/services/system/util/common">
+                                <datatype name="attributeUpdateRule" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="annotation" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="required" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                              </element>
+                              <element name="defaultValue" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="pattern" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="minValue" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="maxValue" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="allowedValues" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeSimpleValueList" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="attributeComplexValue" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="COMPLEX_TYPE" type="TREE" refId="1793">
+                                  <element name="item" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                                    <datatype name="attributeSimpleValue" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                                  </element>
+                                </datatype>
+                              </element>
+                              <element name="suggestedValues" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <reference refId="1793"/>
+                              </element>
+                              <element name="condition" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="displayName" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="unitName" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="parentName" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="visible" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="boolean" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="0" maxValue="1"/>
+                              </element>
+                              <element name="editorHint" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="attributeEditorHint" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                              </element>
+                              <element name="dependencyExpression" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                                <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                              </element>
+                            </datatype>
+                          </element>
+                        </datatype>
+                      </element>
+                    </datatype>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+      <element name="fault" direction="OUT">
+        <datatype name="fault" extendedName="{http://www.compositesw.com/services/system/util/common}fault" namespace="http://www.compositesw.com/services/system/util/common" referenceDefinitionSet="/services/webservices/system/util/common/operations/CommonSchema" referenceType="{http://www.compositesw.com/services/system/util/common}fault" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/system/util/common}fault">
+          <schemaDatatype>
+            <datatype name="fault" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="fault" superTypeNamespace="http://www.compositesw.com/services/system/util/common" subType="ELEMENT_DECL" type="TREE" refId="2049">
+              <element name="errorEntry" namespace="http://www.compositesw.com/services/system/util/common" maxOccurs="2147483647" minOccurs="0">
+                <datatype name="messageEntry" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="2305">
+                  <element name="code" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="name" namespace="http://www.compositesw.com/services/system/util/common">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="message" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="detail" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                  </element>
+                  <element name="severity" namespace="http://www.compositesw.com/services/system/util/common" minOccurs="0">
+                    <datatype name="messageSeverity" namespace="http://www.compositesw.com/services/system/util/common" superTypeName="string" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="SIMPLE_TYPE" type="STRING" maxLength="2147483647"/>
+                  </element>
+                </datatype>
+              </element>
+            </datatype>
+          </schemaDatatype>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;getDomainTypes:
+
+&#x9;This procedure is used to get the valid domain types and attributes.
+
+&#x9;INPUT:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;&#x9;-- Y=debug on.  N=debug off.
+&#x9;&#x9;getAttributes&#x9;&#x9;&#x9;CHAR(1), &#x9;&#x9;-- Y=get all domain attributes.  N=get domains only with no attributes.
+
+&#x9;OUTPUT:
+&#x9;&#x9;result&#x9;&#x9;&#x9;&#x9;&#x9;PIPE(
+&#x9;&#x9;&#x9;domainType &#x9;&#x9;&#x9;VARCHAR, &#x9;&#x9;-- The type of domain [LDAP,COMPOSITE,DYNAMIC]
+&#x9;&#x9;&#x9;attributeName &#x9;&#x9;VARCHAR, &#x9;&#x9;-- The attribute name
+&#x9;&#x9;&#x9;attributeType &#x9;&#x9;VARCHAR, &#x9;&#x9;-- The attribute type [STRING,PASSWORD_STRING]
+&#x9;&#x9;&#x9;updateRule &#x9;&#x9;&#x9;VARCHAR, &#x9;&#x9;-- The update rule [READ_WRITE,READ_ONLY]
+&#x9;&#x9;&#x9;attributeRequired &#x9;BOOLEAN, &#x9;&#x9;-- The attribute is required or not [true,false]
+&#x9;&#x9;&#x9;annotation &#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;-- The annotation for the attribute.
+&#x9;&#x9;)
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;CSW Version:&#x9;Reason:
+&#x9;2020.300&#x9;07/02/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE getDomainTypes(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=debug on.  N=debug off.
+&#x9;IN getAttributes&#x9;&#x9;&#x9;&#x9;CHAR(1), &#x9;-- Y=get all domain attributes.  N=get domains only with no attributes.
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;PIPE(domainType VARCHAR, attributeName VARCHAR, attributeType VARCHAR, updateRule VARCHAR, attributeRequired BOOLEAN, annotation VARCHAR)
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;VARCHAR DEFAULT &apos;getDomainTypes&apos;;
+&#x9;DECLARE debugPrintSize&#x9;&#x9;&#x9;INTEGER DEFAULT 63900;
+&#x9;DECLARE TYPE recType&#x9;&#x9;&#x9;ROW(domainType VARCHAR, attributeName VARCHAR, attributeType VARCHAR, updateRule VARCHAR, attributeRequired BOOLEAN, annotation VARCHAR);
+&#x9;DECLARE rec&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;recType;
+&#x9;DECLARE request&#x9;&#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE response&#x9;&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE faultResponse&#x9;&#x9;&#x9;XML;
+&#x9;DECLARE errorMessage&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE ex&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;EXCEPTION;
+&#x9;-- XML processing variables
+&#x9;DECLARE createResponseStr&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resourceEntry&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE resourceAttributesEntry&#x9;LONGVARCHAR;
+&#x9;DECLARE xmlEntry&#x9;&#x9;&#x9;&#x9;LONGVARCHAR; 
+&#x9;DECLARE numEntities&#x9;&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE numEntries&#x9;&#x9; &#x9;&#x9;INTEGER;
+&#x9;DECLARE numFound&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pos1, pos2&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pos3, pos4&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE pos5, pos6, len&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE name&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR; 
+&#x9;DECLARE namespaceTag1&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE namespaceTag2&#x9;&#x9;&#x9;VARCHAR;
+
+&#x9;-- Get the valid list of domain types
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;SET request = &apos;&lt;user:getDomainTypes xmlns:user=&quot;http://www.compositesw.com/services/system/admin/user&quot;/&gt;&apos;;
+&#x9;&#x9;CALL /services/webservices/system/admin/&quot;user&quot;/operations/getDomainTypes(request, response, faultResponse);
+&#x9;EXCEPTION
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET errorMessage = CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR);
+&#x9;&#x9;&#x9;CALL LOG(&apos;COEUtilities : EXCEPTION=[&apos;||errorMessage||&apos;]&apos;);
+&#x9;&#x9;&#x9;RAISE ex VALUE errorMessage;
+&#x9;END;
+
+&#x9;-- Get the namespace tag=ns1 from [&lt;ns1: and &lt;/ns1:] and replace it with [&lt;user: and &lt;/user:]
+&#x9;SET createResponseStr = CAST(response AS LONGVARCHAR);
+&#x9;IF (createResponseStr IS NOT NULL AND LENGTH(createResponseStr) &gt; 0) THEN
+&#x9;&#x9;SET pos1 = INSTR(createResponseStr, &apos;&lt;&apos;);
+&#x9;&#x9;SET pos2 = INSTR(createResponseStr, &apos;:&apos;);
+&#x9;&#x9;IF (pos1 &gt; 0 AND pos2 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET namespaceTag1 = SUBSTRING(createResponseStr, pos1+1, pos2-pos1-1);
+&#x9;&#x9;&#x9;IF (namespaceTag1 &lt;&gt; &apos;user&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;SET createResponseStr = REPLACE(createResponseStr, &apos;&lt;&apos;||namespaceTag1||&apos;:&apos;, &apos;&lt;user:&apos;);
+&#x9;&#x9;&#x9;&#x9;SET createResponseStr = REPLACE(createResponseStr, &apos;&lt;/&apos;||namespaceTag1||&apos;:&apos;, &apos;&lt;/user:&apos;);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos;:     createResponseStr=&apos;||NVL(createResponseStr,&apos;null&apos;),1,debugPrintSize));
+&#x9;END IF;
+
+&#x9;-- Extract user:domainType
+&#x9;SET numEntities = 0;
+&#x9;SET pos1 = INSTR(createResponseStr, &apos;&lt;user:domainType&apos;);
+&#x9;SET pos2 = INSTR(createResponseStr, &apos;&lt;/user:domainType&gt;&apos;);
+&#x9;WHILE (pos1 &gt; 0 AND pos2 &gt; 0) DO
+&#x9;&#x9;-- Initialize resource record structure
+&#x9;&#x9;SET rec = null;
+
+&#x9;&#x9;SET numEntities = numEntities + 1;
+&#x9;&#x9;SET len = LENGTH(&apos;&lt;/user:domainType&gt;&apos;);
+&#x9;&#x9;SET resourceEntry = TRIM(SUBSTRING(createResponseStr, pos1, pos2-pos1+len));
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;&apos;);
+&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos;:     user:domainType[&apos;||numEntities||&apos;]:&apos;||NVL(resourceEntry,&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Extract the &quot;name&quot; name value
+&#x9;&#x9;SET rec.domainType = null;
+&#x9;&#x9;SET pos5 = INSTR(resourceEntry, &apos;&lt;user:name&gt;&apos;);
+&#x9;&#x9;SET pos6 = INSTR(resourceEntry, &apos;&lt;/user:name&gt;&apos;);
+&#x9;&#x9;IF (pos5 &gt; 0 AND pos6 &gt; 0) THEN
+&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;user:name&gt;&apos;);
+&#x9;&#x9;&#x9;SET rec.domainType = TRIM(SUBSTRING(resourceEntry, pos5+len, pos6-(pos5+len)));
+&#x9;&#x9;END IF;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos;:     user:name value=&apos;||NVL(rec.domainType,&apos;[NULL]&apos;),1,debugPrintSize));
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Extract Resource Attributes
+&#x9;&#x9;IF (INSTR(resourceEntry, &apos;&lt;user:attributeDefs/&gt;&apos;) &gt; 0) THEN
+&#x9;&#x9;&#x9;-- Insert the domain type record
+&#x9;&#x9;&#x9;INSERT INTO result VALUES(rec);
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;-- Extract the &quot;attributeDefs&quot;
+&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceEntry, &apos;&lt;user:attributeDefs&apos;);
+&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceEntry, &apos;&lt;/user:attributeDefs&gt;&apos;);
+&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;/user:attributeDefs&gt;&apos;);
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;:     attributeDefs: pos3=&apos;||pos3||&apos;  pos4=&apos;||pos4||&apos;  len=&apos;||len||&apos;  calculated len=&apos;||(pos4-pos3+len)||&apos;  total len=&apos;||LENGTH(resourceEntry));
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;SET resourceAttributesEntry = TRIM(SUBSTRING(resourceEntry, pos3, pos4-pos3+len));
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos;:     user:attributeDefs[&apos;||numEntities||&apos;]:&apos;||NVL(resourceAttributesEntry,&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Determine the namespace tag being used
+&#x9;&#x9;&#x9;SET namespaceTag2 = &apos;ns1&apos;;
+&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceAttributesEntry, &apos;&lt;user:attributeDefs xmlns:&apos;);
+&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceAttributesEntry, &apos;=&apos;);
+&#x9;&#x9;&#x9;IF (pos3 &gt; 0 AND pos4 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;SET pos3 = pos3 + LENGTH(&apos;&lt;user:attributeDefs xmlns:&apos;);
+&#x9;&#x9;&#x9;&#x9;SET namespaceTag2 = SUBSTRING(resourceAttributesEntry, pos3, pos4-pos3);
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;:     namespaceTag2=&apos;||namespaceTag2);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;-- Extract each &quot;attributeDef&quot;
+&#x9;&#x9;&#x9;SET numEntries = 0;
+&#x9;&#x9;&#x9;SET numFound = 0;
+&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceAttributesEntry, &apos;&lt;&apos;||namespaceTag2||&apos;:attributeDef&gt;&apos;);
+&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceAttributesEntry, &apos;&lt;/&apos;||namespaceTag2||&apos;:attributeDef&gt;&apos;);
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;:     attributeDef: pos3=&apos;||pos3||&apos;  pos4=&apos;||pos4);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;WHILE (getAttributes IS NOT NULL AND UPPER(getAttributes) = &apos;Y&apos; AND pos3 &gt; 0 AND pos4 &gt; 0) DO
+&#x9;&#x9;&#x9;&#x9;SET numEntries = numEntries + 1;
+&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;&apos;||namespaceTag2||&apos;:attributeDef&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET xmlEntry = &apos;    &apos;||TRIM(SUBSTRING(resourceAttributesEntry, pos3, pos4-pos3+len+1));
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos;:     &apos;||namespaceTag2||&apos;:attributeDef[&apos;||numEntries||&apos;]:&apos;||NVL(xmlEntry,&apos;null&apos;),1,debugPrintSize));
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the name
+&#x9;&#x9;&#x9;&#x9;SET rec.attributeName = null;
+&#x9;&#x9;&#x9;&#x9;SET pos5 = INSTR(xmlEntry, &apos;&lt;&apos;||namespaceTag2||&apos;:name&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos6 = INSTR(xmlEntry, &apos;&lt;/&apos;||namespaceTag2||&apos;:name&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (pos5 &gt; 0 AND pos6 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;&apos;||namespaceTag2||&apos;:name&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.attributeName = TRIM(SUBSTRING(xmlEntry, pos5+len, pos6-(pos5+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET numFound = numFound + 1;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the type
+&#x9;&#x9;&#x9;&#x9;SET rec.attributeType = null;
+&#x9;&#x9;&#x9;&#x9;SET pos5 = INSTR(xmlEntry, &apos;&lt;&apos;||namespaceTag2||&apos;:type&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos6 = INSTR(xmlEntry, &apos;&lt;/&apos;||namespaceTag2||&apos;:type&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (pos5 &gt; 0 AND pos6 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;&apos;||namespaceTag2||&apos;:type&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.attributeType = TRIM(SUBSTRING(xmlEntry, pos5+len, pos6-(pos5+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET numFound = numFound + 1;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the updateRule
+&#x9;&#x9;&#x9;&#x9;SET rec.updateRule = null;
+&#x9;&#x9;&#x9;&#x9;SET pos5 = INSTR(xmlEntry, &apos;&lt;&apos;||namespaceTag2||&apos;:updateRule&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos6 = INSTR(xmlEntry, &apos;&lt;/&apos;||namespaceTag2||&apos;:updateRule&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (pos5 &gt; 0 AND pos6 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;&apos;||namespaceTag2||&apos;:updateRule&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.updateRule = TRIM(SUBSTRING(xmlEntry, pos5+len, pos6-(pos5+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET numFound = numFound + 1;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the required
+&#x9;&#x9;&#x9;&#x9;SET rec.attributeRequired = null;
+&#x9;&#x9;&#x9;&#x9;SET pos5 = INSTR(xmlEntry, &apos;&lt;&apos;||namespaceTag2||&apos;:required&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos6 = INSTR(xmlEntry, &apos;&lt;/&apos;||namespaceTag2||&apos;:required&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (pos5 &gt; 0 AND pos6 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;&apos;||namespaceTag2||&apos;:required&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.attributeRequired = TRIM(SUBSTRING(xmlEntry, pos5+len, pos6-(pos5+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET numFound = numFound + 1;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Extract the updateRule
+&#x9;&#x9;&#x9;&#x9;SET rec.annotation = null;
+&#x9;&#x9;&#x9;&#x9;SET pos5 = INSTR(xmlEntry, &apos;&lt;&apos;||namespaceTag2||&apos;:annotation&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;SET pos6 = INSTR(xmlEntry, &apos;&lt;/&apos;||namespaceTag2||&apos;:annotation&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;IF (pos5 &gt; 0 AND pos6 &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET len = LENGTH(&apos;&lt;&apos;||namespaceTag2||&apos;:annotation&gt;&apos;);
+&#x9;&#x9;&#x9;&#x9;&#x9;SET rec.annotation = TRIM(SUBSTRING(xmlEntry, pos5+len, pos6-(pos5+len)));
+&#x9;&#x9;&#x9;&#x9;&#x9;SET numFound = numFound + 1;
+&#x9;&#x9;&#x9;&#x9;END IF;
+
+&#x9;&#x9;&#x9;&#x9;-- Insert the domain type record
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(rec);
+
+&#x9;&#x9;&#x9;&#x9;-- Get the next attributes entry
+&#x9;&#x9;&#x9;&#x9;SET pos3 = pos4;
+&#x9;&#x9;&#x9;&#x9;SET pos3 = INSTR(resourceAttributesEntry, &apos;&lt;&apos;||namespaceTag2||&apos;:attributeDef&gt;&apos;, pos3+1);
+&#x9;&#x9;&#x9;&#x9;SET pos4 = INSTR(resourceAttributesEntry, &apos;&lt;/&apos;||namespaceTag2||&apos;:attributeDef&gt;&apos;, pos4+1);
+&#x9;&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;:     attributeDef: pos3=&apos;||pos3||&apos;  pos4=&apos;||pos4);
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;END WHILE;
+
+&#x9;&#x9;&#x9;IF (numFound = 0) THEN
+&#x9;&#x9;&#x9;&#x9;-- Insert the domain type record
+&#x9;&#x9;&#x9;&#x9;INSERT INTO result VALUES(rec);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Get the next resource entry
+&#x9;&#x9;SET pos1 = pos2;
+&#x9;&#x9;SET pos1 = INSTR(createResponseStr, &apos;&lt;user:domainType&apos;, pos1+1);
+&#x9;&#x9;SET pos2 = INSTR(createResponseStr, &apos;&lt;/user:domainType&gt;&apos;, pos2+1);
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(moduleName||&apos;:     domainType: pos1=&apos;||pos1||&apos;  pos2=&apos;||pos2);
+&#x9;&#x9;END IF;
+&#x9;END WHILE;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1593440627825</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1593865644542</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/111</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/168</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/110</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/123</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/244</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/94</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/95</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/140</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/161</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/229</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/76</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/136</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">11/151</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1593440627825</attribute>
+</metadata>

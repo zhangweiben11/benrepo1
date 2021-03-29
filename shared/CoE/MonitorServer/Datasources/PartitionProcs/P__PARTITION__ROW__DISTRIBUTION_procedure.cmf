@@ -1,0 +1,189 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="P_PARTITION_ROW_DISTRIBUTION" path="/shared/CoE/MonitorServer/Datasources/PartitionProcs/P_PARTITION_ROW_DISTRIBUTION" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="table_name">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="partition_name">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="boundary_definition">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="range_type">
+          <datatype name="VARCHAR" type="STRING" maxLength="255"/>
+        </element>
+        <element name="partition_number">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="num_rows">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/shared/CoE/MonitorServer/Customize/commonValues" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PartitionProcs/oracle/P_PARTITION_ROW_DISTRIBUTION" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="databaseType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="table_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="boundary_definition">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="range_type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_number">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="num_rows">
+            <datatype type="INTEGER"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PartitionProcs/postgres/P_PARTITION_ROW_DISTRIBUTION" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="databaseType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="table_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="boundary_definition">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="range_type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_number">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="num_rows">
+            <datatype type="INTEGER"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Datasources/PartitionProcs/sqlserver/P_PARTITION_ROW_DISTRIBUTION" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="databaseType" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="table_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="boundary_definition">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="range_type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="partition_number">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="num_rows">
+            <datatype type="INTEGER"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;P_PARTITION_ROW_DISTRIBUTION:
+
+&#x9;Provides a mechanism to dynamically display the partition row distribution.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+*/
+PROCEDURE P_PARTITION_ROW_DISTRIBUTION(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1),&#x9;-- Y=debug on.  N=debug off.
+&#x9;OUT result&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR (&#x9;-- Partition Distribution output
+&#x9;&#x9;table_name&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;partition_name&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;boundary_definition&#x9;&#x9;VARCHAR,
+&#x9;&#x9;range_type&#x9;&#x9;&#x9;&#x9;VARCHAR,
+&#x9;&#x9;partition_number&#x9;&#x9;INTEGER,
+&#x9;&#x9;num_rows&#x9;&#x9;&#x9;&#x9;BIGINT
+&#x9;)
+)
+BEGIN
+&#x9;DECLARE databaseType&#x9;&#x9;VARCHAR DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.databaseType;
+
+&#x9;IF (LOWER(databaseType) = &apos;oracle&apos;) THEN
+&#x9;&#x9;OPEN result FOR SELECT * FROM /shared/CoE/MonitorServer/Datasources/PartitionProcs/oracle/P_PARTITION_ROW_DISTRIBUTION(debug, databaseType);
+&#x9;ELSEIF (LOWER(databaseType) = &apos;sqlserver&apos;) THEN
+&#x9;&#x9;OPEN result FOR SELECT * FROM /shared/CoE/MonitorServer/Datasources/PartitionProcs/sqlserver/P_PARTITION_ROW_DISTRIBUTION(debug, databaseType);
+&#x9;ELSEIF (LOWER(databaseType) = &apos;postgres&apos;) THEN
+&#x9;&#x9;OPEN result FOR SELECT * FROM /shared/CoE/MonitorServer/Datasources/PartitionProcs/postgres/P_PARTITION_ROW_DISTRIBUTION(debug, databaseType);
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1590760890998</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1591273924302</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1590760890998</attribute>
+</metadata>

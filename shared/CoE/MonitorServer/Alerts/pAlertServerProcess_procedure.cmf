@@ -1,0 +1,615 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="pAlertServerProcess" path="/shared/CoE/MonitorServer/Alerts/pAlertServerProcess" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="debug" direction="IN" nullable="true">
+      <datatype name="CHAR" type="STRING" minLength="1" maxLength="1"/>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/debug/Log" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToLog" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/debug/Print" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="textToPrint" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="Text" type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/lib/util/GetEnvironment" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="variableName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/repository/getTrigger" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="triggerPath" direction="IN">
+        <datatype type="STRING" maxLength="4000"/>
+      </element>
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="name">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="path">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="type">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="subtype">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="id">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="changeId">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="ownerDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="ownerName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="impactLevel">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="enabled">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="annotation">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="creationDateLong">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="creationDate">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="creatorUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="creatorUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedDateLong">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="lastModifiedDate">
+            <datatype type="DATETIME"/>
+          </element>
+          <element name="lastModifiedUserDomain">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="lastModifiedUserName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="maxEventsQueued">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="conditionType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="eventName">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerMode">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerStartTime">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerPeriod">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerPeriodQty">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerFromTimeInADay">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerFromTimeInADayFormatted">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerEndTimeInADay">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerEndTimeInADayFormatted">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerRecurringDay">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="timerRecurringDayList">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="timerIsCluster">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="jmsConnector">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="jmsSelector">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="jmsDestination">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="actionType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="actionPath">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="actionPathType">
+            <datatype type="STRING" maxLength="255"/>
+          </element>
+          <element name="actionExhaustCursors">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="actionParameters">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="actionNumParameters">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="emailTo">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailCC">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailBCC">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailReplyTo">
+            <datatype type="STRING" maxLength="4000"/>
+          </element>
+          <element name="emailSubject">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="emailContent">
+            <datatype type="STRING" maxLength="2147483647"/>
+          </element>
+          <element name="emailInclueSummary">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="emailSkipIfNoResults">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="reintrospectNoCommit">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/time/getCurrentTimestamp" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="currentTS" direction="OUT">
+        <datatype type="DATETIME"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Common/getServerHostPort" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="nodehost" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="nodeport" direction="OUT">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Common/pSendEmail" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="debug" direction="IN">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+      <element name="emailFormat" direction="IN">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="subject" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="message" direction="IN">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+      <element name="status" direction="OUT">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="errMessage" direction="OUT">
+        <datatype type="STRING" maxLength="2147483647"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/CoE/MonitorServer/Customize/commonValues" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258"></datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">/*
+&#x9;pAlertServerProcess:
+
+&#x9;This procedure gets invoked by the &quot;trAlertServerProcess&quot; trigger.  This procedure queries the &quot;DV_SERVER_SYSTEM_EVENT&quot; table
+&#x9;&#x9;to search for rows that match the following criteria:
+&#x9;&#x9;&#x9;WHERE LOAD_TIME &gt; (currentTime - &quot;TRIGGER INTERVAL&quot;) 
+&#x9;&#x9;&#x9; AND TRIGGER_EVENT_NAME LIKE &apos;ServerProcess%&apos;
+&#x9;&#x9;Once the rows are collected, an email is sent which groups all of the rows into a single email.
+
+&#x9;INPUT:
+&#x9;&#x9;debug&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CHAR(1)  &#x9;&#x9;&#x9;&#x9;-- Y=debug on.  N=debug off
+
+&#x9;OUTPUT:
+&#x9;&#x9;NONE
+
+&#x9;Release:&#x9;Modified Date:&#x9;Modified By:&#x9;&#x9;DV Version:&#x9;&#x9;Reason:
+&#x9;2020.200&#x9;05/27/2020&#x9;&#x9;Mike Tinius&#x9;&#x9;&#x9;7.0.8&#x9;&#x9;&#x9;Created new.
+
+&#x9;(c) 2017 TIBCO Software Inc.  All rights reserved.
+&#x9;
+&#x9;Except as specified below, this software is licensed pursuant to the Eclipse Public License v. 1.0.
+&#x9;The details can be found in the file LICENSE.
+&#x9;
+&#x9;The following proprietary files are included as a convenience, and may not be used except pursuant
+&#x9;to valid license to Composite Information Server or TIBCO® Data Virtualization Server:
+&#x9;csadmin-XXXX.jar, csarchive-XXXX.jar, csbase-XXXX.jar, csclient-XXXX.jar, cscommon-XXXX.jar,
+&#x9;csext-XXXX.jar, csjdbc-XXXX.jar, csserverutil-XXXX.jar, csserver-XXXX.jar, cswebapi-XXXX.jar,
+&#x9;and customproc-XXXX.jar (where -XXXX is an optional version number).  Any included third party files
+&#x9;are licensed under the terms contained in their own accompanying LICENSE files, generally named .LICENSE.txt.
+&#x9;
+&#x9;This software is licensed AS-IS. Support for this software is not covered by standard maintenance agreements with TIBCO.
+&#x9;If you would like to obtain assistance with this software, such assistance may be obtained through a separate paid consulting
+&#x9;agreement with TIBCO.
+
+*/
+PROCEDURE pAlertServerProcess(
+&#x9;IN debug&#x9;&#x9;&#x9;&#x9;CHAR(1)&#x9;-- Y=debug on.  N=debug off
+)
+BEGIN
+&#x9;DECLARE moduleName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;pAlertServerProcess&apos;;
+&#x9;DECLARE logLabel&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;MonitorServer-&apos;;
+&#x9;-- The percentage of managed memory to compare against the current memory (bytes) in order to trigger an alert.
+&#x9;DECLARE ReportingPath &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.ReportingPath;
+&#x9;DECLARE SystemEventTable&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.SystemEventTable;
+&#x9;DECLARE SystemEventTablePath&#x9;&#x9;&#x9;VARCHAR(4000) &#x9;DEFAULT ReportingPath||&apos;/&apos;||SystemEventTable;
+&#x9;DECLARE schemaName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.schemaName;
+&#x9;-- Trigger variables
+&#x9;DECLARE eventName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.ServerProcessEventName; --&apos;ServerProcess&apos;
+&#x9;DECLARE triggerNameDefault&#x9;&#x9;&#x9;&#x9;VARCHAR&#x9;&#x9;&#x9;DEFAULT &apos;trAlertServerProcess&apos;;
+&#x9;DECLARE triggerPath&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR(4000);
+&#x9;DECLARE triggerName&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE triggerType&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE triggerValue&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE currentTime&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;-- General variables
+&#x9;DECLARE nodehost&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+&#x9;DECLARE nodeport&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER;
+&#x9;DECLARE sqlStatement&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE intervalTimestamp&#x9;&#x9;&#x9;&#x9;TIMESTAMP;
+&#x9;DECLARE cursTime&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(tm TIMESTAMP);
+&#x9;DECLARE cursSysEvent&#x9;&#x9;&#x9;&#x9;&#x9;CURSOR(cnt INTEGER, NODE_HOST VARCHAR, NODE_PORT SMALLINT, TRIGGER_PATH VARCHAR(4000), TRIGGER_EVENT_NAME VARCHAR, TRIGGER_EVENT_TYPE VARCHAR, TRIGGER_EVENT_VALUE LONGVARCHAR);
+&#x9;DECLARE errMessage &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR;
+&#x9;DECLARE rowCount&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;INTEGER &#x9;&#x9;DEFAULT 0;
+&#x9;-- Email Variables
+&#x9;DECLARE emailHeader&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT /shared/CoE/MonitorServer/Customize/commonValues.defaultEmailHeader;
+    DECLARE emailSubject &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+    DECLARE emailFormat &#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR &#x9;&#x9;DEFAULT &apos;TEXT_PLAIN&apos;;
+&#x9;DECLARE emailMessage&#x9;&#x9;&#x9;&#x9;&#x9;LONGVARCHAR &#x9;DEFAULT &apos;&apos;;
+&#x9;DECLARE status&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;VARCHAR;
+
+&#x9;----------------------------------------------
+&#x9;-- Initialize variables
+&#x9;----------------------------------------------
+&#x9;-- Get the current time
+&#x9;IF (currentTime IS NULL) THEN
+&#x9;&#x9;CALL /shared/ASAssets/Utilities/&quot;time&quot;/getCurrentTimestamp(currentTime);
+&#x9;END IF;
+
+&#x9;--Get the current host and port
+&#x9;CALL /shared/CoE/MonitorServer/Common/getServerHostPort(nodehost, nodeport);
+&#x9;-- Get trigger information
+&#x9;CALL GetEnvironment(&apos;TRIGGER_PATH&apos;, triggerPath);
+&#x9;CALL GetEnvironment(&apos;TRIGGER_EVENT_NAME&apos;, triggerName);
+&#x9;CALL GetEnvironment(&apos;TRIGGER_EVENT_TYPE&apos;, triggerType);
+&#x9;CALL GetEnvironment(&apos;TRIGGER_EVENT_VALUE&apos;, triggerValue);
+&#x9;IF (triggerValue IS NULL OR LENGTH(TRIM(triggerValue)) = 0) THEN
+&#x9;&#x9;SET triggerValue = null;
+&#x9;ELSE
+&#x9;&#x9;SET triggerValue = SUBSTRING(triggerValue, 1, 4000);
+&#x9;END IF;
+&#x9;IF (triggerPath IS NULL) THEN
+&#x9;&#x9;SET triggerPath = /shared/CoE/MonitorServer/Customize/commonValues.TriggerPath||&apos;/Alerts/&apos;||triggerNameDefault;
+&#x9;&#x9;SET triggerName = triggerNameDefault;
+&#x9;&#x9;SET triggerType = &apos;SYSTEM_EVENT&apos;;
+&#x9;END IF;
+&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;CALL PRINT(&apos;currentTime=&apos;||NVL(CAST(currentTime AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;nodehost=&apos;||NVL(nodehost,&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;nodeport=&apos;||NVL(CAST(nodeport AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;triggerPath=&apos;||NVL(triggerPath,&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;triggerName=&apos;||NVL(triggerName,&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;triggerType=&apos;||NVL(triggerType,&apos;null&apos;));
+&#x9;&#x9;CALL PRINT(&apos;triggerValue=&apos;||NVL(triggerValue,&apos;null&apos;));
+&#x9;END IF;
+
+
+&#x9;BEGIN INDEPENDENT TRANSACTION
+&#x9;&#x9;----------------------------------
+&#x9;&#x9;-- Get Trigger Interval
+&#x9;&#x9;----------------------------------
+&#x9;&#x9;FOR t AS SELECT timerPeriod, timerPeriodQty FROM /shared/ASAssets/Utilities/repository/getTrigger(debug, triggerPath) DO
+&#x9;&#x9;&#x9;&#x9;--timerPeriod&#x9;&#x9;&#x9;&#x9;VARCHAR,&#x9;&#x9;-- One of [MINUTE|HOUR|DAY|WEEK|MONTH|YEAR]
+&#x9;&#x9;&#x9;&#x9;--timerPeriodQty&#x9;&#x9;&#x9;INTEGER,&#x9;&#x9;-- If timerMode=INTERVAL then timerPeriod=MINUTE and timerPeriodQty=#of min.  
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;-- If timerMode=CALENDER then timerPeriod=as is value and timerPeriodQty=as is value
+&#x9;&#x9;&#x9;SET sqlStatement = &apos;SELECT (currentTime - INTERVAL &apos;&apos;&apos;||t.timerPeriodQty||&apos;&apos;&apos; &apos;||t.timerPeriod||&apos;) FROM  /services/databases/system/DUAL&apos;;
+&#x9;&#x9;END FOR;
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;sqlStatement=&apos;||NVL(sqlStatement,&apos;null&apos;));
+&#x9;&#x9;END IF;
+&#x9;&#x9;-- Get the interval timestamp
+&#x9;&#x9;OPEN cursTime FOR sqlStatement;
+&#x9;&#x9;FETCH cursTime INTO intervalTimestamp;
+&#x9;&#x9;CLOSE cursTime;
+&#x9;&#x9;IF (intervalTimestamp IS NULL) THEN
+&#x9;&#x9;&#x9;SET intervalTimestamp = currentTime - INTERVAL &apos;5&apos; MINUTE;
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Construct SQL Statement
+&#x9;&#x9;SET sqlStatement = 
+&#x9;&#x9;&#x9;&apos;    SELECT DISTINCT COUNT(*) cnt, NODE_HOST, NODE_PORT, TRIGGER_PATH, TRIGGER_EVENT_NAME, TRIGGER_EVENT_TYPE, TRIGGER_EVENT_VALUE&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    FROM &apos;||SystemEventTablePath||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    WHERE LOAD_TIME &gt; &apos;&apos;&apos;||intervalTimestamp||&apos;&apos;&apos;&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;      AND UPPER(TRIGGER_EVENT_NAME) LIKE UPPER(&apos;&apos;&apos;||eventName||&apos;%&apos;&apos;)&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&apos;    GROUP BY NODE_HOST, NODE_PORT, TRIGGER_PATH, TRIGGER_EVENT_NAME, TRIGGER_EVENT_TYPE, TRIGGER_EVENT_VALUE&apos;;
+
+&#x9;&#x9;-- Construct the email subject
+&#x9;&#x9;SET emailSubject = TRIM(NVL(emailHeader,&apos;  &apos;))||&apos; [&apos;||logLabel||NVL(eventName,&apos;null&apos;)||&apos;] : &apos;||NVL(nodehost,&apos;null&apos;)||&apos;:&apos;||NVL(CAST(nodeport AS VARCHAR),&apos;null&apos;);
+&#x9;&#x9;SET emailMessage = TRIM(NVL(emailHeader,&apos;  &apos;))||&apos; [&apos;||logLabel||NVL(eventName,&apos;null&apos;)||&apos;]&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;REPORTED FROM HOST:PORT: &apos;||NVL(nodehost,&apos;null&apos;)||&apos;:&apos;||NVL(CAST(nodeport AS VARCHAR),&apos;null&apos;)||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;INTERVAL PERIOD FROM &apos;||NVL(CAST(intervalTimestamp AS VARCHAR),&apos;null&apos;)|| &apos; TO &apos;||NVL(CAST(currentTime AS VARCHAR),&apos;null&apos;)||CHR(10)||CHR(10);
+
+&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;CALL PRINT(&apos;intervalTimestamp=&apos;||NVL(CAST(intervalTimestamp AS VARCHAR),&apos;null&apos;));
+&#x9;&#x9;&#x9;CALL PRINT(&apos;sqlStatement=&apos;||CHR(10)||NVL(sqlStatement,&apos;null&apos;));
+&#x9;&#x9;&#x9;CALL PRINT(&apos;emailSubject=&apos;||NVL(emailSubject,&apos;null&apos;));
+&#x9;&#x9;&#x9;CALL PRINT(&apos;emailMessage=&apos;||NVL(emailMessage,&apos;null&apos;));
+&#x9;&#x9;END IF;
+
+&#x9;&#x9;-- Get the events
+&#x9;&#x9;OPEN cursSysEvent FOR sqlStatement;
+&#x9;&#x9;FOR r AS cursSysEvent DO
+&#x9;&#x9;&#x9;SET rowCount = rowCount + 1;
+
+&#x9;&#x9;&#x9;SET emailMessage = emailMessage ||
+&#x9;&#x9;&#x9;&#x9;&apos;ROW=&apos;||rowCount||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  Host Name=[&apos; || TRIM(NVL(r.NODE_HOST,&apos;  &apos;)) ||&apos;]  Port=[&apos; || TRIM(NVL(CAST(r.NODE_PORT AS VARCHAR),&apos;  &apos;))||&apos;]&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  Trigger Count=[&apos;||CAST(r.cnt AS VARCHAR)||&apos;]&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  Trigger Event Name=[&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN (r.TRIGGER_EVENT_NAME IS NULL) THEN &apos;NULL&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE r.TRIGGER_EVENT_NAME
+&#x9;&#x9;&#x9;&#x9;&#x9;END||&apos;]&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  Trigger Path=[&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN (r.TRIGGER_PATH IS NULL) THEN &apos;NULL&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE r.TRIGGER_PATH
+&#x9;&#x9;&#x9;&#x9;&#x9;END||&apos;]&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  Trigger Event Type=[&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN (r.TRIGGER_EVENT_TYPE IS NULL) THEN &apos;NULL&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE r.TRIGGER_EVENT_TYPE
+&#x9;&#x9;&#x9;&#x9;&#x9;END||&apos;]&apos;||CHR(10)||
+&#x9;&#x9;&#x9;&#x9;&apos;  Trigger Event Value=[&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;CASE
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;WHEN (r.TRIGGER_EVENT_VALUE IS NULL) THEN &apos;NULL&apos;
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;ELSE r.TRIGGER_EVENT_VALUE
+&#x9;&#x9;&#x9;&#x9;&#x9;END||&apos;]&apos; || CHR(10) || CHR(10);
+&#x9;&#x9;END FOR;
+
+&#x9;&#x9;-- Send the email
+&#x9;&#x9;IF (rowCount &gt; 0) THEN
+&#x9;&#x9;&#x9;CALL /shared/CoE/MonitorServer/Common/pSendEmail(debug, emailFormat, emailSubject, emailMessage, status, errMessage);
+&#x9;&#x9;&#x9;IF (status = &apos;FAIL&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL LOG(logLabel||&apos;EXCEPTION=&apos;||errMessage);
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;IF (UPPER(debug) = &apos;Y&apos;) THEN
+&#x9;&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(moduleName||&apos; : pSendEmail: status=&apos;||status||&apos;  errMessage=&apos;||NVL(errMessage,&apos;null&apos;),1,63900));
+&#x9;&#x9;&#x9;END IF;&#x9;
+&#x9;&#x9;END IF;
+&#x9;EXCEPTION
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET errMessage = CAST(CURRENT_EXCEPTION.TRACE AS LONGVARCHAR);
+&#x9;&#x9;&#x9;CALL PRINT(SUBSTRING(&apos;EXCEPTION=&apos;||errMessage,1,63900));
+&#x9;&#x9;&#x9;CALL LOG(logLabel||&apos;EXCEPTION=&apos;||errMessage);
+&#x9;END;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1591045327069</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1601333668980</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="MAP">
+    <item>
+      <key type="STRING">9/144</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/143</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/146</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/145</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/83</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>GetEnvironment</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/184</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/82</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>GetEnvironment</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/85</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>GetEnvironment</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/98</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/193</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">7/84</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>util</item>
+        <item>GetEnvironment</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/99</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/97</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/194</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Log</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/101</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/100</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/103</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">8/102</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">10/187</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+    <item>
+      <key type="STRING">9/118</key>
+      <value type="STRING_ARRAY">
+        <item>lib</item>
+        <item>debug</item>
+        <item>Print</item>
+      </value>
+    </item>
+  </attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1591045327069</attribute>
+</metadata>

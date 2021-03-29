@@ -1,0 +1,120 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:4eac6a34-df40-4265-b123-32a6ac34cac2 -->
+<metadata name="pTerminateIdleSessions" path="/shared/CoE/MonitorServer/Sessions/pTerminateIdleSessions" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="idleMinutes" direction="IN" nullable="true">
+      <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+    </parameter>
+    <parameter name="outPipe" direction="OUT" nullable="true">
+      <datatype name="outPipe" type="TABLE" refId="256">
+        <element name="session_id">
+          <datatype name="BIGINT" type="INTEGER"/>
+        </element>
+        <element name="success">
+          <datatype name="BIT" type="INTEGER" minValue="0" maxValue="1"/>
+        </element>
+        <element name="faultXML">
+          <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+            <schemaDatatype>
+              <datatype name="XML" type="TREE" refId="257"></datatype>
+            </schemaDatatype>
+          </datatype>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/lib/util/GenerateEvent" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="eventName" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyName" type="STRING" maxLength="255"/>
+      </element>
+      <element name="value" direction="IN">
+        <datatype referenceDefinitionSet="/lib/util/System" referenceType="PropertyValue" type="STRING" maxLength="4096"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/ASAssets/Utilities/request/terminateIdleSessions" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="idleMinutes" direction="IN">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="outPipe" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="session_id">
+            <datatype type="INTEGER"/>
+          </element>
+          <element name="success">
+            <datatype type="INTEGER" minValue="0" maxValue="1"/>
+          </element>
+          <element name="faultXML">
+            <datatype name="XML" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="XML">
+              <schemaDatatype>
+                <datatype name="XML" type="TREE" refId="257"></datatype>
+              </schemaDatatype>
+            </datatype>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE pTerminateIdleSessions(
+    IN idleMinutes INT, 
+    OUT outPipe PIPE (
+        session_id BIGINT, 
+        success BIT, 
+        faultXML XML
+    )
+)
+BEGIN
+&#x9;DECLARE successCount&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE failCount&#x9;&#x9;&#x9;INTEGER DEFAULT 0;
+&#x9;DECLARE succcessMessage&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE failMessage&#x9;&#x9;&#x9;LONGVARCHAR DEFAULT &apos;&apos;;
+&#x9;DECLARE message&#x9;&#x9;&#x9;&#x9;VARCHAR(4000);
+
+&#x9;FOR r AS SELECT * FROM /shared/ASAssets/Utilities/request/terminateIdleSessions(idleMinutes) DO
+&#x9;&#x9;INSERT INTO outPipe VALUES(r);
+
+&#x9;&#x9;IF (r.success = 1) THEN
+&#x9;&#x9;&#x9;SET successCount = successCount + 1;
+&#x9;&#x9;&#x9;IF (LENGTH(succcessMessage) &lt; 4000) THEN
+&#x9;&#x9;&#x9;&#x9;IF (LENGTH(succcessMessage) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET succcessMessage = succcessMessage || &apos;,&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET succcessMessage = succcessMessage || r.session_id;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;ELSE
+&#x9;&#x9;&#x9;SET failCount = failCount + 1;
+&#x9;&#x9;&#x9;IF (LENGTH(failMessage) &lt; 4000) THEN
+&#x9;&#x9;&#x9;&#x9;IF (LENGTH(failMessage) &gt; 0) THEN
+&#x9;&#x9;&#x9;&#x9;&#x9;SET failMessage = failMessage || &apos;,&apos;;
+&#x9;&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;&#x9;&#x9;SET failMessage = failMessage || r.session_id;
+&#x9;&#x9;&#x9;END IF;
+&#x9;&#x9;END IF;
+&#x9;END FOR;
+&#x9;IF (successCount &gt; 0 OR failCount &gt; 0) THEN
+&#x9;&#x9;SET message = SUBSTRING(&apos;TERMINATE IDLE SESSIONS:&apos;||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  success#=&apos;||successCount||&apos;  sessions=&apos;||NVL(succcessMessage,&apos;null&apos;)||
+&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&apos;  failed#=&apos;||failCount||&apos;  sessions=&apos;||NVL(failMessage,&apos;null&apos;),1,4000);
+&#x9;&#x9;-- Generate a system user-defined event
+&#x9;&#x9;CALL /lib/util/GenerateEvent(&apos;TerminateIdleSessions&apos;, message);
+&#x9;END IF;
+END</attribute>
+  <attribute name="creationDate" type="LONG">1591200683317</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1598373668660</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1591200683317</attribute>
+</metadata>
