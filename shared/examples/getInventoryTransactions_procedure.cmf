@@ -1,0 +1,150 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:c5ad973f-ef82-47dd-ac1b-cc9323d0cb24 -->
+<metadata name="getInventoryTransactions" path="/shared/examples/getInventoryTransactions" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="InventoryTransactions" direction="OUT" nullable="true">
+      <datatype name="InventoryTransactions" namespace="http://www.compositesw.com/services/webservices/system/admin/resource" referenceDefinitionSet="/shared/examples/InventoryTransactions" referenceType="{http://www.compositesw.com/services/webservices/system/admin/resource}InventoryTransactions" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="{http://www.compositesw.com/services/webservices/system/admin/resource}InventoryTransactions">
+        <schemaDatatype>
+          <datatype name="InventoryTransactions" namespace="http://www.compositesw.com/services/webservices/system/admin/resource" superTypeName="InventoryTransactions" superTypeNamespace="http://www.compositesw.com/services/webservices/system/admin/resource" subType="ELEMENT_DECL" type="TREE" refId="257">
+            <element name="Transaction" namespace="http://www.compositesw.com/services/webservices/system/admin/resource" maxOccurs="2147483647" minOccurs="0">
+              <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="513">
+                <element name="TransactionID" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                  <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                </element>
+                <element name="TransactionDate" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                  <datatype name="date" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DATE"/>
+                </element>
+                <element name="TransactionDescription" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                  <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                </element>
+                <element name="PurchaseOrder" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="769">
+                    <element name="PurchaseOrderID" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                      <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                    </element>
+                    <element name="PONumber" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                      <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                    </element>
+                    <element name="PurchaseOrderDescription" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="Supplier" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                      <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1025">
+                        <element name="SupplierID" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                          <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                        </element>
+                        <element name="SupplierName" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                          <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                        </element>
+                      </datatype>
+                    </element>
+                  </datatype>
+                </element>
+                <element name="Product" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                  <datatype superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="COMPLEX_TYPE" type="TREE" refId="1281">
+                    <element name="ProductID" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                      <datatype name="int" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="long" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+                    </element>
+                    <element name="ProductName" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                    <element name="ProductDescription" namespace="http://www.compositesw.com/services/webservices/system/admin/resource">
+                      <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+                    </element>
+                  </datatype>
+                </element>
+              </datatype>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+      <attribute name="Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege group="all" domain="composite" privileges="READ EXECUTE"/>
+  </security>
+  <dependency target="/shared/examples/InventoryTransactions" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/examples/LookupProduct" type="PROCEDURE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/examples/ds_inventory/tutorial/inventorytransactions" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/examples/ds_inventory/tutorial/purchaseorders" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <dependency target="/shared/examples/ds_inventory/tutorial/suppliers" type="TABLE">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="explicitly.designed" type="BOOLEAN">true</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1401221689492</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="license" type="NULL"/>
+  <attribute name="p:0:Customized" type="STRING">datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed;datatype.changed</attribute>
+  <attribute name="transformModel" type="NULL"/>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.compositesw.com/services/webservices/system/admin/resource&quot;;
+declare namespace ns2=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+
+let $nodes := (
+  element ns1:InventoryTransactions {
+    let $query := &quot;select transactionid,transactiondate,transactiondescription,purchaseorderid,productid from /shared/examples/ds_inventory/tutorial/inventorytransactions&quot;
+    for $inv in composite:executeQuery($query)//result
+    where $inv/transactionid &lt; 22
+    order by $inv/transactionid ascending
+    return
+    element ns1:Transaction {
+      element ns1:TransactionID {$inv/transactionid/text()},
+      element ns1:TransactionDate {$inv/transactiondate/text()},
+      element ns1:TransactionDescription {$inv/transactiondescription/text()},
+      let $nodes := (
+        let $query := &quot;select purchaseorderid,ponumber,purchaseorderdescription,supplierid from /shared/examples/ds_inventory/tutorial/purchaseorders&quot;
+        for $po in composite:executeQuery($query)//result[purchaseorderid = $inv/purchaseorderid]
+        return
+        element ns1:PurchaseOrder {
+          element ns1:PurchaseOrderID {$po/purchaseorderid/text()},
+          element ns1:PONumber {$po/ponumber/text()},
+          element ns1:PurchaseOrderDescription {$po/purchaseorderdescription/text()},
+          let $nodes := (
+            let $query := &quot;select supplierid,suppliername from /shared/examples/ds_inventory/tutorial/suppliers&quot;
+            for $supp in composite:executeQuery($query)//result[supplierid = $po/supplierid]
+            return
+            element ns1:Supplier {
+              element ns1:SupplierID {$supp/supplierid/text()},
+              element ns1:SupplierName {$supp/suppliername/text()}
+            }
+          )
+          return
+          $nodes[1]
+        }
+      )
+      return
+      $nodes[1],
+      let $nodes := (
+        let $inputs := (if (empty($inv/productid/text())) then &quot;NULL&quot; else concat(concat(&quot;&apos;&quot;,$inv/productid/text()), &quot;&apos;&quot;) cast as xs:string)
+        let $query := concat( &quot;select ProductID,ProductName,ProductDescription from /shared/examples/LookupProduct(&quot;, concat( string-join($inputs,&quot;,&quot;), &quot;)&quot;))
+        for $prod in composite:executeQuery($query)//result
+        return
+        element ns1:Product {
+          element ns1:ProductID {$prod/ProductID/text()},
+          element ns1:ProductName {$prod/ProductName/text()},
+          element ns1:ProductDescription {$prod/ProductDescription/text()}
+        }
+      )
+      return
+      $nodes[1]
+    }
+  }
+)
+return
+$nodes[1]</attribute>
+  <attribute name="xqueryModel" type="BYTE_ARRAY">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</attribute>
+</metadata>
