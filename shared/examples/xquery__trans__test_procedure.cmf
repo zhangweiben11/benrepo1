@@ -1,0 +1,123 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:d592c412-f19b-319c-a531-ead4825a55df -->
+<metadata name="xquery_trans_test" path="/shared/examples/xquery_trans_test" type="PROCEDURE" subtype="XQUERY_TRANSFORM_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="product" direction="OUT" nullable="true">
+      <datatype name="product" referenceDefinitionSet="/shared/examples/ds_XML/productCatalogDefinitions" referenceType="product" subType="ELEMENT_DECL" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="ELEMENT" componentName="product">
+        <schemaDatatype>
+          <datatype name="product" superTypeName="anyType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" subType="ELEMENT_DECL" anonymous="true" type="TREE" refId="257">
+            <element name="ProductID">
+              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+            </element>
+            <element name="ProductName">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="ProductDescription">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="SerialNumber">
+              <datatype name="NMTOKEN" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="token" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+            <element name="UnitPrice">
+              <datatype name="decimal" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" minDigits="1" maxDigits="32" maxFractionalDigits="6" maxValue="-1"/>
+            </element>
+            <element name="ReorderLevel">
+              <datatype name="integer" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="decimal" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="DECIMAL" maxDigits="32" maxFractionalDigits="0"/>
+            </element>
+            <element name="LeadTime">
+              <datatype name="string" namespace="http://www.w3.org/2001/XMLSchema" superTypeName="anySimpleType" superTypeNamespace="http://www.w3.org/2001/XMLSchema" type="STRING" maxLength="2147483647"/>
+            </element>
+          </datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/shared/examples/ds_XML/productCatalogDefinitions" type="DEFINITION_SET">
+    <datatype name="Tree" type="TREE" refId="257"></datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1497860659872</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="impactLevel" type="INTEGER">8</attribute>
+  <attribute name="impactLevelLabel" type="STRING">MISSING_RESOURCE</attribute>
+  <attribute name="impactMessage" type="STRING">The target element definition cannot be found . The definition set &apos;/shared/examples/ds_XML/productCatalogDefinitions&apos; does not contain an element named &apos;product&apos;.</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1497860659872</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1497860659872</attribute>
+  <attribute name="xquery" type="STRING">declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+
+&lt;root xmlns:ns1=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+  let $nodes := (
+    element product {
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/product</attribute>
+  <attribute name="xqueryModel" type="STRING">
+&lt;xqueryModel customized=&quot;false&quot; version=&quot;new&quot;&gt;
+  &lt;rootNode&gt;
+    &lt;nodeType&gt;COMPLEX&lt;/nodeType&gt;
+    &lt;element name=&quot;product&quot;&gt;
+      &lt;datatype name=&quot;product&quot; referenceDefinitionSet=&quot;/shared/examples/ds_XML/productCatalogDefinitions&quot; referenceType=&quot;product&quot; subType=&quot;ELEMENT_DECL&quot; type=&quot;XML&quot; contentConstraint=&quot;SEQUENCE&quot; schemaConstraint=&quot;ANY&quot; componentType=&quot;ELEMENT&quot; componentName=&quot;product&quot;&gt;
+        &lt;schemaDatatype&gt;
+          &lt;datatype name=&quot;product&quot; superTypeName=&quot;anyType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; subType=&quot;ELEMENT_DECL&quot; anonymous=&quot;true&quot; type=&quot;TREE&quot; refId=&quot;257&quot;&gt;
+            &lt;element name=&quot;ProductID&quot;&gt;
+              &lt;datatype name=&quot;integer&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;decimal&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;DECIMAL&quot; maxDigits=&quot;32&quot; maxFractionalDigits=&quot;0&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;ProductName&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;ProductDescription&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;SerialNumber&quot;&gt;
+              &lt;datatype name=&quot;NMTOKEN&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;token&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;UnitPrice&quot;&gt;
+              &lt;datatype name=&quot;decimal&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;DECIMAL&quot; minDigits=&quot;1&quot; maxDigits=&quot;32&quot; maxFractionalDigits=&quot;6&quot; maxValue=&quot;-1&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;ReorderLevel&quot;&gt;
+              &lt;datatype name=&quot;integer&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;decimal&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;DECIMAL&quot; maxDigits=&quot;32&quot; maxFractionalDigits=&quot;0&quot;/&gt;
+            &lt;/element&gt;
+            &lt;element name=&quot;LeadTime&quot;&gt;
+              &lt;datatype name=&quot;string&quot; namespace=&quot;http://www.w3.org/2001/XMLSchema&quot; superTypeName=&quot;anySimpleType&quot; superTypeNamespace=&quot;http://www.w3.org/2001/XMLSchema&quot; type=&quot;STRING&quot; maxLength=&quot;2147483647&quot;/&gt;
+            &lt;/element&gt;
+          &lt;/datatype&gt;
+        &lt;/schemaDatatype&gt;
+      &lt;/datatype&gt;
+    &lt;/element&gt;
+    &lt;sourcePath/&gt;
+    &lt;sourceType/&gt;
+    &lt;sourceSignature/&gt;
+    &lt;sourceAlias/&gt;
+    &lt;sourceJoin/&gt;
+    &lt;sourceFilter&gt;
+      &lt;text/&gt;
+    &lt;/sourceFilter&gt;
+    &lt;sourceSortOrder/&gt;
+    &lt;sourceGroupBy/&gt;
+    &lt;sourceInputs/&gt;
+    &lt;childNodes&gt;&lt;/childNodes&gt;
+  &lt;/rootNode&gt;
+  &lt;inputSignature/&gt;
+  &lt;xquery&gt;declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;;
+
+&amp;lt;root xmlns:ns1=&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;&amp;gt;{
+  let $nodes := (
+    element product {
+    }
+  )
+  return
+  $nodes[1]
+}&amp;lt;/root&amp;gt;/product&lt;/xquery&gt;
+&lt;/xqueryModel&gt;</attribute>
+</metadata>

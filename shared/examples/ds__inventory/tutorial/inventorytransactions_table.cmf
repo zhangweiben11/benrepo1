@@ -1,0 +1,161 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:d592c412-f19b-319c-a531-ead4825a55df -->
+<metadata name="inventorytransactions" path="/shared/examples/ds_inventory/tutorial/inventorytransactions" type="TABLE" subtype="DATABASE_TABLE" changeToken="0" tableType="TABLE">
+  <columns>
+    <column name="transactionid" nullable="false">
+      <datatype name="int4" extendedName="int4" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="transactiondate" nullable="true">
+      <datatype name="date" extendedName="date" subType="DATASOURCE_TYPE" type="DATE"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="productid" nullable="true">
+      <datatype name="int4" extendedName="int4" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="purchaseorderid" nullable="true">
+      <datatype name="int4" extendedName="int4" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="transactiondescription" nullable="true">
+      <datatype name="varchar" extendedName="varchar(255)" subType="DATASOURCE_TYPE" type="STRING" maxLength="255"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="unitprice" nullable="true">
+      <datatype name="numeric" extendedName="numeric(19,0)" subType="DATASOURCE_TYPE" type="DECIMAL" maxDigits="19" maxFractionalDigits="0"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="unitsordered" nullable="true">
+      <datatype name="int4" extendedName="int4" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="unitsreceived" nullable="true">
+      <datatype name="int4" extendedName="int4" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="unitssold" nullable="true">
+      <datatype name="int4" extendedName="int4" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+    <column name="unitsshrinkage" nullable="true">
+      <datatype name="int4" extendedName="int4" subType="DATASOURCE_TYPE" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      <security>
+        <owner user="admin" domain="composite"/>
+      </security>
+    </column>
+  </columns>
+  <indexes>
+    <index name="inventorytransactions_pkey" type="PRIMARY_KEY" unique="true">
+      <indexColumn name="transactionid" sortOrder="ASCENDING"/>
+      <attribute name="indexSchema" type="STRING">tutorial</attribute>
+    </index>
+  </indexes>
+  <foreignKeys>
+    <foreignKey name="inventorytransactions_productid_fkey" primaryKeyName="products_pkey" primaryKeyTableName="/shared/examples/ds_inventory/tutorial/products">
+      <foreignKeyColumn primaryColumnName="productid" foreignColumnName="productid"/>
+    </foreignKey>
+    <foreignKey name="inventorytransactions_purchaseorderid_fkey" primaryKeyName="purchaseorders_pkey" primaryKeyTableName="/shared/examples/ds_inventory/tutorial/purchaseorders">
+      <foreignKeyColumn primaryColumnName="purchaseorderid" foreignColumnName="purchaseorderid"/>
+    </foreignKey>
+  </foreignKeys>
+  <security>
+    <owner user="admin" domain="composite"/>
+    <privilege group="all" domain="composite" privileges="READ SELECT"/>
+  </security>
+  <dependency target="/shared/examples/ds_inventory/tutorial/products" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="productid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="productname">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="productdescription">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="categoryid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="serialnumber">
+        <datatype type="STRING" maxLength="50"/>
+      </element>
+      <element name="unitprice">
+        <datatype type="DECIMAL" maxDigits="12" minFractionalDigits="2" maxFractionalDigits="2"/>
+      </element>
+      <element name="reorderlevel">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="leadtime">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+    </datatype>
+  </dependency>
+  <dependency target="/shared/examples/ds_inventory/tutorial/purchaseorders" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="purchaseorderid" nullable="false">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="ponumber">
+        <datatype type="STRING" maxLength="30"/>
+      </element>
+      <element name="purchaseorderdescription">
+        <datatype type="STRING" maxLength="255"/>
+      </element>
+      <element name="supplierid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="employeeid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="orderdate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="daterequired">
+        <datatype type="DATE"/>
+      </element>
+      <element name="datepromised">
+        <datatype type="DATE"/>
+      </element>
+      <element name="shipdate">
+        <datatype type="DATE"/>
+      </element>
+      <element name="shippingmethodid">
+        <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+      </element>
+      <element name="freightcharge">
+        <datatype type="DECIMAL" maxDigits="12" minFractionalDigits="2" maxFractionalDigits="2"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="cacheStorageSource" type="STRING">/lib/sources/cacheDataSource</attribute>
+  <attribute name="cacheStorageTargets" type="MAP">
+    <item>
+      <key type="STRING">result</key>
+      <value type="STRING">/lib/sources/cacheDataSource/view3492</value>
+    </item>
+  </attribute>
+  <attribute name="creationDate" type="LONG">0</attribute>
+  <attribute name="creatorUserDomain" type="STRING"/>
+  <attribute name="creatorUserName" type="STRING"/>
+  <attribute name="i:0:indexSchema" type="STRING">tutorial</attribute>
+  <attribute name="selectionState" type="INTEGER">2</attribute>
+</metadata>
