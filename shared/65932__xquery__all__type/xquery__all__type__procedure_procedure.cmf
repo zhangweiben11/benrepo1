@@ -1,0 +1,86 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:d592c412-f19b-319c-a531-ead4825a55df -->
+<metadata name="xquery_all_type_procedure" path="/shared/65932_xquery_all_type/xquery_all_type_procedure" type="PROCEDURE" subtype="-131" changeToken="0">
+  <parameters>
+    <parameter name="output" direction="OUT" nullable="true">
+      <datatype name="output" namespace="/shared/65932_xquery_all_type/xquery_all_type_procedure" referenceType="{/shared/65932_xquery_all_type/xquery_all_type_procedure}output" type="XML" contentConstraint="SEQUENCE" schemaConstraint="ANY" componentType="TYPE" componentName="{/shared/65932_xquery_all_type/xquery_all_type_procedure}output">
+        <schemaDatatype>
+          <datatype name="output" type="TREE" refId="257"></datatype>
+        </schemaDatatype>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/shared/65932_xquery_all_type/set_values" type="PROCEDURE">
+    <datatype type="PROCEDURE" refId="258">
+      <element name="result" direction="OUT">
+        <datatype type="TABLE" refId="256">
+          <element name="status">
+            <datatype type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+          </element>
+          <element name="status_message">
+            <datatype type="STRING" maxLength="10"/>
+          </element>
+          <element name="record_flag">
+            <datatype type="BOOLEAN"/>
+          </element>
+          <element name="salary">
+            <datatype type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+          </element>
+          <element name="on_board">
+            <datatype type="DATE"/>
+          </element>
+          <element name="work_hour">
+            <datatype type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+          </element>
+          <element name="apartment_no">
+            <datatype type="INTEGER" minValue="-32768" maxValue="32767"/>
+          </element>
+          <element name="birthday">
+            <datatype type="DATETIME"/>
+          </element>
+        </datatype>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="creationDate" type="LONG">1498122050551</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1498198755211</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1498122050551</attribute>
+  <attribute name="xquery" type="STRING">declare namespace xs = &quot;http://www.w3.org/2001/XMLSchema&quot;; 
+declare copy-namespaces no-preserve,inherit;
+declare namespace ns1=&quot;http://dave.sandia.gov/ASK/stomp/movements&quot;;
+declare namespace ns2=&quot;http://www.w3.org/2001/XMLSchema&quot;;
+
+
+&lt;root xmlns:ns2=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;{
+&#x9;let $nodes := (     
+&#x9;element ns1:result {
+      let $query :=&quot;select status, status_message, record_flag, salary, on_board,work_hour,apartment_no,birthday from /Shared/&quot;&quot;65932_xquery_all_type&quot;&quot;/set_values()&quot;
+      let $xqueryTest1 := composite:executeQuery($query)//result
+      for $xqueryTest in $xqueryTest1
+      return
+      element ns1:movements {
+        element ns1:status {$xqueryTest/status/text()},
+        element ns1:status_message {$xqueryTest/status_message/text()},
+        element ns1:record_flag {$xqueryTest/record_flag/text()},
+        element ns1:salary {$xqueryTest/salary/text()},
+        element ns1:on_board {$xqueryTest/on_board/text()},
+&#x9;&#x9;element ns1:work_hour {$xqueryTest/work_hour/text()},
+&#x9;&#x9;element ns1:apartment_no {$xqueryTest/apartment_no/text()},
+&#x9;&#x9;element ns1:birthday {$xqueryTest/birthday/text()}
+      }
+    }
+  )
+  return
+  $nodes[1]
+}&lt;/root&gt;/ns1:result</attribute>
+</metadata>

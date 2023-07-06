@@ -1,0 +1,115 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- salt:d592c412-f19b-319c-a531-ead4825a55df -->
+<metadata name="set_values" path="/shared/65932_xquery_all_type/set_values" type="PROCEDURE" subtype="SQL_SCRIPT_PROCEDURE" changeToken="0">
+  <parameters>
+    <parameter name="result" direction="OUT" nullable="true">
+      <datatype name="result" type="TABLE" refId="256">
+        <element name="status">
+          <datatype name="INTEGER" type="INTEGER" minValue="-2147483648" maxValue="2147483647"/>
+        </element>
+        <element name="status_message">
+          <datatype name="VARCHAR" type="STRING" maxLength="10"/>
+        </element>
+        <element name="record_flag">
+          <datatype name="BOOLEAN" type="BOOLEAN"/>
+        </element>
+        <element name="salary">
+          <datatype name="DECIMAL" type="DECIMAL" maxDigits="32" maxFractionalDigits="2"/>
+        </element>
+        <element name="on_board">
+          <datatype name="DATE" type="DATE"/>
+        </element>
+        <element name="work_hour">
+          <datatype name="DOUBLE" type="FLOAT" minValue="2.2250738585072014E-308" maxValue="1.7976931348623157E308"/>
+        </element>
+        <element name="apartment_no">
+          <datatype name="SMALLINT" type="INTEGER" minValue="-32768" maxValue="32767"/>
+        </element>
+        <element name="birthday">
+          <datatype name="TIMESTAMP" type="DATETIME"/>
+        </element>
+      </datatype>
+    </parameter>
+  </parameters>
+  <security>
+    <owner user="admin" domain="composite"/>
+  </security>
+  <dependency target="/services/databases/system/DUAL" type="TABLE">
+    <datatype type="TABLE" refId="256">
+      <element name="DUMMY">
+        <datatype type="STRING" minLength="1" maxLength="1"/>
+      </element>
+    </datatype>
+  </dependency>
+  <attribute name="Script" type="STRING">PROCEDURE set_values(
+&#x9;out result cursor (
+&#x9;&#x9;status integer,
+&#x9;    status_message varchar(10),
+&#x9;&#x9;record_flag boolean,
+&#x9;&#x9;salary decimal,
+&#x9;&#x9;on_board date,
+&#x9;&#x9;work_hour double,
+&#x9;&#x9;apartment_no smallint,
+&#x9;&#x9;birthday timestamp
+&#x9;&#x9;&#x9;)
+&#x9;
+)
+BEGIN
+
+        OPEN result FOR SELECT 
+                status,
+&#x9;    status_message,
+&#x9;&#x9;record_flag,
+&#x9;&#x9;salary,
+&#x9;&#x9;on_board,
+&#x9;&#x9;work_hour,
+&#x9;&#x9;apartment_no,
+&#x9;&#x9;birthday
+            FROM (SELECT 
+                    1 AS status,
+                    &apos;stms1&apos; AS status_message,
+&#x9;          True AS record_flag,
+                    2039.5 AS salary,
+                    to_date(&apos;2010-07-02&apos;) AS on_board,
+&#x9;&#x9;&#x9;&#x9;&#x9;45.6 AS work_hour,
+&#x9;&#x9;&#x9;&#x9;&#x9;67 AS apartment_no,
+&#x9;&#x9;&#x9;&#x9;&#x9;to_timestamp(&apos;1977-01-15 09:14:16&apos;) AS birthday
+                UNION
+                SELECT 
+                    2 AS status,
+                    &apos;stms2&apos; AS status_message,
+                     False AS record_flag,
+                    989.13 AS salary,
+                    &apos;2003-02-11&apos; AS on_board,
+&#x9;&#x9;&#x9;&#x9;&#x9;108.12 AS work_hour,
+&#x9;&#x9;&#x9;&#x9;    9 AS apartment_no,
+&#x9;&#x9;&#x9;&#x9;&#x9;&apos;1977-11-04 18:01:00&apos; AS birthday
+&#x9;&#x9;&#x9;&#x9;UNION
+                SELECT 
+                    null AS status,
+                    null AS status_message,
+                    null AS record_flag,
+                    null AS salary,
+                    null AS on_board,
+&#x9;&#x9;&#x9;&#x9;&#x9;null AS work_hour,
+&#x9;&#x9;&#x9;&#x9;    null AS apartment_no,
+&#x9;&#x9;&#x9;&#x9;&#x9;null AS birthday               
+                ) a
+        ;
+END
+
+</attribute>
+  <attribute name="creationDate" type="LONG">1498031681081</attribute>
+  <attribute name="creatorUserDomain" type="STRING">composite</attribute>
+  <attribute name="creatorUserId" type="INTEGER">-1973</attribute>
+  <attribute name="creatorUserName" type="STRING">admin</attribute>
+  <attribute name="explicitly.designed" type="BOOLEAN">false</attribute>
+  <attribute name="lastModifiedDate" type="LONG">1498199307027</attribute>
+  <attribute name="lastModifiedUserDomain" type="STRING">composite</attribute>
+  <attribute name="lastModifiedUserId" type="INTEGER">-1973</attribute>
+  <attribute name="lastModifiedUserName" type="STRING">admin</attribute>
+  <attribute name="model" type="NULL"/>
+  <attribute name="native_only" type="STRING">false</attribute>
+  <attribute name="references" type="NULL"/>
+  <attribute name="resourceModifiedDateOnSourceCISSite" type="LONG">1498031681081</attribute>
+</metadata>
